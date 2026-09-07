@@ -1,0 +1,18 @@
+# IDE / Editor files
+.idea/
+*.iml
+.vscode/
+
+# Build output
+out/
+bin/
+target/
+*.class
+
+# Archives & Temporary files
+*.zip
+*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db
