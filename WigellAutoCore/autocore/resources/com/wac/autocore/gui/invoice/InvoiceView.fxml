@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.wac.autocore.gui.invoice.InvoiceController">
+    <Label text="Fakturor" />
+    <TableView fx:id="invoiceTable">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID"/>
+            <TableColumn fx:id="amountColumn" text="Belopp"/>
+            <TableColumn fx:id="statusColumn" text="Status"/>
+        </columns>
+
+    </TableView>
+</VBox>
