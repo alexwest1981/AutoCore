@@ -16,3 +16,6 @@ target/
 # OS files
 .DS_Store
 Thumbs.db
+
+# JVM crash logs
+hs_err_pid*.log

@@ -11,8 +11,42 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 
 public class GarageSystem {
+
+    public List<Customer> getCustomers() {
+        return Collections.unmodifiableList(Database.getCustomers());
+    }
+
+    public List<Vehicle> getVehicles() {
+        return Collections.unmodifiableList(Database.getVehicles());
+    }
+
+    public List<Booking> getBookings() {
+        return Collections.unmodifiableList(Database.getBookings());
+    }
+
+    public List<ServiceItem> getServiceItems() {
+        return Collections.unmodifiableList(Database.getServiceItems());
+    }
+
+    public List<Mechanic> getMechanics() {
+        return Collections.unmodifiableList(Database.getMechanics());
+    }
+
+    public List<WorkOrder> getWorkOrders() {
+        return Collections.unmodifiableList(Database.getWorkOrders());
+    }
+
+    public List<Invoice> getInvoices() {
+        return Collections.unmodifiableList(Database.getInvoices());
+    }
+
+    public List<Payment> getPayments() {
+        return Collections.unmodifiableList(Database.getPayments());
+    }
 
     public void showCustomers() {
         System.out.println();
