@@ -11,8 +11,14 @@ Systemet hanterar den dagliga operativa verksamheten på en bilverkstad:
 - **Fakturering & Rabattsystem:** Fakturering med stöd för VIP-rabatt och kampanjkoder.
 - **Betalningar:** Betalningshantering via kort, Swish och kontant.
 
+## Skärmbilder
+JavaFX-gränssnittet (AutoCore, tema *Azure*):
+
+![AutoCore JavaFX-gränssnitt](WigellAutoCore/docs/autocore-javafx-gui.png)
+
 ## Teknisk stack
 - Java
+- JavaFX-gränssnitt (GUI)
 - Konsolgränssnitt (CLI)
 
 ## Utvecklingsteam
