@@ -1,19 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.wac.autocore.gui.invoice.InvoiceController">
+
     <Label text="Fakturor" />
     <TableView fx:id="invoiceTable">
+
         <columns>
             <TableColumn fx:id="idColumn" text="ID"/>
+            <TableColumn fx:id="workOrderIdColumn" text="Arbets-ID"/>
+            <TableColumn fx:id="dateColumn" text="Datum"/>
             <TableColumn fx:id="amountColumn" text="Belopp"/>
+            <TableColumn fx:id="discountColumn" text="Rabatt"/>
+            <TableColumn fx:id="totalAmountColumn" text="Totalt Belopp"/>
             <TableColumn fx:id="statusColumn" text="Status"/>
         </columns>
 
     </TableView>
+
+    <TextField fx:id="workOrderIdField" promptText="Arbetsorder-ID"/>
+    <TextField fx:id="discountCodeField" promptText="Rabattkod (valfri)"/>
+    <Button text="Skapa faktura" onAction="#handleCreateInvoice"/>
+
 </VBox>
