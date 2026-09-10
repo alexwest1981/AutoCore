@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.TableView?>
+
+<VBox xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.wac.autocore.gui.customers.customerController"
+            prefHeight="400.0" prefWidth="600.0">
+<Label text="Kunder"/>
+    <TableView fx:id="customerListView">
+        <columns>
+            <TableColumn fx:id="customerId" text="id"/>
+            <TableColumn fx:id="nameColumn" text="Namn"/>
+            <TableColumn fx:id="phoneColumn" text="Telefonnummer"/>
+            <TableColumn fx:id="emailColumn" text="Email"/>
+        </columns>
+    </TableView>
+
+</VBox>
