@@ -10,23 +10,23 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.wac.autocore.gui.invoice.InvoiceController">
 
-    <Label text="Fakturor" />
+    <Label text="Invoices" />
     <TableView fx:id="invoiceTable">
 
         <columns>
             <TableColumn fx:id="idColumn" text="ID"/>
-            <TableColumn fx:id="workOrderIdColumn" text="Arbets-ID"/>
-            <TableColumn fx:id="dateColumn" text="Datum"/>
-            <TableColumn fx:id="amountColumn" text="Belopp"/>
-            <TableColumn fx:id="discountColumn" text="Rabatt"/>
-            <TableColumn fx:id="totalAmountColumn" text="Totalt Belopp"/>
+            <TableColumn fx:id="workOrderIdColumn" text="Work-ID"/>
+            <TableColumn fx:id="dateColumn" text="Date"/>
+            <TableColumn fx:id="amountColumn" text="Amount"/>
+            <TableColumn fx:id="discountColumn" text="Discount"/>
+            <TableColumn fx:id="totalAmountColumn" text="Total Amount"/>
             <TableColumn fx:id="statusColumn" text="Status"/>
         </columns>
 
     </TableView>
 
-    <TextField fx:id="workOrderIdField" promptText="Arbetsorder-ID"/>
-    <TextField fx:id="discountCodeField" promptText="Rabattkod (valfri)"/>
-    <Button text="Skapa faktura" onAction="#handleCreateInvoice"/>
+    <TextField fx:id="workOrderIdField" promptText="Work Order ID"/>
+    <TextField fx:id="discountCodeField" promptText="Discount code (optional)"/>
+    <Button text="Create invoice" onAction="#handleCreateInvoice"/>
 
 </VBox>

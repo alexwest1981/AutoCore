@@ -51,7 +51,7 @@ public class InvoiceController {
         try {
             workOrderId = Integer.parseInt(workOrderIdField.getText());
         } catch (NumberFormatException e) {
-            showAlert("Ogiltigt arbetsorder-ID, ange ett nummer.");
+            showAlert("Invalid work order ID, please enter a number.");
             return;
         }
 
@@ -59,7 +59,7 @@ public class InvoiceController {
         Invoice invoice = garageSystem.createInvoice(workOrderId, discountCode);
 
         if (invoice == null) {
-            showAlert("Kunde inte skapa faktura. Kontrollera att arbetsordern finns och är avslutad");
+            showAlert("Could not create invoice. Check that the work order exists and is marked as completed.");
             return;
         }
 
