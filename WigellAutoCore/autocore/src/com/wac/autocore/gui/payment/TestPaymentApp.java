@@ -1,14 +1,14 @@
-package com.wac.autocore.gui.invoice;
+package com.wac.autocore.gui.payment;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 
-public class TestInvoiceApp extends Application {
+public class TestPaymentApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("InvoiceView.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("PaymentView.fxml"));
         stage.setScene(new Scene(root, 400, 300));
         stage.show();
     }

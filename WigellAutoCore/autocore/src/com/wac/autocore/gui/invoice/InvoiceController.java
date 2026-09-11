@@ -8,7 +8,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-
 import java.time.LocalDate;
 
 public class InvoiceController {
@@ -43,11 +42,13 @@ public class InvoiceController {
     @FXML
     private TextField discountCodeField;
 
-    private GarageSystem garageSystem = new GarageSystem();
+    private final GarageSystem garageSystem = new GarageSystem();
 
     @FXML
     private void handleCreateInvoice(){
+
         int workOrderId;
+
         try {
             workOrderId = Integer.parseInt(workOrderIdField.getText());
         } catch (NumberFormatException e) {
@@ -79,12 +80,35 @@ public class InvoiceController {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         workOrderIdColumn.setCellValueFactory(new PropertyValueFactory<>("workOrderId"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("invoiceDate"));
+
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        amountColumn.setCellFactory(column -> new javafx.scene.control.TableCell<Invoice, Double>() {
+            @Override
+            protected void updateItem(Double amount, boolean empty) {
+                super.updateItem(amount, empty);
+                setText(empty || amount == null ? null : String.format("%.2f", amount));
+            }
+        });
+
         discountColumn.setCellValueFactory(new PropertyValueFactory<>("discount"));
+        discountColumn.setCellFactory(column -> new javafx.scene.control.TableCell<Invoice, Double>() {
+            @Override
+            protected void updateItem(Double discount, boolean empty) {
+                super.updateItem(discount, empty);
+                setText(empty || discount == null ? null : String.format("%.2f", discount));
+            }
+        });
+
         totalAmountColumn.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
+        totalAmountColumn.setCellFactory(column -> new javafx.scene.control.TableCell<Invoice, Double>() {
+            @Override
+            protected void updateItem(Double totalAmount, boolean empty) {
+                super.updateItem(totalAmount, empty);
+                setText(empty || totalAmount == null ? null : String.format("%.2f", totalAmount));
+            }
+        });
+
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("paid"));
-
         invoiceTable.getItems().addAll(Database.getInvoices());
-
     }
 }
