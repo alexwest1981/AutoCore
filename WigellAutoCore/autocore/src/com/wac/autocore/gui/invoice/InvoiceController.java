@@ -111,4 +111,8 @@ public class InvoiceController {
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("paid"));
         invoiceTable.getItems().addAll(Database.getInvoices());
     }
+
+    public void refreshTable() {
+        invoiceTable.refresh();
+    }
 }

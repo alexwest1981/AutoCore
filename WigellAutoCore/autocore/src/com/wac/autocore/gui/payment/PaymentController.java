@@ -122,4 +122,8 @@ public class PaymentController {
         paymentTypeComboBox.getItems().addAll("CARD", "SWISH", "CASH");
         paymentTable.getItems().addAll(Database.getPayments());
     }
+
+    public void refreshTable() {
+        paymentTable.refresh();
+    }
 }
