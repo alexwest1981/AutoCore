@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.wac.autocore.gui.vehicle.vehicleController"
+            prefHeight="400.0" prefWidth="600.0">
+    <Label text="Fordon"/>
+    <TableView fx:id="vehicleTableView">
+        <columns>
+            <TableColumn fx:id="vehicleIdColumn" text="ID"/>
+            <TableColumn fx:id="vehicleRegistrationNumberColumn" text="Registrerings Nummer"/>
+            <TableColumn fx:id="vehicleBrandColumn" text="Märke"/>
+            <TableColumn fx:id="vehicleModelColumn" text="Modell"/>
+            <TableColumn fx:id="vehicleYearColumn" text="År"/>
+            <TableColumn fx:id="vehicleCustomerIdColumn" text="Kund ID"/>
+        </columns>
+    </TableView>
+
+</VBox>
