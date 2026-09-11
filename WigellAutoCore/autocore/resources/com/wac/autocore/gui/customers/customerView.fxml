@@ -14,10 +14,10 @@
 <Label text="Kunder"/>
     <TableView fx:id="customerListView">
         <columns>
-            <TableColumn fx:id="customerId" text="id"/>
-            <TableColumn fx:id="nameColumn" text="Namn"/>
-            <TableColumn fx:id="phoneColumn" text="Telefonnummer"/>
-            <TableColumn fx:id="emailColumn" text="Email"/>
+            <TableColumn fx:id="customerIdColumn" text="id"/>
+            <TableColumn fx:id="customerNameColumn" text="Namn"/>
+            <TableColumn fx:id="customerPhoneColumn" text="Telefonnummer"/>
+            <TableColumn fx:id="customerEmailColumn" text="Email"/>
         </columns>
     </TableView>
 
