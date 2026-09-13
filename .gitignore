@@ -2,6 +2,9 @@
 .idea/
 *.iml
 .vscode/
+.project
+.classpath
+run.sh
 
 # Build output
 out/
@@ -16,3 +19,6 @@ target/
 # OS files
 .DS_Store
 Thumbs.db
+
+# JVM crash logs
+hs_err_pid*.log
