@@ -21,6 +21,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -289,25 +290,60 @@ public class AutoCoreApp extends Application {
         if (key.equals("overview")) {
             pageBox.getChildren().add(buildOverview());
         } else if (key.equals("customers")) {
+            Button addBtn = primaryButton("+ Ny kund");
+            addBtn.setOnAction(e -> ActionDialogs.showCreateCustomerDialog(garage, () -> selectPage("customers")));
             pageBox.getChildren().add(buildEntityPage(
                     "Kunder", garage.getCustomers().size() + " registrerade",
                     "Namn, kontaktuppgifter och VIP-status",
-                    buildCustomersTable()));
+                    buildCustomersTable(), addBtn));
         } else if (key.equals("vehicles")) {
+            Button addBtn = primaryButton("+ Registrera fordon");
+            addBtn.setOnAction(e -> ActionDialogs.showCreateVehicleDialog(garage, () -> selectPage("vehicles")));
             pageBox.getChildren().add(buildEntityPage(
                     "Fordon", garage.getVehicles().size() + " registrerade",
                     "Registrerade fordon i verkstaden",
-                    buildVehiclesTable()));
+                    buildVehiclesTable(), addBtn));
         } else if (key.equals("bookings")) {
+            Button addBtn = primaryButton("+ Ny bokning");
+            addBtn.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, () -> selectPage("bookings")));
             pageBox.getChildren().add(buildEntityPage(
                     "Bokningar", garage.getBookings().size() + " bokningar",
                     "Inbokade jobb och dess status",
-                    buildBookingsTable()));
+                    buildBookingsTable(), addBtn));
         } else if (key.equals("workorders")) {
+            TableView<WorkOrder> table = buildWorkOrdersTable();
+            Button addBtn = primaryButton("+ Ny arbetsorder");
+            addBtn.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, () -> selectPage("workorders")));
+            Button startBtn = secondaryButton("▶ Starta order");
+            Button completeBtn = secondaryButton("✔ Slutför order");
+            startBtn.setDisable(true);
+            completeBtn.setDisable(true);
+
+            table.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
+                startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
+                completeBtn.setDisable(sel == null || !"IN_PROGRESS".equals(sel.getStatus()));
+            });
+
+            startBtn.setOnAction(e -> {
+                WorkOrder sel = table.getSelectionModel().getSelectedItem();
+                if (sel != null && "CREATED".equals(sel.getStatus())) {
+                    garage.startWorkOrder(sel.getId());
+                    selectPage("workorders");
+                }
+            });
+
+            completeBtn.setOnAction(e -> {
+                WorkOrder sel = table.getSelectionModel().getSelectedItem();
+                if (sel != null && "IN_PROGRESS".equals(sel.getStatus())) {
+                    garage.completeWorkOrder(sel.getId());
+                    selectPage("workorders");
+                }
+            });
+
             pageBox.getChildren().add(buildEntityPage(
                     "Arbetsorder", garage.getWorkOrders().size() + " arbetsorder",
-                    "Pågående och slutförda jobb",
-                    buildWorkOrdersTable()));
+                    "Pågående och slutförda jobb (markera rad för att starta/slutföra)",
+                    table, startBtn, completeBtn, addBtn));
         } else if (key.equals("services")) {
             pageBox.getChildren().add(buildEntityPage(
                     "Tjänster", garage.getServiceItems().size() + " tjänster",
@@ -319,15 +355,34 @@ public class AutoCoreApp extends Application {
                     "Team, specialisering och tillgänglighet",
                     buildMechanicsTable()));
         } else if (key.equals("invoices")) {
+            TableView<Invoice> table = buildInvoicesTable();
+            Button addBtn = primaryButton("+ Skapa faktura");
+            addBtn.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, () -> selectPage("invoices")));
+            Button payBtn = secondaryButton("💳 Betala vald faktura");
+            payBtn.setDisable(true);
+
+            table.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
+                payBtn.setDisable(sel == null || sel.isPaid());
+            });
+
+            payBtn.setOnAction(e -> {
+                Invoice sel = table.getSelectionModel().getSelectedItem();
+                if (sel != null && !sel.isPaid()) {
+                    ActionDialogs.showProcessPaymentDialog(garage, sel, () -> selectPage("invoices"));
+                }
+            });
+
             pageBox.getChildren().add(buildEntityPage(
                     "Fakturor", garage.getInvoices().size() + " fakturor",
                     "Utfärdade fakturor och betalstatus",
-                    buildInvoicesTable()));
+                    table, payBtn, addBtn));
         } else if (key.equals("payments")) {
+            Button addBtn = primaryButton("+ Registrera betalning");
+            addBtn.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, () -> selectPage("payments")));
             pageBox.getChildren().add(buildEntityPage(
                     "Betalningar", garage.getPayments().size() + " betalningar",
                     "Inkomna betalningar och deras status",
-                    buildPaymentsTable()));
+                    buildPaymentsTable(), addBtn));
         }
     }
 
@@ -349,9 +404,32 @@ public class AutoCoreApp extends Application {
         return box;
     }
 
+    private Button primaryButton(String text) {
+        Button b = new Button(text);
+        b.getStyleClass().addAll("button", "primary");
+        return b;
+    }
+
+    private Button secondaryButton(String text) {
+        Button b = new Button(text);
+        b.getStyleClass().addAll("button", "secondary-button");
+        return b;
+    }
+
     private VBox buildEntityPage(String title, String sub, String eyebrow,
-                                 TableView<?> table) {
-        VBox head = pageHead(title, sub, eyebrow);
+                                 TableView<?> table, Node... actions) {
+        VBox titles = pageHead(title, sub, eyebrow);
+        HBox.setHgrow(titles, Priority.ALWAYS);
+
+        HBox topRow = new HBox(12, titles);
+        topRow.setAlignment(Pos.CENTER_LEFT);
+
+        if (actions != null && actions.length > 0) {
+            HBox actionBox = new HBox(8, actions);
+            actionBox.setAlignment(Pos.CENTER_RIGHT);
+            topRow.getChildren().add(actionBox);
+        }
+
         table.setPlaceholder(new Label("Inga rader"));
         HBox.setHgrow(table, Priority.ALWAYS);
 
@@ -361,7 +439,7 @@ public class AutoCoreApp extends Application {
         inner.setPadding(new Insets(4, 6, 6, 6));
 
         VBox.setVgrow(table, Priority.ALWAYS);
-        return new VBox(18, head, inner);
+        return new VBox(18, topRow, inner);
     }
 
     // ------------------------------------------------------------- overview
@@ -402,6 +480,18 @@ public class AutoCoreApp extends Application {
         VBox head = pageHead("Översikt", "Så ser läget ut i verkstaden just nu",
                 "AutoCore · " + todaySwedish());
 
+        Button quickBooking = primaryButton("+ Ny bokning");
+        quickBooking.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, () -> selectPage("overview")));
+        Button quickOrder = secondaryButton("+ Ny arbetsorder");
+        quickOrder.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, () -> selectPage("overview")));
+        Button quickInvoice = secondaryButton("+ Skapa faktura");
+        quickInvoice.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, () -> selectPage("overview")));
+        Button quickPay = secondaryButton("💳 Betalning");
+        quickPay.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, () -> selectPage("overview")));
+
+        HBox quickBar = new HBox(10, quickBooking, quickOrder, quickInvoice, quickPay);
+        quickBar.setAlignment(Pos.CENTER_LEFT);
+
         HBox kpis = new HBox(14);
         kpis.setAlignment(Pos.CENTER_LEFT);
         kpis.getChildren().addAll(
@@ -420,7 +510,7 @@ public class AutoCoreApp extends Application {
         VBox recentPanel = panel("Senaste arbetsorder",
                 "De senaste registrerade jobben i systemet", recent);
 
-        return new VBox(18, head, kpis, panels, recentPanel);
+        return new VBox(18, head, quickBar, kpis, panels, recentPanel);
     }
 
     private VBox kpi(String label, String value) {
