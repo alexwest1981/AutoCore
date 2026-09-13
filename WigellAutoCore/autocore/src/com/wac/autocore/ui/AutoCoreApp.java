@@ -20,6 +20,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -112,29 +113,83 @@ public class AutoCoreApp extends Application {
         brandRow.getStyleClass().add("brand-row");
         brandRow.setAlignment(Pos.CENTER_LEFT);
 
-        Label navLabel = new Label("MENY");
-        navLabel.getStyleClass().add("side-label");
-        navLabel.setPadding(new Insets(18, 0, 6, 14));
-
-        VBox nav = new VBox(2);
+        // Menyn följer designens grupper och går att fälla ihop, så den alltid
+        // får plats även när fönstret är lågt.
+        VBox nav = new VBox(3);
+        nav.setPadding(new Insets(14, 0, 0, 0));
         addNav(nav, "overview", "Översikt");
-        addNav(nav, "customers", "Kunder");
-        addNav(nav, "vehicles", "Fordon");
-        addNav(nav, "bookings", "Bokningar");
-        addNav(nav, "workorders", "Arbetsorder");
-        addNav(nav, "services", "Tjänster");
-        addNav(nav, "mechanics", "Mekaniker");
-        addNav(nav, "invoices", "Fakturor");
-        addNav(nav, "payments", "Betalningar");
 
-        Region gap = new Region();
-        VBox.setVgrow(gap, Priority.ALWAYS);
+        VBox groups = new VBox(2);
+        addGroup(groups, "Kunder", navItem("customers", "Visa kunder"));
+        addGroup(groups, "Fordon", navItem("vehicles", "Visa fordon"));
+        addGroup(groups, "Bokningar", navItem("bookings", "Visa bokningar"));
+        addGroup(groups, "Verkstad",
+                navItem("services", "Visa tjänster"),
+                navItem("mechanics", "Visa mekaniker"),
+                navItem("workorders", "Visa arbetsorder"));
+        addGroup(groups, "Ekonomi",
+                navItem("invoices", "Visa fakturor"),
+                navItem("payments", "Visa betalningar"));
+        nav.getChildren().add(groups);
+
+        ScrollPane navScroll = new ScrollPane(nav);
+        navScroll.setFitToWidth(true);
+        navScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        navScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        navScroll.setStyle("-fx-background-color: transparent;");
+        VBox.setVgrow(navScroll, Priority.ALWAYS);
 
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(236);
-        sidebar.getChildren().addAll(brandRow, navLabel, nav, gap, buildDrift());
+        sidebar.setMinWidth(200);
+        // Ingen spacer behövs: navScroll växer och drift-rutan ligger kvar i botten,
+        // så sidofältet och innehållet alltid har samma höjd.
+        sidebar.getChildren().addAll(brandRow, navScroll, buildDrift());
         return sidebar;
+    }
+
+    /** En navigeringspost i en grupp. */
+    private static final class NavSpec {
+        final String key;
+        final String label;
+        NavSpec(String key, String label) { this.key = key; this.label = label; }
+    }
+
+    private static NavSpec navItem(String key, String label) {
+        return new NavSpec(key, label);
+    }
+
+    /**
+     * En kollapsbar meny grupp. Rubriken är klickbar och fäller ihop posterna
+     * (managed=false så de inte tar plats när de är dolda).
+     */
+    private void addGroup(VBox parent, String title, NavSpec... items) {
+        Label t = new Label(title.toUpperCase());
+        t.getStyleClass().add("side-label");
+        Label chev = new Label("\u25BE");
+        chev.getStyleClass().add("side-label");
+
+        Region spr = new Region();
+        HBox.setHgrow(spr, Priority.ALWAYS);
+
+        HBox head = new HBox(6, t, spr, chev);
+        head.setPadding(new Insets(10, 12, 4, 14));
+        head.setCursor(Cursor.HAND);
+
+        VBox list = new VBox(2);
+        for (NavSpec s : items) {
+            addNav(list, s.key, s.label);
+        }
+
+        head.setOnMouseClicked(e -> {
+            boolean show = !list.isVisible();
+            list.setVisible(show);
+            list.setManaged(show);
+            chev.setText(show ? "\u25BE" : "\u25B8");
+        });
+
+        parent.getChildren().add(new VBox(1, head, list));
     }
 
     private VBox buildDrift() {

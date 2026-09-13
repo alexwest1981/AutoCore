@@ -1,0 +1,475 @@
+/*
+ * components.css — delat komponentlager för alla fem teman.
+ *
+ * VARFÖR: temats färgfil (azure.css m.fl.) sätter tokens och färg, men saknade
+ * stil för flera element som v0-designerna faktiskt använder: stapeldiagram,
+ * donut, KPI-ikon, snabbåtgärder, filter/länk/notis, tabell, flikar,
+ * beläggningsring, skuggor och ikonrutor.
+ *
+ * Den här filen täcker de elementen med ENBART -wac-*-tokens, så samma regler
+ * fungerar i alla fem färgscheman. Den laddas EFTER temats fil (se ThemeManager)
+ * och rör därför inte temats egna klassregler.
+ *
+ * VIKTIGT OM VÄLJARE: JavaFX har inga HTML-taggar. Designernas `strong`, `span`,
+ * `b`, `i`, `th`, `td` och `:nth-child(...)` kan INTE matchas och är därför
+ * borttagna i stället för att ligga kvar som död CSS. Java-sidan måste sätta
+ * klass i stället:
+ *
+ *     <div class="status-row"><strong>Oljebyte</strong><span>14:20</span></div>
+ *     ->  HBox rad = new HBox(); rad.getStyleClass().add("status-row");
+ *         Label t = new Label("Oljebyte"); t.getStyleClass().add("srow-title");
+ *         Label s = new Label("14:20");    s.getStyleClass().add("srow-sub");
+ *
+ *     <div class="bar-group"><span class="bar jobs"></span><small>V1</small></div>
+ *     ->  bar.getStyleClass().addAll("bar", "jobs");
+ *         etikett.getStyleClass().add("bar-label");
+ */
+
+/* ============================================================
+   1. KORT — designernas namn på samma sak
+   ============================================================ */
+.metric-card, .kpi-card, .main-card, .activity-card, .chart-card,
+.occupancy-card, .feature-card, .quick-card, .panel {
+    -fx-background-color: -wac-card;
+    -fx-background-radius: 12;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 18;
+}
+
+/* ============================================================
+   2. KPI — värde, etikett, trend och ikon
+   ============================================================ */
+.kpi-grid, .metric-grid, .action-grid, .activity-grid, .quick-grid {
+    -fx-hgap: 14;
+    -fx-vgap: 14;
+    -fx-spacing: 14;
+}
+.metric-label, .kpi-label, .muted-text, .panel-sub {
+    -fx-text-fill: -wac-muted;
+}
+.metric-value, .kpi-value, .payment-total, .occupancy-value {
+    -fx-text-fill: -wac-text;
+    -fx-font-size: 27px;
+    -fx-font-weight: bold;
+}
+.kpi-value-small, .metric-value-small {
+    -fx-font-size: 13px;
+    -fx-text-fill: -wac-muted;
+}
+.trend, .kpi-trend, .metric-percent {
+    -fx-text-fill: -wac-success;
+    -fx-font-size: 12px;
+}
+.trend-down {
+    -fx-text-fill: -wac-danger;
+}
+
+/* Ikonrutan: rundad ruta med accentfärgad glasyta */
+.kpi-icon, .metric-icon, .icon-tile, .feature-icon, .quick-icon {
+    -fx-background-color: -wac-accent-soft;
+    -fx-background-radius: 10;
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-max-width: 38;
+    -fx-max-height: 38;
+    -fx-alignment: CENTER;
+    -fx-text-fill: -wac-accent;
+    -fx-font-size: 16px;
+}
+.icon-tile-amber { -fx-background-color: -wac-warn-soft;    -fx-text-fill: -wac-warn; }
+.icon-tile-blue  { -fx-background-color: -wac-info-soft;    -fx-text-fill: -wac-info; }
+.icon-tile-lime  { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
+.icon-tile-pale  { -fx-background-color: -wac-surface;      -fx-text-fill: -wac-muted; }
+
+/* Ring och beläggningsmätare */
+.metric-ring, .donut-ring, .donut {
+    -fx-background-color: transparent;
+    -fx-border-color: -wac-accent;
+    -fx-border-width: 8;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-min-width: 92;
+    -fx-min-height: 92;
+    -fx-max-width: 92;
+    -fx-max-height: 92;
+    -fx-alignment: CENTER;
+}
+.metric-pips, .occupancy-track, .progress-track, .drift-track {
+    -fx-background-color: -wac-drift-track;
+    -fx-background-radius: 999;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+}
+.occupancy-fill, .progress-fill, .drift-fill, .metric-pips-fill {
+    -fx-background-color: -wac-accent;
+    -fx-background-radius: 999;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+}
+.metric-pips-empty { -fx-background-color: -wac-line; }
+
+/* ============================================================
+   3. STAPELDIAGRAM — saknades helt i alla teman
+   ============================================================ */
+.chart, .big-chart, .bars, .chart-bars {
+    -fx-background-color: transparent;
+    -fx-min-height: 150;
+    -fx-pref-height: 190;
+}
+.chart-grid, .gridlines, .chart-lines {
+    -fx-border-color: -wac-line;
+    -fx-border-width: 0 0 1 0;
+    -fx-min-height: 1;
+}
+.bar-group, .chart-bar {
+    -fx-alignment: BOTTOM_CENTER;
+    -fx-spacing: 4;
+    -fx-max-width: Infinity;
+}
+.bar {
+    -fx-background-color: -wac-surface;
+    -fx-background-radius: 6 6 0 0;
+    -fx-min-width: 14;
+    -fx-pref-width: 22;
+}
+.bar.jobs, .bar-accent {
+    -fx-background-color: -wac-accent;
+}
+.bar.revenue, .bar-dark {
+    -fx-background-color: -wac-drift;
+}
+.bar-label {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 10px;
+}
+
+/* Förklaringar */
+.chart-legend, .legend {
+    -fx-spacing: 12;
+    -fx-alignment: CENTER_LEFT;
+}
+.legend-dot, .legend-mark {
+    -fx-background-radius: 999;
+    -fx-min-width: 9;
+    -fx-min-height: 9;
+    -fx-max-width: 9;
+    -fx-max-height: 9;
+    -fx-background-color: -wac-accent;
+}
+.legend-dark { -fx-background-color: -wac-drift; }
+.legend-lime { -fx-background-color: -wac-accent; }
+.legend-text, .chart-legend-text {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+}
+
+/* ============================================================
+   4. DONUT (v2)
+   ============================================================ */
+.donut-wrap {
+    -fx-alignment: CENTER;
+    -fx-padding: 8;
+}
+.donut-value {
+    -fx-text-fill: -wac-text;
+    -fx-font-size: 25px;
+    -fx-font-weight: bold;
+}
+.donut-label {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 11px;
+}
+
+/* ============================================================
+   5. LISTOR OCH TABELLER
+   ============================================================ */
+.status-row, .booking-row, .activity-row, .activity-item, .srow {
+    -fx-padding: 10;
+    -fx-background-radius: 10;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 10;
+}
+.status-row:hover, .booking-row:hover, .activity-row:hover,
+.activity-item:hover, .srow:hover {
+    -fx-background-color: -wac-surface;
+}
+.srow-title, .row-title {
+    -fx-text-fill: -wac-text;
+}
+.srow-sub, .row-sub, .booking-row-sub {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+}
+.activity-list {
+    -fx-spacing: 2;
+}
+
+.activity-icon {
+    -fx-background-color: -wac-surface;
+    -fx-background-radius: 999;
+    -fx-min-width: 30;
+    -fx-min-height: 30;
+    -fx-max-width: 30;
+    -fx-max-height: 30;
+    -fx-alignment: CENTER;
+    -fx-text-fill: -wac-muted;
+}
+.activity-icon-positive { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
+
+/* Statusprickar — både temats namn (.sdot) och designernas (.status-dot) */
+.status-dot, .sdot, .notification-dot {
+    -fx-background-radius: 999;
+    -fx-min-width: 8;
+    -fx-min-height: 8;
+    -fx-max-width: 8;
+    -fx-max-height: 8;
+    -fx-background-color: -wac-muted;
+}
+.status-dot.success, .sdot.success { -fx-background-color: -wac-success; }
+.status-dot.info,    .sdot.info    { -fx-background-color: -wac-info; }
+.status-dot.warn,    .sdot.warn    { -fx-background-color: -wac-warn; }
+.status-dot.danger,  .sdot.danger  { -fx-background-color: -wac-danger; }
+.notification-dot { -fx-background-color: -wac-danger; }
+
+/* Tabell (temats TableView + v2:s orders-table) */
+.orders-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.orders-table .column-header-background,
+.orders-table .filler {
+    -fx-background-color: transparent;
+}
+.orders-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 6;
+}
+.orders-table .column-header .label {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 11px;
+}
+.orders-table .table-cell {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 9 6;
+}
+.orders-table .table-row-cell {
+    -fx-background-color: transparent;
+}
+.orders-table .table-row-cell .table-cell-split { -fx-background-color: transparent; }
+.orders-table .table-row-cell:selected .table-cell { -fx-text-fill: -wac-on-accent; }
+.cell-sub { -fx-text-fill: -wac-muted; -fx-font-size: 11px; }
+
+/* ============================================================
+   6. KNAPPAR, LÄNKAR, FILTER OCH NOTISER
+   ============================================================ */
+.primary-button, .create-button, .new-button, .wide-action, .quick-action {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-background-radius: 10;
+    -fx-padding: 9 16;
+    -fx-cursor: hand;
+}
+.primary-button:hover, .create-button:hover, .new-button:hover,
+.wide-action:hover, .quick-action:hover {
+    -fx-background-color: -wac-accent-hover;
+}
+.primary-button:pressed, .create-button:pressed, .wide-action:pressed {
+    -fx-background-color: -wac-accent-pressed;
+}
+.secondary-button, .filter-button, .more-button {
+    -fx-background-color: -wac-surface;
+    -fx-text-fill: -wac-text;
+    -fx-background-radius: 10;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 8 14;
+    -fx-cursor: hand;
+}
+.secondary-button:hover, .filter-button:hover, .more-button:hover {
+    -fx-background-color: -wac-accent-soft;
+    -fx-border-color: -wac-accent;
+}
+.text-link {
+    -fx-text-fill: -wac-accent;
+    -fx-cursor: hand;
+}
+.text-link:hover { -fx-underline: true; }
+
+.notice, .hero-note {
+    -fx-background-color: -wac-accent-soft;
+    -fx-background-radius: 10;
+    -fx-padding: 10 14;
+    -fx-text-fill: -wac-accent;
+    -fx-font-size: 12px;
+}
+
+/* ============================================================
+   7. IKONRUTOR, CHIPS OCH PROFIL
+   ============================================================ */
+.profile-chip, .year-select, .small-select {
+    -fx-background-color: -wac-surface;
+    -fx-background-radius: 999;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-padding: 6 12;
+    -fx-text-fill: -wac-text;
+}
+.header-icon, .top-icon, .side-icon, .quick-arrow {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 15px;
+}
+.side-icon-active { -fx-text-fill: -wac-accent; }
+.avatar, .side-avatar, .rail-avatar {
+    -fx-background-color: -wac-accent;
+    -fx-background-radius: 999;
+    -fx-text-fill: -wac-on-accent;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-alignment: CENTER;
+}
+.avatar-letter, .letter {
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+/* ============================================================
+   8. FLIKAR (v3)
+   ============================================================ */
+.tabs {
+    -fx-spacing: 6;
+    -fx-background-color: -wac-surface;
+    -fx-background-radius: 999;
+    -fx-padding: 4;
+}
+.tabs button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-muted;
+    -fx-background-radius: 999;
+    -fx-padding: 7 14;
+    -fx-cursor: hand;
+}
+.tabs .tab-active {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+/* ============================================================
+   9. SIDOFÄLT OCH NAVIGERING — alias mellan designerna
+   ============================================================ */
+.bg-rail, .bg-sidebar, .sidebar-rail { -fx-background-color: -wac-sidebar; }
+.sidebar-logo, .brand-mark {
+    -fx-background-color: -wac-accent;
+    -fx-background-radius: 10;
+    -fx-text-fill: -wac-on-accent;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-max-width: 34;
+    -fx-max-height: 34;
+    -fx-alignment: CENTER;
+    -fx-font-weight: bold;
+}
+.side-link, .side-overview, .side-current, .fleet-nav, .nav-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-text-fill: -wac-side-text;
+    -fx-padding: 9 12;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_LEFT;
+}
+.side-link:hover, .side-overview:hover, .fleet-nav:hover, .nav-item:hover {
+    -fx-background-color: -wac-side-hover;
+}
+.side-current, .fleet-nav-active, .nav-item.selected {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+.nav-group-title, .side-label, .nav-group-head {
+    -fx-text-fill: -wac-side-muted;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.nav-group-head {
+    -fx-padding: 10 12 4 14;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+}
+.nav-group-head:hover { -fx-background-color: -wac-side-hover; }
+
+/* ============================================================
+   10. SKUGGOR OCH SEKTIONSRUBRIKER
+   ============================================================ */
+.shadow-soft {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 10, 0.10, 0, 2);
+}
+.shadow-panel, .shadow-shell {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 24, 0.12, 0, 8);
+}
+.section-head, .card-heading { -fx-padding: 0 0 12 0; }
+.section-title, .panel-title, .section-heading, .card-heading-title {
+    -fx-text-fill: -wac-text;
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+}
+.section-subtitle, .card-heading-sub, .header-sub {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+}
+.eyebrow {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.page-title {
+    -fx-text-fill: -wac-text;
+    -fx-font-size: 25px;
+    -fx-font-weight: bold;
+}
+.muted, .muted-text { -fx-text-fill: -wac-muted; }
+
+/* ============================================================
+   11. AKTIVITETSMÄRKEN OCH DIAGRAMVARIANTER (v3)
+   ============================================================ */
+.activity-badge {
+    -fx-background-color: -wac-surface;
+    -fx-text-fill: -wac-muted;
+    -fx-background-radius: 999;
+    -fx-padding: 3 9;
+    -fx-font-size: 11px;
+}
+.activity-badge.blue   { -fx-background-color: -wac-info-soft;    -fx-text-fill: -wac-info; }
+.activity-badge.green  { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
+.activity-badge.yellow { -fx-background-color: -wac-warn-soft;    -fx-text-fill: -wac-warn; }
+
+.chart-dark  { -fx-background-color: -wac-drift; }
+.chart-lime  { -fx-background-color: -wac-accent; }
+.metric-top, .hero-row, .feature-copy, .card-heading, .occupancy-head {
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+.quick-card-title, .card-heading-title { -fx-text-fill: -wac-text; -fx-font-weight: bold; }
+.quick-card-sub, .card-heading-sub, .metric-card-sub {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+}
+
+/* ============================================================
+   12. MOBILMENY (v3)
+   ============================================================ */
+.mobile-menu, .sidebar-close {
+    -fx-background-color: -wac-surface;
+    -fx-text-fill: -wac-text;
+    -fx-background-radius: 10;
+    -fx-padding: 8 12;
+    -fx-cursor: hand;
+}

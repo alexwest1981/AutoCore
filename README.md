@@ -21,5 +21,9 @@ JavaFX-gränssnittet (AutoCore, tema *Azure*):
 - JavaFX-gränssnitt (GUI)
 - Konsolgränssnitt (CLI)
 
+## Design & Styleguide
+Projektets visuella riktlinjer, komponentbibliotek och de 5 färgteman finns sammanställda i den interaktiva styleguiden:
+- [STYLEGUIDE.html](STYLEGUIDE.html) (öppnas i valfri webbläsare för live-förhandsgranskning och tematester)
+
 ## Utvecklingsteam
 Grupp C: Alex, Lucas, Daniel, Vivianne

@@ -2,6 +2,9 @@
 .idea/
 *.iml
 .vscode/
+.project
+.classpath
+run.sh
 
 # Build output
 out/
