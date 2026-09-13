@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Button?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.wac.autocore.gui.booking.BookingController">
+
+    <Label text="Bookings" />
+    <TableView fx:id="bookingTable">
+
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID"/>
+            <TableColumn fx:id="vehicleIdColumn" text="Vehicle-ID"/>
+            <TableColumn fx:id="dateColumn" text="Date"/>
+            <TableColumn fx:id="descriptionColumn" text="Description"/>
+            <TableColumn fx:id="statusColumn" text="Status"/>
+        </columns>
+
+    </TableView>
+
+    <TextField fx:id="vehicleIdField" promptText="Vehicle ID"/>
+    <DatePicker fx:id="datePicker" promptText="Date"/>
+    <TextField fx:id="descriptionField" promptText="Description"/>
+    <Button text="Create booking" onAction="#handleCreateBooking"/>
+
+
+</VBox>
+
