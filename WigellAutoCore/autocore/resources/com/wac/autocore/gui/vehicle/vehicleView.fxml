@@ -14,12 +14,21 @@
     <TableView fx:id="vehicleTableView">
         <columns>
             <TableColumn fx:id="vehicleIdColumn" text="ID"/>
-            <TableColumn fx:id="vehicleRegistrationNumberColumn" text="Registrerings Nummer"/>
-            <TableColumn fx:id="vehicleBrandColumn" text="Märke"/>
-            <TableColumn fx:id="vehicleModelColumn" text="Modell"/>
-            <TableColumn fx:id="vehicleYearColumn" text="År"/>
-            <TableColumn fx:id="vehicleCustomerIdColumn" text="Kund ID"/>
+            <TableColumn fx:id="vehicleRegistrationNumberColumn" text="Registration number"/>
+            <TableColumn fx:id="vehicleBrandColumn" text="Brand"/>
+            <TableColumn fx:id="vehicleModelColumn" text="Model"/>
+            <TableColumn fx:id="vehicleYearColumn" text="Year"/>
+            <TableColumn fx:id="vehicleCustomerIdColumn" text="Customer Id"/>
         </columns>
     </TableView>
+
+    <TextField fx:id="registrationNumberField" promptText="Registration number"/>
+    <TextField fx:id="brandField" promptText="Brand"/>
+    <TextField fx:id="modelField" promptText="Model"/>
+    <TextField fx:id="yearField" promptText="Year"/>
+    <TextField fx:id="customerIdField" promptText="Customer Id"/>
+
+    <Button text="Save vehicle" onAction="#handleCreateVehicle"/>
+    <Label fx:id="statusLabel"/>
 
 </VBox>
