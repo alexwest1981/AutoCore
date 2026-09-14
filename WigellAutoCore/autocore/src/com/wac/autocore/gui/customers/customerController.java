@@ -16,7 +16,7 @@ import java.util.List;
 
 public class customerController {
 
-    GarageSystem garageSystem;
+    private final GarageSystem garageSystem = new GarageSystem();
 
     @FXML
     private TableView<Customer> customerListView;
