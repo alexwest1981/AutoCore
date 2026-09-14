@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.wac.autocore.gui.mechanic.MechanicController">
+    <Label text="Mechanics" />
+    <CheckBox fx:id="availableOnlyCheckBox" text="Show only available" />
+    <TableView fx:id="mechanicTable">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID"/>
+            <TableColumn fx:id="nameColumn" text="Name"/>
+            <TableColumn fx:id="phoneColumn" text="Phone"/>
+            <TableColumn fx:id="specializationColumn" text="Specialization"/>
+            <TableColumn fx:id="availableColumn" text="Available"/>
+        </columns>
+    </TableView>
+</VBox>
