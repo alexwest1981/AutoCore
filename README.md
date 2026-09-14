@@ -17,9 +17,40 @@ JavaFX-gränssnittet (AutoCore, tema *Azure*):
 ![AutoCore JavaFX-gränssnitt](WigellAutoCore/docs/autocore-javafx-gui.png)
 
 ## Teknisk stack
-- Java
+- Java (JDK 8, BellSoft Liberica Full med JavaFX)
 - JavaFX-gränssnitt (GUI)
 - Konsolgränssnitt (CLI)
+
+## Kom igång & Synka med Develop
+
+För att synka din lokala miljö med den gemensamma koden i `develop`:
+
+```bash
+# 1. Se till att du inte har osparade ändringar, växla sedan till develop
+git checkout develop
+
+# 2. Hämta och slå ihop alla senaste ändringar från teamet
+git pull origin develop
+```
+
+> **Jobbar du i en egen feature-branch?**  
+> Uppdatera din branch med det senaste från `develop`:
+> ```bash
+> git checkout din-feature-branch
+> git merge develop
+> ```
+
+### Köra och testa applikationen
+
+* **Huvudapplikationen (AutoCore GUI):** Kör `Main.java` i IntelliJ (eller via terminal: `./run.sh`)
+* **Konsolversionen (CLI):** Kör `ConsoleApp.java` (eller via terminal: `./run.sh ConsoleApp`)
+* **Modulvisa testappar:**
+  - **Bokningar:** `com.wac.autocore.gui.booking.TestBookingApp`
+  - **Arbetsordrar:** `com.wac.autocore.gui.workorder.TestWorkOrderApp`
+  - **Fakturor:** `com.wac.autocore.gui.invoice.TestInvoiceApp`
+  - **Betalningar:** `com.wac.autocore.gui.payment.TestPaymentApp`
+  - **Mekaniker:** `com.wac.autocore.gui.mechanic.TestMechanicApp`
+  - **Tjänster:** `com.wac.autocore.gui.serviceItem.TestServiceItemApp`
 
 ## Design & Styleguide
 Projektets visuella riktlinjer, komponentbibliotek och de 5 färgteman finns sammanställda i den interaktiva styleguiden:
