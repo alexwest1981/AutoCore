@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.wac.autocore.gui.workorder.WorkOrderController">
+
+    <Label text="Work Orders" />
+    <TableView fx:id="workOrderTable">
+
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID"/>
+            <TableColumn fx:id="bookingIdColumn" text="Booking-ID"/>
+            <TableColumn fx:id="mechanicIdColumn" text="Mechanic-ID"/>
+            <TableColumn fx:id="serviceItemIdsColumn" text="Services"/>
+            <TableColumn fx:id="statusColumn" text="Status"/>
+        </columns>
+
+    </TableView>
+
+    <Label text="Create work order"/>
+    <TextField fx:id="bookingIdField" promptText="Booking ID"/>
+    <TextField fx:id="mechanicIdField" promptText="Mechanic ID"/>
+    <TextField fx:id="serviceItemIdsField" promptText="Service IDs (e.g. 1,3,4)"/>
+    <Button text="Create work order" onAction="#handleCreateWorkOrder"/>
+
+    <Label text="Update status"/>
+    <TextField fx:id="workOrderIdField" promptText="Work Order ID"/>
+    <HBox spacing="10">
+        <Button text="Start work order" onAction="#handleStartWorkOrder"/>
+        <Button text="Complete work order" onAction="#handleCompleteWorkOrder"/>
+    </HBox>
+
+</VBox>
