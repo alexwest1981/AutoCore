@@ -45,6 +45,8 @@ git pull origin develop
 * **Huvudapplikationen (AutoCore GUI):** Kör `Main.java` i IntelliJ (eller via terminal: `./run.sh`)
 * **Konsolversionen (CLI):** Kör `ConsoleApp.java` (eller via terminal: `./run.sh ConsoleApp`)
 * **Modulvisa testappar:**
+  - **Kunder:** `com.wac.autocore.gui.customers.TestCustomer`
+  - **Fordon:** `com.wac.autocore.gui.vehicle.VehicleTest`
   - **Bokningar:** `com.wac.autocore.gui.booking.TestBookingApp`
   - **Arbetsordrar:** `com.wac.autocore.gui.workorder.TestWorkOrderApp`
   - **Fakturor:** `com.wac.autocore.gui.invoice.TestInvoiceApp`
