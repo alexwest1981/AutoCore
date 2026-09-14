@@ -1,6 +1,7 @@
 package com.wac.autocore.gui.vehicle;
 
 import com.wac.autocore.data.Database;
+import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
 import javafx.collections.FXCollections;
@@ -16,7 +17,7 @@ import java.util.List;
 
 public class vehicleController {
 
-    GarageSystem garageSystem;
+    private final GarageSystem garageSystem = new GarageSystem();
     @FXML
     private TableView<Vehicle> vehicleTableView;
 
@@ -52,10 +53,19 @@ public class vehicleController {
         String brand = brandField.getText().trim();
         String model = modelField.getText().trim();
         int year = Integer.parseInt(yearField.getText().trim());
-        int customerId = Integer.parseInt(customerIdField.getText().trim());
+        String customerId = customerIdField.getText().trim();
 
+    if(customerId.isEmpty()) {
+    statusLabel.setText("Write in a customer id");
+    }
         try {
-            Vehicle vehicle = garageSystem.createVehicle(registrationNumber, brand, model, year, customerId);
+            int customerInput = Integer.parseInt(customerId);
+
+            Vehicle vehicle = garageSystem.createVehicle(registrationNumber, brand, model, year, customerInput);
+            if(vehicle == null) {
+                statusLabel.setText("Could not register vehicle. Customer id does not exist.");
+                return;
+            }
             statusLabel.setText("Vehicle " + vehicle  + " created!");
             clearFields();
         }
