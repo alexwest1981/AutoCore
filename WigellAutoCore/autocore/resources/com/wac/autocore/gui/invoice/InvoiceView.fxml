@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.wac.autocore.gui.invoice.InvoiceController">
+
+    <Label text="Invoices" />
+    <TableView fx:id="invoiceTable">
+
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID"/>
+            <TableColumn fx:id="workOrderIdColumn" text="Work-ID"/>
+            <TableColumn fx:id="dateColumn" text="Date"/>
+            <TableColumn fx:id="amountColumn" text="Amount"/>
+            <TableColumn fx:id="discountColumn" text="Discount"/>
+            <TableColumn fx:id="totalAmountColumn" text="Total Amount"/>
+            <TableColumn fx:id="statusColumn" text="Status"/>
+        </columns>
+
+    </TableView>
+
+    <TextField fx:id="workOrderIdField" promptText="Work Order ID"/>
+    <TextField fx:id="discountCodeField" promptText="Discount code (optional)"/>
+    <Button text="Create invoice" onAction="#handleCreateInvoice"/>
+
+</VBox>
