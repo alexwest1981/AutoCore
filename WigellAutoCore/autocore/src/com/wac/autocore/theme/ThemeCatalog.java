@@ -10,7 +10,7 @@ import java.util.List;
  */
 public final class ThemeCatalog {
 
-    public static final String DEFAULT_SLUG = "azure";
+    public static final String DEFAULT_SLUG = "default";
 
     public static final class Theme {
         public final String slug;
@@ -27,11 +27,14 @@ public final class ThemeCatalog {
     private static final List<Theme> THEMES = new ArrayList<Theme>();
     static {
         Collections.addAll(THEMES,
-            new Theme("azure", "Azure", "/com/wac/autocore/theme/themes/azure/azure.css", false, "#377fe2"),
-            new Theme("classic", "Classic", "/com/wac/autocore/theme/themes/classic/classic.css", false, "#c7d320"),
-            new Theme("emerald", "Emerald", "/com/wac/autocore/theme/themes/emerald/emerald.css", false, "#159e72"),
-            new Theme("night", "Night", "/com/wac/autocore/theme/themes/night/night.css", true, "#13c9d5"),
-            new Theme("volt", "Volt", "/com/wac/autocore/theme/themes/volt/volt.css", false, "#e6ff43"));
+            new Theme("default", "Default (Plain JavaFX)", "/com/wac/autocore/theme/themes/default/default.css", false, "#aaaaaa"),
+            new Theme("light",   "Light",                  "/com/wac/autocore/theme/themes/light/light.css",     false, "#4b5563"),
+            new Theme("dark",    "Dark",                   "/com/wac/autocore/theme/themes/dark/dark.css",       true,  "#a1a1aa"),
+            new Theme("azure",   "Azure",                  "/com/wac/autocore/theme/themes/azure/azure.css",    false, "#377fe2"),
+            new Theme("classic", "Classic",                "/com/wac/autocore/theme/themes/classic/classic.css",false, "#c7d320"),
+            new Theme("emerald", "Emerald",                "/com/wac/autocore/theme/themes/emerald/emerald.css",false, "#159e72"),
+            new Theme("night",   "Night",                  "/com/wac/autocore/theme/themes/night/night.css",    true,  "#13c9d5"),
+            new Theme("volt",    "Volt",                   "/com/wac/autocore/theme/themes/volt/volt.css",      false, "#e6ff43"));
     }
 
     public static List<Theme> all() {

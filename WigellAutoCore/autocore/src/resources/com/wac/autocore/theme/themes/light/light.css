@@ -1,0 +1,224 @@
+/* ============================================================
+ * Theme : Light
+ * Mode  : light
+ * A clean, neutral light-mode theme without a strong accent.
+ * ============================================================ */
+
+.root {
+    -wac-page:           #f0f0f0;
+    -wac-shell:          #f7f7f7;
+    -wac-card:           #ffffff;
+    -wac-header:         #ffffff;
+    -wac-sidebar:        #ffffff;
+    -wac-side-text:      #1a1a1a;
+    -wac-side-muted:     #8a8a8a;
+    -wac-side-hover:     #ebebeb;
+    -wac-text:           #1a1a1a;
+    -wac-ink:            #1a1a1a;
+    -wac-muted:          #6b7280;
+    -wac-line:           #dde1e5;
+    -wac-accent:         #4b5563;
+    -wac-accent-hover:   #374151;
+    -wac-accent-pressed: #1f2937;
+    -wac-accent-soft:    #f3f4f6;
+    -wac-on-accent:      #ffffff;
+    -wac-accent2:        #6b7280;
+    -wac-ring:           #4b5563;
+    -wac-success:        #16a34a;
+    -wac-success-soft:   #dcfce7;
+    -wac-info:           #0284c7;
+    -wac-info-soft:      #e0f2fe;
+    -wac-warn:           #d97706;
+    -wac-warn-soft:      #fef3c7;
+    -wac-danger:         #dc2626;
+    -wac-danger-soft:    #fee2e2;
+    -wac-drift:          #1a1a1a;
+    -wac-drift-text:     #ffffff;
+    -wac-drift-muted:    #9ca3af;
+    -wac-drift-track:    #374151;
+    -wac-bg:             #f0f0f0;
+    -wac-surface:        #f7f7f7;
+    -fx-font-family:     "Arial";
+    -fx-font-size:       13px;
+}
+
+.root, .scene {
+    -fx-background-color: -wac-page;
+}
+
+/* ---- Generic controls ---- */
+Label, Text { -fx-text-fill: -wac-text; }
+.muted, .page-sub, .panel-sub { -fx-text-fill: -wac-muted; }
+.small { -fx-font-size: 11px; }
+
+Button, .button {
+    -fx-background-color: -wac-card;
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 7px 14px;
+    -fx-cursor: hand;
+}
+Button:hover { -fx-background-color: derive(-wac-card, -4%); }
+Button:pressed { -fx-background-color: derive(-wac-card, -8%); }
+
+Button.primary, .button.primary {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-border-color: transparent;
+}
+Button.primary:hover { -fx-background-color: -wac-accent-hover; }
+Button.primary:pressed { -fx-background-color: -wac-accent-pressed; }
+
+Button.ghost, .button.ghost {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+Button.ghost:hover { -fx-background-color: -wac-side-hover; }
+
+TextField, PasswordField, TextArea, ComboBox {
+    -fx-background-color: -wac-card;
+    -fx-text-fill: -wac-text;
+    -fx-prompt-text-fill: -wac-muted;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 6px 10px;
+}
+TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused {
+    -fx-border-color: -wac-ring;
+}
+
+ScrollPane { -fx-background-color: transparent; }
+ScrollPane .viewport { -fx-background-color: transparent; }
+ScrollBar .track { -fx-background-color: transparent; }
+ScrollBar .thumb { -fx-background-color: derive(-wac-line, -15%); -fx-background-radius: 4; }
+ScrollBar .increment-button, ScrollBar .decrement-button { -fx-background-color: transparent; }
+ScrollBar .increment-arrow, ScrollBar .decrement-arrow { -fx-background-color: -wac-muted; }
+
+/* ---- Lists / tables ---- */
+ListView, TableView { -fx-background-color: transparent; -fx-border-color: transparent; }
+ListView .list-cell, TableView .table-row-cell { -fx-background-color: transparent; -fx-text-fill: -wac-text; }
+ListView .list-cell:filled:hover, TableView .table-row-cell:hover { -fx-background-color: -wac-side-hover; }
+ListView .list-cell:selected, TableView .table-row-cell:selected {
+    -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-accent;
+}
+TableView .column-header, TableView .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent -wac-line transparent;
+}
+TableView .column-header .label {
+    -fx-text-fill: -wac-muted; -fx-font-size: 11px; -fx-font-weight: bold;
+}
+TableView .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
+TableView .table-row-cell:filled { -fx-background-color: transparent; }
+
+/* ---- App shell ---- */
+.stage { -fx-background-color: -wac-page; }
+
+.shell {
+    -fx-background-color: -wac-shell;
+    -fx-background-radius: 20;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+
+.sidebar {
+    -fx-background-color: -wac-sidebar;
+    -fx-background-radius: 20 0 0 20;
+    -fx-padding: 24px 14px 18px 18px;
+}
+.col { -fx-background-color: -wac-shell; -fx-background-radius: 0 20 20 0; }
+.topbar {
+    -fx-background-color: -wac-header;
+    -fx-background-radius: 0 20 0 0;
+    -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-padding: 10px 22px;
+}
+
+.brand-row { -fx-alignment: CENTER_LEFT; }
+.brand-mark { -fx-background-color: -wac-accent; -fx-background-radius: 999; }
+.brand-mark .letter, .avatar .letter { -fx-text-fill: -wac-on-accent; }
+.brand-title { -fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: -wac-side-text; }
+.brand-sub { -fx-font-size: 11px; -fx-text-fill: -wac-side-muted; }
+.side-label { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: -wac-side-muted; }
+
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-text-fill: -wac-side-text;
+    -fx-padding: 9px 14px;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER_LEFT;
+}
+.nav-item:hover { -fx-background-color: -wac-side-hover; }
+.nav-item.selected {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+}
+
+.avatar { -fx-background-color: -wac-accent; -fx-background-radius: 999; }
+
+.drift {
+    -fx-background-color: -wac-drift;
+    -fx-background-radius: 8;
+    -fx-padding: 14px 16px;
+}
+.drift-title { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -wac-drift-text; }
+.drift-text { -fx-font-size: 11px; -fx-text-fill: -wac-drift-muted; }
+.drift-track { -fx-background-color: -wac-drift-track; -fx-background-radius: 999; }
+.drift-fill { -fx-background-color: -wac-accent2; -fx-background-radius: 999; }
+
+.search { -fx-background-radius: 999; -fx-background-color: derive(-wac-header, -4%); -fx-padding: 8px 16px; -fx-border-color: transparent; }
+.search:focused { -fx-border-color: -wac-ring; }
+.theme-pick { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 2px 6px; }
+.theme-pick .label { -fx-text-fill: -wac-side-text; }
+
+.pages { -fx-padding: 22px 26px 26px 26px; -fx-background-color: -wac-shell; }
+.page-title { -fx-font-size: 27px; -fx-font-weight: bold; -fx-text-fill: -wac-text; }
+.eyebrow { -fx-font-size: 11px; -fx-text-fill: -wac-muted; }
+
+.panel, .kpi, .metric-card {
+    -fx-background-color: -wac-card;
+    -fx-background-radius: 12;
+    -fx-padding: 18px;
+}
+.panel-title { -fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -wac-text; }
+.panel-sub { -fx-font-size: 11px; -fx-text-fill: -wac-muted; }
+
+.kpi-value { -fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: -wac-text; }
+.kpi-label { -fx-font-size: 12px; -fx-text-fill: -wac-muted; }
+.kpi-trend { -fx-font-size: 11px; -fx-font-weight: bold; }
+.kpi-trend.up { -fx-text-fill: -wac-success; }
+.kpi-trend.down { -fx-text-fill: -wac-danger; }
+
+.srow { -fx-alignment: CENTER_LEFT; }
+.sdot { -fx-background-radius: 999; -fx-min-width: 9px; -fx-min-height: 9px; -fx-max-width: 9px; -fx-max-height: 9px; }
+.sdot.success { -fx-background-color: -wac-success; }
+.sdot.info { -fx-background-color: -wac-info; }
+.sdot.warn { -fx-background-color: -wac-warn; }
+.sdot.danger { -fx-background-color: -wac-danger; }
+.srow-title { -fx-text-fill: -wac-text; }
+.srow-sub { -fx-text-fill: -wac-muted; }
+
+.badge, .status {
+    -fx-background-color: derive(-wac-muted, 90%);
+    -fx-text-fill: -wac-muted;
+    -fx-background-radius: 999;
+    -fx-padding: 3px 9px;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
+.badge.info, .status.info { -fx-background-color: -wac-info-soft; -fx-text-fill: -wac-info; }
+.badge.warn, .status.warn { -fx-background-color: -wac-warn-soft; -fx-text-fill: -wac-warn; }
+.badge.danger, .status.danger { -fx-background-color: -wac-danger-soft; -fx-text-fill: -wac-danger; }
+
+TabPane .tab-header-background { -fx-background-color: transparent; }
+TabPane .tab { -fx-background-color: transparent; }
+TabPane .tab:selected { -fx-background-color: -wac-accent-soft; }
+TabPane .tab .tab-label { -fx-text-fill: -wac-muted; }
+TabPane .tab:selected .tab-label { -fx-text-fill: -wac-accent; }

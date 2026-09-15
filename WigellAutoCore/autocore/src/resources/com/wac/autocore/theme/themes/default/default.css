@@ -1,0 +1,53 @@
+/* ============================================================
+ * Theme : Default (Plain JavaFX)
+ * Mode  : system default
+ *
+ * Philosophy: controls (Button, Label, TextField, ListView, …)
+ * are left completely unstyled so JavaFX's built-in Modena
+ * theme shines through.  Only the structural classes that the
+ * app shell relies on for *spacing / layout* are defined here,
+ * so the sidebar, topbar and page canvas keep their expected
+ * positions instead of collapsing together.
+ *
+ * Rules to follow when editing:
+ *   - NO -fx-background-color on controls or shell regions.
+ *   - NO -fx-text-fill, -fx-border-color, -fx-border-radius,
+ *     -fx-background-radius or any colour-token.
+ *   - Only -fx-padding, -fx-pref-width/-height, -fx-spacing,
+ *     -fx-alignment and structural layout properties.
+ * ============================================================ */
+
+/* ---- Sidebar ---- */
+.sidebar {
+    -fx-padding: 24px 14px 18px 18px;
+}
+
+/* ---- Topbar ---- */
+.topbar {
+    -fx-padding: 10px 22px;
+}
+
+/* ---- Page content area ---- */
+.pages {
+    -fx-padding: 22px 26px 26px 26px;
+    -fx-spacing: 18px;
+}
+
+/* ---- Status/drift box at the bottom of the sidebar ---- */
+.drift {
+    -fx-padding: 14px 16px;
+}
+
+/* ---- Panels and cards: just spacing, no chrome ---- */
+.panel, .kpi, .metric-card, .kpi-card, .main-card,
+.activity-card, .chart-card, .occupancy-card,
+.feature-card, .quick-card {
+    -fx-padding: 18px;
+}
+
+/* ---- Grid gaps (FlowPane / TilePane / GridPane wrappers) ---- */
+.kpi-grid, .metric-grid, .action-grid, .activity-grid, .quick-grid {
+    -fx-hgap: 14;
+    -fx-vgap: 14;
+    -fx-spacing: 14;
+}

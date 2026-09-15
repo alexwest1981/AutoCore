@@ -10,8 +10,11 @@ import javafx.scene.Parent;
  *
  * Usage (Java):
  *     Scene scene = new Scene(root);
- *     ThemeManager.applyDefault(scene);       // the locked-in theme
+ *     ThemeManager.applyDefault(scene);       // applies the default theme
  *     // or: ThemeManager.apply(scene, "slug");
+ *
+ * Available slugs: "default" (plain JavaFX), "light", "dark",
+ *                  "azure", "classic", "emerald", "night", "volt".
  *
  * The scene root should carry the style class "root" (add it once):
  *     root.getStyleClass().add("root");
@@ -33,8 +36,14 @@ public final class ThemeManager {
      * Kept here rather than in a single app so that every app using a theme
      * receives the layer automatically. It is placed FIRST in the list so that
      * the theme's own rules win where they overlap.
+     *
+     * NOTE: components.css is intentionally skipped for the "default" theme so
+     * that JavaFX's built-in Modena stylesheet is left completely intact.
      */
     private static final String COMPONENTS = "/com/wac/autocore/theme/components.css";
+
+    /** Slug for the plain-JavaFX theme — no custom CSS is applied at all. */
+    private static final String DEFAULT_PLAIN_SLUG = "default";
 
     private static URL resolveResource(String path) {
         if (path == null) return null;
@@ -56,7 +65,25 @@ public final class ThemeManager {
         if (scene == null) return;
         ThemeCatalog.Theme theme = ThemeCatalog.bySlug(slug);
         if (theme == null) return;
+
+        // Always clear existing stylesheets first.
         scene.getStylesheets().clear();
+
+        if (DEFAULT_PLAIN_SLUG.equals(slug)) {
+            // "default" — skip components.css (which uses -wac-* colour tokens
+            // that Modena doesn't define) but do load the layout-only CSS so the
+            // sidebar, topbar and page canvas keep their correct spacing.
+            URL themeUrl = resolveResource(theme.stylesheet);
+            if (themeUrl != null) {
+                scene.getStylesheets().add(themeUrl.toExternalForm());
+            }
+            // Do NOT add the "root" style class: Modena targets the root pane
+            // via its own internal selectors, and adding "root" can interfere.
+            return;
+        }
+
+        // All other themes: load the shared component layer first, then the
+        // theme-specific colour / token file on top.
         URL components = resolveResource(COMPONENTS);
         if (components != null) {
             scene.getStylesheets().add(components.toExternalForm());
