@@ -25,14 +25,14 @@ public final class ThemeManager {
     }
 
     /**
-     * Det delade komponentlagret. Färgfilen (azure.css m.fl.) sätter tokens och
-     * färg; components.css stylar element som stapeldiagram, donut, KPI-ikon,
-     * snabbåtgärder, tabell, flikar och skuggor — element som designerna använder
-     * men som färgfilerna inte täcker.
+     * The shared component layer. The colour file (azure.css etc.) sets tokens
+     * and colours; components.css styles elements such as bar charts, donuts,
+     * KPI icons, quick-actions, tables, tabs and shadows — elements used by the
+     * themes but not covered by the colour files.
      *
-     * Ligger här och inte i en enskild app, så varje app som använder ett tema
-     * får lagret automatiskt. Det läggs FÖRST i listan, så temats egna regler
-     * vinner där de överlappar.
+     * Kept here rather than in a single app so that every app using a theme
+     * receives the layer automatically. It is placed FIRST in the list so that
+     * the theme's own rules win where they overlap.
      */
     private static final String COMPONENTS = "/com/wac/autocore/theme/components.css";
 
@@ -65,7 +65,7 @@ public final class ThemeManager {
         if (themeUrl != null) {
             scene.getStylesheets().add(themeUrl.toExternalForm());
         } else {
-            System.err.println("[ThemeManager] Varning: Kunde inte hitta stilmall för tema '" + slug + "': " + theme.stylesheet);
+            System.err.println("[ThemeManager] Warning: Could not find stylesheet for theme '" + slug + "': " + theme.stylesheet);
         }
         Parent root = scene.getRoot();
         if (root != null && !root.getStyleClass().contains("root")) {

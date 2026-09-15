@@ -12,12 +12,12 @@ public class DesignSelectorApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Wigell AutoCore - Välj Designalternativ (1-5)");
+        primaryStage.setTitle("Wigell AutoCore - Select Design Option (1-5)");
 
         VBox root = new VBox(15);
         root.setStyle("-fx-padding: 30; -fx-alignment: center; -fx-background-color: #1e1e1e;");
 
-        Label title = new Label("Välj vilket designförslag som ska visas:");
+        Label title = new Label("Select which design proposal to display:");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
 
         Button btn1 = createDesignButton("1. Industrial Dark Terminal", "dark-theme.css");
@@ -37,8 +37,8 @@ public class DesignSelectorApp extends Application {
         Button btn = new Button(name);
         btn.setStyle("-fx-font-size: 14px; -fx-pref-width: 330px; -fx-pref-height: 40px; -fx-cursor: hand;");
         btn.setOnAction(e -> {
-            System.out.println("Valde tema: " + cssFile);
-            // Här byter vi sedan till respektive vy när ni skapat dem
+            System.out.println("Selected theme: " + cssFile);
+            // Switch to the respective view once they have been created
         });
         return btn;
     }

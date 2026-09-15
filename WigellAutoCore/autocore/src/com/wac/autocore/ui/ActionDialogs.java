@@ -31,15 +31,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Modala formulärdialoger för att utföra alla systemets affärsåtgärder direkt i JavaFX GUI.
+ * Modal form dialogs for performing all system business actions directly in the JavaFX GUI.
  *
- * Stödjer:
- * - Skapa ny kund
- * - Registrera fordon på befintlig kund
- * - Skapa ny tidsbokning
- * - Skapa arbetsorder med mekanikertilldelning och multival av tjänster
- * - Skapa faktura med valfri kampanjkod
- * - Genomföra betalning (Swish, Kort, Kontant)
+ * Supports:
+ * - Create new customer
+ * - Register a vehicle to an existing customer
+ * - Create a new appointment booking
+ * - Create work order with mechanic assignment and multi-select of services
+ * - Create invoice with optional promo code
+ * - Process payment (Swish, Card, Cash)
  */
 public final class ActionDialogs {
 
@@ -49,27 +49,27 @@ public final class ActionDialogs {
         dialog.getDialogPane().getStyleClass().add("panel");
     }
 
-    // ------------------------------------------------------------- 1. Kund
+    // ----------------------------------------------------- 1. Customer
     public static void showCreateCustomerDialog(GarageSystem garage, Runnable onSuccess) {
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Ny kund");
-        dialog.setHeaderText("Registrera en ny kund i AutoCore");
+        dialog.setTitle("New customer");
+        dialog.setHeaderText("Register a new customer in AutoCore");
         styleDialog(dialog);
 
         GridPane grid = createGrid();
 
         TextField nameField = new TextField();
-        nameField.setPromptText("För- och efternamn");
+        nameField.setPromptText("First and last name");
         TextField phoneField = new TextField();
-        phoneField.setPromptText("070-1234567");
+        phoneField.setPromptText("555-1234567");
         TextField emailField = new TextField();
-        emailField.setPromptText("namn@example.se");
+        emailField.setPromptText("name@example.com");
 
-        grid.add(new Label("Namn:"), 0, 0);
+        grid.add(new Label("Name:"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("Telefon:"), 0, 1);
+        grid.add(new Label("Phone:"), 0, 1);
         grid.add(phoneField, 1, 1);
-        grid.add(new Label("E-post:"), 0, 2);
+        grid.add(new Label("Email:"), 0, 2);
         grid.add(emailField, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
@@ -82,7 +82,7 @@ public final class ActionDialogs {
                 String email = emailField.getText().trim();
 
                 if (name.isEmpty() || phone.isEmpty()) {
-                    showError("Felaktig inmatning", "Namn och telefonnummer måste fyllas i.");
+                    showError("Invalid input", "Name and phone number are required.");
                     return;
                 }
 
@@ -92,17 +92,17 @@ public final class ActionDialogs {
         });
     }
 
-    // ----------------------------------------------------------- 2. Fordon
+    // --------------------------------------------------------- 2. Vehicle
     public static void showCreateVehicleDialog(GarageSystem garage, Runnable onSuccess) {
         List<Customer> customers = garage.getCustomers();
         if (customers.isEmpty()) {
-            showError("Inga kunder finns", "Skapa en kund först innan du registrerar ett fordon.");
+            showError("No customers found", "Please create a customer before registering a vehicle.");
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Nytt fordon");
-        dialog.setHeaderText("Registrera ett nytt fordon i verkstaden");
+        dialog.setTitle("New vehicle");
+        dialog.setHeaderText("Register a new vehicle at the workshop");
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -128,15 +128,15 @@ public final class ActionDialogs {
         TextField yearField = new TextField();
         yearField.setPromptText("2022");
 
-        grid.add(new Label("Ägare:"), 0, 0);
+        grid.add(new Label("Owner:"), 0, 0);
         grid.add(customerBox, 1, 0);
-        grid.add(new Label("Reg.nr:"), 0, 1);
+        grid.add(new Label("Reg. no.:"), 0, 1);
         grid.add(regField, 1, 1);
-        grid.add(new Label("Märke:"), 0, 2);
+        grid.add(new Label("Make:"), 0, 2);
         grid.add(brandField, 1, 2);
-        grid.add(new Label("Modell:"), 0, 3);
+        grid.add(new Label("Model:"), 0, 3);
         grid.add(modelField, 1, 3);
-        grid.add(new Label("Årsmodell:"), 0, 4);
+        grid.add(new Label("Year:"), 0, 4);
         grid.add(yearField, 1, 4);
 
         dialog.getDialogPane().setContent(grid);
@@ -152,12 +152,12 @@ public final class ActionDialogs {
                 try {
                     year = Integer.parseInt(yearField.getText().trim());
                 } catch (NumberFormatException ex) {
-                    showError("Ogiltigt årtal", "Ange ett giltigt fyrsiffrigt årtal.");
+                    showError("Invalid year", "Please enter a valid four-digit year.");
                     return;
                 }
 
                 if (reg.isEmpty() || brand.isEmpty()) {
-                    showError("Felaktig inmatning", "Registreringsnummer och märke måste anges.");
+                    showError("Invalid input", "Registration number and make are required.");
                     return;
                 }
 
@@ -167,17 +167,17 @@ public final class ActionDialogs {
         });
     }
 
-    // ---------------------------------------------------------- 3. Bokning
+    // ---------------------------------------------------------- 3. Booking
     public static void showCreateBookingDialog(GarageSystem garage, Runnable onSuccess) {
         List<Vehicle> vehicles = garage.getVehicles();
         if (vehicles.isEmpty()) {
-            showError("Inga fordon finns", "Registrera ett fordon innan en bokning kan skapas.");
+            showError("No vehicles found", "Please register a vehicle before creating a booking.");
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Ny bokning");
-        dialog.setHeaderText("Boka in ett fordon för service eller reparation");
+        dialog.setTitle("New booking");
+        dialog.setHeaderText("Book a vehicle in for service or repair");
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -196,13 +196,13 @@ public final class ActionDialogs {
 
         DatePicker datePicker = new DatePicker(LocalDate.now().plusDays(1));
         TextField descField = new TextField();
-        descField.setPromptText("T.ex. Årlig service och bromsbyte");
+        descField.setPromptText("E.g. Annual service and brake replacement");
 
-        grid.add(new Label("Fordon:"), 0, 0);
+        grid.add(new Label("Vehicle:"), 0, 0);
         grid.add(vehicleBox, 1, 0);
-        grid.add(new Label("Datum:"), 0, 1);
+        grid.add(new Label("Date:"), 0, 1);
         grid.add(datePicker, 1, 1);
-        grid.add(new Label("Beskrivning:"), 0, 2);
+        grid.add(new Label("Description:"), 0, 2);
         grid.add(descField, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
@@ -215,7 +215,7 @@ public final class ActionDialogs {
                 String desc = descField.getText().trim();
 
                 if (date == null || desc.isEmpty()) {
-                    showError("Felaktig inmatning", "Datum och beskrivning måste anges.");
+                    showError("Invalid input", "Date and description are required.");
                     return;
                 }
 
@@ -225,7 +225,7 @@ public final class ActionDialogs {
         });
     }
 
-    // ----------------------------------------------------- 4. Arbetsorder
+    // --------------------------------------------------- 4. Work order
     public static void showCreateWorkOrderDialog(GarageSystem garage, Runnable onSuccess) {
         List<Booking> bookings = new ArrayList<Booking>();
         for (Booking b : garage.getBookings()) {
@@ -235,19 +235,19 @@ public final class ActionDialogs {
         }
 
         if (bookings.isEmpty()) {
-            showError("Inga bokade jobb", "Det finns inga aktiva bokningar med status 'BOOKED' att skapa arbetsorder på.");
+            showError("No booked jobs", "There are no active bookings with status 'BOOKED' to create a work order for.");
             return;
         }
 
         List<Mechanic> mechanics = garage.getMechanics();
         if (mechanics.isEmpty()) {
-            showError("Inga mekaniker", "Det finns inga registrerade mekaniker i systemet.");
+            showError("No mechanics", "There are no registered mechanics in the system.");
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Ny arbetsorder");
-        dialog.setHeaderText("Tilldela mekaniker och välj tjänster för arbetsordern");
+        dialog.setTitle("New work order");
+        dialog.setHeaderText("Assign a mechanic and select services for the work order");
         styleDialog(dialog);
 
         VBox content = new VBox(12);
@@ -261,7 +261,7 @@ public final class ActionDialogs {
         bookingBox.setConverter(new StringConverter<Booking>() {
             @Override
             public String toString(Booking b) {
-                return b == null ? "" : "Bokning #" + b.getId() + " - " + b.getDescription() + " (" + b.getDate() + ")";
+                return b == null ? "" : "Booking #" + b.getId() + " - " + b.getDescription() + " (" + b.getDate() + ")";
             }
             @Override
             public Booking fromString(String string) { return null; }
@@ -273,18 +273,18 @@ public final class ActionDialogs {
         mechanicBox.setConverter(new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
-                return m == null ? "" : m.getName() + " (" + m.getSpecialization() + ") - " + (m.isAvailable() ? "Ledig" : "Upptagen");
+                return m == null ? "" : m.getName() + " (" + m.getSpecialization() + ") - " + (m.isAvailable() ? "Available" : "Busy");
             }
             @Override
             public Mechanic fromString(String string) { return null; }
         });
 
-        grid.add(new Label("Bokning:"), 0, 0);
+        grid.add(new Label("Booking:"), 0, 0);
         grid.add(bookingBox, 1, 0);
-        grid.add(new Label("Mekaniker:"), 0, 1);
+        grid.add(new Label("Mechanic:"), 0, 1);
         grid.add(mechanicBox, 1, 1);
 
-        Label servicesTitle = new Label("Välj tjänster som ska ingå:");
+        Label servicesTitle = new Label("Select services to include:");
         servicesTitle.setStyle("-fx-font-weight: bold;");
 
         VBox serviceChecks = new VBox(6);
@@ -320,7 +320,7 @@ public final class ActionDialogs {
                 }
 
                 if (selectedServiceIds.isEmpty()) {
-                    showError("Inga tjänster valda", "Du måste välja minst en tjänst.");
+                    showError("No services selected", "You must select at least one service.");
                     return;
                 }
 
@@ -333,7 +333,7 @@ public final class ActionDialogs {
         });
     }
 
-    // --------------------------------------------------------- 5. Faktura
+    // ------------------------------------------------------- 5. Invoice
     public static void showCreateInvoiceDialog(GarageSystem garage, Runnable onSuccess) {
         List<WorkOrder> completedOrders = new ArrayList<WorkOrder>();
         for (WorkOrder wo : garage.getWorkOrders()) {
@@ -352,13 +352,13 @@ public final class ActionDialogs {
         }
 
         if (completedOrders.isEmpty()) {
-            showError("Inga slutförda ordrar", "Det finns inga slutförda arbetsordrar ('COMPLETED') som saknar faktura.");
+            showError("No completed orders", "There are no completed work orders ('COMPLETED') without an invoice.");
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Skapa faktura");
-        dialog.setHeaderText("Generera faktura för en slutförd arbetsorder");
+        dialog.setTitle("Create invoice");
+        dialog.setHeaderText("Generate an invoice for a completed work order");
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -369,18 +369,18 @@ public final class ActionDialogs {
         orderBox.setConverter(new StringConverter<WorkOrder>() {
             @Override
             public String toString(WorkOrder wo) {
-                return wo == null ? "" : "Arbetsorder #" + wo.getId() + " (Bokning #" + wo.getBookingId() + ")";
+                return wo == null ? "" : "Work order #" + wo.getId() + " (Booking #" + wo.getBookingId() + ")";
             }
             @Override
             public WorkOrder fromString(String string) { return null; }
         });
 
         TextField discountField = new TextField();
-        discountField.setPromptText("T.ex. WELCOME10 eller SERVICE200 (valfri)");
+        discountField.setPromptText("E.g. WELCOME10 or SERVICE200 (optional)");
 
-        grid.add(new Label("Arbetsorder:"), 0, 0);
+        grid.add(new Label("Work order:"), 0, 0);
         grid.add(orderBox, 1, 0);
-        grid.add(new Label("Rabattkod:"), 0, 1);
+        grid.add(new Label("Discount code:"), 0, 1);
         grid.add(discountField, 1, 1);
 
         dialog.getDialogPane().setContent(grid);
@@ -396,7 +396,7 @@ public final class ActionDialogs {
         });
     }
 
-    // ------------------------------------------------------- 6. Betalning
+    // --------------------------------------------------------- 6. Payment
     public static void showProcessPaymentDialog(GarageSystem garage, Invoice preselected, Runnable onSuccess) {
         List<Invoice> unpaid = new ArrayList<Invoice>();
         for (Invoice inv : garage.getInvoices()) {
@@ -406,13 +406,13 @@ public final class ActionDialogs {
         }
 
         if (unpaid.isEmpty()) {
-            showError("Inga obetalda fakturor", "Alla utfärdade fakturor är redan betalda!");
+            showError("No unpaid invoices", "All issued invoices have already been paid!");
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Registrera betalning");
-        dialog.setHeaderText("Genomför och bokför kundens betalning");
+        dialog.setTitle("Register payment");
+        dialog.setHeaderText("Process and record the customer's payment");
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -427,7 +427,7 @@ public final class ActionDialogs {
         invoiceBox.setConverter(new StringConverter<Invoice>() {
             @Override
             public String toString(Invoice inv) {
-                return inv == null ? "" : "Faktura #" + inv.getId() + " - " + inv.getTotalAmount() + " kr (Order #" + inv.getWorkOrderId() + ")";
+                return inv == null ? "" : "Invoice #" + inv.getId() + " - " + inv.getTotalAmount() + " kr (Order #" + inv.getWorkOrderId() + ")";
             }
             @Override
             public Invoice fromString(String string) { return null; }
@@ -437,9 +437,9 @@ public final class ActionDialogs {
         typeBox.getItems().addAll("SWISH", "CARD", "CASH");
         typeBox.getSelectionModel().select("SWISH");
 
-        grid.add(new Label("Faktura:"), 0, 0);
+        grid.add(new Label("Invoice:"), 0, 0);
         grid.add(invoiceBox, 1, 0);
-        grid.add(new Label("Betalsätt:"), 0, 1);
+        grid.add(new Label("Payment method:"), 0, 1);
         grid.add(typeBox, 1, 1);
 
         dialog.getDialogPane().setContent(grid);
@@ -456,7 +456,7 @@ public final class ActionDialogs {
         });
     }
 
-    // ------------------------------------------------------------- Helpers
+    // ----------------------------------------------------------- Helpers
     private static GridPane createGrid() {
         GridPane grid = new GridPane();
         grid.setHgap(10);

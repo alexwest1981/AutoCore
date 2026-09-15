@@ -46,7 +46,7 @@ public class ThemePickerApp extends Application {
         wrap.setCenter(buildPreview());
         wrap.setPadding(new Insets(16));
 
-        VBox left = new VBox(8, new Label("Teman"), list, hint);
+        VBox left = new VBox(8, new Label("Themes"), list, hint);
         left.setPadding(new Insets(12));
         VBox.setVgrow(list, Priority.ALWAYS);
 
@@ -56,7 +56,7 @@ public class ThemePickerApp extends Application {
         root.getStyleClass().add("root");
 
         Scene scene = new Scene(root, 980, 640);
-        stage.setTitle("Wigell AutoCore - Temaväljare");
+        stage.setTitle("Wigell AutoCore - Theme Picker");
         stage.setScene(scene);
 
         if (!ThemeCatalog.all().isEmpty()) {
@@ -70,18 +70,18 @@ public class ThemePickerApp extends Application {
     }
 
     private BorderPane buildPreview() {
-        Label title = new Label("AutoCore - Verkstad");
+        Label title = new Label("AutoCore - Workshop");
         title.getStyleClass().add("title");
-        Label sub = new Label("Förhandsvisning av teman i JavaFX");
+        Label sub = new Label("Theme preview in JavaFX");
         sub.getStyleClass().add("muted");
 
-        Button primary = new Button("Ny arbetsorder");
+        Button primary = new Button("New work order");
         primary.getStyleClass().add("primary");
-        Button plain = new Button("Avbryt");
-        Button ghost = new Button("Inställningar");
+        Button plain = new Button("Cancel");
+        Button ghost = new Button("Settings");
         ghost.getStyleClass().add("ghost");
         TextField search = new TextField();
-        search.setPromptText("Sök arbetsorder, kund...");
+        search.setPromptText("Search work order, customer...");
 
         VBox header = new VBox(4, title, sub);
         HBox actions = new HBox(8, primary, plain, ghost);
@@ -91,7 +91,7 @@ public class ThemePickerApp extends Application {
         controls.getStyleClass().add("panel");
         HBox.setHgrow(search, Priority.ALWAYS);
 
-        Label metricLabel = new Label("Omsättning");
+        Label metricLabel = new Label("Revenue");
         metricLabel.getStyleClass().add("metric-label");
         Label metricValue = new Label("284 650 kr");
         metricValue.getStyleClass().add("metric-value");
@@ -99,10 +99,10 @@ public class ThemePickerApp extends Application {
         metric.getStyleClass().add("metric-card");
         metric.setPadding(new Insets(14));
 
-        Label section = new Label("Senaste arbetsorder");
+        Label section = new Label("Recent work orders");
         section.getStyleClass().add("section-title");
-        Label st1 = new Label("AO-2481 \u00B7 Volvo XC60");
-        Label b1 = new Label("Pågår");
+        Label st1 = new Label("WO-2481 \u00B7 Volvo XC60");
+        Label b1 = new Label("In progress");
         b1.getStyleClass().addAll("badge", "success");
         HBox row1 = new HBox(10, st1, new javafx.scene.layout.Region(), b1);
         HBox.setHgrow(row1.getChildren().get(1), Priority.ALWAYS);

@@ -106,7 +106,7 @@ public class AutoCoreApp extends Application {
         VBox brandTitles = new VBox(0);
         Label brand = new Label("AutoCore");
         brand.getStyleClass().add("brand-title");
-        Label brandSub = new Label("Verkstadssystem");
+        Label brandSub = new Label("Workshop System");
         brandSub.getStyleClass().add("brand-sub");
         brandTitles.getChildren().addAll(brand, brandSub);
 
@@ -114,23 +114,23 @@ public class AutoCoreApp extends Application {
         brandRow.getStyleClass().add("brand-row");
         brandRow.setAlignment(Pos.CENTER_LEFT);
 
-        // Menyn följer designens grupper och går att fälla ihop, så den alltid
-        // får plats även när fönstret är lågt.
+        // The menu follows the design's groups and can be collapsed so it always
+        // fits even when the window is short.
         VBox nav = new VBox(3);
         nav.setPadding(new Insets(14, 0, 0, 0));
-        addNav(nav, "overview", "Översikt");
+        addNav(nav, "overview", "Overview");
 
         VBox groups = new VBox(2);
-        addGroup(groups, "Kunder", navItem("customers", "Visa kunder"));
-        addGroup(groups, "Fordon", navItem("vehicles", "Visa fordon"));
-        addGroup(groups, "Bokningar", navItem("bookings", "Visa bokningar"));
-        addGroup(groups, "Verkstad",
-                navItem("services", "Visa tjänster"),
-                navItem("mechanics", "Visa mekaniker"),
-                navItem("workorders", "Visa arbetsorder"));
-        addGroup(groups, "Ekonomi",
-                navItem("invoices", "Visa fakturor"),
-                navItem("payments", "Visa betalningar"));
+        addGroup(groups, "Customers", navItem("customers", "Show customers"));
+        addGroup(groups, "Vehicles", navItem("vehicles", "Show vehicles"));
+        addGroup(groups, "Bookings", navItem("bookings", "Show bookings"));
+        addGroup(groups, "Workshop",
+                navItem("services", "Show services"),
+                navItem("mechanics", "Show mechanics"),
+                navItem("workorders", "Show work orders"));
+        addGroup(groups, "Finance",
+                navItem("invoices", "Show invoices"),
+                navItem("payments", "Show payments"));
         nav.getChildren().add(groups);
 
         ScrollPane navScroll = new ScrollPane(nav);
@@ -144,13 +144,13 @@ public class AutoCoreApp extends Application {
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(236);
         sidebar.setMinWidth(200);
-        // Ingen spacer behövs: navScroll växer och drift-rutan ligger kvar i botten,
-        // så sidofältet och innehållet alltid har samma höjd.
+        // No spacer needed: navScroll grows and the status box stays at the
+        // bottom, so the sidebar and content always share the same height.
         sidebar.getChildren().addAll(brandRow, navScroll, buildDrift());
         return sidebar;
     }
 
-    /** En navigeringspost i en grupp. */
+    /** A navigation entry inside a group. */
     private static final class NavSpec {
         final String key;
         final String label;
@@ -162,8 +162,8 @@ public class AutoCoreApp extends Application {
     }
 
     /**
-     * En kollapsbar meny grupp. Rubriken är klickbar och fäller ihop posterna
-     * (managed=false så de inte tar plats när de är dolda).
+     * A collapsible nav group. The header is clickable and collapses the entries
+     * (managed=false so they take no space when hidden).
      */
     private void addGroup(VBox parent, String title, NavSpec... items) {
         Label t = new Label(title.toUpperCase());
@@ -194,9 +194,9 @@ public class AutoCoreApp extends Application {
     }
 
     private VBox buildDrift() {
-        Label title = new Label("Driftstatus");
+        Label title = new Label("System Status");
         title.getStyleClass().add("drift-title");
-        Label text = new Label("Alla system i drift");
+        Label text = new Label("All systems operational");
         text.getStyleClass().add("drift-text");
 
         Region fill = new Region();
@@ -209,7 +209,7 @@ public class AutoCoreApp extends Application {
         fill.prefHeightProperty().bind(track.heightProperty().subtract(2));
         fill.maxWidthProperty().bind(track.widthProperty().multiply(0.92));
 
-        Label foot = new Label("Senaste backup idag 06:00");
+        Label foot = new Label("Last backup today 06:00");
         foot.getStyleClass().addAll("drift-text", "small");
 
         VBox box = new VBox(7, title, text, track, foot);
@@ -232,7 +232,7 @@ public class AutoCoreApp extends Application {
     private BorderPane buildMainArea() {
         searchField = new TextField();
         searchField.getStyleClass().add("search");
-        searchField.setPromptText("Sök arbetsorder, kund eller fordon…");
+        searchField.setPromptText("Search work orders, customers or vehicles…");
         searchField.setPrefWidth(320);
         searchField.textProperty().addListener((obs, old, now) -> applySearch(now));
 
@@ -290,32 +290,32 @@ public class AutoCoreApp extends Application {
         if (key.equals("overview")) {
             pageBox.getChildren().add(buildOverview());
         } else if (key.equals("customers")) {
-            Button addBtn = primaryButton("+ Ny kund");
+            Button addBtn = primaryButton("+ New customer");
             addBtn.setOnAction(e -> ActionDialogs.showCreateCustomerDialog(garage, () -> selectPage("customers")));
             pageBox.getChildren().add(buildEntityPage(
-                    "Kunder", garage.getCustomers().size() + " registrerade",
-                    "Namn, kontaktuppgifter och VIP-status",
+                    "Customers", garage.getCustomers().size() + " registered",
+                    "Names, contact details and VIP status",
                     buildCustomersTable(), addBtn));
         } else if (key.equals("vehicles")) {
-            Button addBtn = primaryButton("+ Registrera fordon");
+            Button addBtn = primaryButton("+ Register vehicle");
             addBtn.setOnAction(e -> ActionDialogs.showCreateVehicleDialog(garage, () -> selectPage("vehicles")));
             pageBox.getChildren().add(buildEntityPage(
-                    "Fordon", garage.getVehicles().size() + " registrerade",
-                    "Registrerade fordon i verkstaden",
+                    "Vehicles", garage.getVehicles().size() + " registered",
+                    "Vehicles registered at the workshop",
                     buildVehiclesTable(), addBtn));
         } else if (key.equals("bookings")) {
-            Button addBtn = primaryButton("+ Ny bokning");
+            Button addBtn = primaryButton("+ New booking");
             addBtn.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, () -> selectPage("bookings")));
             pageBox.getChildren().add(buildEntityPage(
-                    "Bokningar", garage.getBookings().size() + " bokningar",
-                    "Inbokade jobb och dess status",
+                    "Bookings", garage.getBookings().size() + " bookings",
+                    "Scheduled jobs and their status",
                     buildBookingsTable(), addBtn));
         } else if (key.equals("workorders")) {
             TableView<WorkOrder> table = buildWorkOrdersTable();
-            Button addBtn = primaryButton("+ Ny arbetsorder");
+            Button addBtn = primaryButton("+ New work order");
             addBtn.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, () -> selectPage("workorders")));
-            Button startBtn = secondaryButton("▶ Starta order");
-            Button completeBtn = secondaryButton("✔ Slutför order");
+            Button startBtn = secondaryButton("▶ Start order");
+            Button completeBtn = secondaryButton("✔ Complete order");
             startBtn.setDisable(true);
             completeBtn.setDisable(true);
 
@@ -341,24 +341,24 @@ public class AutoCoreApp extends Application {
             });
 
             pageBox.getChildren().add(buildEntityPage(
-                    "Arbetsorder", garage.getWorkOrders().size() + " arbetsorder",
-                    "Pågående och slutförda jobb (markera rad för att starta/slutföra)",
+                    "Work orders", garage.getWorkOrders().size() + " work orders",
+                    "Active and completed jobs (select a row to start / complete)",
                     table, startBtn, completeBtn, addBtn));
         } else if (key.equals("services")) {
             pageBox.getChildren().add(buildEntityPage(
-                    "Tjänster", garage.getServiceItems().size() + " tjänster",
-                    "Prislista för verkstadens tjänster",
+                    "Services", garage.getServiceItems().size() + " services",
+                    "Price list for workshop services",
                     buildServicesTable()));
         } else if (key.equals("mechanics")) {
             pageBox.getChildren().add(buildEntityPage(
-                    "Mekaniker", garage.getMechanics().size() + " anställda",
-                    "Team, specialisering och tillgänglighet",
+                    "Mechanics", garage.getMechanics().size() + " employees",
+                    "Team, specialisation and availability",
                     buildMechanicsTable()));
         } else if (key.equals("invoices")) {
             TableView<Invoice> table = buildInvoicesTable();
-            Button addBtn = primaryButton("+ Skapa faktura");
+            Button addBtn = primaryButton("+ Create invoice");
             addBtn.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, () -> selectPage("invoices")));
-            Button payBtn = secondaryButton("💳 Betala vald faktura");
+            Button payBtn = secondaryButton("💳 Pay selected invoice");
             payBtn.setDisable(true);
 
             table.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
@@ -373,15 +373,15 @@ public class AutoCoreApp extends Application {
             });
 
             pageBox.getChildren().add(buildEntityPage(
-                    "Fakturor", garage.getInvoices().size() + " fakturor",
-                    "Utfärdade fakturor och betalstatus",
+                    "Invoices", garage.getInvoices().size() + " invoices",
+                    "Issued invoices and payment status",
                     table, payBtn, addBtn));
         } else if (key.equals("payments")) {
-            Button addBtn = primaryButton("+ Registrera betalning");
+            Button addBtn = primaryButton("+ Register payment");
             addBtn.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, () -> selectPage("payments")));
             pageBox.getChildren().add(buildEntityPage(
-                    "Betalningar", garage.getPayments().size() + " betalningar",
-                    "Inkomna betalningar och deras status",
+                    "Payments", garage.getPayments().size() + " payments",
+                    "Received payments and their status",
                     buildPaymentsTable(), addBtn));
         }
     }
@@ -430,7 +430,7 @@ public class AutoCoreApp extends Application {
             topRow.getChildren().add(actionBox);
         }
 
-        table.setPlaceholder(new Label("Inga rader"));
+        table.setPlaceholder(new Label("No rows"));
         HBox.setHgrow(table, Priority.ALWAYS);
 
         VBox inner = new VBox();
@@ -477,16 +477,16 @@ public class AutoCoreApp extends Application {
             }
         }
 
-        VBox head = pageHead("Översikt", "Så ser läget ut i verkstaden just nu",
-                "AutoCore · " + todaySwedish());
+        VBox head = pageHead("Overview", "Current status of the workshop",
+                "AutoCore \u00b7 " + todayFormatted());
 
-        Button quickBooking = primaryButton("+ Ny bokning");
+        Button quickBooking = primaryButton("+ New booking");
         quickBooking.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, () -> selectPage("overview")));
-        Button quickOrder = secondaryButton("+ Ny arbetsorder");
+        Button quickOrder = secondaryButton("+ New work order");
         quickOrder.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, () -> selectPage("overview")));
-        Button quickInvoice = secondaryButton("+ Skapa faktura");
+        Button quickInvoice = secondaryButton("+ Create invoice");
         quickInvoice.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, () -> selectPage("overview")));
-        Button quickPay = secondaryButton("💳 Betalning");
+        Button quickPay = secondaryButton("💳 Payment");
         quickPay.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, () -> selectPage("overview")));
 
         HBox quickBar = new HBox(10, quickBooking, quickOrder, quickInvoice, quickPay);
@@ -495,10 +495,10 @@ public class AutoCoreApp extends Application {
         HBox kpis = new HBox(14);
         kpis.setAlignment(Pos.CENTER_LEFT);
         kpis.getChildren().addAll(
-                kpi("Aktiva arbetsorder", String.valueOf(active)),
-                kpi("Betalt totalt", money.format(revenue) + " kr"),
-                kpi("Bokningar", String.valueOf(bookings.size())),
-                kpi("Mekaniker i tjänst", avail + "/" + garage.getMechanics().size()));
+                kpi("Active work orders", String.valueOf(active)),
+                kpi("Total revenue", money.format(revenue) + " kr"),
+                kpi("Bookings", String.valueOf(bookings.size())),
+                kpi("Mechanics on duty", avail + "/" + garage.getMechanics().size()));
 
         HBox panels = new HBox(14);
         panels.setAlignment(Pos.CENTER_LEFT);
@@ -507,8 +507,8 @@ public class AutoCoreApp extends Application {
                 bookingsPanel(bookings));
 
         TableView<WorkOrder> recent = buildRecentOrders(workOrders);
-        VBox recentPanel = panel("Senaste arbetsorder",
-                "De senaste registrerade jobben i systemet", recent);
+        VBox recentPanel = panel("Recent work orders",
+                "The latest jobs registered in the system", recent);
 
         return new VBox(18, head, quickBar, kpis, panels, recentPanel);
     }
@@ -526,17 +526,17 @@ public class AutoCoreApp extends Application {
     }
 
     private VBox statusPanel(List<WorkOrder> workOrders) {
-        Label title = new Label("Arbetsorder per status");
+        Label title = new Label("Work orders by status");
         title.getStyleClass().add("panel-title");
-        Label sub = new Label("Fördelning över alla arbetsorder");
+        Label sub = new Label("Distribution across all work orders");
         sub.getStyleClass().add("panel-sub");
 
         Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
-        counts.put("Slutförd", 0);
-        counts.put("Pågår", 0);
-        counts.put("Arbetsorder skapad", 0);
-        counts.put("Skapad", 0);
-        counts.put("Bokad", 0);
+        counts.put("Completed", 0);
+        counts.put("In progress", 0);
+        counts.put("Work order created", 0);
+        counts.put("Created", 0);
+        counts.put("Booked", 0);
         for (WorkOrder wo : workOrders) {
             String w = statusWord(wo.getStatus());
             counts.put(w, counts.containsKey(w) ? counts.get(w) + 1 : 1);
@@ -560,7 +560,7 @@ public class AutoCoreApp extends Application {
             list.getChildren().add(row);
         }
         if (list.getChildren().isEmpty()) {
-            list.getChildren().add(mutedNote("Inga arbetsorder ännu"));
+            list.getChildren().add(mutedNote("No work orders yet"));
         }
 
         VBox box = new VBox(12, title, sub, list);
@@ -571,9 +571,9 @@ public class AutoCoreApp extends Application {
     }
 
     private VBox bookingsPanel(List<Booking> bookings) {
-        Label title = new Label("Kommande bokningar");
+        Label title = new Label("Upcoming bookings");
         title.getStyleClass().add("panel-title");
-        Label sub = new Label("Nästa inbokade jobb");
+        Label sub = new Label("Next scheduled jobs");
         sub.getStyleClass().add("panel-sub");
 
         VBox list = new VBox(9);
@@ -599,7 +599,7 @@ public class AutoCoreApp extends Application {
             shown++;
         }
         if (list.getChildren().isEmpty()) {
-            list.getChildren().add(mutedNote("Inga bokningar ännu"));
+            list.getChildren().add(mutedNote("No bookings yet"));
         }
 
         VBox box = new VBox(12, title, sub, list);
@@ -631,10 +631,10 @@ public class AutoCoreApp extends Application {
         TableView<Customer> t = make(garage.getCustomers());
         t.getColumns().addAll(
                 col("ID", 60, c -> String.valueOf(c.getId())),
-                col("Namn", 200, c -> c.getName()),
-                col("Telefon", 150, c -> c.getPhone()),
-                col("E-post", 280, c -> c.getEmail()),
-                badge("VIP", 100, c -> c.isVip() ? "Ja" : "Nej"));
+                col("Name", 200, c -> c.getName()),
+                col("Phone", 150, c -> c.getPhone()),
+                col("Email", 280, c -> c.getEmail()),
+                badge("VIP", 100, c -> c.isVip() ? "Yes" : "No"));
         return t;
     }
 
@@ -642,11 +642,11 @@ public class AutoCoreApp extends Application {
         TableView<Vehicle> t = make(garage.getVehicles());
         t.getColumns().addAll(
                 col("ID", 60, c -> String.valueOf(c.getId())),
-                col("Reg.nr", 120, c -> c.getRegistrationNumber()),
-                col("Märke", 140, c -> c.getBrand()),
-                col("Modell", 160, c -> c.getModel()),
-                col("Årsmodell", 100, c -> String.valueOf(c.getYear())),
-                col("Kund", 220, c -> customerName(c.getCustomerId())));
+                col("Reg. no.", 120, c -> c.getRegistrationNumber()),
+                col("Make", 140, c -> c.getBrand()),
+                col("Model", 160, c -> c.getModel()),
+                col("Year", 100, c -> String.valueOf(c.getYear())),
+                col("Customer", 220, c -> customerName(c.getCustomerId())));
         return t;
     }
 
@@ -654,9 +654,9 @@ public class AutoCoreApp extends Application {
         TableView<Booking> t = make(garage.getBookings());
         t.getColumns().addAll(
                 col("ID", 60, c -> String.valueOf(c.getId())),
-                col("Fordon", 140, c -> vehicleReg(c.getVehicleId())),
-                col("Datum", 130, c -> String.valueOf(c.getDate())),
-                col("Beskrivning", 320, c -> c.getDescription()),
+                col("Vehicle", 140, c -> vehicleReg(c.getVehicleId())),
+                col("Date", 130, c -> String.valueOf(c.getDate())),
+                col("Description", 320, c -> c.getDescription()),
                 badge("Status", 140, c -> statusWord(c.getStatus())));
         return t;
     }
@@ -665,9 +665,9 @@ public class AutoCoreApp extends Application {
         TableView<WorkOrder> t = make(orders);
         t.getColumns().addAll(
                 col("ID", 70, c -> String.valueOf(c.getId())),
-                col("Bokning", 90, c -> String.valueOf(c.getBookingId())),
-                col("Mekaniker", 180, c -> mechanicName(c.getMechanicId())),
-                col("Tjänster", 300, c -> serviceNames(c.getServiceItemIds())),
+                col("Booking", 90, c -> String.valueOf(c.getBookingId())),
+                col("Mechanic", 180, c -> mechanicName(c.getMechanicId())),
+                col("Services", 300, c -> serviceNames(c.getServiceItemIds())),
                 badge("Status", 140, c -> statusWord(c.getStatus())));
         return t;
     }
@@ -680,10 +680,10 @@ public class AutoCoreApp extends Application {
         TableView<ServiceItem> t = make(garage.getServiceItems());
         t.getColumns().addAll(
                 col("ID", 70, c -> String.valueOf(c.getId())),
-                col("Namn", 220, c -> c.getName()),
-                col("Beskrivning", 360, c -> c.getDescription()),
-                col("Pris", 120, c -> money.format(c.getPrice()) + " kr"),
-                col("Tid", 100, c -> c.getEstimatedMinutes() + " min"));
+                col("Name", 220, c -> c.getName()),
+                col("Description", 360, c -> c.getDescription()),
+                col("Price", 120, c -> money.format(c.getPrice()) + " kr"),
+                col("Time", 100, c -> c.getEstimatedMinutes() + " min"));
         return t;
     }
 
@@ -691,10 +691,10 @@ public class AutoCoreApp extends Application {
         TableView<Mechanic> t = make(garage.getMechanics());
         t.getColumns().addAll(
                 col("ID", 70, c -> String.valueOf(c.getId())),
-                col("Namn", 220, c -> c.getName()),
-                col("Telefon", 160, c -> c.getPhone()),
-                col("Specialisering", 260, c -> c.getSpecialization()),
-                badge("Tillgänglig", 130, c -> c.isAvailable() ? "Ja" : "Nej"));
+                col("Name", 220, c -> c.getName()),
+                col("Phone", 160, c -> c.getPhone()),
+                col("Specialisation", 260, c -> c.getSpecialization()),
+                badge("Available", 130, c -> c.isAvailable() ? "Yes" : "No"));
         return t;
     }
 
@@ -702,12 +702,12 @@ public class AutoCoreApp extends Application {
         TableView<Invoice> t = make(garage.getInvoices());
         t.getColumns().addAll(
                 col("ID", 70, c -> String.valueOf(c.getId())),
-                col("Arbetsorder", 110, c -> String.valueOf(c.getWorkOrderId())),
-                col("Datum", 130, c -> String.valueOf(c.getInvoiceDate())),
-                col("Belopp", 110, c -> money.format(c.getAmount()) + " kr"),
-                col("Rabatt", 100, c -> money.format(c.getDiscount()) + " kr"),
-                col("Totalt", 110, c -> money.format(c.getTotalAmount()) + " kr"),
-                badge("Betald", 110, c -> c.isPaid() ? "Ja" : "Nej"));
+                col("Work order", 110, c -> String.valueOf(c.getWorkOrderId())),
+                col("Date", 130, c -> String.valueOf(c.getInvoiceDate())),
+                col("Amount", 110, c -> money.format(c.getAmount()) + " kr"),
+                col("Discount", 100, c -> money.format(c.getDiscount()) + " kr"),
+                col("Total", 110, c -> money.format(c.getTotalAmount()) + " kr"),
+                badge("Paid", 110, c -> c.isPaid() ? "Yes" : "No"));
         return t;
     }
 
@@ -715,11 +715,11 @@ public class AutoCoreApp extends Application {
         TableView<Payment> t = make(garage.getPayments());
         t.getColumns().addAll(
                 col("ID", 70, c -> String.valueOf(c.getId())),
-                col("Faktura", 100, c -> String.valueOf(c.getInvoiceId())),
-                col("Belopp", 120, c -> money.format(c.getAmount()) + " kr"),
-                col("Typ", 130, c -> c.getPaymentType()),
-                col("Datum/tid", 220, c -> String.valueOf(c.getPaymentDate())),
-                badge("Status", 110, c -> c.isSuccessful() ? "Lyckad" : "Misslyckad"));
+                col("Invoice", 100, c -> String.valueOf(c.getInvoiceId())),
+                col("Amount", 120, c -> money.format(c.getAmount()) + " kr"),
+                col("Type", 130, c -> c.getPaymentType()),
+                col("Date/time", 220, c -> String.valueOf(c.getPaymentDate())),
+                badge("Status", 110, c -> c.isSuccessful() ? "Successful" : "Failed"));
         return t;
     }
 
@@ -807,8 +807,8 @@ public class AutoCoreApp extends Application {
     }
 
     private static boolean isGood(String s) {
-        return s.equals("Ja") || s.equals("Lyckad")
-                || s.equals("Slutförd") || s.equals("Betald");
+        return s.equals("Yes") || s.equals("Successful")
+                || s.equals("Completed") || s.equals("Paid");
     }
 
     private static String badgeClass(String s) {
@@ -818,13 +818,13 @@ public class AutoCoreApp extends Application {
         if (isGood(s)) {
             return "success";
         }
-        if (s.equals("Nej") || s.equals("Misslyckad")) {
+        if (s.equals("No") || s.equals("Failed")) {
             return "danger";
         }
-        if (s.equals("Pågår")) {
+        if (s.equals("In progress")) {
             return "warn";
         }
-        if (s.equals("Bokad") || s.equals("Skapad") || s.equals("Arbetsorder skapad")) {
+        if (s.equals("Booked") || s.equals("Created") || s.equals("Work order created")) {
             return "info";
         }
         return "";
@@ -845,10 +845,10 @@ public class AutoCoreApp extends Application {
         return s.length() <= max ? s : s.substring(0, max - 1) + "…";
     }
 
-    private static String todaySwedish() {
-        String[] week = {"", "Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag", "Söndag"};
-        String[] months = {"", "januari", "februari", "mars", "april", "maj", "juni",
-                "juli", "augusti", "september", "oktober", "november", "december"};
+    private static String todayFormatted() {
+        String[] week = {"", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        String[] months = {"", "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"};
         LocalDate d = LocalDate.now();
         return week[d.getDayOfWeek().getValue()] + " " + d.getDayOfMonth()
                 + " " + months[d.getMonthValue()] + " " + d.getYear();
@@ -859,19 +859,19 @@ public class AutoCoreApp extends Application {
             return "";
         }
         if (status.equals("BOOKED")) {
-            return "Bokad";
+            return "Booked";
         }
         if (status.equals("CREATED")) {
-            return "Skapad";
+            return "Created";
         }
         if (status.equals("WORK_ORDER_CREATED")) {
-            return "Arbetsorder skapad";
+            return "Work order created";
         }
         if (status.equals("IN_PROGRESS")) {
-            return "Pågår";
+            return "In progress";
         }
         if (status.equals("COMPLETED")) {
-            return "Slutförd";
+            return "Completed";
         }
         return status;
     }
@@ -882,7 +882,7 @@ public class AutoCoreApp extends Application {
                 return c.getName();
             }
         }
-        return "Kund #" + id;
+        return "Customer #" + id;
     }
 
     private String vehicleReg(int id) {
@@ -891,7 +891,7 @@ public class AutoCoreApp extends Application {
                 return v.getRegistrationNumber();
             }
         }
-        return "Fordon #" + id;
+        return "Vehicle #" + id;
     }
 
     private String mechanicName(int id) {
@@ -900,7 +900,7 @@ public class AutoCoreApp extends Application {
                 return m.getName();
             }
         }
-        return "Mekaniker #" + id;
+        return "Mechanic #" + id;
     }
 
     private String serviceNames(List<Integer> ids) {
@@ -919,7 +919,7 @@ public class AutoCoreApp extends Application {
                     break;
                 }
             }
-            sb.append(found != null ? found : "Tjänst #" + sid);
+            sb.append(found != null ? found : "Service #" + sid);
         }
         return sb.toString();
     }
