@@ -26,31 +26,51 @@
    Selektorn .combo-box-popup gäller popup-fönstrets rotnode.
    ============================================================ */
 
-/* ComboBox-popup: JavaFX 8-parsern kräver selektorer på EN rad (inga radbrytningar).
-   Vi stilar via .list-view och .list-cell direkt – kortare och valid JavaFX 8-CSS. */
+/* ============================================================
+   TEMAVÄLJAREN (.theme-pick) — fast neutral stil
+   Vit bakgrund + svart text fungerar alltid oavsett valt tema
+   och ser aldrig konstigt ut (undviker vit-på-vit-problem).
+   ============================================================ */
+
+/* Knappen i topbaren */
+.theme-pick {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 4px 10px;
+    -fx-cursor: hand;
+}
+.theme-pick .label { -fx-text-fill: #111827; }
+.theme-pick .arrow { -fx-background-color: #6b7280; }
+.theme-pick:hover { -fx-background-color: #f3f4f6; }
+
+/* Popup-listan: fast vit bakgrund, svart text */
 .combo-box-popup > .list-view {
-    -fx-background-color: -wac-card;
-    -fx-border-color: -wac-line;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 14, 0.12, 0, 4);
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 12, 0.10, 0, 4);
 }
 .combo-box-popup > .list-view > .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill: -wac-text;
+    -fx-text-fill: #111827;
     -fx-padding: 7 12;
 }
 .combo-box-popup > .list-view > .list-cell:filled:hover {
-    -fx-background-color: -wac-surface;
-    -fx-text-fill: -wac-text;
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #111827;
 }
 .combo-box-popup > .list-view > .list-cell:filled:selected {
-    -fx-background-color: -wac-accent-soft;
-    -fx-text-fill: -wac-text;
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #111827;
 }
 .combo-box-popup > .list-view > .list-cell:filled:hover:selected {
-    -fx-background-color: -wac-accent-soft;
-    -fx-text-fill: -wac-text;
+    -fx-background-color: #d1d5db;
+    -fx-text-fill: #111827;
 }
 
 /*
