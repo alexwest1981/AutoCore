@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 public class TestCustomer extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("customerView.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("CustomerView.fxml"));
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.show();
