@@ -249,15 +249,33 @@ public class AutoCoreApp extends Application {
         themeBox.setButtonCell(themeCell());
         themeBox.setItems(FXCollections.observableArrayList(ThemeCatalog.all()));
         themeBox.getSelectionModel().select(ThemeCatalog.bySlug(ThemeCatalog.DEFAULT_SLUG));
+        // Inline-style vinner alltid över stylesheet-regler (oavsett CSS-ordning).
+        // Sätter fast vit/svart stil så att temaväljaren alltid är läsbar.
+        themeBox.setStyle(
+            "-fx-background-color: white;" +
+            "-fx-border-color: #d1d5db;" +
+            "-fx-border-radius: 8;" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-width: 1;" +
+            "-fx-padding: 4px 10px;");
         themeBox.valueProperty().addListener((obs, oldT, newT) -> {
             Scene scene = themeBox.getScene();
             if (scene != null && newT != null) {
                 ThemeManager.apply(scene, newT.slug);
+                // Återställ inline-style (ThemeManager.apply rensar stylesheets men
+                // inline-style är separat och bevaras ändå – detta är bara för tydlighet)
+                themeBox.setStyle(
+                    "-fx-background-color: white;" +
+                    "-fx-border-color: #d1d5db;" +
+                    "-fx-border-radius: 8;" +
+                    "-fx-background-radius: 8;" +
+                    "-fx-border-width: 1;" +
+                    "-fx-padding: 4px 10px;");
                 // Synka popup-scenen om den är öppen
                 javafx.application.Platform.runLater(() -> syncComboPopup(themeBox));
             }
         });
-        // När användaren klickar öppnar sig popupen – kopia stylesheets dit
+        // När användaren klickar öppnar sig popupen – kopiera stylesheets dit
         themeBox.setOnShowing(e -> syncComboPopup(themeBox));
 
         Region spacer = new Region();
@@ -781,6 +799,15 @@ public class AutoCoreApp extends Application {
             protected void updateItem(Theme t, boolean empty) {
                 super.updateItem(t, empty);
                 setText(t == null || empty ? null : t.name);
+                // Inline-style – svart text, vit bakgrund, alltid läsbar oavsett tema
+                setStyle("-fx-text-fill: #111827; -fx-background-color: " +
+                         (isSelected() ? "#e5e7eb" : "transparent") + "; -fx-padding: 5 10;");
+            }
+            @Override
+            public void updateSelected(boolean selected) {
+                super.updateSelected(selected);
+                setStyle("-fx-text-fill: #111827; -fx-background-color: " +
+                         (selected ? "#e5e7eb" : "transparent") + "; -fx-padding: 5 10;");
             }
         };
     }

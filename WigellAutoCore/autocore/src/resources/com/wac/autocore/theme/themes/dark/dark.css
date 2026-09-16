@@ -178,8 +178,6 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
 
 .search { -fx-background-radius: 999; -fx-background-color: derive(-wac-header, 8%); -fx-padding: 8px 16px; -fx-border-color: transparent; }
 .search:focused { -fx-border-color: -wac-ring; }
-.theme-pick { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 2px 6px; }
-.theme-pick .label { -fx-text-fill: -wac-side-text; }
 
 .pages { -fx-padding: 22px 26px 26px 26px; -fx-background-color: -wac-shell; }
 .page-title { -fx-font-size: 27px; -fx-font-weight: bold; -fx-text-fill: -wac-text; }
