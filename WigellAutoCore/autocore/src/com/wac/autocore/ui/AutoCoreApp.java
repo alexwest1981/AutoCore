@@ -146,7 +146,7 @@ public class AutoCoreApp extends Application {
         sidebar.setMinWidth(200);
         // No spacer needed: navScroll grows and the status box stays at the
         // bottom, so the sidebar and content always share the same height.
-        sidebar.getChildren().addAll(brandRow, navScroll, buildDrift());
+        sidebar.getChildren().addAll(brandRow, navScroll/*, buildDrift()*/);
         return sidebar;
     }
 
@@ -193,30 +193,37 @@ public class AutoCoreApp extends Application {
         parent.getChildren().add(new VBox(1, head, list));
     }
 
-    private VBox buildDrift() {
-        Label title = new Label("System Status");
-        title.getStyleClass().add("drift-title");
-        Label text = new Label("All systems operational");
-        text.getStyleClass().add("drift-text");
-
-        Region fill = new Region();
-        fill.getStyleClass().add("drift-fill");
-        StackPane track = new StackPane(fill);
-        track.getStyleClass().add("drift-track");
-        track.setPrefHeight(8);
-        track.setAlignment(Pos.CENTER_LEFT);
-        fill.prefWidthProperty().bind(track.widthProperty().multiply(0.92));
-        fill.prefHeightProperty().bind(track.heightProperty().subtract(2));
-        fill.maxWidthProperty().bind(track.widthProperty().multiply(0.92));
-
-        Label foot = new Label("Last backup today 06:00");
-        foot.getStyleClass().addAll("drift-text", "small");
-
-        VBox box = new VBox(7, title, text, track, foot);
-        box.getStyleClass().add("drift");
-        box.setPadding(new Insets(14, 16, 14, 16));
-        return box;
-    }
+    /*
+     * buildDrift() – System Status-rutan är en placeholder.
+     * "All systems operational" och "Last backup today 06:00" har ingen
+     * koppling till riktig logik i systemet. Kommenteras ut tills
+     * funktionaliteten finns på plats.
+     *
+     * private VBox buildDrift() {
+     *     Label title = new Label("System Status");
+     *     title.getStyleClass().add("drift-title");
+     *     Label text = new Label("All systems operational");
+     *     text.getStyleClass().add("drift-text");
+     *
+     *     Region fill = new Region();
+     *     fill.getStyleClass().add("drift-fill");
+     *     StackPane track = new StackPane(fill);
+     *     track.getStyleClass().add("drift-track");
+     *     track.setPrefHeight(8);
+     *     track.setAlignment(Pos.CENTER_LEFT);
+     *     fill.prefWidthProperty().bind(track.widthProperty().multiply(0.92));
+     *     fill.prefHeightProperty().bind(track.heightProperty().subtract(2));
+     *     fill.maxWidthProperty().bind(track.widthProperty().multiply(0.92));
+     *
+     *     Label foot = new Label("Last backup today 06:00");
+     *     foot.getStyleClass().addAll("drift-text", "small");
+     *
+     *     VBox box = new VBox(7, title, text, track, foot);
+     *     box.getStyleClass().add("drift");
+     *     box.setPadding(new Insets(14, 16, 14, 16));
+     *     return box;
+     * }
+     */
 
     private void addNav(VBox nav, String key, String label) {
         Button b = new Button(label);
@@ -252,14 +259,17 @@ public class AutoCoreApp extends Application {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        StackPane avatar = new StackPane();
-        avatar.getStyleClass().add("avatar");
-        avatar.setPrefSize(36, 36);
-        Label avLetter = new Label("AK");
-        avLetter.getStyleClass().add("letter");
-        avatar.getChildren().add(avLetter);
+        // Avatar ("AK") är en placeholder – ingen inloggningsfunktion finns ännu.
+        // Återaktivera när ett användarsystem är på plats.
+        //
+        // StackPane avatar = new StackPane();
+        // avatar.getStyleClass().add("avatar");
+        // avatar.setPrefSize(36, 36);
+        // Label avLetter = new Label("AK");
+        // avLetter.getStyleClass().add("letter");
+        // avatar.getChildren().add(avLetter);
 
-        HBox top = new HBox(14, searchField, spacer, themeBox, avatar);
+        HBox top = new HBox(14, searchField, spacer, themeBox/*, avatar*/);
         top.setAlignment(Pos.CENTER_LEFT);
         top.getStyleClass().add("topbar");
 
