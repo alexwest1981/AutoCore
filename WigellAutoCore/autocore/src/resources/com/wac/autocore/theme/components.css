@@ -10,12 +10,53 @@
 
 .root {
     /* Modena standard-lookups mappade till WAC-tokens */
-    -fx-accent:                  -wac-accent;
-    -fx-focus-color:             -wac-ring;
-    -fx-faint-focus-color:       transparent;
-    -fx-selection-bar:           -wac-accent-soft;
+    -fx-accent:                    -wac-accent;
+    -fx-focus-color:               -wac-ring;
+    -fx-faint-focus-color:         transparent;
+    -fx-selection-bar:             -wac-accent-soft;
     -fx-selection-bar-non-focused: -wac-surface;
-    -fx-text-background-color:   -wac-text;
+    -fx-text-background-color:     -wac-text;
+}
+
+/* ============================================================
+   COMBOBOX-POPUP — temaväljaren och alla andra ComboBoxar.
+   Modenas popup-fönster ärver scenens CSS men behöver explicita
+   regler för bakgrund och textfärg; annars används Modenas egna
+   ljusa defaultfärger (vitt på vitt i mörka teman).
+   Selektorn .combo-box-popup gäller popup-fönstrets rotnode.
+   ============================================================ */
+
+/* Popup-behållaren och listans bakgrund */
+.combo-box-popup > .list-view {
+    -fx-background-color: -wac-card;
+    -fx-border-color:     -wac-line;
+    -fx-border-radius:    10;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 14, 0.12, 0, 4);
+}
+
+/* Standardcell */
+.combo-box-popup > .list-view > .virtual-flow
+    > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill:        -wac-text;
+    -fx-padding:          7 12;
+}
+
+/* Hover */
+.combo-box-popup > .list-view > .virtual-flow
+    > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background-color: -wac-surface;
+    -fx-text-fill:        -wac-text;
+}
+
+/* Markerad (selected) */
+.combo-box-popup > .list-view > .virtual-flow
+    > .clipped-container > .sheet > .list-cell:filled:selected,
+.combo-box-popup > .list-view > .virtual-flow
+    > .clipped-container > .sheet > .list-cell:filled:hover:selected {
+    -fx-background-color: -wac-accent-soft;
+    -fx-text-fill:        -wac-text;
 }
 
 /*
