@@ -253,8 +253,12 @@ public class AutoCoreApp extends Application {
             Scene scene = themeBox.getScene();
             if (scene != null && newT != null) {
                 ThemeManager.apply(scene, newT.slug);
+                // Synka popup-scenen om den är öppen
+                javafx.application.Platform.runLater(() -> syncComboPopup(themeBox));
             }
         });
+        // När användaren klickar öppnar sig popupen – kopia stylesheets dit
+        themeBox.setOnShowing(e -> syncComboPopup(themeBox));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -932,6 +936,41 @@ public class AutoCoreApp extends Application {
             sb.append(found != null ? found : "Service #" + sid);
         }
         return sb.toString();
+    }
+
+    /**
+     * JavaFX ComboBox-popupen är ett separat PopupWindow med sin egna Scene.
+     * Scenens stylesheets ärver INTE automatiskt appens – vi måste kopiera dem
+     * manuellt varje gång popupen visas eller temat byts.
+     *
+     * Popup-referensen finns som privat fält "popup" i ComboBoxListViewSkin (JFX 8).
+     * Vi hämtar den via reflektion och applicerar aktuella stylesheets på pop-scene.
+     */
+    private void syncComboPopup(javafx.scene.control.ComboBox<?> box) {
+        if (box == null || box.getSkin() == null || box.getScene() == null) {
+            return;
+        }
+        javafx.scene.Scene appScene = box.getScene();
+        // Traversera skin-hierarkin och leta efter fältet "popup"
+        for (Class<?> c = box.getSkin().getClass(); c != null; c = c.getSuperclass()) {
+            try {
+                java.lang.reflect.Field f = c.getDeclaredField("popup");
+                f.setAccessible(true);
+                Object popupObj = f.get(box.getSkin());
+                if (popupObj instanceof javafx.stage.Window) {
+                    javafx.scene.Scene popScene = ((javafx.stage.Window) popupObj).getScene();
+                    if (popScene != null) {
+                        popScene.getStylesheets().setAll(appScene.getStylesheets());
+                    }
+                }
+                return;
+            } catch (NoSuchFieldException ignored) {
+                // Fortsätt till superklassen
+            } catch (Exception e) {
+                System.err.println("[AutoCoreApp] syncComboPopup: " + e);
+                return;
+            }
+        }
     }
 
     public static void main(String[] args) {
