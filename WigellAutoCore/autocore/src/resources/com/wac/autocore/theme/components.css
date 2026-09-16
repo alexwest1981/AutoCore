@@ -26,37 +26,31 @@
    Selektorn .combo-box-popup gäller popup-fönstrets rotnode.
    ============================================================ */
 
-/* Popup-behållaren och listans bakgrund */
+/* ComboBox-popup: JavaFX 8-parsern kräver selektorer på EN rad (inga radbrytningar).
+   Vi stilar via .list-view och .list-cell direkt – kortare och valid JavaFX 8-CSS. */
 .combo-box-popup > .list-view {
     -fx-background-color: -wac-card;
-    -fx-border-color:     -wac-line;
-    -fx-border-radius:    10;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 10;
     -fx-background-radius: 10;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 14, 0.12, 0, 4);
 }
-
-/* Standardcell */
-.combo-box-popup > .list-view > .virtual-flow
-    > .clipped-container > .sheet > .list-cell {
+.combo-box-popup > .list-view > .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill:        -wac-text;
-    -fx-padding:          7 12;
+    -fx-text-fill: -wac-text;
+    -fx-padding: 7 12;
 }
-
-/* Hover */
-.combo-box-popup > .list-view > .virtual-flow
-    > .clipped-container > .sheet > .list-cell:filled:hover {
+.combo-box-popup > .list-view > .list-cell:filled:hover {
     -fx-background-color: -wac-surface;
-    -fx-text-fill:        -wac-text;
+    -fx-text-fill: -wac-text;
 }
-
-/* Markerad (selected) */
-.combo-box-popup > .list-view > .virtual-flow
-    > .clipped-container > .sheet > .list-cell:filled:selected,
-.combo-box-popup > .list-view > .virtual-flow
-    > .clipped-container > .sheet > .list-cell:filled:hover:selected {
+.combo-box-popup > .list-view > .list-cell:filled:selected {
     -fx-background-color: -wac-accent-soft;
-    -fx-text-fill:        -wac-text;
+    -fx-text-fill: -wac-text;
+}
+.combo-box-popup > .list-view > .list-cell:filled:hover:selected {
+    -fx-background-color: -wac-accent-soft;
+    -fx-text-fill: -wac-text;
 }
 
 /*
