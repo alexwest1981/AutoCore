@@ -23,6 +23,14 @@ public final class ThemeManager {
 
     private ThemeManager() {}
 
+    /** The most recently styled Scene — used by dialogs to inherit the active theme. */
+    private static Scene currentScene;
+
+    /** Returns the Scene that last had a theme applied, or {@code null} if none yet. */
+    public static Scene getCurrentScene() {
+        return currentScene;
+    }
+
     public static void applyDefault(Scene scene) {
         apply(scene, ThemeCatalog.DEFAULT_SLUG);
     }
@@ -62,6 +70,7 @@ public final class ThemeManager {
     }
 
     public static void apply(Scene scene, String slug) {
+        currentScene = scene;
         if (scene == null) return;
         ThemeCatalog.Theme theme = ThemeCatalog.bySlug(slug);
         if (theme == null) return;

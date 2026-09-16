@@ -102,7 +102,7 @@ ListView, TableView { -fx-background-color: transparent; -fx-border-color: trans
 ListView .list-cell, TableView .table-row-cell { -fx-background-color: transparent; -fx-text-fill: -wac-text; }
 ListView .list-cell:filled:hover, TableView .table-row-cell:hover { -fx-background-color: -wac-side-hover; }
 ListView .list-cell:selected, TableView .table-row-cell:selected {
-    -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-accent;
+    -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text;
 }
 TableView .column-header, TableView .filler {
     -fx-background-color: transparent;
@@ -113,6 +113,10 @@ TableView .column-header .label {
 }
 TableView .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
 TableView .table-row-cell:filled { -fx-background-color: transparent; }
+/* Explicit table-cell-färg: Modenas standard är mörk text (osynlig på mörk bakgrund) */
+TableView .table-cell { -fx-text-fill: -wac-text; }
+TableView .table-row-cell:selected .table-cell { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }
+TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }
 
 /* ---- App shell ---- */
 .stage { -fx-background-color: -wac-page; }

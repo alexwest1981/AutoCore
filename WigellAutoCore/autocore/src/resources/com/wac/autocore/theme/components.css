@@ -1,6 +1,26 @@
 /*
  * components.css — delat komponentlager för alla fem teman.
  *
+ * BUGG 3 — FX-ACCENT VARNING: JavaFX Modena slår upp ett flertal standard-
+ * tokens (-fx-accent, -fx-focus-color m.fl.) globalt i .root när en kontroll
+ * renderas, även om den ännu inte lagts till en Scene. Nedan definieras dessa
+ * tokens i .root som fallback mot -wac-*-tokens, så att varningarna försvinner
+ * och kontroller (t.ex. ComboBox i dialoger) alltid hittar rätt färg.
+ */
+
+.root {
+    /* Modena standard-lookups mappade till WAC-tokens */
+    -fx-accent:                  -wac-accent;
+    -fx-focus-color:             -wac-ring;
+    -fx-faint-focus-color:       transparent;
+    -fx-selection-bar:           -wac-accent-soft;
+    -fx-selection-bar-non-focused: -wac-surface;
+    -fx-text-background-color:   -wac-text;
+}
+
+/*
+ * components.css — delat komponentlager (forts.).
+ *
  * VARFÖR: temats färgfil (azure.css m.fl.) sätter tokens och färg, men saknade
  * stil för flera element som v0-designerna faktiskt använder: stapeldiagram,
  * donut, KPI-ikon, snabbåtgärder, filter/länk/notis, tabell, flikar,
@@ -264,6 +284,23 @@
 .orders-table .table-row-cell .table-cell-split { -fx-background-color: transparent; }
 .orders-table .table-row-cell:selected .table-cell { -fx-text-fill: -wac-on-accent; }
 .cell-sub { -fx-text-fill: -wac-muted; -fx-font-size: 11px; }
+
+/* BUGG 2 — OSYNLIG MARKERAD RAD (gäller alla teman):
+ * Modenas egna selektorer för table-cell skriver vid selektion över
+ * -wac-text med sin inbyggda vit/svart-färg. Vi måste explicit tvinga
+ * table-cell att ärva korrekta färger även i :selected/:focused-läge.
+ * Dessa regler gäller alla TableView i hela appen. */
+TableView .table-cell {
+    -fx-text-fill: -wac-text;
+}
+TableView .table-row-cell:selected .table-cell {
+    -fx-background-color: -wac-accent-soft;
+    -fx-text-fill: -wac-text;
+}
+TableView .table-row-cell:selected:focused .table-cell {
+    -fx-background-color: -wac-accent-soft;
+    -fx-text-fill: -wac-text;
+}
 
 /* ============================================================
    6. KNAPPAR, LÄNKAR, FILTER OCH NOTISER

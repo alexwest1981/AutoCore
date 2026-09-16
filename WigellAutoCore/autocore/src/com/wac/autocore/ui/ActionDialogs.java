@@ -47,6 +47,18 @@ public final class ActionDialogs {
 
     private static void styleDialog(Dialog<?> dialog) {
         dialog.getDialogPane().getStyleClass().add("panel");
+        // Kopiera aktiva stylesheets från appens scene till dialogens egna scene
+        // så att valt tema ärfs konsekvent. DialogPane har ingen Scene förrän
+        // dialogen öppnas, därför använder vi en setOnShowing-listener.
+        dialog.setOnShowing(evt -> {
+            javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
+            if (appScene != null) {
+                javafx.scene.Scene dScene = dialog.getDialogPane().getScene();
+                if (dScene != null) {
+                    dScene.getStylesheets().setAll(appScene.getStylesheets());
+                }
+            }
+        });
     }
 
     // ----------------------------------------------------- 1. Customer
@@ -470,6 +482,16 @@ public final class ActionDialogs {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
+        // Ge Alert samma tema som appens huvud-scene
+        alert.setOnShowing(evt -> {
+            javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
+            if (appScene != null) {
+                javafx.scene.Scene aScene = alert.getDialogPane().getScene();
+                if (aScene != null) {
+                    aScene.getStylesheets().setAll(appScene.getStylesheets());
+                }
+            }
+        });
         alert.showAndWait();
     }
 }
