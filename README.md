@@ -43,6 +43,7 @@ git pull origin develop
 ### Köra och testa applikationen
 
 * **Huvudapplikationen (AutoCore GUI):** Kör `Main.java` i IntelliJ (eller via terminal: `./run.sh`)
+* **Automatiserade enhetstester:** Kör `./test.sh` (eller `com.wac.autocore.test.TestRunner`)
 * **Konsolversionen (CLI):** Kör `ConsoleApp.java` (eller via terminal: `./run.sh ConsoleApp`)
 * **Modulvisa testappar:**
   - **Kunder:** `com.wac.autocore.gui.customers.TestCustomer`
@@ -54,8 +55,45 @@ git pull origin develop
   - **Mekaniker:** `com.wac.autocore.gui.mechanic.TestMechanicApp`
   - **Tjänster:** `com.wac.autocore.gui.serviceItem.TestServiceItemApp`
 
+## JavaFX UI Arkitektur & Refaktorisering
+
+JavaFX-gränssnittet i `com.wac.autocore.ui` är uppbyggt enligt Single Responsibility Principle för hög modularitet, enkel utbyggnad och hög testbarhet:
+
+```
+com.wac.autocore.ui/
+├── AutoCoreApp.java               # Slank koordinator (~80 rader) – sätter upp Stage, Scene och Shell
+├── ActionDialogs.java             # Modaler för Ny bokning, Ny order, Skapa faktura, Betalning m.fl.
+├── components/
+│   ├── UiComponents.java          # Återanvändbara knappar, paneler, KPI-kort och sidhuvuden
+│   ├── TableFactory.java          # Fabrik för typade, sökbara TableView med FilteredList och badge-chips
+│   └── TopBarView.java            # Toppmeny med sökfält och temaväljare (med popup-stilsynkronisering)
+├── navigation/
+│   ├── SidebarView.java           # Kollapsbara menysektioner och brand-information
+│   └── PageRouter.java            # Sidrouter som automatiskt kopplar aktiv tabell till sökfältet
+├── util/
+│   ├── UiFormatters.java          # Ren formateringslogik (valuta, datum, statusord, badge-klasser)
+│   └── EntityLookup.java          # Snabb uppslagning av relaterade entitetsnamn via ID
+└── views/
+    ├── OverviewView.java          # Dashboard med 4 KPI-kort, snabbknappar, statusfördelning och senaste ordrar
+    └── EntityPages.java           # Dedikerade vyer för Kunder, Fordon, Bokningar, Arbetsordrar, Tjänster, etc.
+```
+
+### Automatiserade tester (`com.wac.autocore.test`)
+All beräknings-, formaterings- och uppslagslogik har isolerats från fönsterkontexten, vilket möjliggör 100% automatiserad enhetstestning utan att behöva starta ett GUI-fönster:
+* **`UiFormattersTest`**: Valuta (long/double), trunkering, statusöversättning, datum och badge-CSS-klasser.
+* **`EntityLookupTest`**: Uppslagning mot `GarageSystem` för kundnamn, fordonsreg, mekaniker och tjänster.
+* **`OverviewMetricsTest`**: Verifiering av KPI-mätetal (aktiva ordrar, omsättning, tillgänglighet).
+* **Kör tester:** Kör `./test.sh` i terminalen. Alla 15 enhetstester körs på under en sekund.
+
+### Tema- och stilhantering
+* **7 fullständiga färgteman:** `dark`, `night`, `light`, `azure`, `classic`, `emerald` och `volt`.
+* **Konsekvent kontrast:** Korrigerade textfärger och radmarkeringar i alla mörka och ljusa teman.
+* **Modaler & Alerts:** Ärver automatiskt det aktiva temat via `setOnShowing`-lyssnare.
+* **Temaväljaren:** Garanterat tydlig och läsbar med fast vit bakgrund och mörk text.
+* **Inga placeholders:** Alla vyer läser och uppdaterar verklig data via `GarageSystem`.
+
 ## Design & Styleguide
-Projektets visuella riktlinjer, komponentbibliotek och de 5 färgteman finns sammanställda i den interaktiva styleguiden:
+Projektets visuella riktlinjer, komponentbibliotek och färgteman finns sammanställda i den interaktiva styleguiden:
 - [STYLEGUIDE.html](STYLEGUIDE.html) (öppnas i valfri webbläsare för live-förhandsgranskning och tematester)
 
 ## Utvecklingsteam
