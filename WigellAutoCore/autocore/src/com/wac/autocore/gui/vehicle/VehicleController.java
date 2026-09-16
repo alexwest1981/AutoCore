@@ -1,7 +1,6 @@
 package com.wac.autocore.gui.vehicle;
 
 import com.wac.autocore.data.Database;
-import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
 import javafx.collections.FXCollections;
@@ -15,7 +14,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.util.List;
 
-public class vehicleController {
+public class VehicleController {
 
     private final GarageSystem garageSystem = new GarageSystem();
     @FXML
