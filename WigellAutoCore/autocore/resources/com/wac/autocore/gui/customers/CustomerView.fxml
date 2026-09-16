@@ -9,12 +9,12 @@
 
 <VBox xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.wac.autocore.gui.customers.customerController"
+            fx:controller="com.wac.autocore.gui.customers.CustomerController"
             prefHeight="400.0" prefWidth="600.0">
 <Label text="Kunder"/>
     <TableView fx:id="customerListView">
         <columns>
-            <TableColumn fx:id="customerIdColumn" text="id"/>
+            <TableColumn fx:id="customerIdColumn" text="Id"/>
             <TableColumn fx:id="customerNameColumn" text="Name"/>
             <TableColumn fx:id="customerPhoneColumn" text="Phone"/>
             <TableColumn fx:id="customerEmailColumn" text="Email"/>

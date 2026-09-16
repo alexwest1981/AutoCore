@@ -14,7 +14,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.util.List;
 
-public class customerController {
+public class CustomerController {
 
     private final GarageSystem garageSystem = new GarageSystem();
 
