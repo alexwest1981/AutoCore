@@ -34,6 +34,7 @@ import java.util.List;
  * (Kunder, Fordon, Arbetsordrar, Bokningar, Mekaniker, Fakturor, Tjänster)
  * med direktlänkar och interaktiva tabeller.
  */
+@SuppressWarnings("unchecked")
 public final class SearchResultsView {
 
     private SearchResultsView() {}
