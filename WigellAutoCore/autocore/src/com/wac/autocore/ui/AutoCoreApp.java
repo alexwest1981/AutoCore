@@ -90,11 +90,9 @@ public class AutoCoreApp extends Application {
         searchField.getStyleClass().add("search");
         searchField.setPromptText("Search work orders, customers or vehicles…");
         searchField.setPrefWidth(320);
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (router != null) {
-                router.applySearch(newVal);
-            }
-        });
+        // Koppla interaktiv sök-dropdown som fälls ut direkt under sökfältet
+        com.wac.autocore.ui.components.SearchDropdown.attach(searchField, garage, router);
+
         searchField.setOnAction(e -> {
             if (router != null) {
                 router.smartNavigateForSearch(searchField.getText());

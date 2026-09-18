@@ -69,6 +69,24 @@ public class GlobalSearchTest {
         assertCondition(res.getSectionsWithMatchesCount() == 0, "Sections with matches should be 0");
     }
 
+    public void testSingleLetterPrefixSearch() {
+        SearchResults res = GlobalSearch.search(garage, "A");
+        assertCondition(!res.isEmpty(), "Search for 'A' should find matches across categories");
+        assertCondition(!res.getCustomers().isEmpty(), "Should find customers starting with A");
+        assertCondition(res.getCustomers().get(0).getName().startsWith("Anna"),
+                "First customer for 'A' should be Anna Andersson due to prefix priority");
+        assertCondition(!res.getServices().isEmpty(), "Should find services for 'A'");
+        assertCondition(res.getServices().get(0).getName().startsWith("Annual"),
+                "First service for 'A' should be Annual service due to prefix priority");
+
+        assertCondition(GlobalSearch.startsWithWordIgnoreCase("Anna Andersson", "a"),
+                "Anna Andersson should match prefix 'a'");
+        assertCondition(GlobalSearch.startsWithWordIgnoreCase("Audi A4", "a"),
+                "Audi A4 should match prefix 'a'");
+        assertCondition(GlobalSearch.startsWithWordIgnoreCase("Volvo V70", "v"),
+                "Volvo V70 should match prefix 'v'");
+    }
+
     private static void assertCondition(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError("Test misslyckades: " + message);

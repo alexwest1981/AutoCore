@@ -217,6 +217,14 @@ public final class GlobalSearch {
             }
         }
 
+        sortPrefixMatches(matchingCustomers, c -> c.getName() + " " + c.getEmail(), q);
+        sortPrefixMatches(matchingVehicles, v -> v.getBrand() + " " + v.getModel() + " " + v.getRegistrationNumber(), q);
+        sortPrefixMatches(matchingOrders, wo -> EntityLookup.workOrderCustomerName(garage, wo) + " " + EntityLookup.workOrderVehicleReg(garage, wo), q);
+        sortPrefixMatches(matchingBookings, b -> b.getDescription() + " " + EntityLookup.bookingVehicleReg(garage, b.getId()), q);
+        sortPrefixMatches(matchingMechanics, m -> m.getName() + " " + m.getSpecialization(), q);
+        sortPrefixMatches(matchingInvoices, inv -> "Invoice #" + inv.getId() + " " + EntityLookup.invoiceCustomerName(garage, inv), q);
+        sortPrefixMatches(matchingServices, ServiceItem::getName, q);
+
         return new SearchResults(query,
                 matchingCustomers,
                 matchingVehicles,
@@ -225,6 +233,38 @@ public final class GlobalSearch {
                 matchingMechanics,
                 matchingInvoices,
                 matchingServices);
+    }
+
+    private static <T> void sortPrefixMatches(List<T> list, final java.util.function.Function<T, String> textExtractor, final String queryLower) {
+        if (list == null || list.size() <= 1 || queryLower == null || queryLower.isEmpty()) return;
+        Collections.sort(list, new java.util.Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                String s1 = textExtractor.apply(o1);
+                String s2 = textExtractor.apply(o2);
+                boolean p1 = startsWithWordIgnoreCase(s1, queryLower);
+                boolean p2 = startsWithWordIgnoreCase(s2, queryLower);
+                if (p1 && !p2) return -1;
+                if (!p1 && p2) return 1;
+                return 0;
+            }
+        });
+    }
+
+    public static boolean startsWithWordIgnoreCase(String source, String queryLower) {
+        if (source == null || queryLower == null || queryLower.isEmpty()) {
+            return false;
+        }
+        String s = source.trim().toLowerCase();
+        if (s.startsWith(queryLower)) {
+            return true;
+        }
+        for (String word : s.split("[\\s\\-_/.]+")) {
+            if (word.startsWith(queryLower)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean containsIgnoreCase(String source, String queryLower) {
