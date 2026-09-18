@@ -16,6 +16,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -43,16 +44,22 @@ public final class ActionDialogs {
     private ActionDialogs() {}
 
     private static void styleDialog(Dialog<?> dialog) {
-        dialog.getDialogPane().getStyleClass().add("panel");
+        DialogPane pane = dialog.getDialogPane();
+        if (!pane.getStyleClass().contains("root")) {
+            pane.getStyleClass().add("root");
+        }
         // Kopiera aktiva stylesheets från appens scene till dialogens egna scene
         // så att valt tema ärfs konsekvent. DialogPane har ingen Scene förrän
         // dialogen öppnas, därför använder vi en setOnShowing-listener.
         dialog.setOnShowing(evt -> {
             javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
             if (appScene != null) {
-                javafx.scene.Scene dScene = dialog.getDialogPane().getScene();
+                javafx.scene.Scene dScene = pane.getScene();
                 if (dScene != null) {
                     dScene.getStylesheets().setAll(appScene.getStylesheets());
+                    if (dScene.getRoot() != null && !dScene.getRoot().getStyleClass().contains("root")) {
+                        dScene.getRoot().getStyleClass().add("root");
+                    }
                 }
             }
         });
