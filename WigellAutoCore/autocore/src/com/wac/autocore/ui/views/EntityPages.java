@@ -23,6 +23,7 @@ import javafx.scene.layout.VBox;
 /**
  * Fabrik för att bygga enhetliga sidor och tabeller för varje domänentitet.
  */
+@SuppressWarnings("unchecked")
 public final class EntityPages {
 
     private EntityPages() {}

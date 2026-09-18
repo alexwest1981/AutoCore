@@ -8,8 +8,6 @@ import com.wac.autocore.service.GarageSystem;
 
 public class DesignSelectorApp extends Application {
 
-    private GarageSystem garageSystem = new GarageSystem();
-
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Wigell AutoCore - Select Design Option (1-5)");

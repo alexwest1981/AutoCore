@@ -38,7 +38,6 @@ public final class OverviewView {
     public static VBox build(GarageSystem garage, Runnable onRefresh, com.wac.autocore.ui.navigation.PageRouter router) {
         List<Booking> bookings = garage.getBookings();
         List<WorkOrder> workOrders = garage.getWorkOrders();
-        List<Invoice> invoices = garage.getInvoices();
         List<Payment> payments = garage.getPayments();
 
         long active = 0;
@@ -183,6 +182,7 @@ public final class OverviewView {
         return box;
     }
 
+    @SuppressWarnings("unchecked")
     private static TableView<WorkOrder> buildRecentOrdersTable(GarageSystem garage, List<WorkOrder> orders, com.wac.autocore.ui.navigation.PageRouter router) {
         TableFactory.FilterableTable<WorkOrder> table = TableFactory.create(orders);
         TableView<WorkOrder> t = table.getTableView();
