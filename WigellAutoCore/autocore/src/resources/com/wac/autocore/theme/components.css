@@ -617,3 +617,108 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-padding: 8 12;
     -fx-cursor: hand;
 }
+
+/* ============================================================
+   13. DIALOGS & MODALER (DialogPane, HeaderPanel, ButtonBar)
+   ============================================================ */
+.dialog-pane {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.dialog-pane > .header-panel {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 14px 18px;
+}
+
+.dialog-pane > .header-panel > .label,
+.dialog-pane > .header-panel .label {
+    -fx-text-fill: -wac-text;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane > .content {
+    -fx-background-color: -wac-card;
+    -fx-padding: 16px 18px;
+}
+
+.dialog-pane > .content .label,
+.dialog-pane > .content Label {
+    -fx-text-fill: -wac-text;
+}
+
+.dialog-pane > .button-bar {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 12px 18px;
+}
+
+.dialog-pane > .button-bar .button {
+    -fx-background-color: -wac-card;
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 6px 16px;
+    -fx-cursor: hand;
+}
+
+.dialog-pane > .button-bar .button:hover {
+    -fx-background-color: -wac-accent-soft;
+}
+
+.dialog-pane > .button-bar .button:default {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane > .button-bar .button:default:hover {
+    -fx-background-color: -wac-accent-hover;
+}
+
+/* ============================================================
+   14. DATEPICKER POPUP
+   ============================================================ */
+.date-picker-popup {
+    -fx-background-color: -wac-line, -wac-card;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 8;
+}
+
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: -wac-shell;
+}
+
+.date-picker-popup > .month-year-pane .label {
+    -fx-text-fill: -wac-text;
+    -fx-font-weight: bold;
+}
+
+.date-picker-popup > .calendar-grid {
+    -fx-background-color: -wac-card;
+}
+
+.date-picker-popup > .calendar-grid .day-cell {
+    -fx-background-color: -wac-card;
+    -fx-text-fill: -wac-text;
+}
+
+.date-picker-popup > .calendar-grid .day-cell:hover {
+    -fx-background-color: -wac-accent-soft;
+}
+
+.date-picker-popup > .calendar-grid .day-cell.selected {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
