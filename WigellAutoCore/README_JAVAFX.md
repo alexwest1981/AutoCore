@@ -32,12 +32,12 @@ Arkitekturen följer Single Responsibility Principle och är indelad i följande
 * **`PageRouter.java`**: Ansvarar för sidbyten och kopplar automatiskt den aktiva sidans tabell till toppbarens sökfält så att filtrering sker mot rätt vy.
 
 ### Komponenter (`components/`)
-* **`TopBarView.java`**: Toppmeny med sökfält och tema-ComboBox. Inkluderar fast, kontrastrik styling (vit bakgrund / mörk text) och popup-scensynkronisering via Java-reflektion så att popup-fönstret alltid ärver appens tema.
-* **`TableFactory.java`**: Typad fabrik för att skapa `TableView` kopplad till `FilteredList`. Innehåller hjälpare för standardtextkolumner (`col`), statusbadge-kolumner (`badgeCol`) och flerkolumnssökning (`applySearch`).
+* **`TopBar` (inbyggd i `AutoCoreApp.java`)**: Toppmeny med sökfält och tema-ComboBox. Ligger direkt i applikationskoden så att den enkelt kan avaktiveras (kommentera bort `mainCol.setTop(...)`). Inkluderar dynamisk styling för mörka och ljusa teman samt popup-scensynkronisering via Java-reflektion så att popup-fönstret ärver appens tema och `.root`-klass utan CSS-varningar.
+* **`TableFactory.java`**: Typad fabrik för att skapa `TableView` kopplad till `FilteredList`. Innehåller hjälpare för standardtextkolumner (`col`), statusbadge-kolumner (`badgeCol`) och flerkolumnssökning (`applySearch`). Sökningen hämtar celldata direkt från radobjektet (`col.getCellData(row)`), vilket förhindrar `IndexOutOfBoundsException` när filtrerade vyer söks.
 * **`UiComponents.java`**: Återanvändbara UI-element: primära och sekundära knappar, KPI-kort, informationspaneler och standardiserade sidhuvuden (`pageHead`, `buildEntityPage`).
 
 ### Vyer (`views/`)
-* **`OverviewView.java`**: Huvuddashboard med 4 KPI-kort (Aktiva arbetsordrar, Total omsättning, Bokningar, Mekaniker i tjänst), snabbknappar för modaler, statusöversikt, kommande bokningar och senaste ordrar.
+* **`OverviewView.java`**: Huvuddashboard med 4 KPI-kort (Aktiva arbetsordrar, Total omsättning, Bokningar, Mekaniker i tjänst), snabbknappar för modaler, statusöversikt, kommande bokningar och sökbar tabell för senaste arbetsordrar.
 * **`EntityPages.java`**: Dedikerade byggare för varje domänentitet:
   - Kunder (med "+ New customer")
   - Fordon (med "+ Register vehicle")
@@ -54,10 +54,25 @@ Arkitekturen följer Single Responsibility Principle och är indelad i följande
 
 ---
 
-## 3. Automatiserade Enhetstester (`com.wac.autocore.test`)
+## 3. Sökarkitektur & Flöde
 
-Eftersom all presentations-, beräknings- och uppslagslogik är isolerad i rena hjälpklasser kan den enhetstestas till 100% utan att öppna ett grafiskt fönster.
+Sökfunktionen i AutoCore är genomgående integrerad mellan toppmenyn och sidorna:
+1. **Flerkolumnssökning:** `TableFactory.applySearch(...)` matchar användarens sökord mot alla relevanta kolumner på en entitet (t.ex. namn, telefon, e-post, adress för kunder; regnummer, märke, modell för fordon).
+2. **Koppling mot tabell:** När en vy laddas registrerar den sin tabell hos `PageRouter.setActiveTable(...)`.
+3. **Bevarad sökning vid sidbyten:** Om användaren har skrivit något i sökfältet och klickar till en annan sida i sidomenyn, appliceras sökordet automatiskt på den nya sidans tabell omedelbart vid sidbytet.
+4. **Startsida (Overview):** Sökfältet är kopplat till tabellen för senaste arbetsordrar direkt vid applikationens start.
+5. **Smart navigering vid Enter:** Om användaren trycker `Enter` i sökfältet från Overview analyseras söktermen (t.ex. registreringsnummer, mekanikernamn, kundnamn) och användaren navigeras automatiskt till lämplig vy med sökfiltret applicerat.
 
+---
+
+## 4. Automatiserade Enhetstester (`com.wac.autocore.test`)
+
+Eftersom all presentations-, beräknings-, sök- och uppslagslogik är isolerad i rena hjälpklasser kan den enhetstestas till 100% utan att öppna ett grafiskt fönster.
+
+* **`TableFactoryTest.java`**:
+  - Testar flerkolumnssökning med `FilteredList`.
+  - Verifierar delsträngsmatchning, skiftlägesokänslighet (case-insensitivity) och blankstegstrimning.
+  - Verifierar att sökning på redan filtrerad tabell inte kraschar med indexfel.
 * **`UiFormattersTest.java`**:
   - Testar valutaformatering (`long` och `double`).
   - Testar texttrunkering med ellipser (`…`).
@@ -70,7 +85,7 @@ Eftersom all presentations-, beräknings- och uppslagslogik är isolerad i rena 
 * **`OverviewMetricsTest.java`**:
   - Verifierar KPI-beräkningar för aktiva arbetsordrar, total omsättning från lyckade betalningar och mekanikertillgänglighet.
 * **`TestRunner.java`**:
-  - Egenutvecklad, fristående test-runner med färgkodad utskrift och tydliga felrapporter.
+  - Egenutvecklad, fristående test-runner med färgkodad utskrift och tydliga felrapporter. Totalt 17 automatiserade tester.
 
 Kör testerna när som helst med:
 ```bash
@@ -79,19 +94,22 @@ Kör testerna när som helst med:
 
 ---
 
-## 4. Teman & CSS-arkitektur
+## 5. Teman & CSS-arkitektur
 
 Applikationen stöder 7 färgteman som kan växlas direkt under körning i toppmenyn:
-* `dark` (Mörkt modernt)
+* `dark` (Mörkt modernt, standard)
 * `night` (Djupt natt-tema)
 * `light` (Ljust och rent)
 * `azure` (Blå accent)
 * `classic` (Klassisk industristil)
 * `emerald` (Grön accent)
 * `volt` (Högkontrast neon)
+* `default` (Plain JavaFX Modena för jämförelse och tillgänglighet)
 
 ### Viktiga CSS-egenskaper & fixar
-1. **Full kontrast i tabeller:** Både vanliga och markerade rader har explicit textfärg och bakgrundsfärg för att undvika osynlig text i mörka teman.
-2. **Modaler & dialoger:** [ActionDialogs.java](file:///home/alex/Documents/Skolgrejer/Systemarkitektur/WigellAutoCore/autocore/src/com/wac/autocore/ui/ActionDialogs.java) applicerar det aktiva temat på alla `Dialog` och `Alert`-fönster via en `setOnShowing`-lyssnare.
-3. **Temaväljaren:** Har fast inline-styling för att garantera perfekt läsbarhet (vit bakgrund med mörk text) i samtliga teman.
-4. **Popup-scener:** ComboBox-popups synkroniserar sina stylesheets med huvudscenen via `TopBarView.syncComboPopup`.
+1. **Ingen färgstagnation vid temabyte:** Cellerna i ComboBox (`.theme-pick`) styrs uteslutande via CSS-regler i `components.css`, `dark.css` och `night.css`. Inga inline `setStyle(...)` används på `ListCell`, vilket eliminerar buggen där celler behöll vit text efter byte mellan ljusa och mörka teman.
+2. **Full kontrast i tabeller:** Både vanliga och markerade rader har explicit textfärg och bakgrundsfärg för att undvika osynlig text i alla teman.
+3. **Modaler & dialoger:** [ActionDialogs.java](file:///home/alex/Documents/Skolgrejer/Systemarkitektur/WigellAutoCore/autocore/src/com/wac/autocore/ui/ActionDialogs.java) applicerar det aktiva temat på alla `Dialog` och `Alert`-fönster via en `setOnShowing`-lyssnare.
+4. **Popup-scener:** ComboBox-popups synkroniserar sina stylesheets och behåller `.root`-klassen så att Modenas standardtokens (`-fx-box-border`, `-fx-base`) alltid hittas utan CSS-varningar.
+5. **Default-temat (Plain JavaFX):** Innehåller explicita regler för `.page-title` (24px fetstil) och aktiv meny (.nav-item.selected) för tydlig hierarki även utan anpassat designtema.
+

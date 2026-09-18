@@ -29,8 +29,6 @@ public final class EntityPages {
 
     public static VBox buildCustomersPage(GarageSystem garage, PageRouter router) {
         FilterableTable<Customer> table = TableFactory.create(garage.getCustomers());
-        router.setActiveTable(table);
-
         TableView<Customer> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col("ID", 60, c -> String.valueOf(c.getId())),
@@ -38,6 +36,7 @@ public final class EntityPages {
                 TableFactory.col("Phone", 150, Customer::getPhone),
                 TableFactory.col("Email", 280, Customer::getEmail),
                 TableFactory.badgeCol("VIP", 100, c -> c.isVip() ? "Yes" : "No"));
+        router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton("+ New customer");
         addBtn.setOnAction(e -> ActionDialogs.showCreateCustomerDialog(garage, () -> router.navigate("customers")));
@@ -50,8 +49,6 @@ public final class EntityPages {
 
     public static VBox buildVehiclesPage(GarageSystem garage, PageRouter router) {
         FilterableTable<Vehicle> table = TableFactory.create(garage.getVehicles());
-        router.setActiveTable(table);
-
         TableView<Vehicle> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col("ID", 60, c -> String.valueOf(c.getId())),
@@ -60,6 +57,7 @@ public final class EntityPages {
                 TableFactory.col("Model", 160, Vehicle::getModel),
                 TableFactory.col("Year", 100, c -> String.valueOf(c.getYear())),
                 TableFactory.col("Customer", 220, c -> EntityLookup.customerName(garage, c.getCustomerId())));
+        router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton("+ Register vehicle");
         addBtn.setOnAction(e -> ActionDialogs.showCreateVehicleDialog(garage, () -> router.navigate("vehicles")));
@@ -72,8 +70,6 @@ public final class EntityPages {
 
     public static VBox buildBookingsPage(GarageSystem garage, PageRouter router) {
         FilterableTable<Booking> table = TableFactory.create(garage.getBookings());
-        router.setActiveTable(table);
-
         TableView<Booking> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col("ID", 60, c -> String.valueOf(c.getId())),
@@ -81,6 +77,7 @@ public final class EntityPages {
                 TableFactory.col("Date", 130, c -> String.valueOf(c.getDate())),
                 TableFactory.col("Description", 320, Booking::getDescription),
                 TableFactory.badgeCol("Status", 140, c -> UiFormatters.statusWord(c.getStatus())));
+        router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton("+ New booking");
         addBtn.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, () -> router.navigate("bookings")));
@@ -93,8 +90,6 @@ public final class EntityPages {
 
     public static VBox buildWorkOrdersPage(GarageSystem garage, PageRouter router) {
         FilterableTable<WorkOrder> table = TableFactory.create(garage.getWorkOrders());
-        router.setActiveTable(table);
-
         TableView<WorkOrder> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col("ID", 70, c -> String.valueOf(c.getId())),
@@ -102,6 +97,7 @@ public final class EntityPages {
                 TableFactory.col("Mechanic", 180, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
                 TableFactory.col("Services", 300, c -> EntityLookup.serviceNames(garage, c.getServiceItemIds())),
                 TableFactory.badgeCol("Status", 140, c -> UiFormatters.statusWord(c.getStatus())));
+        router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton("+ New work order");
         addBtn.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, () -> router.navigate("workorders")));
@@ -140,8 +136,6 @@ public final class EntityPages {
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
         FilterableTable<ServiceItem> table = TableFactory.create(garage.getServiceItems());
-        router.setActiveTable(table);
-
         TableView<ServiceItem> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col("ID", 70, c -> String.valueOf(c.getId())),
@@ -149,6 +143,7 @@ public final class EntityPages {
                 TableFactory.col("Description", 360, ServiceItem::getDescription),
                 TableFactory.col("Price", 120, c -> UiFormatters.formatMoney(c.getPrice())),
                 TableFactory.col("Time", 100, c -> c.getEstimatedMinutes() + " min"));
+        router.setActiveTable(table);
 
         return UiComponents.buildEntityPage(
                 "Services", garage.getServiceItems().size() + " services",
@@ -158,8 +153,6 @@ public final class EntityPages {
 
     public static VBox buildMechanicsPage(GarageSystem garage, PageRouter router) {
         FilterableTable<Mechanic> table = TableFactory.create(garage.getMechanics());
-        router.setActiveTable(table);
-
         TableView<Mechanic> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col("ID", 70, c -> String.valueOf(c.getId())),
@@ -167,6 +160,7 @@ public final class EntityPages {
                 TableFactory.col("Phone", 160, Mechanic::getPhone),
                 TableFactory.col("Specialisation", 260, Mechanic::getSpecialization),
                 TableFactory.badgeCol("Available", 130, c -> c.isAvailable() ? "Yes" : "No"));
+        router.setActiveTable(table);
 
         return UiComponents.buildEntityPage(
                 "Mechanics", garage.getMechanics().size() + " employees",
@@ -176,8 +170,6 @@ public final class EntityPages {
 
     public static VBox buildInvoicesPage(GarageSystem garage, PageRouter router) {
         FilterableTable<Invoice> table = TableFactory.create(garage.getInvoices());
-        router.setActiveTable(table);
-
         TableView<Invoice> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col("ID", 70, c -> String.valueOf(c.getId())),
@@ -187,6 +179,7 @@ public final class EntityPages {
                 TableFactory.col("Discount", 100, c -> UiFormatters.formatMoney(c.getDiscount())),
                 TableFactory.col("Total", 110, c -> UiFormatters.formatMoney(c.getTotalAmount())),
                 TableFactory.badgeCol("Paid", 110, c -> c.isPaid() ? "Yes" : "No"));
+        router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton("+ Create invoice");
         addBtn.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, () -> router.navigate("invoices")));
@@ -213,8 +206,6 @@ public final class EntityPages {
 
     public static VBox buildPaymentsPage(GarageSystem garage, PageRouter router) {
         FilterableTable<Payment> table = TableFactory.create(garage.getPayments());
-        router.setActiveTable(table);
-
         TableView<Payment> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col("ID", 70, c -> String.valueOf(c.getId())),
@@ -223,6 +214,7 @@ public final class EntityPages {
                 TableFactory.col("Type", 130, Payment::getPaymentType),
                 TableFactory.col("Date/time", 220, c -> String.valueOf(c.getPaymentDate())),
                 TableFactory.badgeCol("Status", 110, c -> c.isSuccessful() ? "Successful" : "Failed"));
+        router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton("+ Register payment");
         addBtn.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, () -> router.navigate("payments")));

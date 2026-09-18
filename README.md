@@ -61,36 +61,43 @@ JavaFX-gränssnittet i `com.wac.autocore.ui` är uppbyggt enligt Single Responsi
 
 ```
 com.wac.autocore.ui/
-├── AutoCoreApp.java               # Slank koordinator (~80 rader) – sätter upp Stage, Scene och Shell
+├── AutoCoreApp.java               # Huvudapplikation – Stage, Scene, Shell samt inbyggd TopBar
 ├── ActionDialogs.java             # Modaler för Ny bokning, Ny order, Skapa faktura, Betalning m.fl.
 ├── components/
 │   ├── UiComponents.java          # Återanvändbara knappar, paneler, KPI-kort och sidhuvuden
-│   ├── TableFactory.java          # Fabrik för typade, sökbara TableView med FilteredList och badge-chips
-│   └── TopBarView.java            # Toppmeny med sökfält och temaväljare (med popup-stilsynkronisering)
+│   └── TableFactory.java          # Fabrik för typade, sökbara TableView med FilteredList och badge-chips
 ├── navigation/
 │   ├── SidebarView.java           # Kollapsbara menysektioner och brand-information
-│   └── PageRouter.java            # Sidrouter som automatiskt kopplar aktiv tabell till sökfältet
+│   └── PageRouter.java            # Sidrouter med sökbevarande och smart navigation
 ├── util/
 │   ├── UiFormatters.java          # Ren formateringslogik (valuta, datum, statusord, badge-klasser)
 │   └── EntityLookup.java          # Snabb uppslagning av relaterade entitetsnamn via ID
 └── views/
-    ├── OverviewView.java          # Dashboard med 4 KPI-kort, snabbknappar, statusfördelning och senaste ordrar
+    ├── OverviewView.java          # Dashboard med 4 KPI-kort, snabbknappar, statusfördelning och sökbar orderlista
     └── EntityPages.java           # Dedikerade vyer för Kunder, Fordon, Bokningar, Arbetsordrar, Tjänster, etc.
 ```
 
+### TopBar & Sökfunktion
+* **Inbyggd i `AutoCoreApp.java`:** Toppmenyn ligger direkt i applikationskoden för enkel hantering och kan stängas av med en enda rad kommentar (`// mainCol.setTop(buildTopBar(router));`).
+* **Robust flerkolumnssökning:** `TableFactory` söker direkt mot radobjektet (`col.getCellData(row)`), vilket förhindrar indexkrascher när listor filtreras.
+* **Sökning på startsidan (Overview):** Sökfältet är kopplat till tabellen för senaste arbetsordrar på Overview.
+* **Smart Enter-sökning:** Trycker man Enter i sökfältet från Overview känner appen av söktermen och navigerar automatiskt till bästa vy (Kunder, Fordon, Mekaniker eller Arbetsordrar) med sökningen applicerad.
+* **Bevarande vid sidbyten:** Söksträngen sparas i `PageRouter` och appliceras automatiskt på den nya tabellen när användaren klickar runt i menyn.
+
 ### Automatiserade tester (`com.wac.autocore.test`)
-All beräknings-, formaterings- och uppslagslogik har isolerats från fönsterkontexten, vilket möjliggör 100% automatiserad enhetstestning utan att behöva starta ett GUI-fönster:
+All beräknings-, formaterings-, sök- och uppslagslogik har isolerats och täcks av automatiserade enhetstester:
+* **`TableFactoryTest`**: Verifierar flerkolumnssökning och regressionsskyddar mot indexbuggar vid filtrering.
 * **`UiFormattersTest`**: Valuta (long/double), trunkering, statusöversättning, datum och badge-CSS-klasser.
 * **`EntityLookupTest`**: Uppslagning mot `GarageSystem` för kundnamn, fordonsreg, mekaniker och tjänster.
 * **`OverviewMetricsTest`**: Verifiering av KPI-mätetal (aktiva ordrar, omsättning, tillgänglighet).
-* **Kör tester:** Kör `./test.sh` i terminalen. Alla 15 enhetstester körs på under en sekund.
+* **Kör tester:** Kör `./test.sh` i terminalen. Alla 17 enhetstester körs på under en sekund.
 
 ### Tema- och stilhantering
-* **7 fullständiga färgteman:** `dark`, `night`, `light`, `azure`, `classic`, `emerald` och `volt`.
-* **Konsekvent kontrast:** Korrigerade textfärger och radmarkeringar i alla mörka och ljusa teman.
+* **Stöd för Light/Dark-mode & färgteman:** `dark`, `night`, `light`, `azure`, `classic`, `emerald`, `volt` samt `default` (Plain JavaFX).
+* **Ren CSS-styrning:** Temaväljaren och popup-listan styrs via CSS (`components.css`, `dark.css`, `night.css`) utan hackiga inline-stilar på återanvända celler.
+* **Inga CSS-varningar:** Popup-scenen synkroniserar stilklassen `.root` med huvudscenen så att Modenas tokens (`-fx-accent`, `-fx-box-border`) alltid finns tillgängliga.
+* **Tydliga rubriker i default-temat:** Plain JavaFX har tydliga sidrubriker (24px fetstil) och markerad aktiv vy i sidomenyn.
 * **Modaler & Alerts:** Ärver automatiskt det aktiva temat via `setOnShowing`-lyssnare.
-* **Temaväljaren:** Garanterat tydlig och läsbar med fast vit bakgrund och mörk text.
-* **Inga placeholders:** Alla vyer läser och uppdaterar verklig data via `GarageSystem`.
 
 ## Design & Styleguide
 Projektets visuella riktlinjer, komponentbibliotek och färgteman finns sammanställda i den interaktiva styleguiden:

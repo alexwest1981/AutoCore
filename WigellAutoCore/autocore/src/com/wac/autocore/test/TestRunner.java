@@ -22,6 +22,7 @@ public class TestRunner {
         runClass(UiFormattersTest.class);
         runClass(EntityLookupTest.class);
         runClass(OverviewMetricsTest.class);
+        runClass(TableFactoryTest.class);
 
         System.out.println("--------------------------------------------------");
         System.out.printf("Resultat: %d tester körda. \u001B[32m%d godkända\u001B[0m, \u001B[31m%d misslyckade\u001B[0m.%n",

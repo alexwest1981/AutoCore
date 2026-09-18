@@ -33,6 +33,17 @@
     -fx-spacing: 18px;
 }
 
+/* ---- Page titles / headings (SCRUM-72) ---- */
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* ---- Active sidebar nav button (SCRUM-73) ---- */
+.nav-item.selected {
+    -fx-font-weight: bold;
+}
+
 /* ---- Status/drift box at the bottom of the sidebar ---- */
 .drift {
     -fx-padding: 14px 16px;

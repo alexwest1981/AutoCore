@@ -86,8 +86,6 @@ public final class ThemeManager {
             if (themeUrl != null) {
                 scene.getStylesheets().add(themeUrl.toExternalForm());
             }
-            // Do NOT add the "root" style class: Modena targets the root pane
-            // via its own internal selectors, and adding "root" can interfere.
             return;
         }
 

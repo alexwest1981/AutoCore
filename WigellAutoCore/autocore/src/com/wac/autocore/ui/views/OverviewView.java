@@ -32,6 +32,10 @@ public final class OverviewView {
     private OverviewView() {}
 
     public static VBox build(GarageSystem garage, Runnable onRefresh) {
+        return build(garage, onRefresh, null);
+    }
+
+    public static VBox build(GarageSystem garage, Runnable onRefresh, com.wac.autocore.ui.navigation.PageRouter router) {
         List<Booking> bookings = garage.getBookings();
         List<WorkOrder> workOrders = garage.getWorkOrders();
         List<Invoice> invoices = garage.getInvoices();
@@ -88,7 +92,7 @@ public final class OverviewView {
                 statusPanel(workOrders),
                 bookingsPanel(garage, bookings));
 
-        TableView<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders);
+        TableView<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders, router);
         VBox recentPanel = UiComponents.panel("Recent work orders",
                 "The latest jobs registered in the system", recent);
 
@@ -179,7 +183,7 @@ public final class OverviewView {
         return box;
     }
 
-    private static TableView<WorkOrder> buildRecentOrdersTable(GarageSystem garage, List<WorkOrder> orders) {
+    private static TableView<WorkOrder> buildRecentOrdersTable(GarageSystem garage, List<WorkOrder> orders, com.wac.autocore.ui.navigation.PageRouter router) {
         TableFactory.FilterableTable<WorkOrder> table = TableFactory.create(orders);
         TableView<WorkOrder> t = table.getTableView();
         t.getColumns().addAll(
@@ -188,6 +192,9 @@ public final class OverviewView {
                 TableFactory.col("Mechanic", 180, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
                 TableFactory.col("Services", 300, c -> EntityLookup.serviceNames(garage, c.getServiceItemIds())),
                 TableFactory.badgeCol("Status", 140, c -> UiFormatters.statusWord(c.getStatus())));
+        if (router != null) {
+            router.setActiveTable(table);
+        }
         return t;
     }
 }

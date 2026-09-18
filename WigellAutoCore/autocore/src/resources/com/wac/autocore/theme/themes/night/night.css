@@ -182,6 +182,42 @@ TableView .table-view { -fx-padding: 0; }
 .search { -fx-background-radius: 999; -fx-background-color: derive(-wac-header, -4%); -fx-padding: 8px 16px; -fx-border-color: transparent; }
 .search:focused { -fx-border-color: -wac-ring; }
 
+/* ---- Theme picker night styling ---- */
+.theme-pick {
+    -fx-background-color: #161b22;
+    -fx-border-color: #30363d;
+}
+.theme-pick .label {
+    -fx-text-fill: #f0f6fc;
+}
+.theme-pick .arrow {
+    -fx-background-color: #8b949e;
+}
+.theme-pick:hover {
+    -fx-background-color: #21262d;
+}
+
+.combo-box-popup > .list-view {
+    -fx-background-color: #0d1117;
+    -fx-border-color: #30363d;
+}
+.combo-box-popup > .list-view > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f0f6fc;
+}
+.combo-box-popup > .list-view > .list-cell:filled:hover {
+    -fx-background-color: #161b22;
+    -fx-text-fill: #f0f6fc;
+}
+.combo-box-popup > .list-view > .list-cell:filled:selected {
+    -fx-background-color: #21262d;
+    -fx-text-fill: #f0f6fc;
+}
+.combo-box-popup > .list-view > .list-cell:filled:hover:selected {
+    -fx-background-color: #30363d;
+    -fx-text-fill: #f0f6fc;
+}
+
 .pages { -fx-padding: 22px 26px 26px 26px; -fx-background-color: -wac-shell; }
 .page-title { -fx-font-size: 27px; -fx-font-weight: bold; -fx-text-fill: -wac-text; }
 .eyebrow { -fx-font-size: 11px; -fx-text-fill: -wac-muted; }

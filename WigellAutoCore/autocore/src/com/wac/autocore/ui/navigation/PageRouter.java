@@ -17,6 +17,7 @@ public class PageRouter {
 
     private FilterableTable<?> activeTable;
     private String currentPageKey;
+    private String currentSearchQuery = "";
 
     public PageRouter(GarageSystem garage, VBox pageBox) {
         this(garage, pageBox, null);
@@ -34,12 +35,51 @@ public class PageRouter {
 
     public void setActiveTable(FilterableTable<?> table) {
         this.activeTable = table;
+        if (this.activeTable != null && currentSearchQuery != null && !currentSearchQuery.isEmpty()) {
+            this.activeTable.applySearch(currentSearchQuery);
+        }
     }
 
     public void applySearch(String query) {
+        this.currentSearchQuery = query;
         if (activeTable != null) {
             activeTable.applySearch(query);
         }
+    }
+
+    public String getCurrentSearchQuery() {
+        return currentSearchQuery;
+    }
+
+    public void smartNavigateForSearch(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return;
+        }
+        applySearch(query.trim());
+        if (!"overview".equals(currentPageKey)) {
+            return;
+        }
+
+        final String q = query.trim().toLowerCase();
+        for (com.wac.autocore.model.Customer c : garage.getCustomers()) {
+            if (c.getName().toLowerCase().contains(q) || c.getPhone().toLowerCase().contains(q) || c.getEmail().toLowerCase().contains(q)) {
+                navigate("customers");
+                return;
+            }
+        }
+        for (com.wac.autocore.model.Vehicle v : garage.getVehicles()) {
+            if (v.getRegistrationNumber().toLowerCase().contains(q) || v.getBrand().toLowerCase().contains(q) || v.getModel().toLowerCase().contains(q)) {
+                navigate("vehicles");
+                return;
+            }
+        }
+        for (com.wac.autocore.model.Mechanic m : garage.getMechanics()) {
+            if (m.getName().toLowerCase().contains(q) || m.getSpecialization().toLowerCase().contains(q)) {
+                navigate("mechanics");
+                return;
+            }
+        }
+        navigate("workorders");
     }
 
     public String getCurrentPageKey() {
@@ -55,7 +95,7 @@ public class PageRouter {
         pageBox.getChildren().clear();
 
         if ("overview".equals(key)) {
-            pageBox.getChildren().add(OverviewView.build(garage, () -> navigate("overview")));
+            pageBox.getChildren().add(OverviewView.build(garage, () -> navigate("overview"), this));
         } else if ("customers".equals(key)) {
             pageBox.getChildren().add(EntityPages.buildCustomersPage(garage, this));
         } else if ("vehicles".equals(key)) {

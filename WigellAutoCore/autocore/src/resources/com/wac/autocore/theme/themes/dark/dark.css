@@ -179,6 +179,42 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
 .search { -fx-background-radius: 999; -fx-background-color: derive(-wac-header, 8%); -fx-padding: 8px 16px; -fx-border-color: transparent; }
 .search:focused { -fx-border-color: -wac-ring; }
 
+/* ---- Theme picker dark styling ---- */
+.theme-pick {
+    -fx-background-color: #27272a;
+    -fx-border-color: #3f3f46;
+}
+.theme-pick .label {
+    -fx-text-fill: #f4f4f5;
+}
+.theme-pick .arrow {
+    -fx-background-color: #a1a1aa;
+}
+.theme-pick:hover {
+    -fx-background-color: #3f3f46;
+}
+
+.combo-box-popup > .list-view {
+    -fx-background-color: #18181b;
+    -fx-border-color: #3f3f46;
+}
+.combo-box-popup > .list-view > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f4f4f5;
+}
+.combo-box-popup > .list-view > .list-cell:filled:hover {
+    -fx-background-color: #27272a;
+    -fx-text-fill: #f4f4f5;
+}
+.combo-box-popup > .list-view > .list-cell:filled:selected {
+    -fx-background-color: #3f3f46;
+    -fx-text-fill: #f4f4f5;
+}
+.combo-box-popup > .list-view > .list-cell:filled:hover:selected {
+    -fx-background-color: #52525b;
+    -fx-text-fill: #f4f4f5;
+}
+
 .pages { -fx-padding: 22px 26px 26px 26px; -fx-background-color: -wac-shell; }
 .page-title { -fx-font-size: 27px; -fx-font-weight: bold; -fx-text-fill: -wac-text; }
 .eyebrow { -fx-font-size: 11px; -fx-text-fill: -wac-muted; }

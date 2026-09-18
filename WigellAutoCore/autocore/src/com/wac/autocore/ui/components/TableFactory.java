@@ -55,15 +55,14 @@ public final class TableFactory {
                 if (q.isEmpty()) {
                     return true;
                 }
-                int idx = baseList.indexOf(row);
-                if (idx < 0) {
+                if (row == null) {
                     return false;
                 }
                 for (TableColumn<S, ?> col : tableView.getColumns()) {
                     if (col == null) {
                         continue;
                     }
-                    Object val = col.getCellData(idx);
+                    Object val = col.getCellData(row);
                     if (val != null && val.toString().toLowerCase().contains(q)) {
                         return true;
                     }
