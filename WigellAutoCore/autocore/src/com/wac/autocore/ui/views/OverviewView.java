@@ -1,7 +1,6 @@
 package com.wac.autocore.ui.views;
 
 import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.WorkOrder;
