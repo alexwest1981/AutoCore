@@ -9,6 +9,40 @@
  */
 
 .root {
+    /* Fallback-värden för -wac-tokens så att JavaFX alltid kan slå upp färger
+       även om components.css utvärderas innan det specifika temat appliceras */
+    -wac-card:                     #1f1f23;
+    -wac-header:                   #18181b;
+    -wac-sidebar:                  #18181b;
+    -wac-side-text:                #e4e4e7;
+    -wac-side-muted:               #71717a;
+    -wac-side-hover:               #27272a;
+    -wac-text:                     #e4e4e7;
+    -wac-ink:                      #e4e4e7;
+    -wac-muted:                    #71717a;
+    -wac-line:                     #2e2e32;
+    -wac-accent:                   #a1a1aa;
+    -wac-accent-hover:             #d4d4d8;
+    -wac-accent-pressed:           #71717a;
+    -wac-accent-soft:              #27272a;
+    -wac-on-accent:                #09090b;
+    -wac-accent2:                  #a1a1aa;
+    -wac-ring:                     #a1a1aa;
+    -wac-success:                  #22c55e;
+    -wac-success-soft:             #14532d;
+    -wac-info:                     #38bdf8;
+    -wac-info-soft:                #0c4a6e;
+    -wac-warn:                     #fbbf24;
+    -wac-warn-soft:                #451a03;
+    -wac-danger:                   #f87171;
+    -wac-danger-soft:              #450a0a;
+    -wac-drift:                    #27272a;
+    -wac-drift-text:               #e4e4e7;
+    -wac-drift-muted:              #71717a;
+    -wac-drift-track:              #3f3f46;
+    -wac-bg:                       #111113;
+    -wac-surface:                  #18181b;
+
     /* Modena standard-lookups mappade till WAC-tokens */
     -fx-accent:                    -wac-accent;
     -fx-focus-color:               -wac-ring;

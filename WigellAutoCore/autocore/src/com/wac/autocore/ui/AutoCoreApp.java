@@ -40,7 +40,7 @@ public class AutoCoreApp extends Application {
     public void start(Stage primaryStage) {
         BorderPane stage = new BorderPane();
         stage.setPadding(new Insets(14));
-        stage.getStyleClass().add("stage");
+        stage.getStyleClass().addAll("root", "stage");
 
         BorderPane shell = new BorderPane();
         shell.getStyleClass().add("shell");
@@ -158,13 +158,8 @@ public class AutoCoreApp extends Application {
                     Scene popScene = ((javafx.stage.Window) popupObj).getScene();
                     if (popScene != null) {
                         popScene.getStylesheets().setAll(appScene.getStylesheets());
-                        if (popScene.getRoot() != null) {
-                            boolean hasRoot = appScene.getRoot() != null && appScene.getRoot().getStyleClass().contains("root");
-                            if (hasRoot && !popScene.getRoot().getStyleClass().contains("root")) {
-                                popScene.getRoot().getStyleClass().add("root");
-                            } else if (!hasRoot) {
-                                popScene.getRoot().getStyleClass().remove("root");
-                            }
+                        if (popScene.getRoot() != null && !popScene.getRoot().getStyleClass().contains("root")) {
+                            popScene.getRoot().getStyleClass().add("root");
                         }
                     }
                 }

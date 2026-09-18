@@ -1,6 +1,8 @@
 package com.wac.autocore.theme;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.scene.Scene;
 import javafx.scene.Parent;
@@ -75,8 +77,7 @@ public final class ThemeManager {
         ThemeCatalog.Theme theme = ThemeCatalog.bySlug(slug);
         if (theme == null) return;
 
-        // Always clear existing stylesheets first.
-        scene.getStylesheets().clear();
+        List<String> sheets = new ArrayList<String>();
 
         if (DEFAULT_PLAIN_SLUG.equals(slug)) {
             // "default" — skip components.css (which uses -wac-* colour tokens
@@ -84,23 +85,27 @@ public final class ThemeManager {
             // sidebar, topbar and page canvas keep their correct spacing.
             URL themeUrl = resolveResource(theme.stylesheet);
             if (themeUrl != null) {
-                scene.getStylesheets().add(themeUrl.toExternalForm());
+                sheets.add(themeUrl.toExternalForm());
             }
-            return;
+        } else {
+            // All other themes: load the shared component layer first, then the
+            // theme-specific colour / token file on top.
+            URL components = resolveResource(COMPONENTS);
+            if (components != null) {
+                sheets.add(components.toExternalForm());
+            }
+            URL themeUrl = resolveResource(theme.stylesheet);
+            if (themeUrl != null) {
+                sheets.add(themeUrl.toExternalForm());
+            } else {
+                System.err.println("[ThemeManager] Warning: Could not find stylesheet for theme '" + slug + "': " + theme.stylesheet);
+            }
         }
 
-        // All other themes: load the shared component layer first, then the
-        // theme-specific colour / token file on top.
-        URL components = resolveResource(COMPONENTS);
-        if (components != null) {
-            scene.getStylesheets().add(components.toExternalForm());
-        }
-        URL themeUrl = resolveResource(theme.stylesheet);
-        if (themeUrl != null) {
-            scene.getStylesheets().add(themeUrl.toExternalForm());
-        } else {
-            System.err.println("[ThemeManager] Warning: Could not find stylesheet for theme '" + slug + "': " + theme.stylesheet);
-        }
+        // Apply all stylesheets atomically in a single operation so JavaFX doesn't
+        // trigger intermediate rendering passes with missing tokens.
+        scene.getStylesheets().setAll(sheets);
+
         Parent root = scene.getRoot();
         if (root != null && !root.getStyleClass().contains("root")) {
             root.getStyleClass().add("root");
