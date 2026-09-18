@@ -109,9 +109,11 @@ ListView .list-cell:selected, TableView .table-row-cell:selected {
 TableView .column-header, TableView .filler {
     -fx-background-color: transparent;
     -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-alignment: CENTER_LEFT;
 }
 TableView .column-header .label {
     -fx-text-fill: -wac-muted; -fx-font-size: 11px; -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
 }
 TableView .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
 TableView .table-row-cell:filled { -fx-background-color: transparent; }

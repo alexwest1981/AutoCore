@@ -62,3 +62,14 @@
     -fx-vgap: 14;
     -fx-spacing: 14;
 }
+
+/* ---- Table column headers left-aligned ---- */
+.table-view .column-header,
+TableView .column-header {
+    -fx-alignment: CENTER_LEFT;
+}
+.table-view .column-header .label,
+TableView .column-header .label {
+    -fx-alignment: CENTER_LEFT;
+}
+
