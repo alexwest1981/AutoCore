@@ -27,10 +27,20 @@ public final class ThemeManager {
 
     /** The most recently styled Scene — used by dialogs to inherit the active theme. */
     private static Scene currentScene;
+    private static String currentSlug = ThemeCatalog.DEFAULT_SLUG;
 
     /** Returns the Scene that last had a theme applied, or {@code null} if none yet. */
     public static Scene getCurrentScene() {
         return currentScene;
+    }
+
+    public static String getCurrentSlug() {
+        return currentSlug;
+    }
+
+    public static boolean isCurrentDark() {
+        ThemeCatalog.Theme t = ThemeCatalog.bySlug(currentSlug);
+        return t != null && t.dark;
     }
 
     public static void applyDefault(Scene scene) {
@@ -73,6 +83,7 @@ public final class ThemeManager {
 
     public static void apply(Scene scene, String slug) {
         currentScene = scene;
+        currentSlug = slug != null ? slug : ThemeCatalog.DEFAULT_SLUG;
         if (scene == null) return;
         ThemeCatalog.Theme theme = ThemeCatalog.bySlug(slug);
         if (theme == null) return;

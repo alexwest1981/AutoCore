@@ -61,22 +61,13 @@ public final class SearchDropdown {
         this.popup.setHideOnEscape(true);
 
         this.container = new VBox(0);
-        this.container.getStyleClass().add("root");
-        this.container.setStyle(
-                "-fx-background-color: -wac-card; " +
-                "-fx-border-color: -wac-line; " +
-                "-fx-border-width: 1px; " +
-                "-fx-border-radius: 8px; " +
-                "-fx-background-radius: 8px; " +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 16, 0.2, 0, 4);"
-        );
+        this.container.getStyleClass().addAll("root", "search-dropdown");
 
         this.scrollPane = new ScrollPane(container);
         this.scrollPane.setFitToWidth(true);
         this.scrollPane.setMaxHeight(DROPDOWN_MAX_HEIGHT);
         this.scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         this.scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        this.scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
 
         this.popup.getContent().add(scrollPane);
 
@@ -126,8 +117,24 @@ public final class SearchDropdown {
             return;
         }
 
+        boolean dark = com.wac.autocore.theme.ThemeManager.isCurrentDark();
+        String solidBg = dark ? "#1f1f23" : "#ffffff";
+        String solidBorder = dark ? "#2e2e32" : "#cbd5e1";
+
+        scrollPane.setStyle(
+                "-fx-background-color: " + solidBg + "; " +
+                "-fx-background: " + solidBg + "; " +
+                "-fx-border-color: " + solidBorder + "; " +
+                "-fx-border-width: 1px; " +
+                "-fx-border-radius: 8px; " +
+                "-fx-background-radius: 8px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 18, 0.2, 0, 5); " +
+                "-fx-padding: 0;"
+        );
+        container.setStyle("-fx-background-color: " + solidBg + "; -fx-background-radius: 8px;");
+
         SearchResults results = GlobalSearch.search(garage, query);
-        populateResults(results, query);
+        populateResults(results, query, dark, solidBg, solidBorder);
 
         double width = Math.max(searchField.getWidth(), DROPDOWN_MIN_WIDTH);
         scrollPane.setPrefWidth(width);
@@ -157,15 +164,22 @@ public final class SearchDropdown {
         }
     }
 
-    private void populateResults(SearchResults results, String query) {
+    private void populateResults(SearchResults results, String query, boolean dark, String solidBg, String solidBorder) {
         container.getChildren().clear();
+
+        String headerBg = dark ? "#18181b" : "#f1f5f9";
+        String hoverBg = dark ? "#27272a" : "#f1f5f9";
+        String textColor = dark ? "#e4e4e7" : "#0f172a";
+        String mutedColor = dark ? "#71717a" : "#64748b";
+        String accentColor = dark ? "#a1a1aa" : "#2563eb";
 
         if (results.isEmpty()) {
             VBox emptyBox = new VBox(6);
             emptyBox.setAlignment(Pos.CENTER);
             emptyBox.setPadding(new Insets(20, 16, 20, 16));
+            emptyBox.setStyle("-fx-background-color: " + solidBg + ";");
             Label l = new Label("Inga träffar för \"" + query + "\"");
-            l.setStyle("-fx-text-fill: -wac-muted; -fx-font-size: 13px;");
+            l.setStyle("-fx-text-fill: " + mutedColor + "; -fx-font-size: 13px;");
             emptyBox.getChildren().add(l);
             container.getChildren().add(emptyBox);
             return;
@@ -173,7 +187,7 @@ public final class SearchDropdown {
 
         // 1. KUNDER
         if (!results.getCustomers().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Kunder", results.getCustomers().size()));
+            container.getChildren().add(createCategoryHeader("Kunder", results.getCustomers().size(), headerBg, solidBorder, mutedColor));
             List<Customer> list = results.getCustomers();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
@@ -182,6 +196,7 @@ public final class SearchDropdown {
                         "KUND", "info",
                         c.getName() + (c.isVip() ? " ★ VIP" : ""),
                         c.getPhone() + " • " + c.getEmail(),
+                        solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
                             if (router != null) {
@@ -195,7 +210,7 @@ public final class SearchDropdown {
 
         // 2. FORDON
         if (!results.getVehicles().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Fordon", results.getVehicles().size()));
+            container.getChildren().add(createCategoryHeader("Fordon", results.getVehicles().size(), headerBg, solidBorder, mutedColor));
             List<Vehicle> list = results.getVehicles();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
@@ -205,6 +220,7 @@ public final class SearchDropdown {
                         "FORDON", "success",
                         v.getBrand() + " " + v.getModel() + " (" + v.getYear() + ")",
                         "Reg: " + v.getRegistrationNumber() + " • Ägare: " + owner,
+                        solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
                             if (router != null) {
@@ -218,7 +234,7 @@ public final class SearchDropdown {
 
         // 3. MEKANIKER
         if (!results.getMechanics().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Mekaniker", results.getMechanics().size()));
+            container.getChildren().add(createCategoryHeader("Mekaniker", results.getMechanics().size(), headerBg, solidBorder, mutedColor));
             List<Mechanic> list = results.getMechanics();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
@@ -227,6 +243,7 @@ public final class SearchDropdown {
                         "MEK", "warn",
                         m.getName(),
                         m.getSpecialization() + " • " + (m.isAvailable() ? "Tillgänglig" : "Upptagen"),
+                        solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
                             if (router != null) {
@@ -240,7 +257,7 @@ public final class SearchDropdown {
 
         // 4. BOKNINGAR
         if (!results.getBookings().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Bokningar", results.getBookings().size()));
+            container.getChildren().add(createCategoryHeader("Bokningar", results.getBookings().size(), headerBg, solidBorder, mutedColor));
             List<Booking> list = results.getBookings();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
@@ -250,6 +267,7 @@ public final class SearchDropdown {
                         "BOKNING", "info",
                         "Bokning #" + b.getId() + " - " + b.getDescription(),
                         b.getDate() + " • " + veh,
+                        solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
                             if (router != null) {
@@ -263,7 +281,7 @@ public final class SearchDropdown {
 
         // 5. ARBETSORDRAR
         if (!results.getWorkOrders().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Arbetsordrar", results.getWorkOrders().size()));
+            container.getChildren().add(createCategoryHeader("Arbetsordrar", results.getWorkOrders().size(), headerBg, solidBorder, mutedColor));
             List<WorkOrder> list = results.getWorkOrders();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
@@ -274,6 +292,7 @@ public final class SearchDropdown {
                         "ORDER", "accent",
                         "Arbetsorder #" + wo.getId() + " (" + UiFormatters.statusWord(wo.getStatus()) + ")",
                         cust + " • " + veh,
+                        solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
                             if (router != null) {
@@ -287,7 +306,7 @@ public final class SearchDropdown {
 
         // 6. TJÄNSTER
         if (!results.getServices().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Tjänster", results.getServices().size()));
+            container.getChildren().add(createCategoryHeader("Tjänster", results.getServices().size(), headerBg, solidBorder, mutedColor));
             List<ServiceItem> list = results.getServices();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
@@ -296,6 +315,7 @@ public final class SearchDropdown {
                         "TJÄNST", "muted",
                         s.getName() + " (" + UiFormatters.formatMoney(s.getPrice()) + ")",
                         s.getEstimatedMinutes() + " min • " + s.getDescription(),
+                        solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
                             if (router != null) {
@@ -309,7 +329,7 @@ public final class SearchDropdown {
 
         // 7. FAKTUROR
         if (!results.getInvoices().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Fakturor", results.getInvoices().size()));
+            container.getChildren().add(createCategoryHeader("Fakturor", results.getInvoices().size(), headerBg, solidBorder, mutedColor));
             List<Invoice> list = results.getInvoices();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
@@ -319,6 +339,7 @@ public final class SearchDropdown {
                         "FAKTURA", "warn",
                         "Faktura #" + inv.getId() + " (" + UiFormatters.formatMoney(inv.getTotalAmount()) + ")",
                         cust + " • " + (inv.isPaid() ? "Betald" : "Obetald"),
+                        solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
                             if (router != null) {
@@ -334,12 +355,12 @@ public final class SearchDropdown {
         HBox footer = new HBox(8);
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setPadding(new Insets(10, 14, 10, 14));
-        footer.setStyle("-fx-background-color: -wac-shell; -fx-border-color: -wac-line; -fx-border-width: 1 0 0 0; -fx-cursor: hand;");
+        footer.setStyle("-fx-background-color: " + headerBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;");
         Label footerLbl = new Label("🔍 Visa alla " + results.getTotalMatches() + " träffar i fullständig översikt →");
-        footerLbl.setStyle("-fx-text-fill: -wac-accent; -fx-font-weight: bold; -fx-font-size: 12px;");
+        footerLbl.setStyle("-fx-text-fill: " + accentColor + "; -fx-font-weight: bold; -fx-font-size: 12px;");
         footer.getChildren().add(footerLbl);
-        footer.setOnMouseEntered(e -> footer.setStyle("-fx-background-color: -wac-accent-soft; -fx-border-color: -wac-line; -fx-border-width: 1 0 0 0; -fx-cursor: hand;"));
-        footer.setOnMouseExited(e -> footer.setStyle("-fx-background-color: -wac-shell; -fx-border-color: -wac-line; -fx-border-width: 1 0 0 0; -fx-cursor: hand;"));
+        footer.setOnMouseEntered(e -> footer.setStyle("-fx-background-color: " + hoverBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;"));
+        footer.setOnMouseExited(e -> footer.setStyle("-fx-background-color: " + headerBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;"));
         footer.setOnMouseClicked(e -> {
             hide();
             if (router != null) {
@@ -349,52 +370,54 @@ public final class SearchDropdown {
         container.getChildren().add(footer);
     }
 
-    private Node createCategoryHeader(String title, int count) {
+    private Node createCategoryHeader(String title, int count, String headerBg, String solidBorder, String mutedColor) {
         HBox box = new HBox(8);
         box.setAlignment(Pos.CENTER_LEFT);
         box.setPadding(new Insets(7, 14, 7, 14));
-        box.setStyle("-fx-background-color: -wac-shell; -fx-border-color: -wac-line; -fx-border-width: 0 0 1 0;");
+        box.setStyle("-fx-background-color: " + headerBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 0 0 1 0;");
 
         Label lbl = new Label(title.toUpperCase() + " (" + count + ")");
-        lbl.setStyle("-fx-text-fill: -wac-muted; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;");
+        lbl.setStyle("-fx-text-fill: " + mutedColor + "; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;");
         box.getChildren().add(lbl);
         return box;
     }
 
-    private Node createItemRow(String badgeText, String badgeType, String primaryText, String secondaryText, Runnable onClick) {
+    private Node createItemRow(String badgeText, String badgeType, String primaryText, String secondaryText,
+                              String solidBg, String hoverBg, String solidBorder, String textColor, String mutedColor,
+                              Runnable onClick) {
         HBox row = new HBox(12);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(8, 14, 8, 14));
-        row.setStyle("-fx-cursor: hand; -fx-background-color: transparent; -fx-border-color: -wac-line; -fx-border-width: 0 0 1 0;");
+        row.setStyle("-fx-cursor: hand; -fx-background-color: " + solidBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 0 0 1 0;");
 
         Label badge = new Label(badgeText);
         badge.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 2 6; -fx-background-radius: 4; -fx-border-radius: 4;");
         if ("success".equals(badgeType)) {
-            badge.setStyle(badge.getStyle() + "-fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success;");
+            badge.setStyle(badge.getStyle() + "-fx-background-color: #dcfce7; -fx-text-fill: #15803d;");
         } else if ("warn".equals(badgeType)) {
-            badge.setStyle(badge.getStyle() + "-fx-background-color: -wac-warn-soft; -fx-text-fill: -wac-warn;");
+            badge.setStyle(badge.getStyle() + "-fx-background-color: #fef3c7; -fx-text-fill: #b45309;");
         } else if ("accent".equals(badgeType)) {
-            badge.setStyle(badge.getStyle() + "-fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-accent;");
+            badge.setStyle(badge.getStyle() + "-fx-background-color: #e0e7ff; -fx-text-fill: #4338ca;");
         } else {
-            badge.setStyle(badge.getStyle() + "-fx-background-color: -wac-info-soft; -fx-text-fill: -wac-info;");
+            badge.setStyle(badge.getStyle() + "-fx-background-color: #e0f2fe; -fx-text-fill: #0369a1;");
         }
 
         VBox textCol = new VBox(2);
         Label prim = new Label(primaryText);
-        prim.setStyle("-fx-text-fill: -wac-text; -fx-font-weight: bold; -fx-font-size: 12px;");
+        prim.setStyle("-fx-text-fill: " + textColor + "; -fx-font-weight: bold; -fx-font-size: 12px;");
 
         Label sec = new Label(secondaryText);
-        sec.setStyle("-fx-text-fill: -wac-muted; -fx-font-size: 11px;");
+        sec.setStyle("-fx-text-fill: " + mutedColor + "; -fx-font-size: 11px;");
         textCol.getChildren().addAll(prim, sec);
         HBox.setHgrow(textCol, Priority.ALWAYS);
 
         Label arrow = new Label("→");
-        arrow.setStyle("-fx-text-fill: -wac-muted; -fx-font-size: 12px;");
+        arrow.setStyle("-fx-text-fill: " + mutedColor + "; -fx-font-size: 12px;");
 
         row.getChildren().addAll(badge, textCol, arrow);
 
-        row.setOnMouseEntered(e -> row.setStyle("-fx-cursor: hand; -fx-background-color: -wac-accent-soft; -fx-border-color: -wac-line; -fx-border-width: 0 0 1 0;"));
-        row.setOnMouseExited(e -> row.setStyle("-fx-cursor: hand; -fx-background-color: transparent; -fx-border-color: -wac-line; -fx-border-width: 0 0 1 0;"));
+        row.setOnMouseEntered(e -> row.setStyle("-fx-cursor: hand; -fx-background-color: " + hoverBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 0 0 1 0;"));
+        row.setOnMouseExited(e -> row.setStyle("-fx-cursor: hand; -fx-background-color: " + solidBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 0 0 1 0;"));
         row.setOnMouseClicked(e -> {
             if (onClick != null) {
                 onClick.run();

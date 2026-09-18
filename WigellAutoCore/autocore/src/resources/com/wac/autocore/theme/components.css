@@ -722,3 +722,15 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-text-fill: -wac-on-accent;
 }
 
+/* ============================================================
+   15. SÖK-DROPDOWN
+   ============================================================ */
+.search-dropdown {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+
