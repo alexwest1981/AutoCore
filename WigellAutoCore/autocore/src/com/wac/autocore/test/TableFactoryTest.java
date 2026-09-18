@@ -18,6 +18,7 @@ public class TableFactoryTest {
         new JFXPanel();
     }
 
+    @SuppressWarnings("unchecked")
     public void testSearchFilterMatchesSingleQuery() {
         List<Customer> data = Arrays.asList(
                 new Customer(1, "Anna Andersson", "070-111111", "anna@example.com"),
