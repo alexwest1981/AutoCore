@@ -77,20 +77,22 @@ com.wac.autocore.ui/
     └── EntityPages.java           # Dedikerade vyer för Kunder, Fordon, Bokningar, Arbetsordrar, Tjänster, etc.
 ```
 
-### TopBar & Sökfunktion
+### TopBar & Granulär Global Sökning
 * **Inbyggd i `AutoCoreApp.java`:** Toppmenyn ligger direkt i applikationskoden för enkel hantering och kan stängas av med en enda rad kommentar (`// mainCol.setTop(buildTopBar(router));`).
-* **Robust flerkolumnssökning:** `TableFactory` söker direkt mot radobjektet (`col.getCellData(row)`), vilket förhindrar indexkrascher när listor filtreras.
-* **Sökning på startsidan (Overview):** Sökfältet är kopplat till tabellen för senaste arbetsordrar på Overview.
-* **Smart Enter-sökning:** Trycker man Enter i sökfältet från Overview känner appen av söktermen och navigerar automatiskt till bästa vy (Kunder, Fordon, Mekaniker eller Arbetsordrar) med sökningen applicerad.
-* **Bevarande vid sidbyten:** Söksträngen sparas i `PageRouter` och appliceras automatiskt på den nya tabellen när användaren klickar runt i menyn.
+* **Sektionsindelad global sökvy (`SearchResultsView`):** När användaren söker i toppbarens sökfält söks hela systemet igenom (Kunder, Fordon, Arbetsordrar, Bokningar, Mekaniker, Fakturor och Tjänster).
+* **Granulära sektioner:** Träffarna delas in i tydliga sektionspaneler (t.ex. *Customers (2)*, *Vehicles (1)*, *Work Orders (3)*). Endast sektioner med aktiva träffar visas.
+* **Snabblänkar:** Varje sektion har en "Open in [Sektion] →"-knapp för att direkt öppna den relevanta entitetssidan.
+* **Sömlöst flöde:** Söker du t.ex. "Anna" visas kunder/ordrar för Anna; ändrar du direkt till "Volvo" visas fordon och bokningar för Volvo utan att du behöver gå tillbaka till Overview. Tömmer du sökfältet återgår vyn automatiskt till din tidigare sida.
+* **Robust sökalgoritm (`GlobalSearch`):** Isolerad ren söklogik i `com.wac.autocore.ui.util.GlobalSearch` som testas till 100% utan GUI.
 
 ### Automatiserade tester (`com.wac.autocore.test`)
 All beräknings-, formaterings-, sök- och uppslagslogik har isolerats och täcks av automatiserade enhetstester:
+* **`GlobalSearchTest`**: Verifierar granulär sökning över kunder, fordon, mekaniker, ordrar, skiftlägesokänslighet och tomma sökningar.
 * **`TableFactoryTest`**: Verifierar flerkolumnssökning och regressionsskyddar mot indexbuggar vid filtrering.
 * **`UiFormattersTest`**: Valuta (long/double), trunkering, statusöversättning, datum och badge-CSS-klasser.
 * **`EntityLookupTest`**: Uppslagning mot `GarageSystem` för kundnamn, fordonsreg, mekaniker och tjänster.
 * **`OverviewMetricsTest`**: Verifiering av KPI-mätetal (aktiva ordrar, omsättning, tillgänglighet).
-* **Kör tester:** Kör `./test.sh` i terminalen. Alla 17 enhetstester körs på under en sekund.
+* **Kör tester:** Kör `./test.sh` i terminalen. Alla 24 enhetstester körs på under en sekund.
 
 ### Tema- och stilhantering
 * **Stöd för Light/Dark-mode & färgteman:** `dark`, `night`, `light`, `azure`, `classic`, `emerald`, `volt` samt `default` (Plain JavaFX).

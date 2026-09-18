@@ -17,6 +17,7 @@ public class PageRouter {
 
     private FilterableTable<?> activeTable;
     private String currentPageKey;
+    private String lastNonSearchPage = "overview";
     private String currentSearchQuery = "";
 
     public PageRouter(GarageSystem garage, VBox pageBox) {
@@ -35,15 +36,32 @@ public class PageRouter {
 
     public void setActiveTable(FilterableTable<?> table) {
         this.activeTable = table;
-        if (this.activeTable != null && currentSearchQuery != null && !currentSearchQuery.isEmpty()) {
+        if (this.activeTable != null && currentSearchQuery != null && !currentSearchQuery.isEmpty() && !"search".equals(currentPageKey)) {
             this.activeTable.applySearch(currentSearchQuery);
         }
     }
 
     public void applySearch(String query) {
-        this.currentSearchQuery = query;
-        if (activeTable != null) {
-            activeTable.applySearch(query);
+        this.currentSearchQuery = query == null ? "" : query;
+        String trimmed = this.currentSearchQuery.trim();
+
+        if (trimmed.isEmpty()) {
+            if ("search".equals(currentPageKey)) {
+                navigate(lastNonSearchPage != null && !"search".equals(lastNonSearchPage) ? lastNonSearchPage : "overview");
+            } else if (activeTable != null) {
+                activeTable.applySearch("");
+            }
+            return;
+        }
+
+        if (!"search".equals(currentPageKey)) {
+            this.lastNonSearchPage = currentPageKey != null ? currentPageKey : "overview";
+            navigate("search");
+        } else {
+            // Redan på söksidan – uppdatera vyn i realtid
+            activeTable = null;
+            pageBox.getChildren().clear();
+            pageBox.getChildren().add(com.wac.autocore.ui.views.SearchResultsView.build(garage, this, trimmed));
         }
     }
 
@@ -52,34 +70,7 @@ public class PageRouter {
     }
 
     public void smartNavigateForSearch(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return;
-        }
-        applySearch(query.trim());
-        if (!"overview".equals(currentPageKey)) {
-            return;
-        }
-
-        final String q = query.trim().toLowerCase();
-        for (com.wac.autocore.model.Customer c : garage.getCustomers()) {
-            if (c.getName().toLowerCase().contains(q) || c.getPhone().toLowerCase().contains(q) || c.getEmail().toLowerCase().contains(q)) {
-                navigate("customers");
-                return;
-            }
-        }
-        for (com.wac.autocore.model.Vehicle v : garage.getVehicles()) {
-            if (v.getRegistrationNumber().toLowerCase().contains(q) || v.getBrand().toLowerCase().contains(q) || v.getModel().toLowerCase().contains(q)) {
-                navigate("vehicles");
-                return;
-            }
-        }
-        for (com.wac.autocore.model.Mechanic m : garage.getMechanics()) {
-            if (m.getName().toLowerCase().contains(q) || m.getSpecialization().toLowerCase().contains(q)) {
-                navigate("mechanics");
-                return;
-            }
-        }
-        navigate("workorders");
+        applySearch(query);
     }
 
     public String getCurrentPageKey() {
@@ -88,6 +79,9 @@ public class PageRouter {
 
     public void navigate(String key) {
         this.currentPageKey = key;
+        if (!"search".equals(key)) {
+            this.lastNonSearchPage = key;
+        }
         if (sidebar != null) {
             sidebar.setSelectedPage(key);
         }
@@ -112,6 +106,8 @@ public class PageRouter {
             pageBox.getChildren().add(EntityPages.buildInvoicesPage(garage, this));
         } else if ("payments".equals(key)) {
             pageBox.getChildren().add(EntityPages.buildPaymentsPage(garage, this));
+        } else if ("search".equals(key)) {
+            pageBox.getChildren().add(com.wac.autocore.ui.views.SearchResultsView.build(garage, this, currentSearchQuery));
         }
     }
 }

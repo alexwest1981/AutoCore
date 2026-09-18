@@ -54,14 +54,14 @@ Arkitekturen följer Single Responsibility Principle och är indelad i följande
 
 ---
 
-## 3. Sökarkitektur & Flöde
+## 3. Sökarkitektur & Granulär Global Sökning
 
-Sökfunktionen i AutoCore är genomgående integrerad mellan toppmenyn och sidorna:
-1. **Flerkolumnssökning:** `TableFactory.applySearch(...)` matchar användarens sökord mot alla relevanta kolumner på en entitet (t.ex. namn, telefon, e-post, adress för kunder; regnummer, märke, modell för fordon).
-2. **Koppling mot tabell:** När en vy laddas registrerar den sin tabell hos `PageRouter.setActiveTable(...)`.
-3. **Bevarad sökning vid sidbyten:** Om användaren har skrivit något i sökfältet och klickar till en annan sida i sidomenyn, appliceras sökordet automatiskt på den nya sidans tabell omedelbart vid sidbytet.
-4. **Startsida (Overview):** Sökfältet är kopplat till tabellen för senaste arbetsordrar direkt vid applikationens start.
-5. **Smart navigering vid Enter:** Om användaren trycker `Enter` i sökfältet från Overview analyseras söktermen (t.ex. registreringsnummer, mekanikernamn, kundnamn) och användaren navigeras automatiskt till lämplig vy med sökfiltret applicerat.
+Sökfunktionen i AutoCore erbjuder en samlad och granulär global sökvy (`SearchResultsView`):
+1. **Sökning över hela systemet:** När användaren skriver i toppbarens sökfält söks samtliga domänmodeller igenom via `GlobalSearch` (Kunder, Fordon, Arbetsordrar, Bokningar, Mekaniker, Fakturor och Tjänster).
+2. **Sektionsindelade resultat:** Resultaten delas in i separata paneler med antal träffar och tydliga tabeller. Endast sektioner som har minst en matchande post visas.
+3. **Direktnavigering till sektion:** Varje sektionspanel har en "Open in [Sektion] →"-knapp som navigerar direkt till motsvarande entitetssida.
+4. **Sömlöst flöde utan att fastna:** Användaren kan söka på ett namn ("Anna"), se kunder och tillhörande ordrar, och därefter omedelbart ändra till ett fordon ("Volvo") för att se fordon och bokningar – utan att behöva återvända till Overview däremellan.
+5. **Automatisk återgång:** Tömmer användaren sökfältet återgår vyn automatiskt till sidan man besökte innan sökningen påbörjades.
 
 ---
 
@@ -69,6 +69,11 @@ Sökfunktionen i AutoCore är genomgående integrerad mellan toppmenyn och sidor
 
 Eftersom all presentations-, beräknings-, sök- och uppslagslogik är isolerad i rena hjälpklasser kan den enhetstestas till 100% utan att öppna ett grafiskt fönster.
 
+* **`GlobalSearchTest.java`**:
+  - Testar global sökning över kunder, fordon, mekaniker och arbetsordrar.
+  - Verifierar träffar över flera domänentiteter samtidigt (cross-entity search).
+  - Verifierar skiftlägesokänslighet (uppercase/lowercase/mixed case).
+  - Verifierar tomma och ogiltiga söksträngar.
 * **`TableFactoryTest.java`**:
   - Testar flerkolumnssökning med `FilteredList`.
   - Verifierar delsträngsmatchning, skiftlägesokänslighet (case-insensitivity) och blankstegstrimning.
@@ -85,7 +90,7 @@ Eftersom all presentations-, beräknings-, sök- och uppslagslogik är isolerad 
 * **`OverviewMetricsTest.java`**:
   - Verifierar KPI-beräkningar för aktiva arbetsordrar, total omsättning från lyckade betalningar och mekanikertillgänglighet.
 * **`TestRunner.java`**:
-  - Egenutvecklad, fristående test-runner med färgkodad utskrift och tydliga felrapporter. Totalt 17 automatiserade tester.
+  - Egenutvecklad, fristående test-runner med färgkodad utskrift och tydliga felrapporter. Totalt 24 automatiserade tester.
 
 Kör testerna när som helst med:
 ```bash
