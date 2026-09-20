@@ -11,7 +11,7 @@
     -wac-header:         #ffffff;
     -wac-sidebar:        #ffffff;
     -wac-side-text:      #1a1a1a;
-    -wac-side-muted:     #8a8a8a;
+    -wac-side-muted:     #595959;
     -wac-side-hover:     #ebebeb;
     -wac-text:           #1a1a1a;
     -wac-ink:            #1a1a1a;
@@ -212,10 +212,10 @@ TableView .table-row-cell:filled { -fx-background-color: transparent; }
     -fx-font-size: 10px;
     -fx-font-weight: bold;
 }
-.badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
-.badge.info, .status.info { -fx-background-color: -wac-info-soft; -fx-text-fill: -wac-info; }
-.badge.warn, .status.warn { -fx-background-color: -wac-warn-soft; -fx-text-fill: -wac-warn; }
-.badge.danger, .status.danger { -fx-background-color: -wac-danger-soft; -fx-text-fill: -wac-danger; }
+.badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: #14532d; }
+.badge.info, .status.info { -fx-background-color: -wac-info-soft; -fx-text-fill: #0369a1; }
+.badge.warn, .status.warn { -fx-background-color: -wac-warn-soft; -fx-text-fill: #78350f; }
+.badge.danger, .status.danger { -fx-background-color: -wac-danger-soft; -fx-text-fill: #991b1b; }
 
 TabPane .tab-header-background { -fx-background-color: transparent; }
 TabPane .tab { -fx-background-color: transparent; }

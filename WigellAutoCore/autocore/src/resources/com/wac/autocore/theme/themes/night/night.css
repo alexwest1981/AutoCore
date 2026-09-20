@@ -255,10 +255,10 @@ TableView .table-view { -fx-padding: 0; }
     -fx-font-size: 10px;
     -fx-font-weight: bold;
 }
-.badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
-.badge.info, .status.info { -fx-background-color: -wac-info-soft; -fx-text-fill: -wac-info; }
-.badge.warn, .status.warn { -fx-background-color: -wac-warn-soft; -fx-text-fill: -wac-warn; }
-.badge.danger, .status.danger { -fx-background-color: -wac-danger-soft; -fx-text-fill: -wac-danger; }
+.badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: #86efac; }
+.badge.info, .status.info { -fx-background-color: -wac-info-soft; -fx-text-fill: #7dd3fc; }
+.badge.warn, .status.warn { -fx-background-color: -wac-warn-soft; -fx-text-fill: #fde047; }
+.badge.danger, .status.danger { -fx-background-color: -wac-danger-soft; -fx-text-fill: #fca5a5; }
 
 TabPane .tab-header-background { -fx-background-color: transparent; }
 TabPane .tab { -fx-background-color: transparent; }

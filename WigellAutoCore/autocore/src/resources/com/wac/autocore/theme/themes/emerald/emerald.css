@@ -17,15 +17,15 @@
     -wac-side-hover: #2c2f2e;
     -wac-text: #15211b;
     -wac-ink: #171918;
-    -wac-muted: #6d7a72;
+    -wac-muted: #526057;
     -wac-line: #e0e6e0;
-    -wac-accent: #159e72;
-    -wac-accent-hover: #31aa83;
-    -wac-accent-pressed: #128862;
+    -wac-accent: #047857;
+    -wac-accent-hover: #065f46;
+    -wac-accent-pressed: #064e3b;
     -wac-accent-soft: #e8f5f1;
     -wac-on-accent: #ffffff;
     -wac-accent2: #2bb88a;
-    -wac-ring: #159e72;
+    -wac-ring: #047857;
     -wac-success: #148a63;
     -wac-success-soft: #e8f3ef;
     -wac-info: #3b9ef5;
@@ -215,10 +215,10 @@ TableView .table-view { -fx-padding: 0; }
     -fx-font-size: 10px;
     -fx-font-weight: bold;
 }
-.badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
-.badge.info, .status.info { -fx-background-color: -wac-info-soft; -fx-text-fill: -wac-info; }
-.badge.warn, .status.warn { -fx-background-color: -wac-warn-soft; -fx-text-fill: -wac-warn; }
-.badge.danger, .status.danger { -fx-background-color: -wac-danger-soft; -fx-text-fill: -wac-danger; }
+.badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: #14532d; }
+.badge.info, .status.info { -fx-background-color: -wac-info-soft; -fx-text-fill: #0369a1; }
+.badge.warn, .status.warn { -fx-background-color: -wac-warn-soft; -fx-text-fill: #78350f; }
+.badge.danger, .status.danger { -fx-background-color: -wac-danger-soft; -fx-text-fill: #991b1b; }
 
 TabPane .tab-header-background { -fx-background-color: transparent; }
 TabPane .tab { -fx-background-color: transparent; }
