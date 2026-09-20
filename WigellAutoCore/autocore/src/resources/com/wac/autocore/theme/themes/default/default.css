@@ -82,4 +82,28 @@ TableView .column-header .label {
     -fx-background-radius: 8px;
 }
 
+/* ---- Topbar Nav & Mode Switcher ---- */
+.topbar-container {
+    -fx-padding: 0;
+}
+.top-nav-bar {
+    -fx-padding: 2px 22px 10px 22px;
+    -fx-spacing: 5px;
+}
+.top-nav-separator {
+    -fx-pref-width: 1px;
+    -fx-pref-height: 18px;
+}
+.top-nav-item {
+    -fx-padding: 6px 14px;
+}
+.top-nav-item.selected {
+    -fx-font-weight: bold;
+}
+.layout-toggle {
+    -fx-padding: 5px 12px;
+    -fx-font-weight: bold;
+}
+
+
 

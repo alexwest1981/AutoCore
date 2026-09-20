@@ -29,10 +29,11 @@ Arkitekturen följer Single Responsibility Principle och är indelad i följande
 
 ### Navigering (`navigation/`)
 * **`SidebarView.java`**: Bygger vänstermenyn med varumärkesbadge ("AC", "AutoCore Workshop System") och kollapsbara grupper (*Customers*, *Vehicles*, *Bookings*, *Workshop*, *Finance*). Hanterar aktiv knappmarkering (`.selected`).
-* **`PageRouter.java`**: Ansvarar för sidbyten och kopplar automatiskt den aktiva sidans tabell till toppbarens sökfält så att filtrering sker mot rätt vy.
+* **`TopNavView.java`**: Horisontell toppnavigeringslist för "Top bar"-läget med direktknappar och logisk sektionsindelning. Synkroniserar aktiv sida med samma WAC-tokens för alla teman.
+* **`PageRouter.java`**: Ansvarar för sidbyten och synkroniserar aktiv sidmarkering mot både `SidebarView` och `TopNavView`, samt kopplar automatiskt den aktiva sidans tabell till toppbarens sökfält så att filtrering sker mot rätt vy.
 
 ### Komponenter (`components/`)
-* **`TopBar` (inbyggd i `AutoCoreApp.java`)**: Toppmeny med sökfält och tema-ComboBox. Ligger direkt i applikationskoden så att den enkelt kan avaktiveras (kommentera bort `mainCol.setTop(...)`). Inkluderar dynamisk styling för mörka och ljusa teman samt popup-scensynkronisering via Java-reflektion så att popup-fönstret ärver appens tema och `.root`-klass utan CSS-varningar.
+* **`TopBar` (inbyggd i `AutoCoreApp.java`)**: Toppmeny med varumärke (i toppläge), sökfält, layout-toggle (`Sidebar ◧` / `Top bar ⎕`) och tema-ComboBox. Ligger direkt i applikationskoden så att den enkelt kan anpassas. Stöder sömlös växling mellan fullbreddstoppmeny och sidomeny utan att tappa aktiv sida. Inkluderar dynamisk styling för mörka och ljusa teman samt popup-scensynkronisering via Java-reflektion så att popup-fönstret ärver appens tema och `.root`-klass utan CSS-varningar.
 * **`TableFactory.java`**: Typad fabrik för att skapa `TableView` kopplad till `FilteredList`. Innehåller hjälpare för standardtextkolumner (`col`), statusbadge-kolumner (`badgeCol`) och flerkolumnssökning (`applySearch`). Sökningen hämtar celldata direkt från radobjektet (`col.getCellData(row)`), vilket förhindrar `IndexOutOfBoundsException` när filtrerade vyer söks.
 * **`UiComponents.java`**: Återanvändbara UI-element: primära och sekundära knappar, KPI-kort, informationspaneler och standardiserade sidhuvuden (`pageHead`, `buildEntityPage`).
 

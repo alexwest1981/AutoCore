@@ -733,4 +733,77 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-background-radius: 8px;
 }
 
+/* ============================================================
+   16. DUAL LAYOUT: TOPBAR NAVIGATION & LAYOUT TOGGLE
+   ============================================================ */
+.topbar-container {
+    -fx-background-color: -wac-header;
+    -fx-background-radius: 0 28 0 0;
+    -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.topbar-container.topbar-mode {
+    -fx-background-radius: 28 28 0 0;
+}
+
+.col.topbar-mode {
+    -fx-background-radius: 28;
+}
+
+.top-nav-bar {
+    -fx-padding: 2px 22px 10px 22px;
+    -fx-spacing: 5px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.top-nav-separator {
+    -fx-background-color: -wac-line;
+    -fx-pref-width: 1px;
+    -fx-min-width: 1px;
+    -fx-max-width: 1px;
+    -fx-pref-height: 18px;
+    -fx-opacity: 0.7;
+}
+
+.top-nav-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 999;
+    -fx-text-fill: -wac-side-text;
+    -fx-padding: 6px 14px;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.top-nav-item:hover {
+    -fx-background-color: -wac-side-hover;
+    -fx-text-fill: -wac-text;
+}
+
+.top-nav-item.selected {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+}
+
+.layout-toggle {
+    -fx-background-color: transparent;
+    -fx-border-color: derive(-wac-line, -5%);
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 5px 12px;
+    -fx-text-fill: -wac-side-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.layout-toggle:hover {
+    -fx-background-color: -wac-side-hover;
+    -fx-border-color: -wac-accent;
+    -fx-text-fill: -wac-text;
+}
+
+
 
