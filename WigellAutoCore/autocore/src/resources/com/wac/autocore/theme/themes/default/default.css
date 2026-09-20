@@ -49,11 +49,57 @@
     -fx-padding: 14px 16px;
 }
 
-/* ---- Panels and cards: just spacing, no chrome ---- */
-.panel, .kpi, .metric-card, .kpi-card, .main-card,
+/* ---- Panels and cards: tydlig inramning och visuell hierarki ---- */
+.panel, .metric-card, .kpi-card, .main-card,
 .activity-card, .chart-card, .occupancy-card,
 .feature-card, .quick-card {
-    -fx-padding: 18px;
+    -fx-background-color: -fx-background;
+    -fx-border-color: derive(-fx-base, -15%);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 16px 18px;
+}
+
+.panel-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.panel-sub {
+    -fx-font-size: 11px;
+    -fx-opacity: 0.75;
+}
+
+/* ---- KPI-kort i översiktsvyn ---- */
+.kpi {
+    -fx-background-color: -fx-background;
+    -fx-border-color: derive(-fx-base, -15%);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 14px 16px;
+}
+
+.kpi-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.kpi-label {
+    -fx-font-size: 12px;
+    -fx-opacity: 0.75;
+}
+
+/* ---- Status- och bokningsrader ---- */
+.srow-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.srow-sub {
+    -fx-font-size: 12px;
+    -fx-opacity: 0.8;
 }
 
 /* ---- Grid gaps (FlowPane / TilePane / GridPane wrappers) ---- */
