@@ -10,7 +10,7 @@ import java.util.List;
  */
 public final class ThemeCatalog {
 
-    public static final String DEFAULT_SLUG = "default";
+    public static final String DEFAULT_SLUG = "emerald";
 
     public static final class Theme {
         public final String slug;
