@@ -51,14 +51,14 @@ public class SidebarView {
         letter.getStyleClass().add("letter");
         mark.getChildren().add(letter);
 
-        VBox brandTitles = new VBox(0);
+        VBox brandTitles = new VBox(2);
         Label brand = new Label("AutoCore");
         brand.getStyleClass().add("brand-title");
         Label brandSub = new Label("Workshop System");
         brandSub.getStyleClass().add("brand-sub");
         brandTitles.getChildren().addAll(brand, brandSub);
 
-        HBox brandRow = new HBox(10, mark, brandTitles);
+        HBox brandRow = new HBox(12, mark, brandTitles);
         brandRow.getStyleClass().add("brand-row");
         brandRow.setAlignment(Pos.CENTER_LEFT);
 

@@ -27,7 +27,7 @@ public class AutoCoreApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         BorderPane stage = new BorderPane();
-        stage.setPadding(new Insets(14));
+        stage.setPadding(Insets.EMPTY);
         stage.getStyleClass().addAll("root", "stage");
 
         BorderPane shell = new BorderPane();

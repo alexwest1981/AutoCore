@@ -185,7 +185,7 @@ public final class EntityPages {
         Button addBtn = UiComponents.primaryButton("+ Create invoice");
         addBtn.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, () -> router.navigate("invoices")));
 
-        Button payBtn = UiComponents.secondaryButton("💳 Pay selected invoice");
+        Button payBtn = UiComponents.secondaryButton("Pay selected invoice");
         payBtn.setDisable(true);
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {

@@ -70,7 +70,7 @@ public final class OverviewView {
         Button quickInvoice = UiComponents.secondaryButton("+ Create invoice");
         quickInvoice.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, onRefresh));
 
-        Button quickPay = UiComponents.secondaryButton("💳 Payment");
+        Button quickPay = UiComponents.secondaryButton("+ Register payment");
         quickPay.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, onRefresh));
 
         HBox quickBar = new HBox(10, quickBooking, quickOrder, quickInvoice, quickPay);

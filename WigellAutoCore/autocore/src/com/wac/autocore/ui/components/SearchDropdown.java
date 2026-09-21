@@ -356,7 +356,7 @@ public final class SearchDropdown {
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setPadding(new Insets(10, 14, 10, 14));
         footer.setStyle("-fx-background-color: " + headerBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;");
-        Label footerLbl = new Label("🔍 Visa alla " + results.getTotalMatches() + " träffar i fullständig översikt →");
+        Label footerLbl = new Label("Visa alla " + results.getTotalMatches() + " träffar i fullständig översikt →");
         footerLbl.setStyle("-fx-text-fill: " + accentColor + "; -fx-font-weight: bold; -fx-font-size: 12px;");
         footer.getChildren().add(footerLbl);
         footer.setOnMouseEntered(e -> footer.setStyle("-fx-background-color: " + hoverBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;"));
