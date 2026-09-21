@@ -12,7 +12,7 @@ Systemet hanterar den dagliga operativa verksamheten på en bilverkstad:
 - **Betalningar:** Betalningshantering via kort, Swish och kontant.
 
 ## Skärmbilder
-JavaFX-gränssnittet (AutoCore, tema *Azure*):
+JavaFX-gränssnittet (AutoCore, tema *Emerald*):
 
 ![AutoCore JavaFX-gränssnitt](WigellAutoCore/docs/autocore-javafx-gui.png)
 
