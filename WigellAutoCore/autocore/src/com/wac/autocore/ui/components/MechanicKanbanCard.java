@@ -362,7 +362,7 @@ public class MechanicKanbanCard {
             javafx.scene.control.Tooltip.install(row, new javafx.scene.control.Tooltip(
                     "Arbetsorder #" + (slot.getWorkOrderId() > 0 ? slot.getWorkOrderId() : slot.getBookingId()) + " · Klicka för att öppna detaljer"));
             row.setOnMouseClicked(e -> {
-                ActionDialogs.showWorkOrderDetailsDialog(garage, slot.getWorkOrderId(), router, () -> {
+                ActionDialogs.showSlotDetailsDialog(garage, slot, router, () -> {
                     if (onRefresh != null) onRefresh.run();
                     render();
                 });
@@ -492,7 +492,7 @@ public class MechanicKanbanCard {
                 javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc + " · Klicka för arbetsorder"));
                 box.setOnMouseClicked(e -> {
                     e.consume();
-                    ActionDialogs.showWorkOrderDetailsDialog(garage, slot.getWorkOrderId(), router, () -> {
+                    ActionDialogs.showSlotDetailsDialog(garage, slot, router, () -> {
                         if (onRefresh != null) onRefresh.run();
                         render();
                     });

@@ -268,39 +268,39 @@ public class MechanicSchedule {
         seeded = true;
 
         LocalDate today = LocalDate.now();
+        LocalDate tomorrow = today.plusDays(1);
 
         // Mekaniker 1 (Johan Karlsson): Idag 08-10 (Service) och 13-14 (Inspektion) -> 3h bokade (Gul)
         bookSlotInternal(1, today, 8, 1, 1, "Anna Andersson", "ABC123", "Oljeservice & filterbyte");
         bookSlotInternal(1, today, 9, 1, 1, "Anna Andersson", "ABC123", "Fortsättning oljeservice");
-        bookSlotInternal(1, today, 13, 2, 2, "Erik Johansson", "DEF456", "Bromskontroll fram");
+        bookSlotInternal(1, today, 13, 2, 2, "Erik Eriksson", "DEF456", "Bromskontroll fram");
 
         // Mekaniker 1: Imorgon 08-12 och 13-16 -> 7h bokade (Röd / Full)
-        LocalDate tomorrow = today.plusDays(1);
         for (int h = 8; h <= 11; h++) {
-            bookSlotInternal(1, tomorrow, h, 3, 0, "Lars Svensson", "GHI789", "Helrenovering bromsar");
+            bookSlotInternal(1, tomorrow, h, 3, 5, "Maria Svensson", "GHI789", "Helrenovering bromsar");
         }
         for (int h = 13; h <= 15; h++) {
-            bookSlotInternal(1, tomorrow, h, 4, 0, "Maria Lind", "JKL012", "Felsökning motor");
+            bookSlotInternal(1, tomorrow, h, 3, 5, "Maria Svensson", "GHI789", "Helrenovering bromsar");
         }
 
         // Mekaniker 1: Dagen efter imorgon -> 1h bokad (Grön)
-        bookSlotInternal(1, today.plusDays(2), 10, 5, 0, "Karin Nyström", "MNO345", "Däckskifte");
+        bookSlotInternal(1, today.plusDays(2), 10, 1, 1, "Anna Andersson", "ABC123", "Efterkontroll olja");
 
         // Mekaniker 2 (Sara Nilsson): Idag 09-12 och 14-16 -> 5h bokade (Orange)
-        bookSlotInternal(2, today, 9, 6, 0, "Olof Palme", "XYZ999", "Bromsok och belägg");
-        bookSlotInternal(2, today, 10, 6, 0, "Olof Palme", "XYZ999", "Bromsok och belägg");
-        bookSlotInternal(2, today, 11, 6, 0, "Olof Palme", "XYZ999", "Luftning bromssystem");
-        bookSlotInternal(2, today, 14, 7, 0, "Eva Dahl", "QWE111", "Kontroll bromsslangar");
-        bookSlotInternal(2, today, 15, 7, 0, "Eva Dahl", "QWE111", "Slutbesiktning bromsar");
+        bookSlotInternal(2, today, 9, 4, 3, "Olof Palme", "XYZ999", "Bromsok och belägg");
+        bookSlotInternal(2, today, 10, 4, 3, "Olof Palme", "XYZ999", "Bromsok och belägg");
+        bookSlotInternal(2, today, 11, 4, 3, "Olof Palme", "XYZ999", "Luftning bromssystem");
+        bookSlotInternal(2, today, 14, 4, 3, "Olof Palme", "XYZ999", "Kontroll bromsslangar");
+        bookSlotInternal(2, today, 15, 4, 3, "Olof Palme", "XYZ999", "Slutbesiktning bromsar");
 
         // Mekaniker 2: Igår 08-09 (Grön)
-        bookSlotInternal(2, today.minusDays(1), 8, 8, 0, "Peter Holm", "RST222", "Snabbkoll bromsar");
+        bookSlotInternal(2, today.minusDays(1), 8, 4, 3, "Olof Palme", "XYZ999", "Snabbkoll bromsar");
 
         // Mekaniker 3 (Mikael Berg): Idag 07-08 -> 1h (Grön)
-        bookSlotInternal(3, today, 7, 9, 0, "Sven Melander", "AAA001", "Felkodsläsning OBD2");
+        bookSlotInternal(3, today, 7, 5, 4, "Sven Melander", "AAA001", "Felkodsläsning OBD2");
         // Mekaniker 3: Imorgon 10-15 -> 5h (Orange)
         for (int h = 10; h <= 14; h++) {
-            bookSlotInternal(3, tomorrow, h, 10, 0, "Gustav Vasa", "BBB002", "Elektronikfelsökning");
+            bookSlotInternal(3, tomorrow, h, 6, 6, "Gustav Vasa", "BBB002", "Elektronikfelsökning");
         }
     }
 
@@ -333,9 +333,9 @@ public class MechanicSchedule {
     }
 
     /**
-     * Boka en specifik timme för en mekaniker.
+     * Boka en specifik timme för en mekaniker med valfritt workOrderId.
      */
-    public synchronized boolean bookSlot(int mechanicId, LocalDate date, int hour, int bookingId,
+    public synchronized boolean bookSlot(int mechanicId, LocalDate date, int hour, int bookingId, int workOrderId,
                                          String customer, String vehicleReg, String desc) {
         if (hour < START_HOUR || hour >= END_HOUR) {
             return false;
@@ -349,11 +349,20 @@ public class MechanicSchedule {
         TimeSlot slot = new TimeSlot(mechanicId, date, hour);
         slot.setBooked(true);
         slot.setBookingId(bookingId);
+        slot.setWorkOrderId(workOrderId);
         slot.setCustomerName(customer);
         slot.setVehicleReg(vehicleReg);
         slot.setDescription(desc);
         slots.put(key, slot);
         return true;
+    }
+
+    /**
+     * Boka en specifik timme för en mekaniker.
+     */
+    public synchronized boolean bookSlot(int mechanicId, LocalDate date, int hour, int bookingId,
+                                         String customer, String vehicleReg, String desc) {
+        return bookSlot(mechanicId, date, hour, bookingId, 0, customer, vehicleReg, desc);
     }
 
     /**

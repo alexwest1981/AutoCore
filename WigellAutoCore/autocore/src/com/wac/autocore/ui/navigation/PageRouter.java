@@ -91,6 +91,15 @@ public class PageRouter {
         navigate("workorders");
         if (workOrderId > 0 && activeTable != null) {
             applySearch(String.valueOf(workOrderId));
+            javafx.scene.control.TableView<?> tv = activeTable.getTableView();
+            int idx = 0;
+            for (Object item : tv.getItems()) {
+                if (item instanceof com.wac.autocore.model.WorkOrder && ((com.wac.autocore.model.WorkOrder) item).getId() == workOrderId) {
+                    tv.getSelectionModel().select(idx);
+                    break;
+                }
+                idx++;
+            }
         }
     }
 
