@@ -33,7 +33,6 @@ public class SidebarView {
 
     private Label brandSub;
     private Button overviewBtn;
-    private Label langToggleLabel;
     private Button svToggleBtn;
     private Button enToggleBtn;
 
@@ -69,9 +68,6 @@ public class SidebarView {
         for (Map.Entry<String, Button> entry : navButtonMap.entrySet()) {
             entry.getValue().setText(I18n.get("nav.item." + entry.getKey()));
         }
-        if (langToggleLabel != null) {
-            langToggleLabel.setText(I18n.get("nav.lang.toggle_label"));
-        }
         updateToggleButtons();
     }
 
@@ -82,8 +78,12 @@ public class SidebarView {
         enToggleBtn.getStyleClass().remove("active");
         if (isSv) {
             svToggleBtn.getStyleClass().add("active");
+            svToggleBtn.setStyle("-fx-background-color: -wac-accent; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 6;");
+            enToggleBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #e4e4e7; -fx-font-weight: bold; -fx-background-radius: 6;");
         } else {
             enToggleBtn.getStyleClass().add("active");
+            enToggleBtn.setStyle("-fx-background-color: -wac-accent; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 6;");
+            svToggleBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #e4e4e7; -fx-font-weight: bold; -fx-background-radius: 6;");
         }
     }
 
@@ -141,29 +141,44 @@ public class SidebarView {
     }
 
     private HBox buildLanguageToggle() {
-        langToggleLabel = new Label(I18n.get("nav.lang.toggle_label"));
-        langToggleLabel.getStyleClass().add("lang-toggle-label");
-
         svToggleBtn = new Button("SV");
         svToggleBtn.getStyleClass().addAll("lang-btn", "lang-btn-sv");
-        svToggleBtn.setOnAction(e -> I18n.setLanguage(I18n.LANG_SV));
+        svToggleBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(svToggleBtn, Priority.ALWAYS);
 
         enToggleBtn = new Button("EN");
         enToggleBtn.getStyleClass().addAll("lang-btn", "lang-btn-en");
-        enToggleBtn.setOnAction(e -> I18n.setLanguage(I18n.LANG_EN));
+        enToggleBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(enToggleBtn, Priority.ALWAYS);
+
+        svToggleBtn.setOnAction(e -> {
+            if (I18n.isSwedish()) {
+                I18n.setLanguage(I18n.LANG_EN);
+            } else {
+                I18n.setLanguage(I18n.LANG_SV);
+            }
+        });
+
+        enToggleBtn.setOnAction(e -> {
+            if (!I18n.isSwedish()) {
+                I18n.setLanguage(I18n.LANG_SV);
+            } else {
+                I18n.setLanguage(I18n.LANG_EN);
+            }
+        });
+
+        HBox togglePill = new HBox(4, svToggleBtn, enToggleBtn);
+        togglePill.getStyleClass().add("lang-toggle-pill");
+        togglePill.setAlignment(Pos.CENTER);
+        togglePill.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(togglePill, Priority.ALWAYS);
 
         updateToggleButtons();
 
-        HBox togglePill = new HBox(2, svToggleBtn, enToggleBtn);
-        togglePill.getStyleClass().add("lang-toggle-pill");
-        togglePill.setAlignment(Pos.CENTER);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox row = new HBox(8, langToggleLabel, spacer, togglePill);
+        HBox row = new HBox(togglePill);
         row.getStyleClass().add("sidebar-lang-container");
-        row.setAlignment(Pos.CENTER_LEFT);
+        row.setAlignment(Pos.CENTER);
+        row.setMaxWidth(Double.MAX_VALUE);
         return row;
     }
 
