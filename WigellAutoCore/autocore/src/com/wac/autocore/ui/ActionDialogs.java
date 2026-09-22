@@ -6,6 +6,7 @@ import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.data.Database;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
@@ -532,7 +533,9 @@ public final class ActionDialogs {
                     return;
                 }
 
-                garage.createMechanic(name, phone, spec.isEmpty() ? "Allmän service" : spec);
+                int id = Database.getMechanics().size() + 1;
+                Mechanic mechanic = new Mechanic(id, name, phone, spec.isEmpty() ? "Allmän service" : spec);
+                Database.getMechanics().add(mechanic);
                 if (onSuccess != null) onSuccess.run();
             }
         });

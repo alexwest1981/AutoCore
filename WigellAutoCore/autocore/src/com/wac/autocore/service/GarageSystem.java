@@ -232,17 +232,6 @@ public class GarageSystem {
         return booking;
     }
 
-    public Mechanic createMechanic(String name, String phone, String specialization) {
-        int id = Database.getMechanics().size() + 1;
-        Mechanic mechanic = new Mechanic(id, name, phone, specialization);
-        Database.getMechanics().add(mechanic);
-
-        System.out.println("Mechanic created successfully.");
-        System.out.println(mechanic);
-
-        return mechanic;
-    }
-
     public WorkOrder createWorkOrder(int bookingId,
                                      int mechanicId,
                                      int... serviceItemIds) {
