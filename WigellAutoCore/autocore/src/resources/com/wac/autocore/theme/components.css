@@ -1260,12 +1260,46 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-text-fill: -wac-muted;
     -fx-alignment: CENTER_RIGHT;
 }
-.kanban-progress-track-compact {
-    -fx-background-color: -wac-shell;
-    -fx-background-radius: 2;
+/* 9 timboxar i veckovyn */
+.kanban-hour-boxes {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 2px;
 }
-.kanban-progress-fill-compact {
-    -fx-background-radius: 2;
+.kanban-hour-box {
+    -fx-min-width: 9px;
+    -fx-pref-width: 10px;
+    -fx-max-width: 11px;
+    -fx-min-height: 14px;
+    -fx-pref-height: 14px;
+    -fx-max-height: 14px;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+}
+.kanban-hour-box.free {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+}
+.kanban-hour-box.free:hover {
+    -fx-border-color: -wac-accent;
+}
+.kanban-hour-box.booked {
+    -fx-border-width: 0;
+}
+.kanban-hour-box.booked.load-free {
+    -fx-background-color: #10b981;
+}
+.kanban-hour-box.booked.load-moderate {
+    -fx-background-color: #eab308;
+}
+.kanban-hour-box.booked.load-busy {
+    -fx-background-color: #f97316;
+}
+.kanban-hour-box.booked.load-full {
+    -fx-background-color: #ef4444;
+}
+.kanban-hour-box.booked:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 3, 0, 0, 1);
 }
 
 .kanban-month-head-compact {

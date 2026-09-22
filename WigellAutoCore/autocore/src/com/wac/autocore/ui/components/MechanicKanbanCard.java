@@ -442,24 +442,32 @@ public class MechanicKanbanCard {
         // Siffror (t.ex. 3/9 h)
         Label countLabel = new Label(dl.getBookedHours() + "/" + dl.getTotalHours() + "h");
         countLabel.getStyleClass().add("kanban-week-count-compact");
-        countLabel.setPrefWidth(38);
+        // 9 timboxar (kl. 07:00 till 16:00) där bokade timmar markeras med belastningsfärg
+        HBox hourBoxes = new HBox(2);
+        hourBoxes.getStyleClass().add("kanban-hour-boxes");
+        hourBoxes.setAlignment(Pos.CENTER_LEFT);
 
-        // Mini progressbar
-        StackPane track = new StackPane();
-        track.getStyleClass().add("kanban-progress-track-compact");
-        track.setPrefHeight(4);
-        track.setPrefWidth(45);
+        for (TimeSlot slot : dl.getSlots()) {
+            StackPane box = new StackPane();
+            box.getStyleClass().add("kanban-hour-box");
 
-        Region fill = new Region();
-        fill.getStyleClass().addAll("kanban-progress-fill-compact", loadClass);
-        fill.setPrefHeight(4);
-        fill.setPrefWidth(Math.max(2, 45 * dl.getLoadPercentage()));
+            String timeTooltip = String.format("%02d:00 - %02d:00", slot.getHour(), slot.getHour() + 1);
+            if (slot.isBooked()) {
+                box.getStyleClass().addAll("booked", loadClass);
+                String desc = slot.getDescription() != null ? slot.getDescription() : "";
+                String reg = slot.getVehicleReg() != null ? " (" + slot.getVehicleReg() + ")" : "";
+                javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc));
+            } else {
+                box.getStyleClass().add("free");
+                javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(timeTooltip + ": " + I18n.get("kanban.day.available")));
+            }
+            hourBoxes.getChildren().add(box);
+        }
 
-        HBox fillBox = new HBox(fill);
-        fillBox.setAlignment(Pos.CENTER_LEFT);
-        track.getChildren().add(fillBox);
+        Region spr = new Region();
+        HBox.setHgrow(spr, Priority.ALWAYS);
 
-        HBox row = new HBox(6, dayLabel, pill, countLabel, track);
+        HBox row = new HBox(6, dayLabel, pill, hourBoxes, spr, countLabel);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add("kanban-week-row-compact");
         row.setCursor(Cursor.HAND);
