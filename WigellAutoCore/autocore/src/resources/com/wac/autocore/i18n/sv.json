@@ -185,7 +185,10 @@
       "name": "Fullständigt namn",
       "email": "E-postadress",
       "phone": "Telefonnummer",
-      "is_business": "Företagskund"
+      "is_business": "Företagskund",
+      "name_prompt": "För- och efternamn",
+      "phone_prompt": "070-1234567",
+      "email_prompt": "namn@exempel.se"
     },
     "vehicle": {
       "create": {
@@ -197,7 +200,11 @@
       "brand": "Märke",
       "model": "Modell",
       "year": "Årsmodell",
-      "customer_select": "Välj ägare (kund)"
+      "customer_select": "Välj ägare (kund)",
+      "reg_prompt": "ABC123",
+      "brand_prompt": "Volvo",
+      "model_prompt": "V60",
+      "year_prompt": "2022"
     },
     "booking": {
       "create": {
@@ -207,7 +214,8 @@
       },
       "vehicle_select": "Välj fordon",
       "date": "Bokningsdatum",
-      "service_select": "Välj huvudtjänst"
+      "service_select": "Välj huvudtjänst",
+      "desc_prompt": "T.ex. Årlig service och bromsbyte"
     },
     "mechanic": {
       "create": {
@@ -216,7 +224,9 @@
         "desc": "Lägg till en ny mekaniker i verkstadens team."
       },
       "spec_prompt": "T.ex. Däck & Hjul, Motor, AC",
-      "default_spec": "Allmän service"
+      "default_spec": "Allmän service",
+      "name_prompt": "T.ex. Anders Svensson",
+      "phone_prompt": "070-1234567"
     },
     "slot": {
       "header": "Bokningsdetaljer: {0}",
@@ -245,7 +255,8 @@
         "desc": "Generera faktura för en slutförd arbetsorder."
       },
       "workorder_select": "Välj arbetsorder",
-      "discount": "Rabatt / Kampanj (kr)"
+      "discount": "Rabatt / Kampanj (kr)",
+      "discount_prompt": "T.ex. WELCOME10 eller SERVICE200 (valfritt)"
     },
     "payment": {
       "create": {
@@ -276,7 +287,10 @@
     "results": {
       "title": "Sökresultat",
       "subtitle": "Träffar som matchar \"{0}\"",
-      "empty": "Inga träffar hittades för \"{0}\""
+      "empty": "Inga träffar hittades för \"{0}\"",
+      "empty_title": "Inga träffar hittades för \"{0}\"",
+      "empty_desc": "Inga kunder, fordon, arbetsordrar, bokningar eller mekaniker matchade din sökning.",
+      "empty_tips": "Tips: Prova att söka på kundnamn (t.ex. Anna), registreringsnummer (t.ex. ABC 123), bilmärke (t.ex. Volvo) eller mekanikernamn."
     },
     "category": {
       "customers": "Kunder",
@@ -299,7 +313,16 @@
       "section": "sektion",
       "sections": "sektioner"
     },
-    "view_all": "Visa alla resultat..."
+    "view_all": "Visa alla resultat...",
+    "badge": {
+      "customer": "KUND",
+      "vehicle": "FORDON",
+      "mechanic": "MEK",
+      "booking": "BOKNING",
+      "workorder": "ORDER",
+      "service": "TJÄNST",
+      "invoice": "FAKTURA"
+    }
   },
   "kanban": {
     "title": "Mekanikerschema & Beläggning",
@@ -366,6 +389,8 @@
       "general_service": "Allmän service",
       "brakes": "Bromsar",
       "diagnostics": "Diagnostik & Felsökning"
-    }
+    },
+    "empty_mechanics": "Inga mekaniker registrerade.",
+    "no_mechanic": "Ingen mekaniker"
   }
 }

@@ -89,7 +89,7 @@ public class MechanicKanbanCard {
         cardsRow.setAlignment(Pos.TOP_LEFT);
 
         if (mechanics.isEmpty()) {
-            cardsRow.getChildren().add(new Label("Inga mekaniker registrerade."));
+            cardsRow.getChildren().add(new Label(I18n.get("kanban.empty_mechanics")));
         } else {
             for (int i = 0; i < mechanics.size(); i++) {
                 MechanicKanbanCard card = new MechanicKanbanCard(garage, i, router, onRefresh);
@@ -217,7 +217,7 @@ public class MechanicKanbanCard {
 
         List<Mechanic> mechanics = garage.getMechanics();
         if (mechanics.isEmpty()) {
-            headerBox.getChildren().add(new Label("Ingen mekaniker"));
+            headerBox.getChildren().add(new Label(I18n.get("kanban.no_mechanic")));
             return;
         }
 
@@ -406,7 +406,7 @@ public class MechanicKanbanCard {
             Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : I18n.get("kanban.slot.booked"));
             regBadge.getStyleClass().addAll("badge", "info", "small");
 
-            String desc = slot.getDescription() != null ? slot.getDescription() : "Service";
+            String desc = slot.getDescription() != null ? slot.getDescription() : I18n.get("table.col.service");
             if (desc.length() > 18) desc = desc.substring(0, 16) + "…";
             Label descLabel = new Label(desc);
             descLabel.getStyleClass().add("kanban-slot-desc-compact");

@@ -185,7 +185,10 @@
       "name": "Full name",
       "email": "Email address",
       "phone": "Phone number",
-      "is_business": "Business customer (company)"
+      "is_business": "Business customer (company)",
+      "name_prompt": "First and last name",
+      "phone_prompt": "555-1234567",
+      "email_prompt": "name@example.com"
     },
     "vehicle": {
       "create": {
@@ -197,7 +200,11 @@
       "brand": "Brand",
       "model": "Model",
       "year": "Model year",
-      "customer_select": "Select owner (customer)"
+      "customer_select": "Select owner (customer)",
+      "reg_prompt": "ABC123",
+      "brand_prompt": "Volvo",
+      "model_prompt": "V60",
+      "year_prompt": "2022"
     },
     "booking": {
       "create": {
@@ -207,7 +214,8 @@
       },
       "vehicle_select": "Select vehicle",
       "date": "Booking date",
-      "service_select": "Select primary service"
+      "service_select": "Select primary service",
+      "desc_prompt": "E.g. Annual service and brake replacement"
     },
     "mechanic": {
       "create": {
@@ -216,7 +224,9 @@
         "desc": "Add a new mechanic to the workshop team."
       },
       "spec_prompt": "E.g. Tyres & Wheels, Engine, AC",
-      "default_spec": "General service"
+      "default_spec": "General service",
+      "name_prompt": "E.g. Anders Svensson",
+      "phone_prompt": "070-1234567"
     },
     "slot": {
       "header": "Booking details: {0}",
@@ -245,7 +255,8 @@
         "desc": "Generate invoice for a completed work order."
       },
       "workorder_select": "Select work order",
-      "discount": "Discount / Promotion (SEK)"
+      "discount": "Discount / Promotion (SEK)",
+      "discount_prompt": "E.g. WELCOME10 or SERVICE200 (optional)"
     },
     "payment": {
       "create": {
@@ -276,7 +287,10 @@
     "results": {
       "title": "Search Results",
       "subtitle": "Results matching \"{0}\"",
-      "empty": "No matching results found for \"{0}\""
+      "empty": "No matching results found for \"{0}\"",
+      "empty_title": "No matches found for \"{0}\"",
+      "empty_desc": "No customers, vehicles, work orders, bookings or mechanics matched your query.",
+      "empty_tips": "Tips: Try searching for a customer name (e.g. Anna), vehicle registration number (e.g. ABC 123), car brand (e.g. Volvo), or mechanic name."
     },
     "category": {
       "customers": "Customers",
@@ -299,7 +313,16 @@
       "section": "section",
       "sections": "sections"
     },
-    "view_all": "View all results..."
+    "view_all": "View all results...",
+    "badge": {
+      "customer": "CUSTOMER",
+      "vehicle": "VEHICLE",
+      "mechanic": "MECHANIC",
+      "booking": "BOOKING",
+      "workorder": "ORDER",
+      "service": "SERVICE",
+      "invoice": "INVOICE"
+    }
   },
   "kanban": {
     "title": "Mechanic Schedule & Workload",
@@ -366,6 +389,8 @@
       "general_service": "General service",
       "brakes": "Brakes",
       "diagnostics": "Diagnostics"
-    }
+    },
+    "empty_mechanics": "No mechanics registered.",
+    "no_mechanic": "No mechanic"
   }
 }

@@ -194,7 +194,7 @@ public final class SearchDropdown {
             for (int i = 0; i < limit; i++) {
                 Customer c = list.get(i);
                 container.getChildren().add(createItemRow(
-                        "KUND", "info",
+                        I18n.get("search.badge.customer"), "info",
                         c.getName() + (c.isVip() ? " ★ VIP" : ""),
                         c.getPhone() + " • " + c.getEmail(),
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
@@ -218,7 +218,7 @@ public final class SearchDropdown {
                 Vehicle v = list.get(i);
                 String owner = EntityLookup.customerName(garage, v.getCustomerId());
                 container.getChildren().add(createItemRow(
-                        "FORDON", "success",
+                        I18n.get("search.badge.vehicle"), "success",
                         v.getBrand() + " " + v.getModel() + " (" + v.getYear() + ")",
                         "Reg: " + v.getRegistrationNumber() + " • " + I18n.get("search.category.owner") + " " + owner,
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
@@ -241,7 +241,7 @@ public final class SearchDropdown {
             for (int i = 0; i < limit; i++) {
                 Mechanic m = list.get(i);
                 container.getChildren().add(createItemRow(
-                        "MEK", "warn",
+                        I18n.get("search.badge.mechanic"), "warn",
                         m.getName(),
                         m.getSpecialization() + " • " + (m.isAvailable() ? I18n.get("table.col.available") : I18n.get("table.col.unavailable")),
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
@@ -265,7 +265,7 @@ public final class SearchDropdown {
                 Booking b = list.get(i);
                 String veh = EntityLookup.bookingVehicleReg(garage, b.getId());
                 container.getChildren().add(createItemRow(
-                        "BOKNING", "info",
+                        I18n.get("search.badge.booking"), "info",
                         I18n.get("table.col.booking") + " #" + b.getId() + " - " + b.getDescription(),
                         b.getDate() + " • " + veh,
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
@@ -290,7 +290,7 @@ public final class SearchDropdown {
                 String cust = EntityLookup.workOrderCustomerName(garage, wo);
                 String veh = EntityLookup.workOrderVehicleReg(garage, wo);
                 container.getChildren().add(createItemRow(
-                        "ORDER", "accent",
+                        I18n.get("search.badge.workorder"), "accent",
                         I18n.get("table.col.workorder") + " #" + wo.getId() + " (" + UiFormatters.statusWord(wo.getStatus()) + ")",
                         cust + " • " + veh,
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
@@ -313,7 +313,7 @@ public final class SearchDropdown {
             for (int i = 0; i < limit; i++) {
                 ServiceItem s = list.get(i);
                 container.getChildren().add(createItemRow(
-                        "TJÄNST", "muted",
+                        I18n.get("search.badge.service"), "muted",
                         s.getName() + " (" + UiFormatters.formatMoney(s.getPrice()) + ")",
                         s.getEstimatedMinutes() + " min • " + s.getDescription(),
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
@@ -337,7 +337,7 @@ public final class SearchDropdown {
                 Invoice inv = list.get(i);
                 String cust = EntityLookup.invoiceCustomerName(garage, inv);
                 container.getChildren().add(createItemRow(
-                        "FAKTURA", "warn",
+                        I18n.get("search.badge.invoice"), "warn",
                         I18n.get("table.col.invoice") + " #" + inv.getId() + " (" + UiFormatters.formatMoney(inv.getTotalAmount()) + ")",
                         cust + " • " + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")),
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,

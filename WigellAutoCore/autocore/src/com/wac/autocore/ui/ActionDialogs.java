@@ -74,11 +74,11 @@ public final class ActionDialogs {
         GridPane grid = createGrid();
 
         TextField nameField = new TextField();
-        nameField.setPromptText("First and last name");
+        nameField.setPromptText(I18n.get("dialog.customer.name_prompt"));
         TextField phoneField = new TextField();
-        phoneField.setPromptText("555-1234567");
+        phoneField.setPromptText(I18n.get("dialog.customer.phone_prompt"));
         TextField emailField = new TextField();
-        emailField.setPromptText("name@example.com");
+        emailField.setPromptText(I18n.get("dialog.customer.email_prompt"));
 
         grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
         grid.add(nameField, 1, 0);
@@ -135,13 +135,13 @@ public final class ActionDialogs {
         });
 
         TextField regField = new TextField();
-        regField.setPromptText("ABC123");
+        regField.setPromptText(I18n.get("dialog.vehicle.reg_prompt"));
         TextField brandField = new TextField();
-        brandField.setPromptText("Volvo");
+        brandField.setPromptText(I18n.get("dialog.vehicle.brand_prompt"));
         TextField modelField = new TextField();
-        modelField.setPromptText("V60");
+        modelField.setPromptText(I18n.get("dialog.vehicle.model_prompt"));
         TextField yearField = new TextField();
-        yearField.setPromptText("2022");
+        yearField.setPromptText(I18n.get("dialog.vehicle.year_prompt"));
 
         grid.add(new Label(I18n.get("dialog.vehicle.customer_select") + ":"), 0, 0);
         grid.add(customerBox, 1, 0);
@@ -217,7 +217,7 @@ public final class ActionDialogs {
         LocalDate initialDate = defaultDate != null ? defaultDate : LocalDate.now().plusDays(1);
         DatePicker datePicker = new DatePicker(initialDate);
         TextField descField = new TextField();
-        descField.setPromptText("E.g. Annual service and brake replacement");
+        descField.setPromptText(I18n.get("dialog.booking.desc_prompt"));
 
         int rowIdx = 0;
         grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, rowIdx);
@@ -301,7 +301,7 @@ public final class ActionDialogs {
         bookingBox.setConverter(new StringConverter<Booking>() {
             @Override
             public String toString(Booking b) {
-                return b == null ? "" : "Booking #" + b.getId() + " - " + b.getDescription() + " (" + b.getDate() + ")";
+                return b == null ? "" : I18n.get("table.col.booking") + " #" + b.getId() + " - " + b.getDescription() + " (" + b.getDate() + ")";
             }
             @Override
             public Booking fromString(String string) { return null; }
@@ -313,7 +313,7 @@ public final class ActionDialogs {
         mechanicBox.setConverter(new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
-                return m == null ? "" : m.getName() + " (" + m.getSpecialization() + ") - " + (m.isAvailable() ? I18n.get("table.col.available") : "Busy");
+                return m == null ? "" : m.getName() + " (" + m.getSpecialization() + ") - " + (m.isAvailable() ? I18n.get("table.col.available") : I18n.get("table.col.unavailable"));
             }
             @Override
             public Mechanic fromString(String string) { return null; }
@@ -409,14 +409,14 @@ public final class ActionDialogs {
         orderBox.setConverter(new StringConverter<WorkOrder>() {
             @Override
             public String toString(WorkOrder wo) {
-                return wo == null ? "" : "Work order #" + wo.getId() + " (Booking #" + wo.getBookingId() + ")";
+                return wo == null ? "" : I18n.get("table.col.workorder") + " #" + wo.getId() + " (" + I18n.get("table.col.booking") + " #" + wo.getBookingId() + ")";
             }
             @Override
             public WorkOrder fromString(String string) { return null; }
         });
 
         TextField discountField = new TextField();
-        discountField.setPromptText("E.g. WELCOME10 or SERVICE200 (optional)");
+        discountField.setPromptText(I18n.get("dialog.invoice.discount_prompt"));
 
         grid.add(new Label(I18n.get("dialog.invoice.workorder_select") + ":"), 0, 0);
         grid.add(orderBox, 1, 0);
@@ -467,7 +467,7 @@ public final class ActionDialogs {
         invoiceBox.setConverter(new StringConverter<Invoice>() {
             @Override
             public String toString(Invoice inv) {
-                return inv == null ? "" : "Invoice #" + inv.getId() + " - " + inv.getTotalAmount() + " " + I18n.get("common.currency") + " (Order #" + inv.getWorkOrderId() + ")";
+                return inv == null ? "" : I18n.get("table.col.invoice") + " #" + inv.getId() + " - " + inv.getTotalAmount() + " " + I18n.get("common.currency") + " (" + I18n.get("table.col.workorder") + " #" + inv.getWorkOrderId() + ")";
             }
             @Override
             public Invoice fromString(String string) { return null; }
@@ -506,9 +506,9 @@ public final class ActionDialogs {
         GridPane grid = createGrid();
 
         TextField nameField = new TextField();
-        nameField.setPromptText("T.ex. Anders Svensson");
+        nameField.setPromptText(I18n.get("dialog.mechanic.name_prompt"));
         TextField phoneField = new TextField();
-        phoneField.setPromptText("070-1234567");
+        phoneField.setPromptText(I18n.get("dialog.mechanic.phone_prompt"));
         TextField specField = new TextField();
         specField.setPromptText(I18n.get("dialog.mechanic.spec_prompt"));
 

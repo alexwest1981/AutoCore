@@ -109,13 +109,13 @@ public final class SearchResultsView {
         emptyCard.setPadding(new Insets(28, 24, 28, 24));
         emptyCard.setAlignment(Pos.CENTER_LEFT);
 
-        Label title = new Label("No matches found for \"" + query + "\"");
+        Label title = new Label(I18n.get("search.results.empty_title", query));
         title.getStyleClass().add("panel-title");
 
-        Label sub = new Label("No customers, vehicles, work orders, bookings or mechanics matched your query.");
+        Label sub = new Label(I18n.get("search.results.empty_desc"));
         sub.getStyleClass().add("page-sub");
 
-        Label tip = new Label("Tips: Try searching for a customer name (e.g. Anna), vehicle registration number (e.g. ABC 123), car brand (e.g. Volvo), or mechanic name.");
+        Label tip = new Label(I18n.get("search.results.empty_tips"));
         tip.getStyleClass().addAll("srow-sub", "small");
 
         emptyCard.getChildren().addAll(title, sub, tip);
