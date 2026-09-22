@@ -389,7 +389,7 @@ public class MechanicKanbanCard {
             });
 
             Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : "Bokad");
-            regBadge.getStyleClass().addAll("badge", "blue", "small");
+            regBadge.getStyleClass().addAll("badge", "info", "small");
 
             String desc = slot.getDescription() != null ? slot.getDescription() : "Service";
             if (desc.length() > 18) desc = desc.substring(0, 16) + "…";
@@ -603,9 +603,9 @@ public class MechanicKanbanCard {
         drawer.getStyleClass().add("kanban-inline-drawer");
         drawer.setStyle("-fx-background-color: -wac-card; " +
                         "-fx-background-radius: 6px; " +
-                        "-fx-border-color: -wac-line, -wac-accent; -fx-border-width: 1px 1px 1px 3px; " +
-                        "-fx-border-radius: 6px; -fx-padding: 8px 10px; " +
-                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 5, 0, 0, 1);");
+                        "-fx-border-color: -wac-line -wac-line -wac-line -wac-accent; -fx-border-width: 1px 1px 1px 4px; " +
+                        "-fx-border-radius: 6px; -fx-padding: 8px 12px; " +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 6, 0, 0, 2);");
 
         // Top bar: Header & Stängknapp
         String title = (wo != null)
@@ -633,7 +633,7 @@ public class MechanicKanbanCard {
         String desc = slot.getDescription() != null && !slot.getDescription().isEmpty() ? slot.getDescription() : (b != null ? b.getDescription() : "-");
 
         Label regBadge = new Label(reg);
-        regBadge.getStyleClass().addAll("badge", "blue", "small");
+        regBadge.getStyleClass().addAll("badge", "info", "small");
 
         Label custLabel = new Label("👤 " + cust);
         custLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-text;");
