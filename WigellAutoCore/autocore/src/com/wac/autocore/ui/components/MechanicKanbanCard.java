@@ -9,12 +9,12 @@ import com.wac.autocore.service.MechanicSchedule.MonthDayStatus;
 import com.wac.autocore.service.MechanicSchedule.TimeSlot;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
-import com.wac.autocore.ui.util.UiFormatters;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -27,14 +27,16 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * Interaktivt Kanban-kort för verkstadens mekaniker på Dashboard/Översikten.
- * - Navigering mellan mekaniker via vänster/höger-pilar (< och >).
- * - Tre vyer på samma kort: Dag (07:00-16:00 med bokningsknapp),
- *   Vecka (beläggningsgrad Grön->Gul->Orange->Röd) och Månad (tillgänglighetskalender).
+ * Kompakt Kanban-kort för mekaniker på Dashboard/Översikten.
+ * - Tillåter att ALLA mekaniker visas samtidigt sida vid sida i en Kanban-rad.
+ * - Varje kort har vänster/höger-pilar för att vid behov byta mekaniker.
+ * - 3 kompakta vyer per kort: Dag (7-16 med tidsbokning), Vecka (beläggningsskala Grön-Gul-Orange-Röd)
+ *   och Månad (tillgänglighetskalender).
  */
 public class MechanicKanbanCard {
 
@@ -42,39 +44,109 @@ public class MechanicKanbanCard {
         DAY, WEEK, MONTH
     }
 
+    /**
+     * Bygger hela Kanban-sektionen med alla mekaniker synliga samtidigt sida vid sida.
+     */
+    public static VBox buildBoard(GarageSystem garage, Runnable onRefresh) {
+        List<Mechanic> mechanics = garage.getMechanics();
+
+        // Rubrikrad för hela Kanban-sektionen
+        Label title = new Label(I18n.get("kanban.title"));
+        title.getStyleClass().add("panel-title");
+
+        Label sub = new Label(I18n.get("kanban.subtitle"));
+        sub.getStyleClass().add("panel-sub");
+
+        Region spr = new Region();
+        HBox.setHgrow(spr, Priority.ALWAYS);
+
+        // Belastningslegend
+        HBox legend = buildCompactLegend();
+
+        HBox headLeft = new HBox(8, new VBox(2, title, sub));
+        headLeft.setAlignment(Pos.CENTER_LEFT);
+
+        HBox boardHead = new HBox(12, headLeft, spr, legend);
+        boardHead.setAlignment(Pos.CENTER_LEFT);
+        boardHead.setPadding(new Insets(0, 0, 4, 0));
+
+        // Rad med alla mekanikerkort sida vid sida
+        HBox cardsRow = new HBox(12);
+        cardsRow.setAlignment(Pos.TOP_LEFT);
+
+        if (mechanics.isEmpty()) {
+            cardsRow.getChildren().add(new Label("Inga mekaniker registrerade."));
+        } else {
+            for (int i = 0; i < mechanics.size(); i++) {
+                MechanicKanbanCard card = new MechanicKanbanCard(garage, i, onRefresh);
+                VBox cardView = card.getView();
+                HBox.setHgrow(cardView, Priority.ALWAYS);
+                cardsRow.getChildren().add(cardView);
+            }
+        }
+
+        VBox board = new VBox(10, boardHead, cardsRow);
+        board.getStyleClass().addAll("panel", "kanban-board-panel");
+        return board;
+    }
+
+    private static HBox buildCompactLegend() {
+        HBox legend = new HBox(10);
+        legend.setAlignment(Pos.CENTER_RIGHT);
+        legend.getChildren().addAll(
+                createDot("load-free", I18n.get("kanban.load.free")),
+                createDot("load-moderate", I18n.get("kanban.load.moderate")),
+                createDot("load-busy", I18n.get("kanban.load.busy")),
+                createDot("load-full", I18n.get("kanban.load.full"))
+        );
+        return legend;
+    }
+
+    private static HBox createDot(String cssClass, String label) {
+        Region dot = new Region();
+        dot.getStyleClass().addAll("kanban-legend-dot", cssClass);
+        dot.setPrefSize(8, 8);
+        dot.setMaxSize(8, 8);
+
+        Label lbl = new Label(label);
+        lbl.getStyleClass().add("kanban-legend-text");
+
+        HBox box = new HBox(4, dot, lbl);
+        box.setAlignment(Pos.CENTER);
+        return box;
+    }
+
+    // -------------------------------------------------------------------------
+    // Instansfält för ett enskilt kompakt mekanikerkort
+    // -------------------------------------------------------------------------
     private final GarageSystem garage;
     private final Runnable onRefresh;
     private final VBox cardContainer;
 
-    private int activeMechanicIndex = 0;
+    private int activeMechanicIndex;
     private KanbanViewMode currentMode = KanbanViewMode.DAY;
     private LocalDate selectedDate = LocalDate.now();
 
-    // UI-referenser för dynamisk omritning
+    private final VBox headerBox;
     private final VBox bodyContent;
-    private final HBox headerLeft;
-    private final HBox headerRight;
 
     public MechanicKanbanCard(GarageSystem garage, Runnable onRefresh) {
+        this(garage, 0, onRefresh);
+    }
+
+    public MechanicKanbanCard(GarageSystem garage, int initialMechanicIndex, Runnable onRefresh) {
         this.garage = garage;
+        this.activeMechanicIndex = initialMechanicIndex;
         this.onRefresh = onRefresh;
 
-        this.cardContainer = new VBox(12);
-        this.cardContainer.getStyleClass().addAll("panel", "kanban-card");
+        this.cardContainer = new VBox(8);
+        this.cardContainer.getStyleClass().addAll("kanban-card", "kanban-card-compact");
+        this.cardContainer.setMinWidth(260);
 
-        this.headerLeft = new HBox(10);
-        this.headerLeft.setAlignment(Pos.CENTER_LEFT);
-        HBox.setHgrow(this.headerLeft, Priority.ALWAYS);
+        this.headerBox = new VBox(6);
+        this.bodyContent = new VBox(6);
 
-        this.headerRight = new HBox(8);
-        this.headerRight.setAlignment(Pos.CENTER_RIGHT);
-
-        HBox topBar = new HBox(12, headerLeft, headerRight);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-
-        this.bodyContent = new VBox(10);
-
-        this.cardContainer.getChildren().addAll(topBar, bodyContent);
+        this.cardContainer.getChildren().addAll(headerBox, bodyContent);
 
         I18n.addListener(lang -> render());
         render();
@@ -98,81 +170,83 @@ public class MechanicKanbanCard {
     }
 
     private void renderHeader() {
-        headerLeft.getChildren().clear();
-        headerRight.getChildren().clear();
+        headerBox.getChildren().clear();
 
         List<Mechanic> mechanics = garage.getMechanics();
         if (mechanics.isEmpty()) {
-            headerLeft.getChildren().add(new Label("Inga mekaniker registrerade"));
+            headerBox.getChildren().add(new Label("Ingen mekaniker"));
             return;
         }
 
         Mechanic mech = getActiveMechanic();
 
-        // Vänster och höger pilar för mekanikerbyte
+        // Rad 1: Pilar för mekanikerbyte + Mekanikernamn + Vyväxlare
         Button prevMechBtn = new Button("❮");
-        prevMechBtn.getStyleClass().addAll("ghost", "kanban-nav-arrow");
+        prevMechBtn.getStyleClass().addAll("ghost", "kanban-nav-arrow-compact");
         prevMechBtn.setTooltip(new javafx.scene.control.Tooltip(I18n.get("kanban.nav.prev")));
-        prevMechBtn.setDisable(mechanics.size() <= 1);
         prevMechBtn.setOnAction(e -> {
             activeMechanicIndex = (activeMechanicIndex - 1 + mechanics.size()) % mechanics.size();
             render();
         });
 
         Button nextMechBtn = new Button("❯");
-        nextMechBtn.getStyleClass().addAll("ghost", "kanban-nav-arrow");
+        nextMechBtn.getStyleClass().addAll("ghost", "kanban-nav-arrow-compact");
         nextMechBtn.setTooltip(new javafx.scene.control.Tooltip(I18n.get("kanban.nav.next")));
-        nextMechBtn.setDisable(mechanics.size() <= 1);
         nextMechBtn.setOnAction(e -> {
             activeMechanicIndex = (activeMechanicIndex + 1) % mechanics.size();
             render();
         });
 
-        // Mekaniker-avatar med initialer
+        // Avatar
         String initials = getInitials(mech.getName());
         StackPane avatar = new StackPane(new Label(initials));
-        avatar.getStyleClass().add("kanban-avatar");
-        avatar.setPrefSize(38, 38);
+        avatar.getStyleClass().add("kanban-avatar-compact");
+        avatar.setPrefSize(26, 26);
+        avatar.setMinSize(26, 26);
 
-        // Mekaniker-info
         Label nameLabel = new Label(mech.getName());
-        nameLabel.getStyleClass().add("kanban-mech-name");
+        nameLabel.getStyleClass().add("kanban-mech-name-compact");
 
-        Label specLabel = new Label(mech.getSpecialization() + " · " + mech.getPhone());
-        specLabel.getStyleClass().add("kanban-mech-sub");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        VBox mechText = new VBox(2, nameLabel, specLabel);
-
-        // Tillgänglighetsbadge
-        Label statusBadge = new Label(mech.isAvailable() ? I18n.get("table.col.available") : "Upptagen");
-        statusBadge.getStyleClass().addAll("badge", mech.isAvailable() ? "green" : "yellow");
-
-        // Räknare t.ex. "1 / 3"
-        Label counterBadge = new Label((activeMechanicIndex + 1) + " / " + mechanics.size());
-        counterBadge.getStyleClass().addAll("badge", "blue");
-
-        headerLeft.getChildren().addAll(prevMechBtn, avatar, mechText, statusBadge, counterBadge, nextMechBtn);
-
-        // Höger: Segmenterad vy-växlare [ Dag | Vecka | Månad ]
+        // Segmenterad vyväxlare: Dag | Vecka | Månad
         Button dayBtn = createViewButton(I18n.get("kanban.view.day"), KanbanViewMode.DAY);
         Button weekBtn = createViewButton(I18n.get("kanban.view.week"), KanbanViewMode.WEEK);
         Button monthBtn = createViewButton(I18n.get("kanban.view.month"), KanbanViewMode.MONTH);
 
-        HBox viewToggleGroup = new HBox(2, dayBtn, weekBtn, monthBtn);
-        viewToggleGroup.getStyleClass().add("kanban-toggle-group");
+        HBox toggleGroup = new HBox(2, dayBtn, weekBtn, monthBtn);
+        toggleGroup.getStyleClass().add("kanban-toggle-group-compact");
 
-        headerRight.getChildren().add(viewToggleGroup);
+        HBox topRow = new HBox(4, prevMechBtn, avatar, nameLabel, nextMechBtn, spacer, toggleGroup);
+        topRow.setAlignment(Pos.CENTER_LEFT);
+
+        // Rad 2: Specialisering och tillgänglighetsbadge
+        Label specLabel = new Label(mech.getSpecialization());
+        specLabel.getStyleClass().add("kanban-mech-sub-compact");
+
+        Region spr2 = new Region();
+        HBox.setHgrow(spr2, Priority.ALWAYS);
+
+        Label statusBadge = new Label(mech.isAvailable() ? I18n.get("table.col.available") : "Upptagen");
+        statusBadge.getStyleClass().addAll("badge", mech.isAvailable() ? "green" : "yellow", "small");
+
+        HBox subRow = new HBox(6, specLabel, spr2, statusBadge);
+        subRow.setAlignment(Pos.CENTER_LEFT);
+
+        headerBox.getChildren().addAll(topRow, subRow);
     }
 
     private Button createViewButton(String label, KanbanViewMode mode) {
         Button btn = new Button(label);
-        btn.getStyleClass().add("kanban-toggle-btn");
+        btn.getStyleClass().add("kanban-toggle-btn-compact");
         if (this.currentMode == mode) {
             btn.getStyleClass().add("active");
         }
         btn.setOnAction(e -> {
             this.currentMode = mode;
-            render();
+            renderBody();
+            renderHeader(); // Uppdatera aktiv klass
         });
         return btn;
     }
@@ -180,29 +254,25 @@ public class MechanicKanbanCard {
     private void renderBody() {
         bodyContent.getChildren().clear();
         Mechanic mech = getActiveMechanic();
-        if (mech == null) {
-            bodyContent.getChildren().add(new Label("Ingen mekaniker vald."));
-            return;
-        }
+        if (mech == null) return;
 
         switch (currentMode) {
             case DAY:
-                bodyContent.getChildren().add(buildDayView(mech));
+                bodyContent.getChildren().add(buildCompactDayView(mech));
                 break;
             case WEEK:
-                bodyContent.getChildren().add(buildWeekView(mech));
+                bodyContent.getChildren().add(buildCompactWeekView(mech));
                 break;
             case MONTH:
-                bodyContent.getChildren().add(buildMonthView(mech));
+                bodyContent.getChildren().add(buildCompactMonthView(mech));
                 break;
         }
     }
 
     // =========================================================================
-    // 1. DAGSVY (07:00 - 16:00)
+    // 1. KOMPAKT DAGSVY (07:00 - 16:00)
     // =========================================================================
-    private VBox buildDayView(Mechanic mech) {
-        // Datumkontroller
+    private VBox buildCompactDayView(Mechanic mech) {
         Button prevDayBtn = new Button("❮");
         prevDayBtn.getStyleClass().addAll("ghost", "small");
         prevDayBtn.setOnAction(e -> {
@@ -225,74 +295,74 @@ public class MechanicKanbanCard {
         });
 
         Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
-        String dayName = selectedDate.getDayOfWeek().getDisplayName(TextStyle.FULL, locale);
-        dayName = dayName.substring(0, 1).toUpperCase(locale) + dayName.substring(1);
-        String formattedDate = selectedDate.format(DateTimeFormatter.ofPattern("d MMM yyyy", locale));
+        String dayName = selectedDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, locale).toUpperCase(locale);
+        String formattedDate = selectedDate.format(DateTimeFormatter.ofPattern("d MMM", locale));
 
-        Label dateTitle = new Label(dayName + " · " + formattedDate);
-        dateTitle.getStyleClass().add("kanban-date-title");
+        Label dateTitle = new Label(dayName + " " + formattedDate);
+        dateTitle.getStyleClass().add("kanban-date-title-compact");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label workdayInfo = new Label(I18n.get("kanban.day.workday"));
-        workdayInfo.getStyleClass().add("kanban-workday-sub");
+        HBox navBar = new HBox(4, prevDayBtn, todayBtn, nextDayBtn, spacer, dateTitle);
+        navBar.setAlignment(Pos.CENTER_LEFT);
+        navBar.setPadding(new Insets(0, 0, 4, 0));
 
-        HBox dateBar = new HBox(8, prevDayBtn, todayBtn, nextDayBtn, dateTitle, spacer, workdayInfo);
-        dateBar.setAlignment(Pos.CENTER_LEFT);
-        dateBar.setPadding(new Insets(2, 0, 8, 0));
-
-        // Tidsslottar (07:00 - 16:00)
         MechanicSchedule schedule = MechanicSchedule.getInstance();
         List<TimeSlot> slots = schedule.getSlotsForDay(mech.getId(), selectedDate);
 
-        VBox slotList = new VBox(6);
+        VBox slotList = new VBox(4);
         for (TimeSlot slot : slots) {
-            slotList.getChildren().add(buildTimeSlotRow(mech, slot));
+            slotList.getChildren().add(buildCompactTimeSlotRow(mech, slot));
         }
 
-        return new VBox(6, dateBar, slotList);
+        ScrollPane scroll = new ScrollPane(slotList);
+        scroll.setFitToWidth(true);
+        scroll.setMaxHeight(260);
+        scroll.setPrefHeight(260);
+        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+
+        return new VBox(4, navBar, scroll);
     }
 
-    private HBox buildTimeSlotRow(Mechanic mech, TimeSlot slot) {
-        Label timeBadge = new Label(slot.getTimeRange());
-        timeBadge.getStyleClass().add("kanban-time-badge");
-        timeBadge.setPrefWidth(105);
+    private HBox buildCompactTimeSlotRow(Mechanic mech, TimeSlot slot) {
+        Label timeBadge = new Label(String.format("%02d:00", slot.getHour()));
+        timeBadge.getStyleClass().add("kanban-time-badge-compact");
 
-        HBox row = new HBox(12);
+        HBox row = new HBox(6);
         row.setAlignment(Pos.CENTER_LEFT);
-        row.getStyleClass().add("kanban-slot-row");
+        row.getStyleClass().add("kanban-slot-row-compact");
 
         if (slot.isBooked()) {
             row.getStyleClass().add("booked");
 
-            Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : "Fordon");
-            regBadge.getStyleClass().addAll("badge", "blue");
+            Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : "Bokad");
+            regBadge.getStyleClass().addAll("badge", "blue", "small");
 
-            Label custLabel = new Label(slot.getCustomerName() != null ? slot.getCustomerName() : "Kund");
-            custLabel.getStyleClass().add("kanban-slot-customer");
-
-            Label descLabel = new Label("· " + (slot.getDescription() != null ? slot.getDescription() : "Bokad service"));
-            descLabel.getStyleClass().add("kanban-slot-desc");
+            String desc = slot.getDescription() != null ? slot.getDescription() : "Service";
+            if (desc.length() > 18) desc = desc.substring(0, 16) + "…";
+            Label descLabel = new Label(desc);
+            descLabel.getStyleClass().add("kanban-slot-desc-compact");
 
             Region spr = new Region();
             HBox.setHgrow(spr, Priority.ALWAYS);
 
-            Label bookedBadge = new Label(I18n.get("kanban.slot.booked"));
-            bookedBadge.getStyleClass().addAll("badge", "yellow");
+            Label dot = new Label("●");
+            dot.setStyle("-fx-text-fill: #eab308; -fx-font-size: 10px;");
 
-            row.getChildren().addAll(timeBadge, regBadge, custLabel, descLabel, spr, bookedBadge);
+            row.getChildren().addAll(timeBadge, regBadge, descLabel, spr, dot);
         } else {
             row.getStyleClass().add("free");
 
             Label freeLabel = new Label(I18n.get("kanban.day.available"));
-            freeLabel.getStyleClass().add("kanban-slot-free-text");
+            freeLabel.getStyleClass().add("kanban-slot-free-compact");
 
             Region spr = new Region();
             HBox.setHgrow(spr, Priority.ALWAYS);
 
-            Button bookBtn = new Button(I18n.get("kanban.day.book_button"));
-            bookBtn.getStyleClass().addAll("primary", "small");
+            Button bookBtn = new Button("+");
+            bookBtn.getStyleClass().addAll("primary", "small", "kanban-slot-plus-btn");
+            bookBtn.setTooltip(new javafx.scene.control.Tooltip(I18n.get("kanban.action.book_hour")));
             bookBtn.setOnAction(e -> {
                 ActionDialogs.showCreateBookingDialog(garage, selectedDate, mech, slot.getHour(), () -> {
                     if (onRefresh != null) onRefresh.run();
@@ -307,9 +377,9 @@ public class MechanicKanbanCard {
     }
 
     // =========================================================================
-    // 2. VECKOVY (Beläggning Grön -> Gul -> Orange -> Röd)
+    // 2. KOMPAKT VECKOVY (Beläggningsskala Grön -> Gul -> Orange -> Röd)
     // =========================================================================
-    private VBox buildWeekView(Mechanic mech) {
+    private VBox buildCompactWeekView(Mechanic mech) {
         LocalDate monday = selectedDate.with(DayOfWeek.MONDAY);
 
         Button prevWeekBtn = new Button("❮");
@@ -319,9 +389,9 @@ public class MechanicKanbanCard {
             renderBody();
         });
 
-        Button thisWeekBtn = new Button(I18n.get("kanban.today"));
-        thisWeekBtn.getStyleClass().addAll("ghost", "small");
-        thisWeekBtn.setOnAction(e -> {
+        Button todayBtn = new Button(I18n.get("kanban.today"));
+        todayBtn.getStyleClass().addAll("ghost", "small");
+        todayBtn.setOnAction(e -> {
             selectedDate = LocalDate.now();
             renderBody();
         });
@@ -333,144 +403,81 @@ public class MechanicKanbanCard {
             renderBody();
         });
 
-        Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
-        LocalDate sunday = monday.plusDays(6);
-        String weekRange = monday.format(DateTimeFormatter.ofPattern("d MMM", locale)) + " – " +
-                sunday.format(DateTimeFormatter.ofPattern("d MMM yyyy", locale));
-
-        Label weekTitle = new Label(I18n.get("kanban.week.title", monday.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR)) + " (" + weekRange + ")");
-        weekTitle.getStyleClass().add("kanban-date-title");
+        Label weekTitle = new Label(I18n.get("kanban.week.title", monday.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR)));
+        weekTitle.getStyleClass().add("kanban-date-title-compact");
 
         Region spr = new Region();
         HBox.setHgrow(spr, Priority.ALWAYS);
 
-        // Förklaring/Legend
-        HBox legend = buildLoadLegend();
+        HBox navBar = new HBox(4, prevWeekBtn, todayBtn, nextWeekBtn, spr, weekTitle);
+        navBar.setAlignment(Pos.CENTER_LEFT);
+        navBar.setPadding(new Insets(0, 0, 4, 0));
 
-        HBox topBar = new HBox(8, prevWeekBtn, thisWeekBtn, nextWeekBtn, weekTitle, spr, legend);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setPadding(new Insets(2, 0, 10, 0));
-
-        // 7 dagars kolumner
         MechanicSchedule schedule = MechanicSchedule.getInstance();
         List<DayLoad> weekLoads = schedule.getWeekLoads(mech.getId(), monday);
 
-        HBox daysRow = new HBox(10);
-        daysRow.setAlignment(Pos.CENTER);
+        VBox daysList = new VBox(4);
         for (DayLoad dl : weekLoads) {
-            VBox dayCol = buildWeekDayColumn(mech, dl);
-            HBox.setHgrow(dayCol, Priority.ALWAYS);
-            daysRow.getChildren().add(dayCol);
+            daysList.getChildren().add(buildCompactWeekDayRow(mech, dl));
         }
 
-        return new VBox(8, topBar, daysRow);
+        return new VBox(4, navBar, daysList);
     }
 
-    private VBox buildWeekDayColumn(Mechanic mech, DayLoad dl) {
+    private HBox buildCompactWeekDayRow(Mechanic mech, DayLoad dl) {
         Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
         String dayName = dl.getDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, locale).toUpperCase(locale);
-        String dayNum = String.valueOf(dl.getDate().getDayOfMonth());
+        String dateStr = dayName + " " + dl.getDate().getDayOfMonth();
 
-        Label dayHeader = new Label(dayName + " " + dayNum);
-        dayHeader.getStyleClass().add("kanban-week-day-title");
+        Label dayLabel = new Label(dateStr);
+        dayLabel.getStyleClass().add("kanban-week-day-name");
+        dayLabel.setPrefWidth(55);
 
-        // Färgkod baserad på beläggning
+        // Beläggningspill
         String loadClass = "load-" + dl.getLevel().getCode();
-        Label loadBadge = new Label(I18n.get("kanban.load." + dl.getLevel().getCode()));
-        loadBadge.getStyleClass().addAll("kanban-load-pill", loadClass);
+        Label pill = new Label(I18n.get("kanban.load." + dl.getLevel().getCode()));
+        pill.getStyleClass().addAll("kanban-load-pill-compact", loadClass);
+        pill.setPrefWidth(85);
 
-        // Progress bar för timmar (0/9 till 9/9)
-        int booked = dl.getBookedHours();
-        int total = dl.getTotalHours();
-        int pct = (int) Math.round(dl.getLoadPercentage() * 100);
+        // Siffror (t.ex. 3/9 h)
+        Label countLabel = new Label(dl.getBookedHours() + "/" + dl.getTotalHours() + "h");
+        countLabel.getStyleClass().add("kanban-week-count-compact");
+        countLabel.setPrefWidth(38);
 
-        Label hoursLabel = new Label(I18n.get("kanban.week.hours_booked", booked, total, pct));
-        hoursLabel.getStyleClass().add("kanban-week-hours");
-
+        // Mini progressbar
         StackPane track = new StackPane();
-        track.getStyleClass().add("kanban-progress-track");
-        track.setPrefHeight(6);
+        track.getStyleClass().add("kanban-progress-track-compact");
+        track.setPrefHeight(4);
+        track.setPrefWidth(45);
 
         Region fill = new Region();
-        fill.getStyleClass().addAll("kanban-progress-fill", loadClass);
-        fill.setMaxHeight(6);
-        fill.setPrefHeight(6);
-        fill.setPrefWidth(Math.max(4, 120 * dl.getLoadPercentage()));
+        fill.getStyleClass().addAll("kanban-progress-fill-compact", loadClass);
+        fill.setPrefHeight(4);
+        fill.setPrefWidth(Math.max(2, 45 * dl.getLoadPercentage()));
 
         HBox fillBox = new HBox(fill);
         fillBox.setAlignment(Pos.CENTER_LEFT);
         track.getChildren().add(fillBox);
 
-        // Lista med bokningar
-        VBox bookingSnippets = new VBox(4);
-        bookingSnippets.setPadding(new Insets(6, 0, 0, 0));
-        int snippetCount = 0;
-        for (TimeSlot s : dl.getSlots()) {
-            if (s.isBooked()) {
-                snippetCount++;
-                if (snippetCount <= 3) {
-                    Label item = new Label(String.format("%02d:00 ", s.getHour()) + s.getVehicleReg() + " " + s.getDescription());
-                    item.getStyleClass().add("kanban-week-snippet");
-                    bookingSnippets.getChildren().add(item);
-                }
-            }
-        }
-        if (snippetCount > 3) {
-            Label more = new Label("+ " + (snippetCount - 3) + " till...");
-            more.getStyleClass().addAll("kanban-week-snippet", "muted");
-            bookingSnippets.getChildren().add(more);
-        } else if (snippetCount == 0) {
-            Label free = new Label(I18n.get("kanban.day.empty_notice"));
-            free.getStyleClass().addAll("kanban-week-snippet", "muted");
-            bookingSnippets.getChildren().add(free);
-        }
+        HBox row = new HBox(6, dayLabel, pill, countLabel, track);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("kanban-week-row-compact");
+        row.setCursor(Cursor.HAND);
 
-        VBox col = new VBox(6, dayHeader, loadBadge, hoursLabel, track, bookingSnippets);
-        col.getStyleClass().addAll("kanban-week-col", loadClass);
-        col.setPadding(new Insets(10));
-        col.setCursor(Cursor.HAND);
-
-        // Klick på dagen byter direkt till dagsvy för det valda datumet
-        col.setOnMouseClicked(e -> {
+        // Klick öppnar dagsvyn för vald dag
+        row.setOnMouseClicked(e -> {
             this.selectedDate = dl.getDate();
             this.currentMode = KanbanViewMode.DAY;
             render();
         });
 
-        return col;
-    }
-
-    private HBox buildLoadLegend() {
-        HBox legend = new HBox(8);
-        legend.setAlignment(Pos.CENTER_RIGHT);
-
-        legend.getChildren().addAll(
-                createLegendDot("load-free", I18n.get("kanban.load.free")),
-                createLegendDot("load-moderate", I18n.get("kanban.load.moderate")),
-                createLegendDot("load-busy", I18n.get("kanban.load.busy")),
-                createLegendDot("load-full", I18n.get("kanban.load.full"))
-        );
-        return legend;
-    }
-
-    private HBox createLegendDot(String cssClass, String labelText) {
-        Region dot = new Region();
-        dot.getStyleClass().addAll("kanban-legend-dot", cssClass);
-        dot.setPrefSize(8, 8);
-        dot.setMaxSize(8, 8);
-
-        Label lbl = new Label(labelText);
-        lbl.getStyleClass().add("kanban-legend-text");
-
-        HBox box = new HBox(4, dot, lbl);
-        box.setAlignment(Pos.CENTER);
-        return box;
+        return row;
     }
 
     // =========================================================================
-    // 3. MÅNADSVY (Kalender med tillgängliga vs otillgängliga dagar)
+    // 3. KOMPAKT MÅNADSVY (Kalenderraster)
     // =========================================================================
-    private VBox buildMonthView(Mechanic mech) {
+    private VBox buildCompactMonthView(Mechanic mech) {
         YearMonth ym = YearMonth.from(selectedDate);
 
         Button prevMonthBtn = new Button("❮");
@@ -480,9 +487,9 @@ public class MechanicKanbanCard {
             renderBody();
         });
 
-        Button thisMonthBtn = new Button(I18n.get("kanban.today"));
-        thisMonthBtn.getStyleClass().addAll("ghost", "small");
-        thisMonthBtn.setOnAction(e -> {
+        Button todayBtn = new Button(I18n.get("kanban.today"));
+        todayBtn.getStyleClass().addAll("ghost", "small");
+        todayBtn.setOnAction(e -> {
             selectedDate = LocalDate.now();
             renderBody();
         });
@@ -495,106 +502,84 @@ public class MechanicKanbanCard {
         });
 
         Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
-        String monthName = ym.getMonth().getDisplayName(TextStyle.FULL, locale);
-        monthName = monthName.substring(0, 1).toUpperCase(locale) + monthName.substring(1);
-
+        String monthName = ym.getMonth().getDisplayName(TextStyle.SHORT, locale).toUpperCase(locale);
         Label monthTitle = new Label(monthName + " " + ym.getYear());
-        monthTitle.getStyleClass().add("kanban-date-title");
+        monthTitle.getStyleClass().add("kanban-date-title-compact");
 
         Region spr = new Region();
         HBox.setHgrow(spr, Priority.ALWAYS);
 
-        Label hint = new Label(I18n.get("kanban.month.hint"));
-        hint.getStyleClass().add("kanban-workday-sub");
+        HBox navBar = new HBox(4, prevMonthBtn, todayBtn, nextMonthBtn, spr, monthTitle);
+        navBar.setAlignment(Pos.CENTER_LEFT);
+        navBar.setPadding(new Insets(0, 0, 4, 0));
 
-        HBox topBar = new HBox(8, prevMonthBtn, thisMonthBtn, nextMonthBtn, monthTitle, spr, hint);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setPadding(new Insets(2, 0, 10, 0));
-
-        // Kalendergitter
         GridPane grid = new GridPane();
-        grid.setHgap(8);
-        grid.setVgap(8);
+        grid.setHgap(3);
+        grid.setVgap(3);
         grid.setAlignment(Pos.CENTER);
 
-        // Kolumnrubriker (Mån-Sön)
-        String[] daysOfWeek = I18n.isSwedish() ?
-                new String[]{"Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"} :
-                new String[]{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+        String[] headers = I18n.isSwedish() ?
+                new String[]{"M", "T", "O", "T", "F", "L", "S"} :
+                new String[]{"M", "T", "W", "T", "F", "S", "S"};
 
         for (int c = 0; c < 7; c++) {
-            Label colHead = new Label(daysOfWeek[c]);
-            colHead.getStyleClass().add("kanban-month-head");
-            colHead.setAlignment(Pos.CENTER);
-            colHead.setMaxWidth(Double.MAX_VALUE);
-            grid.add(colHead, c, 0);
+            Label head = new Label(headers[c]);
+            head.getStyleClass().add("kanban-month-head-compact");
+            head.setAlignment(Pos.CENTER);
+            head.setPrefWidth(30);
+            grid.add(head, c, 0);
         }
 
         MechanicSchedule schedule = MechanicSchedule.getInstance();
-        List<MonthDayStatus> monthStatuses = schedule.getMonthDays(mech.getId(), ym, mech.isAvailable());
+        List<MonthDayStatus> days = schedule.getMonthDays(mech.getId(), ym, mech.isAvailable());
 
-        int colIdx = 0;
-        int rowIdx = 1;
-        for (MonthDayStatus s : monthStatuses) {
-            VBox dayBox = buildMonthDayBox(mech, s);
-            grid.add(dayBox, colIdx, rowIdx);
+        int col = 0;
+        int row = 1;
+        for (MonthDayStatus s : days) {
+            StackPane cell = buildCompactMonthCell(s);
+            grid.add(cell, col, row);
 
-            colIdx++;
-            if (colIdx == 7) {
-                colIdx = 0;
-                rowIdx++;
+            col++;
+            if (col == 7) {
+                col = 0;
+                row++;
             }
         }
 
-        return new VBox(8, topBar, grid);
+        return new VBox(4, navBar, grid);
     }
 
-    private VBox buildMonthDayBox(Mechanic mech, MonthDayStatus s) {
-        VBox box = new VBox(3);
-        box.setAlignment(Pos.CENTER);
-        box.setPrefSize(78, 56);
-        box.setMinSize(64, 48);
-        box.getStyleClass().add("kanban-month-cell");
+    private StackPane buildCompactMonthCell(MonthDayStatus s) {
+        StackPane cell = new StackPane();
+        cell.setPrefSize(30, 24);
+        cell.getStyleClass().add("kanban-month-cell-compact");
 
-        Label dayNum = new Label(String.valueOf(s.getDate().getDayOfMonth()));
-        dayNum.getStyleClass().add("kanban-month-num");
-
-        Label statusLabel = new Label();
-        statusLabel.getStyleClass().add("kanban-month-status");
+        Label num = new Label(String.valueOf(s.getDate().getDayOfMonth()));
+        num.getStyleClass().add("kanban-month-num-compact");
+        cell.getChildren().add(num);
 
         if (!s.isInCurrentMonth()) {
-            box.getStyleClass().add("out-of-month");
-            statusLabel.setText("");
+            cell.getStyleClass().add("out-of-month");
         } else if (s.isWeekend()) {
-            box.getStyleClass().add("weekend");
-            statusLabel.setText(I18n.get("kanban.month.weekend"));
+            cell.getStyleClass().add("weekend");
         } else if (!s.isMechanicAvailable()) {
-            box.getStyleClass().add("unavailable");
-            statusLabel.setText(I18n.get("kanban.month.unavailable_day"));
+            cell.getStyleClass().add("unavailable");
         } else if (s.isFullyBooked()) {
-            box.getStyleClass().add("full");
-            statusLabel.setText(I18n.get("kanban.month.full_day"));
+            cell.getStyleClass().add("full");
         } else {
-            box.getStyleClass().add("available");
-            if (s.getBookedHours() > 0) {
-                statusLabel.setText(s.getBookedHours() + "h bokad");
-            } else {
-                statusLabel.setText(I18n.get("kanban.month.available_day"));
-            }
+            cell.getStyleClass().add("available");
         }
 
-        box.getChildren().addAll(dayNum, statusLabel);
-
         if (s.isInCurrentMonth() && !s.isWeekend()) {
-            box.setCursor(Cursor.HAND);
-            box.setOnMouseClicked(e -> {
+            cell.setCursor(Cursor.HAND);
+            cell.setOnMouseClicked(e -> {
                 this.selectedDate = s.getDate();
                 this.currentMode = KanbanViewMode.DAY;
                 render();
             });
         }
 
-        return box;
+        return cell;
     }
 
     private String getInitials(String name) {
