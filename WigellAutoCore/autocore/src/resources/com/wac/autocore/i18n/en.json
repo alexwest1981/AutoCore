@@ -267,5 +267,47 @@
       "mechanics": "Mechanics"
     },
     "view_all": "View all results..."
+  },
+  "kanban": {
+    "title": "Mechanic Schedule & Workload",
+    "subtitle": "Interactive planning and slot booking for workshop mechanics",
+    "view": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "nav": {
+      "prev": "Previous mechanic",
+      "next": "Next mechanic",
+      "counter": "Mechanic {0} of {1}"
+    },
+    "day": {
+      "title": "Daily Schedule",
+      "workday": "Work hours: 07:00 – 16:00",
+      "available": "Available for booking",
+      "booked": "Booked",
+      "book_button": "+ Book slot",
+      "empty_notice": "No bookings scheduled for this day."
+    },
+    "week": {
+      "title": "Weekly Overview",
+      "hours_booked": "{0} of {1} h ({2}%)",
+      "fully_booked": "Fully booked",
+      "switch_to_day": "Click to open day view"
+    },
+    "month": {
+      "title": "Monthly Overview",
+      "available_day": "Available",
+      "unavailable_day": "Unavailable",
+      "weekend": "Weekend",
+      "full_day": "Fully booked",
+      "hint": "Click a day to view detailed schedule"
+    },
+    "load": {
+      "free": "Low workload",
+      "moderate": "Moderate workload",
+      "busy": "Heavy workload",
+      "full": "Fully booked"
+    }
   }
 }

@@ -872,5 +872,240 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.35), 3, 0, 0, 1);
 }
 
+/* ============================================================
+   19. MEKANIKER-KANBAN (Dag / Vecka / Månad)
+   ============================================================ */
+.kanban-card {
+    -fx-padding: 18px 20px;
+    -fx-spacing: 14px;
+}
+
+.kanban-nav-arrow {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-padding: 4px 10px;
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+}
+.kanban-nav-arrow:hover {
+    -fx-text-fill: -wac-accent;
+    -fx-background-color: -wac-accent-soft;
+}
+
+.kanban-avatar {
+    -fx-background-color: -wac-accent-soft;
+    -fx-background-radius: 999;
+    -fx-alignment: CENTER;
+}
+.kanban-avatar .label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-accent;
+}
+
+.kanban-mech-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+
+.kanban-mech-sub {
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-muted;
+}
+
+.kanban-toggle-group {
+    -fx-background-color: -wac-shell;
+    -fx-background-radius: 8;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 3;
+    -fx-alignment: CENTER;
+}
+
+.kanban-toggle-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 14;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+.kanban-toggle-btn:hover {
+    -fx-text-fill: -wac-text;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+.kanban-toggle-btn.active {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+.kanban-date-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+
+.kanban-workday-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+}
+
+.kanban-time-badge {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-background-color: -wac-shell;
+    -fx-padding: 5 10;
+    -fx-background-radius: 6;
+    -fx-alignment: CENTER;
+}
+
+.kanban-slot-row {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 14;
+}
+.kanban-slot-row.free {
+    -fx-background-color: -wac-shell;
+    -fx-border-style: dashed;
+    -fx-border-color: -wac-line;
+}
+.kanban-slot-customer {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+.kanban-slot-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+}
+.kanban-slot-free-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+    -fx-font-style: italic;
+}
+
+/* Veckovy */
+.kanban-week-col {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+.kanban-week-col:hover {
+    -fx-border-color: -wac-accent;
+}
+.kanban-week-day-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+    -fx-alignment: CENTER;
+}
+.kanban-week-hours {
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-muted;
+    -fx-alignment: CENTER;
+}
+.kanban-progress-track {
+    -fx-background-color: -wac-shell;
+    -fx-background-radius: 3;
+}
+.kanban-progress-fill {
+    -fx-background-radius: 3;
+}
+.kanban-load-pill {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 6;
+    -fx-background-radius: 4;
+    -fx-alignment: CENTER;
+}
+
+/* Belastningsfärger (Grön -> Gul -> Orange -> Röd) */
+.load-free {
+    -fx-background-color: #10b981;
+    -fx-text-fill: #ffffff;
+}
+.load-moderate {
+    -fx-background-color: #eab308;
+    -fx-text-fill: #ffffff;
+}
+.load-busy {
+    -fx-background-color: #f97316;
+    -fx-text-fill: #ffffff;
+}
+.load-full {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: #ffffff;
+}
+
+.kanban-week-snippet {
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-text;
+}
+
+.kanban-legend-dot {
+    -fx-background-radius: 999;
+}
+.kanban-legend-text {
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-muted;
+}
+
+/* Månadsvy */
+.kanban-month-head {
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-muted;
+    -fx-alignment: CENTER;
+}
+.kanban-month-cell {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.kanban-month-cell:hover {
+    -fx-border-color: -wac-accent;
+}
+.kanban-month-cell.out-of-month {
+    -fx-opacity: 0.3;
+    -fx-background-color: transparent;
+}
+.kanban-month-cell.weekend {
+    -fx-background-color: -wac-shell;
+    -fx-opacity: 0.65;
+}
+.kanban-month-cell.available {
+    -fx-border-color: rgba(16, 185, 129, 0.4);
+}
+.kanban-month-cell.full {
+    -fx-border-color: rgba(239, 68, 68, 0.5);
+    -fx-background-color: rgba(239, 68, 68, 0.08);
+}
+.kanban-month-cell.unavailable {
+    -fx-border-color: rgba(113, 113, 122, 0.4);
+    -fx-opacity: 0.6;
+}
+.kanban-month-num {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-text;
+}
+.kanban-month-status {
+    -fx-font-size: 9px;
+    -fx-text-fill: -wac-muted;
+}
+
 
 

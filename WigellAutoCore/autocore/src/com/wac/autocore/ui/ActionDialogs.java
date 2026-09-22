@@ -9,6 +9,7 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.EntityLookup;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
@@ -175,6 +176,11 @@ public final class ActionDialogs {
 
     // ---------------------------------------------------------- 3. Booking
     public static void showCreateBookingDialog(GarageSystem garage, Runnable onSuccess) {
+        showCreateBookingDialog(garage, null, null, null, onSuccess);
+    }
+
+    public static void showCreateBookingDialog(GarageSystem garage, LocalDate defaultDate,
+                                               Mechanic defaultMechanic, Integer defaultHour, Runnable onSuccess) {
         List<Vehicle> vehicles = garage.getVehicles();
         if (vehicles.isEmpty()) {
             showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
@@ -200,16 +206,27 @@ public final class ActionDialogs {
             public Vehicle fromString(String string) { return null; }
         });
 
-        DatePicker datePicker = new DatePicker(LocalDate.now().plusDays(1));
+        LocalDate initialDate = defaultDate != null ? defaultDate : LocalDate.now().plusDays(1);
+        DatePicker datePicker = new DatePicker(initialDate);
         TextField descField = new TextField();
         descField.setPromptText("E.g. Annual service and brake replacement");
 
-        grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, 0);
-        grid.add(vehicleBox, 1, 0);
-        grid.add(new Label(I18n.get("dialog.booking.date") + ":"), 0, 1);
-        grid.add(datePicker, 1, 1);
-        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, 2);
-        grid.add(descField, 1, 2);
+        int rowIdx = 0;
+        grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, rowIdx);
+        grid.add(vehicleBox, 1, rowIdx++);
+
+        grid.add(new Label(I18n.get("dialog.booking.date") + ":"), 0, rowIdx);
+        grid.add(datePicker, 1, rowIdx++);
+
+        if (defaultMechanic != null && defaultHour != null) {
+            Label mechInfo = new Label(defaultMechanic.getName() + " (" + String.format("%02d:00 - %02d:00", defaultHour, defaultHour + 1) + ")");
+            mechInfo.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent;");
+            grid.add(new Label(I18n.get("table.col.mechanic") + ":"), 0, rowIdx);
+            grid.add(mechInfo, 1, rowIdx++);
+        }
+
+        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
+        grid.add(descField, 1, rowIdx++);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -225,7 +242,15 @@ public final class ActionDialogs {
                     return;
                 }
 
-                garage.createBooking(v.getId(), date, desc);
+                Booking b = garage.createBooking(v.getId(), date, desc);
+                if (defaultMechanic != null && defaultHour != null && b != null) {
+                    com.wac.autocore.service.MechanicSchedule.getInstance().bookSlot(
+                            defaultMechanic.getId(), date, defaultHour, b.getId(),
+                            EntityLookup.customerName(garage, v.getCustomerId()),
+                            v.getRegistrationNumber(), desc
+                    );
+                    garage.createWorkOrder(b.getId(), defaultMechanic.getId(), 1);
+                }
                 if (onSuccess != null) onSuccess.run();
             }
         });

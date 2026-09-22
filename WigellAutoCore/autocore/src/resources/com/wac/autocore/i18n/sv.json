@@ -267,5 +267,47 @@
       "mechanics": "Mekaniker"
     },
     "view_all": "Visa alla resultat..."
+  },
+  "kanban": {
+    "title": "Mekanikerschema & Beläggning",
+    "subtitle": "Interaktiv planering och tidsbokning för verkstadens mekaniker",
+    "view": {
+      "day": "Dag",
+      "week": "Vecka",
+      "month": "Månad"
+    },
+    "nav": {
+      "prev": "Föregående mekaniker",
+      "next": "Nästa mekaniker",
+      "counter": "Mekaniker {0} av {1}"
+    },
+    "day": {
+      "title": "Dagsschema",
+      "workday": "Arbetstid: 07:00 – 16:00",
+      "available": "Ledig för bokning",
+      "booked": "Bokad",
+      "book_button": "+ Boka timme",
+      "empty_notice": "Inga inbokade tider denna dag."
+    },
+    "week": {
+      "title": "Veckoöversikt",
+      "hours_booked": "{0} av {1} h ({2}%)",
+      "fully_booked": "Fullbokad",
+      "switch_to_day": "Klicka för att öppna dagsvy"
+    },
+    "month": {
+      "title": "Månadsöversikt",
+      "available_day": "Tillgänglig",
+      "unavailable_day": "Ej tillgänglig",
+      "weekend": "Helg",
+      "full_day": "Fullbokad",
+      "hint": "Klicka på en dag för att se detaljerat schema"
+    },
+    "load": {
+      "free": "Låg beläggning",
+      "moderate": "Medelbeläggning",
+      "busy": "Hög beläggning",
+      "full": "Fullbelagd"
+    }
   }
 }

@@ -91,11 +91,14 @@ public final class OverviewView {
                 statusPanel(workOrders),
                 bookingsPanel(garage, bookings));
 
+        com.wac.autocore.ui.components.MechanicKanbanCard kanbanCard =
+                new com.wac.autocore.ui.components.MechanicKanbanCard(garage, onRefresh);
+
         TableView<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders, router);
         VBox recentPanel = UiComponents.panel(I18n.get("overview.section.recent_workorders"),
                 I18n.get("overview.section.recent_workorders_sub"), recent);
 
-        return new VBox(18, head, quickBar, kpis, panels, recentPanel);
+        return new VBox(18, head, quickBar, kpis, kanbanCard.getView(), panels, recentPanel);
     }
 
     private static VBox statusPanel(List<WorkOrder> workOrders) {

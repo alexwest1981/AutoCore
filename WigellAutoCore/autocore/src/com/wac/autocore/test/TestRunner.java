@@ -25,6 +25,7 @@ public class TestRunner {
         runClass(TableFactoryTest.class);
         runClass(GlobalSearchTest.class);
         runClass(I18nTest.class);
+        runClass(MechanicScheduleTest.class);
 
         System.out.println("--------------------------------------------------");
         System.out.printf("Resultat: %d tester körda. \u001B[32m%d godkända\u001B[0m, \u001B[31m%d misslyckade\u001B[0m.%n",
@@ -91,6 +92,12 @@ public class TestRunner {
     public static void assertFalse(boolean condition, String message) {
         if (condition) {
             throw new AssertionError(message != null ? message : "Förväntade false men fick true");
+        }
+    }
+
+    public static void assertNotNull(Object actual, String message) {
+        if (actual == null) {
+            throw new AssertionError(message != null ? message : "Förväntade icke-null men fick null");
         }
     }
 }
