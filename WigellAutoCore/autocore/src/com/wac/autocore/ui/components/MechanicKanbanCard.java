@@ -1,6 +1,9 @@
 package com.wac.autocore.ui.components;
 
+import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
+import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.service.MechanicSchedule.DayLoad;
@@ -9,9 +12,12 @@ import com.wac.autocore.service.MechanicSchedule.MonthDayStatus;
 import com.wac.autocore.service.MechanicSchedule.TimeSlot;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.EntityLookup;
+import com.wac.autocore.ui.util.UiFormatters;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -143,6 +149,20 @@ public class MechanicKanbanCard {
     private int activeMechanicIndex;
     private KanbanViewMode currentMode = KanbanViewMode.DAY;
     private LocalDate selectedDate = LocalDate.now();
+    private TimeSlot expandedSlot;
+
+    private void toggleExpandSlot(TimeSlot slot) {
+        if (expandedSlot != null && expandedSlot.getDate().equals(slot.getDate()) && expandedSlot.getHour() == slot.getHour()) {
+            expandedSlot = null;
+        } else {
+            expandedSlot = slot;
+        }
+        renderBody();
+    }
+
+    private boolean isExpanded(TimeSlot slot) {
+        return expandedSlot != null && expandedSlot.getDate().equals(slot.getDate()) && expandedSlot.getHour() == slot.getHour();
+    }
 
     private final VBox headerBox;
     private final VBox bodyContent;
@@ -348,7 +368,7 @@ public class MechanicKanbanCard {
         return new VBox(4, navBar, scroll);
     }
 
-    private HBox buildCompactTimeSlotRow(Mechanic mech, TimeSlot slot) {
+    private Node buildCompactTimeSlotRow(Mechanic mech, TimeSlot slot) {
         Label timeBadge = new Label(String.format("%02d:00", slot.getHour()));
         timeBadge.getStyleClass().add("kanban-time-badge-compact");
 
@@ -359,15 +379,13 @@ public class MechanicKanbanCard {
         if (slot.isBooked()) {
             row.getStyleClass().add("booked");
             row.setCursor(Cursor.HAND);
+            if (isExpanded(slot)) {
+                row.setStyle("-fx-border-color: -wac-accent; -fx-border-width: 1px; -fx-border-radius: 4px;");
+            }
             javafx.scene.control.Tooltip.install(row, new javafx.scene.control.Tooltip(
-                    "Arbetsorder #" + (slot.getWorkOrderId() > 0 ? slot.getWorkOrderId() : slot.getBookingId()) + " · Klicka för att öppna detaljer"));
+                    "Arbetsorder #" + (slot.getWorkOrderId() > 0 ? slot.getWorkOrderId() : slot.getBookingId()) + " · Klicka för att visa detaljer"));
             row.setOnMouseClicked(e -> {
-                javafx.application.Platform.runLater(() -> {
-                    ActionDialogs.showSlotDetailsDialog(garage, slot, router, () -> {
-                        if (onRefresh != null) onRefresh.run();
-                        render();
-                    });
-                });
+                toggleExpandSlot(slot);
             });
 
             Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : "Bokad");
@@ -398,18 +416,23 @@ public class MechanicKanbanCard {
             bookBtn.getStyleClass().addAll("primary", "small", "kanban-slot-plus-btn");
             bookBtn.setTooltip(new javafx.scene.control.Tooltip(I18n.get("kanban.action.book_hour")));
             bookBtn.setOnAction(e -> {
-                javafx.application.Platform.runLater(() -> {
-                    ActionDialogs.showCreateBookingDialog(garage, selectedDate, mech, slot.getHour(), () -> {
-                        if (onRefresh != null) onRefresh.run();
-                        render();
-                    });
+                ActionDialogs.showCreateBookingDialog(garage, selectedDate, mech, slot.getHour(), () -> {
+                    if (onRefresh != null) onRefresh.run();
+                    render();
                 });
             });
 
             row.getChildren().addAll(timeBadge, freeLabel, spr, bookBtn);
         }
 
-        return row;
+        VBox slotContainer = new VBox(4);
+        slotContainer.getChildren().add(row);
+
+        if (slot.isBooked() && isExpanded(slot)) {
+            slotContainer.getChildren().add(buildInlineSlotDrawer(mech, slot));
+        }
+
+        return slotContainer;
     }
 
     // =========================================================================
@@ -425,8 +448,8 @@ public class MechanicKanbanCard {
             renderBody();
         });
 
-        Button todayBtn = new Button(I18n.get("kanban.today"));
-        todayBtn.getStyleClass().addAll("ghost", "small");
+        Button todayBtn = new Button(I18n.get("kanban.nav.today"));
+        todayBtn.getStyleClass().addAll("secondary", "small");
         todayBtn.setOnAction(e -> {
             selectedDate = LocalDate.now();
             renderBody();
@@ -460,7 +483,7 @@ public class MechanicKanbanCard {
         return new VBox(4, navBar, daysList);
     }
 
-    private HBox buildCompactWeekDayRow(Mechanic mech, DayLoad dl) {
+    private Node buildCompactWeekDayRow(Mechanic mech, DayLoad dl) {
         Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
         String dayName = dl.getDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, locale).toUpperCase(locale);
         String dateStr = dayName + " " + dl.getDate().getDayOfMonth();
@@ -491,17 +514,16 @@ public class MechanicKanbanCard {
             if (slot.isBooked()) {
                 box.getStyleClass().addAll("booked", loadClass);
                 box.setCursor(Cursor.HAND);
+                if (isExpanded(slot)) {
+                    box.setStyle("-fx-border-color: #ffffff; -fx-border-width: 1.5px; -fx-border-radius: 2px;");
+                }
                 String desc = slot.getDescription() != null ? slot.getDescription() : "";
                 String reg = slot.getVehicleReg() != null ? " (" + slot.getVehicleReg() + ")" : "";
-                javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc + " · Klicka för arbetsorder"));
+                javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(
+                        timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc + " · Klicka för att fälla ut"));
                 box.setOnMouseClicked(e -> {
                     e.consume();
-                    javafx.application.Platform.runLater(() -> {
-                        ActionDialogs.showSlotDetailsDialog(garage, slot, router, () -> {
-                            if (onRefresh != null) onRefresh.run();
-                            render();
-                        });
-                    });
+                    toggleExpandSlot(slot);
                 });
             } else {
                 box.getStyleClass().add("free");
@@ -525,8 +547,159 @@ public class MechanicKanbanCard {
             render();
         });
 
-        return row;
+        VBox dayItem = new VBox(4);
+        dayItem.getChildren().add(row);
+
+        // Om en tidsslott denna dag är utfälld – visa informationen direkt nedvikt under dagen!
+        if (expandedSlot != null && expandedSlot.getDate().equals(dl.getDate())) {
+            dayItem.getChildren().add(buildInlineSlotDrawer(mech, expandedSlot));
+        }
+
+        return dayItem;
     }
+
+    private VBox buildInlineSlotDrawer(Mechanic mech, TimeSlot slot) {
+        WorkOrder targetOrder = null;
+        if (slot.getWorkOrderId() > 0) {
+            for (WorkOrder wo : garage.getWorkOrders()) {
+                if (wo.getId() == slot.getWorkOrderId()) {
+                    targetOrder = wo;
+                    break;
+                }
+            }
+        }
+        if (targetOrder == null && slot.getBookingId() > 0) {
+            for (WorkOrder wo : garage.getWorkOrders()) {
+                if (wo.getBookingId() == slot.getBookingId()) {
+                    targetOrder = wo;
+                    slot.setWorkOrderId(wo.getId());
+                    break;
+                }
+            }
+        }
+
+        Booking booking = null;
+        if (targetOrder != null) {
+            for (Booking bk : garage.getBookings()) {
+                if (bk.getId() == targetOrder.getBookingId()) {
+                    booking = bk;
+                    break;
+                }
+            }
+        }
+        if (booking == null && slot.getBookingId() > 0) {
+            for (Booking bk : garage.getBookings()) {
+                if (bk.getId() == slot.getBookingId()) {
+                    booking = bk;
+                    break;
+                }
+            }
+        }
+
+        final WorkOrder wo = targetOrder;
+        final Booking b = booking;
+
+        VBox drawer = new VBox(6);
+        drawer.getStyleClass().add("kanban-inline-drawer");
+        drawer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.28); " +
+                        "-fx-background-radius: 6px; " +
+                        "-fx-border-color: -wac-line, -wac-accent; -fx-border-width: 1px 1px 1px 3px; " +
+                        "-fx-border-radius: 6px; -fx-padding: 8px 10px;");
+
+        // Top bar: Header & Stängknapp
+        String title = (wo != null)
+                ? (I18n.isSwedish() ? "Arbetsorder #" + wo.getId() : "Work Order #" + wo.getId())
+                : (I18n.isSwedish() ? "Bokad tid" : "Booked appointment");
+        Label titleLbl = new Label(slot.getTimeRange() + " · " + title);
+        titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent; -fx-font-size: 11px;");
+
+        Region spr = new Region();
+        HBox.setHgrow(spr, Priority.ALWAYS);
+
+        Button closeBtn = new Button("✕");
+        closeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: -wac-muted; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4 0 4;");
+        closeBtn.setOnAction(e -> {
+            expandedSlot = null;
+            renderBody();
+        });
+
+        HBox head = new HBox(6, titleLbl, spr, closeBtn);
+        head.setAlignment(Pos.CENTER_LEFT);
+
+        // Details
+        String reg = slot.getVehicleReg() != null && !slot.getVehicleReg().isEmpty() ? slot.getVehicleReg() : (b != null ? EntityLookup.vehicleReg(garage, b.getVehicleId()) : "-");
+        String cust = slot.getCustomerName() != null && !slot.getCustomerName().isEmpty() ? slot.getCustomerName() : "-";
+        String desc = slot.getDescription() != null && !slot.getDescription().isEmpty() ? slot.getDescription() : (b != null ? b.getDescription() : "-");
+
+        Label regBadge = new Label(reg);
+        regBadge.getStyleClass().addAll("badge", "blue", "small");
+
+        Label custLabel = new Label("👤 " + cust);
+        custLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-text;");
+
+        HBox carCustRow = new HBox(8, regBadge, custLabel);
+        carCustRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label descLabel = new Label("🔧 " + desc);
+        descLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
+        descLabel.setWrapText(true);
+
+        HBox actionRow = new HBox(8);
+        actionRow.setAlignment(Pos.CENTER_RIGHT);
+
+        if (wo != null) {
+            Label stBadge = new Label(UiFormatters.statusWord(wo.getStatus()));
+            stBadge.getStyleClass().addAll("badge", UiFormatters.badgeClass(stBadge.getText()), "small");
+
+            Region spr2 = new Region();
+            HBox.setHgrow(spr2, Priority.ALWAYS);
+
+            Button openBtn = new Button(I18n.isSwedish() ? "Öppna i arbetsordrar ↗" : "Open in Work Orders ↗");
+            openBtn.getStyleClass().addAll("primary", "small");
+            openBtn.setOnAction(e -> {
+                if (router != null) {
+                    router.navigateToWorkOrder(wo.getId());
+                }
+            });
+
+            actionRow.getChildren().addAll(stBadge, spr2, openBtn);
+        } else {
+            Region spr2 = new Region();
+            HBox.setHgrow(spr2, Priority.ALWAYS);
+
+            Button createBtn = new Button(I18n.isSwedish() ? "Skapa arbetsorder ↗" : "Create Work Order ↗");
+            createBtn.getStyleClass().addAll("primary", "small");
+            createBtn.setOnAction(e -> {
+                Booking targetBooking = b;
+                if (targetBooking == null) {
+                    int vehicleId = 1;
+                    for (Vehicle v : garage.getVehicles()) {
+                        if (v.getRegistrationNumber().equalsIgnoreCase(slot.getVehicleReg())) {
+                            vehicleId = v.getId();
+                            break;
+                        }
+                    }
+                    targetBooking = garage.createBooking(vehicleId, slot.getDate(), slot.getDescription());
+                    slot.setBookingId(targetBooking.getId());
+                }
+                WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId(), 1);
+                if (createdWo != null) {
+                    slot.setWorkOrderId(createdWo.getId());
+                    if (onRefresh != null) onRefresh.run();
+                    if (router != null) {
+                        router.navigateToWorkOrder(createdWo.getId());
+                    }
+                }
+            });
+
+            actionRow.getChildren().addAll(spr2, createBtn);
+        }
+
+        drawer.getChildren().addAll(head, carCustRow, descLabel, actionRow);
+        return drawer;
+    }
+
+
 
     // =========================================================================
     // 3. KOMPAKT MÅNADSVY (Kalenderraster)

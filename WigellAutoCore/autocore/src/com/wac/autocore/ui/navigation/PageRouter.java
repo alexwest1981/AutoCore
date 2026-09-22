@@ -90,7 +90,7 @@ public class PageRouter {
     public void navigateToWorkOrder(int workOrderId) {
         navigate("workorders");
         if (workOrderId > 0 && activeTable != null) {
-            applySearch(String.valueOf(workOrderId));
+            activeTable.applySearch(String.valueOf(workOrderId));
             javafx.scene.control.TableView<?> tv = activeTable.getTableView();
             int idx = 0;
             for (Object item : tv.getItems()) {

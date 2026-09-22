@@ -1365,5 +1365,19 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-text-fill: -wac-text;
 }
 
-
-
+/* ============================================================
+   20. KANBAN INLINE DRAWER (Expandera bokning under dagen)
+   ============================================================ */
+.kanban-inline-drawer {
+    -fx-background-color: rgba(0, 0, 0, 0.28);
+    -fx-background-radius: 6px;
+    -fx-border-color: -wac-line, -wac-accent;
+    -fx-border-width: 1px 1px 1px 3px;
+    -fx-border-radius: 6px;
+    -fx-padding: 8px 10px;
+}
+.kanban-hour-box.expanded {
+    -fx-border-color: #ffffff;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 2px;
+}
