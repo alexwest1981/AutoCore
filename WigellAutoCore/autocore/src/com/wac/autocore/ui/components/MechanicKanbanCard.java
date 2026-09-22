@@ -265,19 +265,33 @@ public class MechanicKanbanCard {
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         // Rad 2: Specialisering och tillgänglighetsbadge
-        Label specLabel = new Label(mech.getSpecialization());
+        Label specLabel = new Label(formatSpecialization(mech.getSpecialization()));
         specLabel.getStyleClass().add("kanban-mech-sub-compact");
 
         Region spr2 = new Region();
         HBox.setHgrow(spr2, Priority.ALWAYS);
 
-        Label statusBadge = new Label(mech.isAvailable() ? I18n.get("table.col.available") : "Upptagen");
+        Label statusBadge = new Label(mech.isAvailable() ? I18n.get("table.col.available") : I18n.get("table.col.unavailable"));
         statusBadge.getStyleClass().addAll("badge", mech.isAvailable() ? "green" : "yellow", "small");
 
         HBox subRow = new HBox(6, specLabel, spr2, statusBadge);
         subRow.setAlignment(Pos.CENTER_LEFT);
 
         headerBox.getChildren().addAll(topRow, subRow);
+    }
+
+    private String formatSpecialization(String spec) {
+        if (spec == null) return "";
+        if (spec.equalsIgnoreCase("General service") || spec.equalsIgnoreCase("Allmän service")) {
+            return I18n.get("kanban.specialization.general_service");
+        }
+        if (spec.equalsIgnoreCase("Brakes") || spec.equalsIgnoreCase("Bromsar")) {
+            return I18n.get("kanban.specialization.brakes");
+        }
+        if (spec.equalsIgnoreCase("Diagnostics") || spec.equalsIgnoreCase("Diagnostik") || spec.equalsIgnoreCase("Diagnostik & Felsökning")) {
+            return I18n.get("kanban.specialization.diagnostics");
+        }
+        return spec;
     }
 
     private Button createViewButton(String label, KanbanViewMode mode) {
@@ -382,13 +396,14 @@ public class MechanicKanbanCard {
             if (isExpanded(slot)) {
                 row.setStyle("-fx-border-color: -wac-accent; -fx-border-width: 1px; -fx-border-radius: 4px;");
             }
+            int orderOrBookingId = slot.getWorkOrderId() > 0 ? slot.getWorkOrderId() : slot.getBookingId();
             javafx.scene.control.Tooltip.install(row, new javafx.scene.control.Tooltip(
-                    "Arbetsorder #" + (slot.getWorkOrderId() > 0 ? slot.getWorkOrderId() : slot.getBookingId()) + " · Klicka för att visa detaljer"));
+                    I18n.get("kanban.slot.tooltip", orderOrBookingId)));
             row.setOnMouseClicked(e -> {
                 toggleExpandSlot(slot);
             });
 
-            Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : "Bokad");
+            Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : I18n.get("kanban.slot.booked"));
             regBadge.getStyleClass().addAll("badge", "info", "small");
 
             String desc = slot.getDescription() != null ? slot.getDescription() : "Service";
@@ -519,8 +534,9 @@ public class MechanicKanbanCard {
                 }
                 String desc = slot.getDescription() != null ? slot.getDescription() : "";
                 String reg = slot.getVehicleReg() != null ? " (" + slot.getVehicleReg() + ")" : "";
+                String clickHint = " · " + I18n.get("kanban.slot.click_to_expand");
                 javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(
-                        timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc + " · Klicka för att fälla ut"));
+                        timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc + clickHint));
                 box.setOnMouseClicked(e -> {
                     e.consume();
                     toggleExpandSlot(slot);
@@ -609,8 +625,8 @@ public class MechanicKanbanCard {
 
         // Top bar: Header & Stängknapp
         String title = (wo != null)
-                ? (I18n.isSwedish() ? "Arbetsorder #" + wo.getId() : "Work Order #" + wo.getId())
-                : (I18n.isSwedish() ? "Bokad tid" : "Booked appointment");
+                ? I18n.get("kanban.drawer.work_order", wo.getId())
+                : I18n.get("kanban.drawer.booked");
         Label titleLbl = new Label(slot.getTimeRange() + " · " + title);
         titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent; -fx-font-size: 11px;");
 
@@ -655,7 +671,7 @@ public class MechanicKanbanCard {
             Region spr2 = new Region();
             HBox.setHgrow(spr2, Priority.ALWAYS);
 
-            Button openBtn = new Button(I18n.isSwedish() ? "Öppna i arbetsordrar ↗" : "Open in Work Orders ↗");
+            Button openBtn = new Button(I18n.get("kanban.drawer.open_order"));
             openBtn.getStyleClass().addAll("primary", "small");
             openBtn.setOnAction(e -> {
                 if (router != null) {
@@ -668,7 +684,7 @@ public class MechanicKanbanCard {
             Region spr2 = new Region();
             HBox.setHgrow(spr2, Priority.ALWAYS);
 
-            Button createBtn = new Button(I18n.isSwedish() ? "Skapa arbetsorder ↗" : "Create Work Order ↗");
+            Button createBtn = new Button(I18n.get("kanban.drawer.create_order"));
             createBtn.getStyleClass().addAll("primary", "small");
             createBtn.setOnAction(e -> {
                 Booking targetBooking = b;

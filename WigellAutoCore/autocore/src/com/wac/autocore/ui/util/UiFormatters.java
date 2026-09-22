@@ -59,17 +59,25 @@ public final class UiFormatters {
     }
 
     /**
-     * Formaterar ett givet LocalDate på engelska.
+     * Formaterar ett givet LocalDate på aktivt språk (svenska eller engelska).
      */
     public static String formatDate(LocalDate d) {
         if (d == null) {
             return "";
         }
-        String[] week = {"", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        String[] months = {"", "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"};
-        return week[d.getDayOfWeek().getValue()] + " " + d.getDayOfMonth()
-                + " " + months[d.getMonthValue()] + " " + d.getYear();
+        if (com.wac.autocore.ui.i18n.I18n.isSwedish()) {
+            String[] weekSv = {"", "Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag", "Söndag"};
+            String[] monthsSv = {"", "januari", "februari", "mars", "april", "maj", "juni",
+                    "juli", "augusti", "september", "oktober", "november", "december"};
+            return weekSv[d.getDayOfWeek().getValue()] + " " + d.getDayOfMonth()
+                    + " " + monthsSv[d.getMonthValue()] + " " + d.getYear();
+        } else {
+            String[] week = {"", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+            String[] months = {"", "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"};
+            return week[d.getDayOfWeek().getValue()] + " " + d.getDayOfMonth()
+                    + " " + months[d.getMonthValue()] + " " + d.getYear();
+        }
     }
 
     /**

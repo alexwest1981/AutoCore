@@ -135,6 +135,7 @@
       "specialty": "Specialitet",
       "specialisation": "Specialisering",
       "available": "Tillgänglig",
+      "unavailable": "Upptagen",
       "workorder": "Arbetsorder",
       "booking": "Bokning",
       "actions": "Åtgärder",
@@ -213,7 +214,16 @@
         "title": "Ny mekaniker",
         "header": "Registrera ny mekaniker",
         "desc": "Lägg till en ny mekaniker i verkstadens team."
-      }
+      },
+      "spec_prompt": "T.ex. Däck & Hjul, Motor, AC",
+      "default_spec": "Allmän service"
+    },
+    "slot": {
+      "header": "Bokningsdetaljer: {0}",
+      "time_date": "Tid & datum:",
+      "booked_status": "Bokad tid (ej påbörjad)",
+      "open_order": "Öppna i arbetsordrar",
+      "create_order": "Skapa & öppna arbetsorder"
     },
     "workorder": {
       "create": {
@@ -224,7 +234,9 @@
       "booking_select": "Välj bokning",
       "mechanic_select": "Välj mekaniker",
       "services_select": "Välj ingående tjänster",
-      "status_change": "Uppdatera status på arbetsorder"
+      "status_change": "Uppdatera status på arbetsorder",
+      "details_header": "Detaljer för arbetsorder #{0}",
+      "open_in_orders": "Öppna i arbetsordrar"
     },
     "invoice": {
       "create": {
@@ -271,13 +283,35 @@
       "vehicles": "Fordon",
       "bookings": "Bokningar",
       "workorders": "Arbetsordrar",
-      "mechanics": "Mekaniker"
+      "mechanics": "Mekaniker",
+      "services": "Tjänster",
+      "invoices": "Fakturor",
+      "owner": "Ägare:",
+      "empty_query": "Inga träffar för \"{0}\"",
+      "view_all_matches": "Visa alla {0} träffar i fullständig översikt →"
+    },
+    "global": {
+      "title": "Global sökning",
+      "query_title": "Sökresultat för \"{0}\"",
+      "hint": "Skriv i sökfältet för att söka över hela systemet",
+      "no_matches": "Inga träffar hittades i någon sektion",
+      "matches_found": "{0} träffar hittades över {1} {2}",
+      "section": "sektion",
+      "sections": "sektioner"
     },
     "view_all": "Visa alla resultat..."
   },
   "kanban": {
     "title": "Mekanikerschema & Beläggning",
     "subtitle": "Interaktiv planering och tidsbokning för verkstadens mekaniker",
+    "today": "Idag",
+    "action": {
+      "book_hour": "Boka denna timme"
+    },
+    "status": {
+      "available": "Tillgänglig",
+      "busy": "Upptagen"
+    },
     "view": {
       "day": "Dag",
       "week": "Vecka",
@@ -286,7 +320,8 @@
     "nav": {
       "prev": "Föregående mekaniker",
       "next": "Nästa mekaniker",
-      "counter": "Mekaniker {0} av {1}"
+      "counter": "Mekaniker {0} av {1}",
+      "today": "Idag"
     },
     "day": {
       "title": "Dagsschema",
@@ -297,7 +332,7 @@
       "empty_notice": "Inga inbokade tider denna dag."
     },
     "week": {
-      "title": "Veckoöversikt",
+      "title": "Vecka {0}",
       "hours_booked": "{0} av {1} h ({2}%)",
       "fully_booked": "Fullbokad",
       "switch_to_day": "Klicka för att öppna dagsvy"
@@ -310,11 +345,27 @@
       "full_day": "Fullbokad",
       "hint": "Klicka på en dag för att se detaljerat schema"
     },
+    "slot": {
+      "booked": "Bokad",
+      "click_to_expand": "Klicka för att fälla ut",
+      "tooltip": "Arbetsorder #{0} · Klicka för att visa detaljer"
+    },
+    "drawer": {
+      "work_order": "Arbetsorder #{0}",
+      "booked": "Bokad tid",
+      "open_order": "Öppna i arbetsordrar ↗",
+      "create_order": "Skapa arbetsorder ↗"
+    },
     "load": {
       "free": "Låg beläggning",
       "moderate": "Medelbeläggning",
       "busy": "Hög beläggning",
       "full": "Fullbelagd"
+    },
+    "specialization": {
+      "general_service": "Allmän service",
+      "brakes": "Bromsar",
+      "diagnostics": "Diagnostik & Felsökning"
     }
   }
 }

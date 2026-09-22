@@ -510,7 +510,7 @@ public final class ActionDialogs {
         TextField phoneField = new TextField();
         phoneField.setPromptText("070-1234567");
         TextField specField = new TextField();
-        specField.setPromptText("T.ex. Däck & Hjul, Motor, AC");
+        specField.setPromptText(I18n.get("dialog.mechanic.spec_prompt"));
 
         grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
         grid.add(nameField, 1, 0);
@@ -534,7 +534,7 @@ public final class ActionDialogs {
                 }
 
                 int id = Database.getMechanics().size() + 1;
-                Mechanic mechanic = new Mechanic(id, name, phone, spec.isEmpty() ? "Allmän service" : spec);
+                Mechanic mechanic = new Mechanic(id, name, phone, spec.isEmpty() ? I18n.get("dialog.mechanic.default_spec") : spec);
                 Database.getMechanics().add(mechanic);
                 if (onSuccess != null) onSuccess.run();
             }
@@ -594,18 +594,17 @@ public final class ActionDialogs {
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
         boolean hasWorkOrder = (wo != null);
         String title = hasWorkOrder
-                ? (I18n.isSwedish() ? "Arbetsorder #" + wo.getId() : "Work Order #" + wo.getId())
-                : (I18n.isSwedish() ? "Bokad tid" : "Scheduled Appointment");
+                ? I18n.get("kanban.drawer.work_order", wo.getId())
+                : I18n.get("kanban.drawer.booked");
         dialog.setTitle(title);
-        dialog.setHeaderText((I18n.isSwedish() ? "Bokningsdetaljer: " : "Booking details: ")
-                + slot.getDate().toString() + " (" + slot.getTimeRange() + ")");
+        dialog.setHeaderText(I18n.get("dialog.slot.header", slot.getDate().toString() + " (" + slot.getTimeRange() + ")"));
         styleDialog(dialog);
 
         GridPane grid = createGrid();
         int rowIdx = 0;
 
         // Datum & Tid
-        grid.add(new Label((I18n.isSwedish() ? "Tid & datum:" : "Time & date:")), 0, rowIdx);
+        grid.add(new Label(I18n.get("dialog.slot.time_date")), 0, rowIdx);
         Label timeLabel = new Label(slot.getDate() + "  |  " + slot.getTimeRange());
         timeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent;");
         grid.add(timeLabel, 1, rowIdx++);
@@ -646,14 +645,14 @@ public final class ActionDialogs {
             grid.add(stLabel, 1, rowIdx++);
         } else {
             grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
-            Label stLabel = new Label(I18n.isSwedish() ? "Bokad tid (ej påbörjad)" : "Booked (not started)");
+            Label stLabel = new Label(I18n.get("dialog.slot.booked_status"));
             stLabel.getStyleClass().addAll("badge", "yellow");
             grid.add(stLabel, 1, rowIdx++);
         }
 
         ButtonType actionBtnType = new ButtonType(
-                hasWorkOrder ? (I18n.isSwedish() ? "Öppna i arbetsordrar" : "Open in Work Orders")
-                             : (I18n.isSwedish() ? "Skapa & öppna arbetsorder" : "Create & open work order"),
+                hasWorkOrder ? I18n.get("dialog.slot.open_order")
+                             : I18n.get("dialog.slot.create_order"),
                 javafx.scene.control.ButtonBar.ButtonData.OTHER
         );
         ButtonType closeType = ButtonType.CLOSE;
@@ -719,14 +718,14 @@ public final class ActionDialogs {
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Arbetsorder #" + wo.getId());
-        dialog.setHeaderText("Detaljer för arbetsorder #" + wo.getId());
+        dialog.setTitle(I18n.get("kanban.drawer.work_order", wo.getId()));
+        dialog.setHeaderText(I18n.get("dialog.workorder.details_header", wo.getId()));
         styleDialog(dialog);
 
         GridPane grid = createGrid();
 
         int rowIdx = 0;
-        grid.add(new Label("Arbetsorder-ID:"), 0, rowIdx);
+        grid.add(new Label(I18n.get("table.col.id") + ":"), 0, rowIdx);
         Label idLbl = new Label("#" + wo.getId());
         idLbl.setStyle("-fx-font-weight: bold;");
         grid.add(idLbl, 1, rowIdx++);
@@ -753,7 +752,7 @@ public final class ActionDialogs {
         stLabel.getStyleClass().addAll("badge", com.wac.autocore.ui.util.UiFormatters.badgeClass(stLabel.getText()));
         grid.add(stLabel, 1, rowIdx++);
 
-        ButtonType gotoType = new ButtonType("Öppna i arbetsordrar", javafx.scene.control.ButtonBar.ButtonData.OTHER);
+        ButtonType gotoType = new ButtonType(I18n.get("dialog.workorder.open_in_orders"), javafx.scene.control.ButtonBar.ButtonData.OTHER);
         ButtonType closeType = ButtonType.CLOSE;
 
         dialog.getDialogPane().setContent(grid);

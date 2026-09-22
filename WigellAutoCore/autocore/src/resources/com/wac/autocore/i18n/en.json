@@ -135,6 +135,7 @@
       "specialty": "Specialty",
       "specialisation": "Specialisation",
       "available": "Available",
+      "unavailable": "Busy",
       "workorder": "Work Order",
       "booking": "Booking",
       "actions": "Actions",
@@ -213,7 +214,16 @@
         "title": "New Mechanic",
         "header": "Register New Mechanic",
         "desc": "Add a new mechanic to the workshop team."
-      }
+      },
+      "spec_prompt": "E.g. Tyres & Wheels, Engine, AC",
+      "default_spec": "General service"
+    },
+    "slot": {
+      "header": "Booking details: {0}",
+      "time_date": "Time & date:",
+      "booked_status": "Booked (not started)",
+      "open_order": "Open in Work Orders",
+      "create_order": "Create & open work order"
     },
     "workorder": {
       "create": {
@@ -224,7 +234,9 @@
       "booking_select": "Select booking",
       "mechanic_select": "Select mechanic",
       "services_select": "Select services included",
-      "status_change": "Update Work Order Status"
+      "status_change": "Update Work Order Status",
+      "details_header": "Details for work order #{0}",
+      "open_in_orders": "Open in Work Orders"
     },
     "invoice": {
       "create": {
@@ -271,13 +283,35 @@
       "vehicles": "Vehicles",
       "bookings": "Bookings",
       "workorders": "Work Orders",
-      "mechanics": "Mechanics"
+      "mechanics": "Mechanics",
+      "services": "Services",
+      "invoices": "Invoices",
+      "owner": "Owner:",
+      "empty_query": "No matches found for \"{0}\"",
+      "view_all_matches": "View all {0} matches in full overview →"
+    },
+    "global": {
+      "title": "Global Search",
+      "query_title": "Search results for \"{0}\"",
+      "hint": "Type in the top search bar to search across all system records",
+      "no_matches": "No matches found across any section",
+      "matches_found": "{0} matches found across {1} {2}",
+      "section": "section",
+      "sections": "sections"
     },
     "view_all": "View all results..."
   },
   "kanban": {
     "title": "Mechanic Schedule & Workload",
     "subtitle": "Interactive planning and slot booking for workshop mechanics",
+    "today": "Today",
+    "action": {
+      "book_hour": "Book this slot"
+    },
+    "status": {
+      "available": "Available",
+      "busy": "Busy"
+    },
     "view": {
       "day": "Day",
       "week": "Week",
@@ -286,7 +320,8 @@
     "nav": {
       "prev": "Previous mechanic",
       "next": "Next mechanic",
-      "counter": "Mechanic {0} of {1}"
+      "counter": "Mechanic {0} of {1}",
+      "today": "Today"
     },
     "day": {
       "title": "Daily Schedule",
@@ -297,7 +332,7 @@
       "empty_notice": "No bookings scheduled for this day."
     },
     "week": {
-      "title": "Weekly Overview",
+      "title": "Week {0}",
       "hours_booked": "{0} of {1} h ({2}%)",
       "fully_booked": "Fully booked",
       "switch_to_day": "Click to open day view"
@@ -310,11 +345,27 @@
       "full_day": "Fully booked",
       "hint": "Click a day to view detailed schedule"
     },
+    "slot": {
+      "booked": "Booked",
+      "click_to_expand": "Click to expand",
+      "tooltip": "Work Order #{0} · Click to view details"
+    },
+    "drawer": {
+      "work_order": "Work Order #{0}",
+      "booked": "Booked appointment",
+      "open_order": "Open in Work Orders ↗",
+      "create_order": "Create Work Order ↗"
+    },
     "load": {
       "free": "Low workload",
       "moderate": "Moderate workload",
       "busy": "Heavy workload",
       "full": "Fully booked"
+    },
+    "specialization": {
+      "general_service": "General service",
+      "brakes": "Brakes",
+      "diagnostics": "Diagnostics"
     }
   }
 }
