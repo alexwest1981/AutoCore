@@ -208,6 +208,13 @@
       "date": "Bokningsdatum",
       "service_select": "Välj huvudtjänst"
     },
+    "mechanic": {
+      "create": {
+        "title": "Ny mekaniker",
+        "header": "Registrera ny mekaniker",
+        "desc": "Lägg till en ny mekaniker i verkstadens team."
+      }
+    },
     "workorder": {
       "create": {
         "title": "Ny arbetsorder",

@@ -48,6 +48,10 @@ public class MechanicKanbanCard {
      * Bygger hela Kanban-sektionen med alla mekaniker synliga samtidigt sida vid sida.
      */
     public static VBox buildBoard(GarageSystem garage, Runnable onRefresh) {
+        return buildBoard(garage, null, onRefresh);
+    }
+
+    public static VBox buildBoard(GarageSystem garage, com.wac.autocore.ui.navigation.PageRouter router, Runnable onRefresh) {
         List<Mechanic> mechanics = garage.getMechanics();
 
         // Rubrikrad för hela Kanban-sektionen
@@ -57,13 +61,17 @@ public class MechanicKanbanCard {
         Label sub = new Label(I18n.get("kanban.subtitle"));
         sub.getStyleClass().add("panel-sub");
 
+        Button addMechBtn = new Button("+ " + I18n.get("dialog.mechanic.create.title"));
+        addMechBtn.getStyleClass().addAll("secondary", "small");
+        addMechBtn.setOnAction(e -> ActionDialogs.showCreateMechanicDialog(garage, onRefresh));
+
         Region spr = new Region();
         HBox.setHgrow(spr, Priority.ALWAYS);
 
         // Belastningslegend
         HBox legend = buildCompactLegend();
 
-        HBox headLeft = new HBox(8, new VBox(2, title, sub));
+        HBox headLeft = new HBox(12, new VBox(2, title, sub), addMechBtn);
         headLeft.setAlignment(Pos.CENTER_LEFT);
 
         HBox boardHead = new HBox(12, headLeft, spr, legend);
@@ -78,14 +86,22 @@ public class MechanicKanbanCard {
             cardsRow.getChildren().add(new Label("Inga mekaniker registrerade."));
         } else {
             for (int i = 0; i < mechanics.size(); i++) {
-                MechanicKanbanCard card = new MechanicKanbanCard(garage, i, onRefresh);
+                MechanicKanbanCard card = new MechanicKanbanCard(garage, i, router, onRefresh);
                 VBox cardView = card.getView();
                 HBox.setHgrow(cardView, Priority.ALWAYS);
                 cardsRow.getChildren().add(cardView);
             }
         }
 
-        VBox board = new VBox(10, boardHead, cardsRow);
+        // Horisontell scroll om många mekaniker tillkommer
+        ScrollPane scroll = new ScrollPane(cardsRow);
+        scroll.setFitToHeight(true);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
+
+        VBox board = new VBox(10, boardHead, scroll);
         board.getStyleClass().addAll("panel", "kanban-board-panel");
         return board;
     }
@@ -120,6 +136,7 @@ public class MechanicKanbanCard {
     // Instansfält för ett enskilt kompakt mekanikerkort
     // -------------------------------------------------------------------------
     private final GarageSystem garage;
+    private final com.wac.autocore.ui.navigation.PageRouter router;
     private final Runnable onRefresh;
     private final VBox cardContainer;
 
@@ -131,12 +148,18 @@ public class MechanicKanbanCard {
     private final VBox bodyContent;
 
     public MechanicKanbanCard(GarageSystem garage, Runnable onRefresh) {
-        this(garage, 0, onRefresh);
+        this(garage, 0, null, onRefresh);
     }
 
     public MechanicKanbanCard(GarageSystem garage, int initialMechanicIndex, Runnable onRefresh) {
+        this(garage, initialMechanicIndex, null, onRefresh);
+    }
+
+    public MechanicKanbanCard(GarageSystem garage, int initialMechanicIndex,
+                              com.wac.autocore.ui.navigation.PageRouter router, Runnable onRefresh) {
         this.garage = garage;
         this.activeMechanicIndex = initialMechanicIndex;
+        this.router = router;
         this.onRefresh = onRefresh;
 
         this.cardContainer = new VBox(8);
@@ -335,6 +358,15 @@ public class MechanicKanbanCard {
 
         if (slot.isBooked()) {
             row.getStyleClass().add("booked");
+            row.setCursor(Cursor.HAND);
+            javafx.scene.control.Tooltip.install(row, new javafx.scene.control.Tooltip(
+                    "Arbetsorder #" + (slot.getWorkOrderId() > 0 ? slot.getWorkOrderId() : slot.getBookingId()) + " · Klicka för att öppna detaljer"));
+            row.setOnMouseClicked(e -> {
+                ActionDialogs.showWorkOrderDetailsDialog(garage, slot.getWorkOrderId(), router, () -> {
+                    if (onRefresh != null) onRefresh.run();
+                    render();
+                });
+            });
 
             Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : "Bokad");
             regBadge.getStyleClass().addAll("badge", "blue", "small");
@@ -454,9 +486,17 @@ public class MechanicKanbanCard {
             String timeTooltip = String.format("%02d:00 - %02d:00", slot.getHour(), slot.getHour() + 1);
             if (slot.isBooked()) {
                 box.getStyleClass().addAll("booked", loadClass);
+                box.setCursor(Cursor.HAND);
                 String desc = slot.getDescription() != null ? slot.getDescription() : "";
                 String reg = slot.getVehicleReg() != null ? " (" + slot.getVehicleReg() + ")" : "";
-                javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc));
+                javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc + " · Klicka för arbetsorder"));
+                box.setOnMouseClicked(e -> {
+                    e.consume();
+                    ActionDialogs.showWorkOrderDetailsDialog(garage, slot.getWorkOrderId(), router, () -> {
+                        if (onRefresh != null) onRefresh.run();
+                        render();
+                    });
+                });
             } else {
                 box.getStyleClass().add("free");
                 javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(timeTooltip + ": " + I18n.get("kanban.day.available")));

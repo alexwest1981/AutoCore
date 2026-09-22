@@ -87,6 +87,13 @@ public class PageRouter {
         return currentPageKey;
     }
 
+    public void navigateToWorkOrder(int workOrderId) {
+        navigate("workorders");
+        if (workOrderId > 0 && activeTable != null) {
+            applySearch(String.valueOf(workOrderId));
+        }
+    }
+
     public void navigate(String key) {
         this.currentPageKey = key;
         if (!"search".equals(key)) {

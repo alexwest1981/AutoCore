@@ -91,7 +91,7 @@ public final class OverviewView {
                 statusPanel(workOrders),
                 bookingsPanel(garage, bookings));
 
-        VBox kanbanBoard = com.wac.autocore.ui.components.MechanicKanbanCard.buildBoard(garage, onRefresh);
+        VBox kanbanBoard = com.wac.autocore.ui.components.MechanicKanbanCard.buildBoard(garage, router, onRefresh);
 
         TableView<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders, router);
         VBox recentPanel = UiComponents.panel(I18n.get("overview.section.recent_workorders"),

@@ -201,12 +201,19 @@
     "booking": {
       "create": {
         "title": "New Booking",
-        "header": "Schedule Appointment",
+        "header": "Schedule Booking",
         "desc": "Create a service booking for a registered vehicle."
       },
       "vehicle_select": "Select vehicle",
       "date": "Booking date",
       "service_select": "Select primary service"
+    },
+    "mechanic": {
+      "create": {
+        "title": "New Mechanic",
+        "header": "Register New Mechanic",
+        "desc": "Add a new mechanic to the workshop team."
+      }
     },
     "workorder": {
       "create": {

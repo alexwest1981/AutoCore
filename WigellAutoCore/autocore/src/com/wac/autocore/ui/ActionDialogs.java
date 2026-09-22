@@ -487,6 +487,127 @@ public final class ActionDialogs {
         });
     }
 
+    // -------------------------------------------------------- 7. Mechanic
+    public static void showCreateMechanicDialog(GarageSystem garage, Runnable onSuccess) {
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.mechanic.create.title"));
+        dialog.setHeaderText(I18n.get("dialog.mechanic.create.header"));
+        styleDialog(dialog);
+
+        GridPane grid = createGrid();
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("T.ex. Anders Svensson");
+        TextField phoneField = new TextField();
+        phoneField.setPromptText("070-1234567");
+        TextField specField = new TextField();
+        specField.setPromptText("T.ex. Däck & Hjul, Motor, AC");
+
+        grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label(I18n.get("dialog.customer.phone") + ":"), 0, 1);
+        grid.add(phoneField, 1, 1);
+        grid.add(new Label(I18n.get("table.col.specialisation") + ":"), 0, 2);
+        grid.add(specField, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String name = nameField.getText().trim();
+                String phone = phoneField.getText().trim();
+                String spec = specField.getText().trim();
+
+                if (name.isEmpty() || phone.isEmpty()) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                    return;
+                }
+
+                garage.createMechanic(name, phone, spec.isEmpty() ? "Allmän service" : spec);
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    // ------------------------------------------------- 8. Work Order Details
+    public static void showWorkOrderDetailsDialog(GarageSystem garage, int workOrderId,
+                                                 com.wac.autocore.ui.navigation.PageRouter router, Runnable onRefresh) {
+        WorkOrder targetOrder = null;
+        for (WorkOrder wo : garage.getWorkOrders()) {
+            if (wo.getId() == workOrderId) {
+                targetOrder = wo;
+                break;
+            }
+        }
+
+        // Fallback: om workOrderId är 0 eller ej hittades, hämta första relaterade order
+        if (targetOrder == null && !garage.getWorkOrders().isEmpty()) {
+            targetOrder = garage.getWorkOrders().get(0);
+        }
+
+        if (targetOrder == null) {
+            showError(I18n.get("dialog.confirm.title"), I18n.get("overview.empty.workorders"));
+            return;
+        }
+
+        final WorkOrder wo = targetOrder;
+        Booking b = null;
+        for (Booking bk : garage.getBookings()) {
+            if (bk.getId() == wo.getBookingId()) {
+                b = bk;
+                break;
+            }
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle("Arbetsorder #" + wo.getId());
+        dialog.setHeaderText("Detaljer för arbetsorder #" + wo.getId());
+        styleDialog(dialog);
+
+        GridPane grid = createGrid();
+
+        int rowIdx = 0;
+        grid.add(new Label("Arbetsorder-ID:"), 0, rowIdx);
+        Label idLbl = new Label("#" + wo.getId());
+        idLbl.setStyle("-fx-font-weight: bold;");
+        grid.add(idLbl, 1, rowIdx++);
+
+        grid.add(new Label(I18n.get("table.col.mechanic") + ":"), 0, rowIdx);
+        grid.add(new Label(EntityLookup.mechanicName(garage, wo.getMechanicId())), 1, rowIdx++);
+
+        if (b != null) {
+            grid.add(new Label(I18n.get("table.col.vehicle") + ":"), 0, rowIdx);
+            grid.add(new Label(EntityLookup.vehicleReg(garage, b.getVehicleId())), 1, rowIdx++);
+
+            grid.add(new Label(I18n.get("table.col.date") + ":"), 0, rowIdx);
+            grid.add(new Label(b.getDate().toString()), 1, rowIdx++);
+
+            grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
+            grid.add(new Label(b.getDescription()), 1, rowIdx++);
+        }
+
+        grid.add(new Label(I18n.get("table.col.services") + ":"), 0, rowIdx);
+        grid.add(new Label(EntityLookup.serviceNames(garage, wo.getServiceItemIds())), 1, rowIdx++);
+
+        grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
+        Label stLabel = new Label(com.wac.autocore.ui.util.UiFormatters.statusWord(wo.getStatus()));
+        stLabel.getStyleClass().addAll("badge", com.wac.autocore.ui.util.UiFormatters.badgeClass(stLabel.getText()));
+        grid.add(stLabel, 1, rowIdx++);
+
+        ButtonType gotoType = new ButtonType("Öppna i arbetsordrar", javafx.scene.control.ButtonBar.ButtonData.OTHER);
+        ButtonType closeType = ButtonType.CLOSE;
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(gotoType, closeType);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == gotoType && router != null) {
+                router.navigateToWorkOrder(wo.getId());
+            }
+        });
+    }
+
     // ----------------------------------------------------------- Helpers
     private static GridPane createGrid() {
         GridPane grid = new GridPane();
