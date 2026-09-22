@@ -42,12 +42,19 @@ public final class ActionDialogs {
         if (!pane.getStyleClass().contains("root")) {
             pane.getStyleClass().add("root");
         }
+        javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
+        if (appScene != null && appScene.getWindow() != null) {
+            try {
+                dialog.initOwner(appScene.getWindow());
+                dialog.initModality(javafx.stage.Modality.WINDOW_MODAL);
+            } catch (Exception ignored) {}
+        }
         dialog.setOnShowing(evt -> {
-            javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
-            if (appScene != null) {
+            javafx.scene.Scene currentAppScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
+            if (currentAppScene != null) {
                 javafx.scene.Scene dScene = pane.getScene();
                 if (dScene != null) {
-                    dScene.getStylesheets().setAll(appScene.getStylesheets());
+                    dScene.getStylesheets().setAll(currentAppScene.getStylesheets());
                     if (dScene.getRoot() != null && !dScene.getRoot().getStyleClass().contains("root")) {
                         dScene.getRoot().getStyleClass().add("root");
                     }
@@ -770,12 +777,19 @@ public final class ActionDialogs {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
+        javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
+        if (appScene != null && appScene.getWindow() != null) {
+            try {
+                alert.initOwner(appScene.getWindow());
+                alert.initModality(javafx.stage.Modality.WINDOW_MODAL);
+            } catch (Exception ignored) {}
+        }
         alert.setOnShowing(evt -> {
-            javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
-            if (appScene != null) {
+            javafx.scene.Scene currentAppScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
+            if (currentAppScene != null) {
                 javafx.scene.Scene aScene = alert.getDialogPane().getScene();
                 if (aScene != null) {
-                    aScene.getStylesheets().setAll(appScene.getStylesheets());
+                    aScene.getStylesheets().setAll(currentAppScene.getStylesheets());
                 }
             }
         });

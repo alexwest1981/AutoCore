@@ -63,7 +63,7 @@ public class MechanicKanbanCard {
 
         Button addMechBtn = new Button("+ " + I18n.get("dialog.mechanic.create.title"));
         addMechBtn.getStyleClass().addAll("secondary", "small");
-        addMechBtn.setOnAction(e -> ActionDialogs.showCreateMechanicDialog(garage, onRefresh));
+        addMechBtn.setOnAction(e -> javafx.application.Platform.runLater(() -> ActionDialogs.showCreateMechanicDialog(garage, onRefresh)));
 
         Region spr = new Region();
         HBox.setHgrow(spr, Priority.ALWAYS);
@@ -362,9 +362,11 @@ public class MechanicKanbanCard {
             javafx.scene.control.Tooltip.install(row, new javafx.scene.control.Tooltip(
                     "Arbetsorder #" + (slot.getWorkOrderId() > 0 ? slot.getWorkOrderId() : slot.getBookingId()) + " · Klicka för att öppna detaljer"));
             row.setOnMouseClicked(e -> {
-                ActionDialogs.showSlotDetailsDialog(garage, slot, router, () -> {
-                    if (onRefresh != null) onRefresh.run();
-                    render();
+                javafx.application.Platform.runLater(() -> {
+                    ActionDialogs.showSlotDetailsDialog(garage, slot, router, () -> {
+                        if (onRefresh != null) onRefresh.run();
+                        render();
+                    });
                 });
             });
 
@@ -396,9 +398,11 @@ public class MechanicKanbanCard {
             bookBtn.getStyleClass().addAll("primary", "small", "kanban-slot-plus-btn");
             bookBtn.setTooltip(new javafx.scene.control.Tooltip(I18n.get("kanban.action.book_hour")));
             bookBtn.setOnAction(e -> {
-                ActionDialogs.showCreateBookingDialog(garage, selectedDate, mech, slot.getHour(), () -> {
-                    if (onRefresh != null) onRefresh.run();
-                    render();
+                javafx.application.Platform.runLater(() -> {
+                    ActionDialogs.showCreateBookingDialog(garage, selectedDate, mech, slot.getHour(), () -> {
+                        if (onRefresh != null) onRefresh.run();
+                        render();
+                    });
                 });
             });
 
@@ -492,9 +496,11 @@ public class MechanicKanbanCard {
                 javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(timeTooltip + ": " + I18n.get("kanban.slot.booked") + reg + " " + desc + " · Klicka för arbetsorder"));
                 box.setOnMouseClicked(e -> {
                     e.consume();
-                    ActionDialogs.showSlotDetailsDialog(garage, slot, router, () -> {
-                        if (onRefresh != null) onRefresh.run();
-                        render();
+                    javafx.application.Platform.runLater(() -> {
+                        ActionDialogs.showSlotDetailsDialog(garage, slot, router, () -> {
+                            if (onRefresh != null) onRefresh.run();
+                            render();
+                        });
                     });
                 });
             } else {
