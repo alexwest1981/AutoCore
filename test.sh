@@ -18,6 +18,11 @@ OUT_DIR="$DIR/out/production/Systemarkitektur"
 
 mkdir -p "$OUT_DIR"
 
+# Kopiera resurser (CSS-teman, JSON-språkfiler etc.) till out
+if [ -d "$RES_DIR" ]; then
+    cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
+fi
+
 # Kompilera alla källfiler inklusive tester
 "$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" $(find "$SRC_DIR" -name "*.java")
 

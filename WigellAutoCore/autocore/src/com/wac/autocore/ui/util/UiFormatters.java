@@ -73,26 +73,26 @@ public final class UiFormatters {
     }
 
     /**
-     * Översätter en statuskod till ett läsvänligt visningsord.
+     * Översätter en statuskod till ett läsvänligt visningsord via I18n.
      */
     public static String statusWord(String status) {
         if (status == null) {
             return "";
         }
         if ("BOOKED".equalsIgnoreCase(status)) {
-            return "Booked";
+            return com.wac.autocore.ui.i18n.I18n.get("status.booked");
         }
         if ("CREATED".equalsIgnoreCase(status)) {
-            return "Created";
+            return com.wac.autocore.ui.i18n.I18n.get("status.created");
         }
         if ("WORK_ORDER_CREATED".equalsIgnoreCase(status)) {
-            return "Work order created";
+            return com.wac.autocore.ui.i18n.I18n.get("status.work_order_created");
         }
         if ("IN_PROGRESS".equalsIgnoreCase(status)) {
-            return "In progress";
+            return com.wac.autocore.ui.i18n.I18n.get("status.in_progress");
         }
         if ("COMPLETED".equalsIgnoreCase(status)) {
-            return "Completed";
+            return com.wac.autocore.ui.i18n.I18n.get("status.completed");
         }
         return status;
     }
@@ -104,8 +104,8 @@ public final class UiFormatters {
         if (s == null) {
             return false;
         }
-        return s.equals("Yes") || s.equals("Successful")
-                || s.equals("Completed") || s.equals("Paid");
+        return s.equals("Yes") || s.equals("Ja") || s.equals("Successful") || s.equals("Genomförd")
+                || s.equals("Completed") || s.equals("Slutförd") || s.equals("Paid") || s.equals("Betald");
     }
 
     /**
@@ -118,13 +118,14 @@ public final class UiFormatters {
         if (isGood(s)) {
             return "success";
         }
-        if (s.equals("No") || s.equals("Failed")) {
+        if (s.equals("No") || s.equals("Nej") || s.equals("Failed") || s.equals("Misslyckad")) {
             return "danger";
         }
-        if (s.equals("In progress")) {
+        if (s.equals("In progress") || s.equals("Pågående")) {
             return "warn";
         }
-        if (s.equals("Booked") || s.equals("Created") || s.equals("Work order created")) {
+        if (s.equals("Booked") || s.equals("Bokad") || s.equals("Created") || s.equals("Skapad")
+                || s.equals("Work order created") || s.equals("Arbetsorder skapad")) {
             return "info";
         }
         return "";

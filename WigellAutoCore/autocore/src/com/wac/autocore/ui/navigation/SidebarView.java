@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.navigation;
 
+import com.wac.autocore.ui.i18n.I18n;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -13,21 +14,33 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Sidomeny med varumärkesikon och kollapsbara sektioner för navigation.
+ * Sidomeny med varumärkesikon, kollapsbara sektioner för navigation
+ * och språkväxlare (SV/EN) i botten.
  */
 public class SidebarView {
 
     private final VBox container;
     private final List<Button> navButtons = new ArrayList<Button>();
+    private final Map<String, Button> navButtonMap = new LinkedHashMap<String, Button>();
+    private final List<GroupHeader> groupHeaders = new ArrayList<GroupHeader>();
     private final Consumer<String> onNavigate;
+
+    private Label brandSub;
+    private Button overviewBtn;
+    private Label langToggleLabel;
+    private Button svToggleBtn;
+    private Button enToggleBtn;
 
     public SidebarView(Consumer<String> onNavigate) {
         this.onNavigate = onNavigate;
         this.container = buildSidebar();
+        I18n.addListener(lang -> refreshTexts());
     }
 
     public VBox getView() {
@@ -43,6 +56,37 @@ public class SidebarView {
         }
     }
 
+    public void refreshTexts() {
+        if (brandSub != null) {
+            brandSub.setText(I18n.get("nav.brand.subtitle"));
+        }
+        if (overviewBtn != null) {
+            overviewBtn.setText(I18n.get("nav.section.overview"));
+        }
+        for (GroupHeader g : groupHeaders) {
+            g.label.setText(I18n.get(g.i18nKey).toUpperCase());
+        }
+        for (Map.Entry<String, Button> entry : navButtonMap.entrySet()) {
+            entry.getValue().setText(I18n.get("nav.item." + entry.getKey()));
+        }
+        if (langToggleLabel != null) {
+            langToggleLabel.setText(I18n.get("nav.lang.toggle_label"));
+        }
+        updateToggleButtons();
+    }
+
+    private void updateToggleButtons() {
+        if (svToggleBtn == null || enToggleBtn == null) return;
+        boolean isSv = I18n.isSwedish();
+        svToggleBtn.getStyleClass().remove("active");
+        enToggleBtn.getStyleClass().remove("active");
+        if (isSv) {
+            svToggleBtn.getStyleClass().add("active");
+        } else {
+            enToggleBtn.getStyleClass().add("active");
+        }
+    }
+
     private VBox buildSidebar() {
         StackPane mark = new StackPane();
         mark.getStyleClass().add("brand-mark");
@@ -52,9 +96,9 @@ public class SidebarView {
         mark.getChildren().add(letter);
 
         VBox brandTitles = new VBox(2);
-        Label brand = new Label("AutoCore");
+        Label brand = new Label(I18n.get("nav.brand.title"));
         brand.getStyleClass().add("brand-title");
-        Label brandSub = new Label("Workshop System");
+        brandSub = new Label(I18n.get("nav.brand.subtitle"));
         brandSub.getStyleClass().add("brand-sub");
         brandTitles.getChildren().addAll(brand, brandSub);
 
@@ -64,19 +108,19 @@ public class SidebarView {
 
         VBox nav = new VBox(3);
         nav.setPadding(new Insets(14, 0, 0, 0));
-        addNav(nav, "overview", "Overview");
+        overviewBtn = addNav(nav, "overview", I18n.get("nav.section.overview"));
 
         VBox groups = new VBox(2);
-        addGroup(groups, "Customers", navItem("customers", "Show customers"));
-        addGroup(groups, "Vehicles", navItem("vehicles", "Show vehicles"));
-        addGroup(groups, "Bookings", navItem("bookings", "Show bookings"));
-        addGroup(groups, "Workshop",
-                navItem("services", "Show services"),
-                navItem("mechanics", "Show mechanics"),
-                navItem("workorders", "Show work orders"));
-        addGroup(groups, "Finance",
-                navItem("invoices", "Show invoices"),
-                navItem("payments", "Show payments"));
+        addGroup(groups, "nav.section.customers", navItem("customers", "nav.item.customers"));
+        addGroup(groups, "nav.section.vehicles", navItem("vehicles", "nav.item.vehicles"));
+        addGroup(groups, "nav.section.bookings", navItem("bookings", "nav.item.bookings"));
+        addGroup(groups, "nav.section.workshop",
+                navItem("services", "nav.item.services"),
+                navItem("mechanics", "nav.item.mechanics"),
+                navItem("workorders", "nav.item.workorders"));
+        addGroup(groups, "nav.section.finance",
+                navItem("invoices", "nav.item.invoices"),
+                navItem("payments", "nav.item.payments"));
         nav.getChildren().add(groups);
 
         ScrollPane navScroll = new ScrollPane(nav);
@@ -86,30 +130,70 @@ public class SidebarView {
         navScroll.setStyle("-fx-background-color: transparent;");
         VBox.setVgrow(navScroll, Priority.ALWAYS);
 
+        HBox langToggle = buildLanguageToggle();
+
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(236);
         sidebar.setMinWidth(200);
-        sidebar.getChildren().addAll(brandRow, navScroll);
+        sidebar.getChildren().addAll(brandRow, navScroll, langToggle);
         return sidebar;
+    }
+
+    private HBox buildLanguageToggle() {
+        langToggleLabel = new Label(I18n.get("nav.lang.toggle_label"));
+        langToggleLabel.getStyleClass().add("lang-toggle-label");
+
+        svToggleBtn = new Button("SV");
+        svToggleBtn.getStyleClass().addAll("lang-btn", "lang-btn-sv");
+        svToggleBtn.setOnAction(e -> I18n.setLanguage(I18n.LANG_SV));
+
+        enToggleBtn = new Button("EN");
+        enToggleBtn.getStyleClass().addAll("lang-btn", "lang-btn-en");
+        enToggleBtn.setOnAction(e -> I18n.setLanguage(I18n.LANG_EN));
+
+        updateToggleButtons();
+
+        HBox togglePill = new HBox(2, svToggleBtn, enToggleBtn);
+        togglePill.getStyleClass().add("lang-toggle-pill");
+        togglePill.setAlignment(Pos.CENTER);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(8, langToggleLabel, spacer, togglePill);
+        row.getStyleClass().add("sidebar-lang-container");
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     private static class NavSpec {
         final String key;
-        final String label;
-        NavSpec(String key, String label) {
+        final String i18nKey;
+        NavSpec(String key, String i18nKey) {
             this.key = key;
+            this.i18nKey = i18nKey;
+        }
+    }
+
+    private static NavSpec navItem(String key, String i18nKey) {
+        return new NavSpec(key, i18nKey);
+    }
+
+    private static class GroupHeader {
+        final String i18nKey;
+        final Label label;
+        GroupHeader(String i18nKey, Label label) {
+            this.i18nKey = i18nKey;
             this.label = label;
         }
     }
 
-    private static NavSpec navItem(String key, String label) {
-        return new NavSpec(key, label);
-    }
-
-    private void addGroup(VBox parent, String title, NavSpec... items) {
-        Label t = new Label(title.toUpperCase());
+    private void addGroup(VBox parent, String i18nKey, NavSpec... items) {
+        Label t = new Label(I18n.get(i18nKey).toUpperCase());
         t.getStyleClass().add("side-label");
+        groupHeaders.add(new GroupHeader(i18nKey, t));
+
         Label chev = new Label("\u25BE");
         chev.getStyleClass().add("side-label");
 
@@ -122,7 +206,7 @@ public class SidebarView {
 
         VBox list = new VBox(2);
         for (NavSpec s : items) {
-            addNav(list, s.key, s.label);
+            addNav(list, s.key, I18n.get(s.i18nKey));
         }
 
         head.setOnMouseClicked(e -> {
@@ -135,7 +219,7 @@ public class SidebarView {
         parent.getChildren().add(new VBox(1, head, list));
     }
 
-    private void addNav(VBox nav, String key, String label) {
+    private Button addNav(VBox nav, String key, String label) {
         Button b = new Button(label);
         b.setMaxWidth(Double.MAX_VALUE);
         b.setAlignment(Pos.CENTER_LEFT);
@@ -147,6 +231,10 @@ public class SidebarView {
             }
         });
         navButtons.add(b);
+        if (!"overview".equals(key)) {
+            navButtonMap.put(key, b);
+        }
         nav.getChildren().add(b);
+        return b;
     }
 }

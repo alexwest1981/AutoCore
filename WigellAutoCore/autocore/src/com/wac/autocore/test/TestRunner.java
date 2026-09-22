@@ -24,6 +24,7 @@ public class TestRunner {
         runClass(OverviewMetricsTest.class);
         runClass(TableFactoryTest.class);
         runClass(GlobalSearchTest.class);
+        runClass(I18nTest.class);
 
         System.out.println("--------------------------------------------------");
         System.out.printf("Resultat: %d tester körda. \u001B[32m%d godkända\u001B[0m, \u001B[31m%d misslyckade\u001B[0m.%n",

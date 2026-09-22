@@ -29,6 +29,11 @@ public class PageRouter {
         this.garage = garage;
         this.pageBox = pageBox;
         this.sidebar = sidebar;
+        com.wac.autocore.ui.i18n.I18n.addListener(lang -> {
+            if (currentPageKey != null) {
+                navigate(currentPageKey);
+            }
+        });
     }
 
     public void setSidebar(SidebarView sidebar) {

@@ -820,8 +820,45 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
 .search:focused {
     -fx-border-color: -wac-ring;
     -fx-border-width: 1.5px;
+}/* ============================================================
+   18. I18N SPRÅKVÄXLARE I SIDEBAR
+   ============================================================ */
+.sidebar-lang-container {
+    -fx-border-color: -wac-line transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 10 14 14 14;
+    -fx-alignment: CENTER_LEFT;
 }
 
+.lang-toggle-label {
+    -fx-text-fill: -wac-side-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
 
+.lang-toggle-pill {
+    -fx-background-color: rgba(0, 0, 0, 0.28);
+    -fx-background-radius: 14;
+    -fx-padding: 2;
+    -fx-alignment: CENTER;
+}
 
+.lang-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-side-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+}
+
+.lang-btn:hover {
+    -fx-text-fill: -wac-side-text;
+}
+
+.lang-btn.active {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
 

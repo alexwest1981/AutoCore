@@ -8,6 +8,7 @@ import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.i18n.I18n;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
@@ -29,15 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Modal form dialogs for performing all system business actions directly in the JavaFX GUI.
- *
- * Supports:
- * - Create new customer
- * - Register a vehicle to an existing customer
- * - Create a new appointment booking
- * - Create work order with mechanic assignment and multi-select of services
- * - Create invoice with optional promo code
- * - Process payment (Swish, Card, Cash)
+ * Modal form dialogs for performing all system business actions directly in the JavaFX GUI with i18n support.
  */
 public final class ActionDialogs {
 
@@ -48,9 +41,6 @@ public final class ActionDialogs {
         if (!pane.getStyleClass().contains("root")) {
             pane.getStyleClass().add("root");
         }
-        // Kopiera aktiva stylesheets från appens scene till dialogens egna scene
-        // så att valt tema ärfs konsekvent. DialogPane har ingen Scene förrän
-        // dialogen öppnas, därför använder vi en setOnShowing-listener.
         dialog.setOnShowing(evt -> {
             javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
             if (appScene != null) {
@@ -68,8 +58,8 @@ public final class ActionDialogs {
     // ----------------------------------------------------- 1. Customer
     public static void showCreateCustomerDialog(GarageSystem garage, Runnable onSuccess) {
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("New customer");
-        dialog.setHeaderText("Register a new customer in AutoCore");
+        dialog.setTitle(I18n.get("dialog.customer.create.title"));
+        dialog.setHeaderText(I18n.get("dialog.customer.create.header"));
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -81,11 +71,11 @@ public final class ActionDialogs {
         TextField emailField = new TextField();
         emailField.setPromptText("name@example.com");
 
-        grid.add(new Label("Name:"), 0, 0);
+        grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("Phone:"), 0, 1);
+        grid.add(new Label(I18n.get("dialog.customer.phone") + ":"), 0, 1);
         grid.add(phoneField, 1, 1);
-        grid.add(new Label("Email:"), 0, 2);
+        grid.add(new Label(I18n.get("dialog.customer.email") + ":"), 0, 2);
         grid.add(emailField, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
@@ -98,7 +88,7 @@ public final class ActionDialogs {
                 String email = emailField.getText().trim();
 
                 if (name.isEmpty() || phone.isEmpty()) {
-                    showError("Invalid input", "Name and phone number are required.");
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
                     return;
                 }
 
@@ -112,13 +102,13 @@ public final class ActionDialogs {
     public static void showCreateVehicleDialog(GarageSystem garage, Runnable onSuccess) {
         List<Customer> customers = garage.getCustomers();
         if (customers.isEmpty()) {
-            showError("No customers found", "Please create a customer before registering a vehicle.");
+            showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("New vehicle");
-        dialog.setHeaderText("Register a new vehicle at the workshop");
+        dialog.setTitle(I18n.get("dialog.vehicle.create.title"));
+        dialog.setHeaderText(I18n.get("dialog.vehicle.create.header"));
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -144,15 +134,15 @@ public final class ActionDialogs {
         TextField yearField = new TextField();
         yearField.setPromptText("2022");
 
-        grid.add(new Label("Owner:"), 0, 0);
+        grid.add(new Label(I18n.get("dialog.vehicle.customer_select") + ":"), 0, 0);
         grid.add(customerBox, 1, 0);
-        grid.add(new Label("Reg. no.:"), 0, 1);
+        grid.add(new Label(I18n.get("dialog.vehicle.reg_nr") + ":"), 0, 1);
         grid.add(regField, 1, 1);
-        grid.add(new Label("Make:"), 0, 2);
+        grid.add(new Label(I18n.get("dialog.vehicle.brand") + ":"), 0, 2);
         grid.add(brandField, 1, 2);
-        grid.add(new Label("Model:"), 0, 3);
+        grid.add(new Label(I18n.get("dialog.vehicle.model") + ":"), 0, 3);
         grid.add(modelField, 1, 3);
-        grid.add(new Label("Year:"), 0, 4);
+        grid.add(new Label(I18n.get("dialog.vehicle.year") + ":"), 0, 4);
         grid.add(yearField, 1, 4);
 
         dialog.getDialogPane().setContent(grid);
@@ -168,12 +158,12 @@ public final class ActionDialogs {
                 try {
                     year = Integer.parseInt(yearField.getText().trim());
                 } catch (NumberFormatException ex) {
-                    showError("Invalid year", "Please enter a valid four-digit year.");
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
                     return;
                 }
 
                 if (reg.isEmpty() || brand.isEmpty()) {
-                    showError("Invalid input", "Registration number and make are required.");
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
                     return;
                 }
 
@@ -187,13 +177,13 @@ public final class ActionDialogs {
     public static void showCreateBookingDialog(GarageSystem garage, Runnable onSuccess) {
         List<Vehicle> vehicles = garage.getVehicles();
         if (vehicles.isEmpty()) {
-            showError("No vehicles found", "Please register a vehicle before creating a booking.");
+            showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("New booking");
-        dialog.setHeaderText("Book a vehicle in for service or repair");
+        dialog.setTitle(I18n.get("dialog.booking.create.title"));
+        dialog.setHeaderText(I18n.get("dialog.booking.create.header"));
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -214,11 +204,11 @@ public final class ActionDialogs {
         TextField descField = new TextField();
         descField.setPromptText("E.g. Annual service and brake replacement");
 
-        grid.add(new Label("Vehicle:"), 0, 0);
+        grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, 0);
         grid.add(vehicleBox, 1, 0);
-        grid.add(new Label("Date:"), 0, 1);
+        grid.add(new Label(I18n.get("dialog.booking.date") + ":"), 0, 1);
         grid.add(datePicker, 1, 1);
-        grid.add(new Label("Description:"), 0, 2);
+        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, 2);
         grid.add(descField, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
@@ -231,7 +221,7 @@ public final class ActionDialogs {
                 String desc = descField.getText().trim();
 
                 if (date == null || desc.isEmpty()) {
-                    showError("Invalid input", "Date and description are required.");
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
                     return;
                 }
 
@@ -251,19 +241,19 @@ public final class ActionDialogs {
         }
 
         if (bookings.isEmpty()) {
-            showError("No booked jobs", "There are no active bookings with status 'BOOKED' to create a work order for.");
+            showError(I18n.get("dialog.confirm.title"), I18n.get("overview.empty.bookings"));
             return;
         }
 
         List<Mechanic> mechanics = garage.getMechanics();
         if (mechanics.isEmpty()) {
-            showError("No mechanics", "There are no registered mechanics in the system.");
+            showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("New work order");
-        dialog.setHeaderText("Assign a mechanic and select services for the work order");
+        dialog.setTitle(I18n.get("dialog.workorder.create.title"));
+        dialog.setHeaderText(I18n.get("dialog.workorder.create.header"));
         styleDialog(dialog);
 
         VBox content = new VBox(12);
@@ -289,24 +279,24 @@ public final class ActionDialogs {
         mechanicBox.setConverter(new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
-                return m == null ? "" : m.getName() + " (" + m.getSpecialization() + ") - " + (m.isAvailable() ? "Available" : "Busy");
+                return m == null ? "" : m.getName() + " (" + m.getSpecialization() + ") - " + (m.isAvailable() ? I18n.get("table.col.available") : "Busy");
             }
             @Override
             public Mechanic fromString(String string) { return null; }
         });
 
-        grid.add(new Label("Booking:"), 0, 0);
+        grid.add(new Label(I18n.get("dialog.workorder.booking_select") + ":"), 0, 0);
         grid.add(bookingBox, 1, 0);
-        grid.add(new Label("Mechanic:"), 0, 1);
+        grid.add(new Label(I18n.get("dialog.workorder.mechanic_select") + ":"), 0, 1);
         grid.add(mechanicBox, 1, 1);
 
-        Label servicesTitle = new Label("Select services to include:");
+        Label servicesTitle = new Label(I18n.get("dialog.workorder.services_select"));
         servicesTitle.setStyle("-fx-font-weight: bold;");
 
         VBox serviceChecks = new VBox(6);
         List<CheckBox> checkList = new ArrayList<CheckBox>();
         for (ServiceItem s : garage.getServiceItems()) {
-            CheckBox cb = new CheckBox(s.getName() + " (" + s.getPrice() + " kr, " + s.getEstimatedMinutes() + " min)");
+            CheckBox cb = new CheckBox(s.getName() + " (" + s.getPrice() + " " + I18n.get("common.currency") + ", " + s.getEstimatedMinutes() + " min)");
             cb.setUserData(s.getId());
             checkList.add(cb);
             serviceChecks.getChildren().add(cb);
@@ -336,7 +326,7 @@ public final class ActionDialogs {
                 }
 
                 if (selectedServiceIds.isEmpty()) {
-                    showError("No services selected", "You must select at least one service.");
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
                     return;
                 }
 
@@ -368,13 +358,13 @@ public final class ActionDialogs {
         }
 
         if (completedOrders.isEmpty()) {
-            showError("No completed orders", "There are no completed work orders ('COMPLETED') without an invoice.");
+            showError(I18n.get("dialog.confirm.title"), I18n.get("overview.empty.workorders"));
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Create invoice");
-        dialog.setHeaderText("Generate an invoice for a completed work order");
+        dialog.setTitle(I18n.get("dialog.invoice.create.title"));
+        dialog.setHeaderText(I18n.get("dialog.invoice.create.header"));
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -394,9 +384,9 @@ public final class ActionDialogs {
         TextField discountField = new TextField();
         discountField.setPromptText("E.g. WELCOME10 or SERVICE200 (optional)");
 
-        grid.add(new Label("Work order:"), 0, 0);
+        grid.add(new Label(I18n.get("dialog.invoice.workorder_select") + ":"), 0, 0);
         grid.add(orderBox, 1, 0);
-        grid.add(new Label("Discount code:"), 0, 1);
+        grid.add(new Label(I18n.get("dialog.invoice.discount") + ":"), 0, 1);
         grid.add(discountField, 1, 1);
 
         dialog.getDialogPane().setContent(grid);
@@ -422,13 +412,13 @@ public final class ActionDialogs {
         }
 
         if (unpaid.isEmpty()) {
-            showError("No unpaid invoices", "All issued invoices have already been paid!");
+            showError(I18n.get("dialog.confirm.title"), I18n.get("common.close"));
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle("Register payment");
-        dialog.setHeaderText("Process and record the customer's payment");
+        dialog.setTitle(I18n.get("dialog.payment.create.title"));
+        dialog.setHeaderText(I18n.get("dialog.payment.create.header"));
         styleDialog(dialog);
 
         GridPane grid = createGrid();
@@ -443,7 +433,7 @@ public final class ActionDialogs {
         invoiceBox.setConverter(new StringConverter<Invoice>() {
             @Override
             public String toString(Invoice inv) {
-                return inv == null ? "" : "Invoice #" + inv.getId() + " - " + inv.getTotalAmount() + " kr (Order #" + inv.getWorkOrderId() + ")";
+                return inv == null ? "" : "Invoice #" + inv.getId() + " - " + inv.getTotalAmount() + " " + I18n.get("common.currency") + " (Order #" + inv.getWorkOrderId() + ")";
             }
             @Override
             public Invoice fromString(String string) { return null; }
@@ -453,9 +443,9 @@ public final class ActionDialogs {
         typeBox.getItems().addAll("SWISH", "CARD", "CASH");
         typeBox.getSelectionModel().select("SWISH");
 
-        grid.add(new Label("Invoice:"), 0, 0);
+        grid.add(new Label(I18n.get("dialog.payment.invoice_select") + ":"), 0, 0);
         grid.add(invoiceBox, 1, 0);
-        grid.add(new Label("Payment method:"), 0, 1);
+        grid.add(new Label(I18n.get("dialog.payment.method") + ":"), 0, 1);
         grid.add(typeBox, 1, 1);
 
         dialog.getDialogPane().setContent(grid);
@@ -486,7 +476,6 @@ public final class ActionDialogs {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
-        // Ge Alert samma tema som appens huvud-scene
         alert.setOnShowing(evt -> {
             javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
             if (appScene != null) {
