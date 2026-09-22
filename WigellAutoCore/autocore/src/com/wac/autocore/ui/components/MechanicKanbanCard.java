@@ -601,10 +601,11 @@ public class MechanicKanbanCard {
 
         VBox drawer = new VBox(6);
         drawer.getStyleClass().add("kanban-inline-drawer");
-        drawer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.28); " +
+        drawer.setStyle("-fx-background-color: -wac-card; " +
                         "-fx-background-radius: 6px; " +
                         "-fx-border-color: -wac-line, -wac-accent; -fx-border-width: 1px 1px 1px 3px; " +
-                        "-fx-border-radius: 6px; -fx-padding: 8px 10px;");
+                        "-fx-border-radius: 6px; -fx-padding: 8px 10px; " +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 5, 0, 0, 1);");
 
         // Top bar: Header & Stängknapp
         String title = (wo != null)
