@@ -33,8 +33,6 @@ public class SidebarView {
 
     private Label brandSub;
     private Button overviewBtn;
-    private Button svToggleBtn;
-    private Button enToggleBtn;
 
     public SidebarView(Consumer<String> onNavigate) {
         this.onNavigate = onNavigate;
@@ -71,19 +69,34 @@ public class SidebarView {
         updateToggleButtons();
     }
 
+    private Label enLabel;
+    private Label svLabel;
+    private StackPane switchTrack;
+    private StackPane switchThumb;
+
     private void updateToggleButtons() {
-        if (svToggleBtn == null || enToggleBtn == null) return;
+        if (switchTrack == null || switchThumb == null) return;
         boolean isSv = I18n.isSwedish();
-        svToggleBtn.getStyleClass().remove("active");
-        enToggleBtn.getStyleClass().remove("active");
+
+        // En: thumb to the left (translateX = 0), Sv: thumb to the right (translateX = 20)
+        double targetX = isSv ? 20.0 : 0.0;
+        try {
+            javafx.animation.TranslateTransition tt = new javafx.animation.TranslateTransition(
+                    javafx.util.Duration.millis(140), switchThumb);
+            tt.setToX(targetX);
+            tt.play();
+        } catch (Exception e) {
+            switchThumb.setTranslateX(targetX);
+        }
+
         if (isSv) {
-            svToggleBtn.getStyleClass().add("active");
-            svToggleBtn.setStyle("-fx-background-color: -wac-accent; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 6;");
-            enToggleBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #e4e4e7; -fx-font-weight: bold; -fx-background-radius: 6;");
+            switchTrack.setStyle("-fx-background-color: -wac-accent; -fx-background-radius: 12; -fx-cursor: hand;");
+            svLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 12px;");
+            enLabel.setStyle("-fx-text-fill: #71717a; -fx-font-weight: normal; -fx-font-size: 12px;");
         } else {
-            enToggleBtn.getStyleClass().add("active");
-            enToggleBtn.setStyle("-fx-background-color: -wac-accent; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 6;");
-            svToggleBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #e4e4e7; -fx-font-weight: bold; -fx-background-radius: 6;");
+            switchTrack.setStyle("-fx-background-color: #3f3f46; -fx-border-color: rgba(255,255,255,0.25); -fx-border-radius: 12; -fx-border-width: 1; -fx-background-radius: 12; -fx-cursor: hand;");
+            enLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 12px;");
+            svLabel.setStyle("-fx-text-fill: #71717a; -fx-font-weight: normal; -fx-font-size: 12px;");
         }
     }
 
@@ -141,45 +154,40 @@ public class SidebarView {
     }
 
     private HBox buildLanguageToggle() {
-        svToggleBtn = new Button("SV");
-        svToggleBtn.getStyleClass().addAll("lang-btn", "lang-btn-sv");
-        svToggleBtn.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(svToggleBtn, Priority.ALWAYS);
+        enLabel = new Label("EN");
+        enLabel.getStyleClass().add("lang-switch-label");
 
-        enToggleBtn = new Button("EN");
-        enToggleBtn.getStyleClass().addAll("lang-btn", "lang-btn-en");
-        enToggleBtn.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(enToggleBtn, Priority.ALWAYS);
+        svLabel = new Label("SV");
+        svLabel.getStyleClass().add("lang-switch-label");
 
-        svToggleBtn.setOnAction(e -> {
-            if (I18n.isSwedish()) {
-                I18n.setLanguage(I18n.LANG_EN);
-            } else {
-                I18n.setLanguage(I18n.LANG_SV);
-            }
-        });
+        switchThumb = new StackPane();
+        switchThumb.getStyleClass().add("lang-switch-thumb");
+        switchThumb.setPrefSize(18, 18);
+        switchThumb.setMaxSize(18, 18);
+        switchThumb.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 9; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.35), 3, 0, 0, 1);");
 
-        enToggleBtn.setOnAction(e -> {
-            if (!I18n.isSwedish()) {
-                I18n.setLanguage(I18n.LANG_SV);
-            } else {
-                I18n.setLanguage(I18n.LANG_EN);
-            }
-        });
-
-        HBox togglePill = new HBox(4, svToggleBtn, enToggleBtn);
-        togglePill.getStyleClass().add("lang-toggle-pill");
-        togglePill.setAlignment(Pos.CENTER);
-        togglePill.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(togglePill, Priority.ALWAYS);
+        switchTrack = new StackPane(switchThumb);
+        switchTrack.getStyleClass().add("lang-switch-track");
+        switchTrack.setPrefSize(44, 24);
+        switchTrack.setMaxSize(44, 24);
+        switchTrack.setAlignment(Pos.CENTER_LEFT);
+        switchTrack.setPadding(new Insets(3));
 
         updateToggleButtons();
 
-        HBox row = new HBox(togglePill);
-        row.getStyleClass().add("sidebar-lang-container");
-        row.setAlignment(Pos.CENTER);
-        row.setMaxWidth(Double.MAX_VALUE);
-        return row;
+        HBox switchRow = new HBox(10, enLabel, switchTrack, svLabel);
+        switchRow.getStyleClass().add("lang-switch-row");
+        switchRow.setAlignment(Pos.CENTER);
+        switchRow.setCursor(Cursor.HAND);
+        switchRow.setOnMouseClicked(e -> {
+            I18n.setLanguage(I18n.isSwedish() ? I18n.LANG_EN : I18n.LANG_SV);
+        });
+
+        HBox container = new HBox(switchRow);
+        container.getStyleClass().add("sidebar-lang-container");
+        container.setAlignment(Pos.CENTER);
+        container.setMaxWidth(Double.MAX_VALUE);
+        return container;
     }
 
     private static class NavSpec {

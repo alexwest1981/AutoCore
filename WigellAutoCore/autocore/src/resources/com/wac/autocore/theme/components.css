@@ -821,47 +821,56 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-border-color: -wac-ring;
     -fx-border-width: 1.5px;
 }/* ============================================================
-   18. I18N SPRÅKVÄXLARE I SIDEBAR
+   18. I18N FYSISK TOGGLE SWITCH I SIDEBAR
    ============================================================ */
 .sidebar-lang-container {
     -fx-border-color: rgba(255, 255, 255, 0.08) transparent transparent transparent;
     -fx-border-width: 1 0 0 0;
-    -fx-padding: 12 16 16 16;
+    -fx-padding: 14 16 16 16;
     -fx-alignment: CENTER;
 }
 
-.lang-toggle-pill {
-    -fx-background-color: rgba(0, 0, 0, 0.35);
-    -fx-background-radius: 8;
-    -fx-border-color: rgba(255, 255, 255, 0.14);
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-    -fx-padding: 3;
+.lang-switch-row {
     -fx-alignment: CENTER;
-    -fx-min-height: 34;
-    -fx-pref-height: 34;
+    -fx-cursor: hand;
+    -fx-padding: 6 12;
+    -fx-background-radius: 16;
 }
 
-.button.lang-btn, .lang-btn {
-    -fx-background-color: transparent;
-    -fx-text-fill: #e4e4e7;
+.lang-switch-row:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+}
+
+.lang-switch-label {
     -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-padding: 5 0;
-    -fx-background-radius: 6;
+    -fx-text-fill: #71717a;
     -fx-cursor: hand;
-    -fx-alignment: CENTER;
 }
 
-.button.lang-btn:hover, .lang-btn:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.12);
-    -fx-text-fill: #ffffff;
+.lang-switch-track {
+    -fx-min-width: 44;
+    -fx-pref-width: 44;
+    -fx-max-width: 44;
+    -fx-min-height: 24;
+    -fx-pref-height: 24;
+    -fx-max-height: 24;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_LEFT;
 }
 
-.button.lang-btn.active, .lang-btn.active {
-    -fx-background-color: -wac-accent;
-    -fx-text-fill: -wac-on-accent;
-    -fx-font-weight: bold;
+.lang-switch-thumb {
+    -fx-min-width: 18;
+    -fx-pref-width: 18;
+    -fx-max-width: 18;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+    -fx-background-radius: 9;
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.35), 3, 0, 0, 1);
 }
+
 
 
