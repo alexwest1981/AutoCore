@@ -572,10 +572,12 @@ public class MechanicKanbanCard {
             cell.getStyleClass().add("weekend");
         } else if (!s.isMechanicAvailable()) {
             cell.getStyleClass().add("unavailable");
-        } else if (s.isFullyBooked()) {
-            cell.getStyleClass().add("full");
         } else {
-            cell.getStyleClass().add("available");
+            String loadClass = "load-" + s.getLevel().getCode();
+            cell.getStyleClass().addAll("workday", loadClass);
+
+            String tip = s.getDate().toString() + " · " + s.getBookedHours() + "/9h (" + I18n.get("kanban.load." + s.getLevel().getCode()) + ")";
+            javafx.scene.control.Tooltip.install(cell, new javafx.scene.control.Tooltip(tip));
         }
 
         if (s.isInCurrentMonth() && !s.isWeekend()) {

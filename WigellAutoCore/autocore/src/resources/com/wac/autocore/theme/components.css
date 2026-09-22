@@ -1317,15 +1317,35 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-alignment: CENTER;
 }
 .kanban-month-cell-compact:hover {
-    -fx-border-color: -wac-accent;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.35), 3, 0, 0, 1);
 }
-.kanban-month-cell-compact.available {
-    -fx-border-color: rgba(16, 185, 129, 0.5);
-    -fx-background-color: rgba(16, 185, 129, 0.08);
+.kanban-month-cell-compact.load-free {
+    -fx-border-color: rgba(16, 185, 129, 0.45);
+    -fx-background-color: rgba(16, 185, 129, 0.12);
 }
-.kanban-month-cell-compact.full {
-    -fx-border-color: rgba(239, 68, 68, 0.6);
-    -fx-background-color: rgba(239, 68, 68, 0.12);
+.kanban-month-cell-compact.load-free .kanban-month-num-compact {
+    -fx-text-fill: #10b981;
+}
+.kanban-month-cell-compact.load-moderate {
+    -fx-border-color: rgba(234, 179, 8, 0.55);
+    -fx-background-color: rgba(234, 179, 8, 0.18);
+}
+.kanban-month-cell-compact.load-moderate .kanban-month-num-compact {
+    -fx-text-fill: #eab308;
+}
+.kanban-month-cell-compact.load-busy {
+    -fx-border-color: rgba(249, 115, 22, 0.65);
+    -fx-background-color: rgba(249, 115, 22, 0.22);
+}
+.kanban-month-cell-compact.load-busy .kanban-month-num-compact {
+    -fx-text-fill: #f97316;
+}
+.kanban-month-cell-compact.load-full {
+    -fx-border-color: rgba(239, 68, 68, 0.75);
+    -fx-background-color: rgba(239, 68, 68, 0.26);
+}
+.kanban-month-cell-compact.load-full .kanban-month-num-compact {
+    -fx-text-fill: #ef4444;
 }
 .kanban-month-cell-compact.unavailable {
     -fx-border-color: rgba(113, 113, 122, 0.3);

@@ -190,19 +190,30 @@ public class MechanicSchedule {
         private final boolean isMechanicAvailable;
         private final boolean isFullyBooked;
         private final int bookedHours;
+        private final LoadLevel level;
 
         public MonthDayStatus(LocalDate date, boolean inCurrentMonth, boolean isWeekend,
-                              boolean isMechanicAvailable, boolean isFullyBooked, int bookedHours) {
+                              boolean isMechanicAvailable, boolean isFullyBooked, int bookedHours, LoadLevel level) {
             this.date = date;
             this.inCurrentMonth = inCurrentMonth;
             this.isWeekend = isWeekend;
             this.isMechanicAvailable = isMechanicAvailable;
             this.isFullyBooked = isFullyBooked;
             this.bookedHours = bookedHours;
+            this.level = level != null ? level : LoadLevel.FREE;
+        }
+
+        public MonthDayStatus(LocalDate date, boolean inCurrentMonth, boolean isWeekend,
+                              boolean isMechanicAvailable, boolean isFullyBooked, int bookedHours) {
+            this(date, inCurrentMonth, isWeekend, isMechanicAvailable, isFullyBooked, bookedHours, LoadLevel.FREE);
         }
 
         public LocalDate getDate() {
             return date;
+        }
+
+        public LoadLevel getLevel() {
+            return level;
         }
 
         public boolean isInCurrentMonth() {
@@ -411,14 +422,24 @@ public class MechanicSchedule {
             boolean isWeekend = (cur.getDayOfWeek() == DayOfWeek.SATURDAY || cur.getDayOfWeek() == DayOfWeek.SUNDAY);
 
             int booked = 0;
+            LoadLevel level = LoadLevel.FREE;
             if (inCurrentMonth && !isWeekend) {
                 for (TimeSlot s : getSlotsForDay(mechanicId, cur)) {
                     if (s.isBooked()) booked++;
                 }
+                if (booked <= 2) {
+                    level = LoadLevel.FREE;
+                } else if (booked <= 4) {
+                    level = LoadLevel.MODERATE;
+                } else if (booked <= 6) {
+                    level = LoadLevel.BUSY;
+                } else {
+                    level = LoadLevel.FULL;
+                }
             }
             boolean isFullyBooked = booked >= WORK_HOURS_PER_DAY;
 
-            result.add(new MonthDayStatus(cur, inCurrentMonth, isWeekend, mechanicAvailableFlag, isFullyBooked, booked));
+            result.add(new MonthDayStatus(cur, inCurrentMonth, isWeekend, mechanicAvailableFlag, isFullyBooked, booked, level));
             cur = cur.plusDays(1);
         }
 
