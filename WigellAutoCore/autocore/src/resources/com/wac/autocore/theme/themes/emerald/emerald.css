@@ -44,7 +44,7 @@
     -wac-bg: #edf3ef;
     -wac-surface: #edf3ef;
     -wac-row-alt: #f4f8f5;
-    -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "System";
     -fx-font-size: 13px;
 }
 
@@ -253,19 +253,19 @@ TableView .table-view { -fx-padding: 0; }
     -fx-alignment: CENTER;
 }
 .brand-mark .letter, .avatar .letter {
-    -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "System";
     -fx-font-weight: 800;
     -fx-font-size: 14px;
     -fx-text-fill: -wac-on-accent;
 }
 .brand-title {
-    -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "System";
     -fx-font-size: 19px;
     -fx-font-weight: 800;
     -fx-text-fill: -wac-side-text;
 }
 .brand-sub {
-    -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "System";
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-side-muted;

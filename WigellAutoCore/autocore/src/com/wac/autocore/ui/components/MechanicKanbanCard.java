@@ -108,12 +108,12 @@ public class MechanicKanbanCard {
         Label countLabel = new Label();
         countLabel.getStyleClass().add("kanban-count-label");
 
-        Button scrollLeftBtn = new Button("❮");
+        Button scrollLeftBtn = new Button("<");
         scrollLeftBtn.getStyleClass().addAll("kanban-scroll-btn", "small");
         scrollLeftBtn.setTooltip(new Tooltip(I18n.get("kanban.filter.scroll_prev")));
         scrollLeftBtn.setOnAction(e -> scroll.setHvalue(Math.max(0.0, scroll.getHvalue() - 0.35)));
 
-        Button scrollRightBtn = new Button("❯");
+        Button scrollRightBtn = new Button(">");
         scrollRightBtn.getStyleClass().addAll("kanban-scroll-btn", "small");
         scrollRightBtn.setTooltip(new Tooltip(I18n.get("kanban.filter.scroll_next")));
         scrollRightBtn.setOnAction(e -> scroll.setHvalue(Math.min(1.0, scroll.getHvalue() + 0.35)));
@@ -421,7 +421,7 @@ public class MechanicKanbanCard {
     // 1. KOMPAKT DAGSVY (07:00 - 16:00)
     // =========================================================================
     private VBox buildCompactDayView(Mechanic mech) {
-        Button prevDayBtn = new Button("❮");
+        Button prevDayBtn = new Button("<");
         prevDayBtn.getStyleClass().addAll("ghost", "small");
         prevDayBtn.setOnAction(e -> {
             selectedDate = selectedDate.minusDays(1);
@@ -435,7 +435,7 @@ public class MechanicKanbanCard {
             renderBody();
         });
 
-        Button nextDayBtn = new Button("❯");
+        Button nextDayBtn = new Button(">");
         nextDayBtn.getStyleClass().addAll("ghost", "small");
         nextDayBtn.setOnAction(e -> {
             selectedDate = selectedDate.plusDays(1);
@@ -556,7 +556,7 @@ public class MechanicKanbanCard {
     private VBox buildCompactWeekView(Mechanic mech) {
         LocalDate monday = selectedDate.with(DayOfWeek.MONDAY);
 
-        Button prevWeekBtn = new Button("❮");
+        Button prevWeekBtn = new Button("<");
         prevWeekBtn.getStyleClass().addAll("ghost", "small");
         prevWeekBtn.setOnAction(e -> {
             selectedDate = selectedDate.minusWeeks(1);
@@ -570,7 +570,7 @@ public class MechanicKanbanCard {
             renderBody();
         });
 
-        Button nextWeekBtn = new Button("❯");
+        Button nextWeekBtn = new Button(">");
         nextWeekBtn.getStyleClass().addAll("ghost", "small");
         nextWeekBtn.setOnAction(e -> {
             selectedDate = selectedDate.plusWeeks(1);
@@ -741,7 +741,7 @@ public class MechanicKanbanCard {
         Region spr = new Region();
         HBox.setHgrow(spr, Priority.ALWAYS);
 
-        Button closeBtn = new Button("✕");
+        Button closeBtn = new Button("×");
         closeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: -wac-muted; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4 0 4;");
         closeBtn.setOnAction(e -> {
             expandedSlot = null;
@@ -832,7 +832,7 @@ public class MechanicKanbanCard {
     private VBox buildCompactMonthView(Mechanic mech) {
         YearMonth ym = YearMonth.from(selectedDate);
 
-        Button prevMonthBtn = new Button("❮");
+        Button prevMonthBtn = new Button("<");
         prevMonthBtn.getStyleClass().addAll("ghost", "small");
         prevMonthBtn.setOnAction(e -> {
             selectedDate = selectedDate.minusMonths(1);
@@ -846,7 +846,7 @@ public class MechanicKanbanCard {
             renderBody();
         });
 
-        Button nextMonthBtn = new Button("❯");
+        Button nextMonthBtn = new Button(">");
         nextMonthBtn.getStyleClass().addAll("ghost", "small");
         nextMonthBtn.setOnAction(e -> {
             selectedDate = selectedDate.plusMonths(1);

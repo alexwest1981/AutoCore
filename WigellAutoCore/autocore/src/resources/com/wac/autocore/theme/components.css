@@ -51,6 +51,7 @@
     -fx-selection-bar:             -wac-accent-soft;
     -fx-selection-bar-non-focused: -wac-surface;
     -fx-text-background-color:     -wac-text;
+    -fx-font-family:               "System";
 }
 
 /* ============================================================
