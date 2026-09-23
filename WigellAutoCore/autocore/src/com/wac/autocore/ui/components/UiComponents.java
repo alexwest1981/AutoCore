@@ -51,8 +51,10 @@ public final class UiComponents {
         v.getStyleClass().add("kpi-value");
         VBox box = new VBox(6, v, l);
         box.getStyleClass().add("kpi");
-        HBox.setHgrow(box, Priority.ALWAYS);
+        box.setMinWidth(140);
+        box.setPrefWidth(220);
         box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
         return box;
     }
 
@@ -81,6 +83,13 @@ public final class UiComponents {
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         if (actions != null && actions.length > 0) {
+            for (Node act : actions) {
+                if (act instanceof Button) {
+                    Button b = (Button) act;
+                    b.setMinWidth(150);
+                    b.setPrefWidth(150);
+                }
+            }
             HBox actionBox = new HBox(8, actions);
             actionBox.setAlignment(Pos.CENTER_RIGHT);
             topRow.getChildren().add(actionBox);

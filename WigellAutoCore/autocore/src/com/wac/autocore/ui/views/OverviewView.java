@@ -63,15 +63,23 @@ public final class OverviewView {
                 "AutoCore \u00b7 " + UiFormatters.todayFormatted());
 
         Button quickBooking = UiComponents.primaryButton(I18n.get("overview.action.booking"));
+        quickBooking.setMinWidth(155);
+        quickBooking.setPrefWidth(155);
         quickBooking.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, onRefresh));
 
         Button quickOrder = UiComponents.secondaryButton(I18n.get("overview.action.workorder"));
+        quickOrder.setMinWidth(155);
+        quickOrder.setPrefWidth(155);
         quickOrder.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, onRefresh));
 
         Button quickInvoice = UiComponents.secondaryButton(I18n.get("overview.action.invoice"));
+        quickInvoice.setMinWidth(155);
+        quickInvoice.setPrefWidth(155);
         quickInvoice.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, onRefresh));
 
         Button quickPay = UiComponents.secondaryButton(I18n.get("overview.action.payment"));
+        quickPay.setMinWidth(155);
+        quickPay.setPrefWidth(155);
         quickPay.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, onRefresh));
 
         HBox quickBar = new HBox(10, quickBooking, quickOrder, quickInvoice, quickPay);
@@ -140,8 +148,10 @@ public final class OverviewView {
 
         VBox box = new VBox(12, title, sub, list);
         box.getStyleClass().add("panel");
-        HBox.setHgrow(box, Priority.ALWAYS);
+        box.setMinWidth(280);
+        box.setPrefWidth(450);
         box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
         return box;
     }
 
@@ -179,8 +189,10 @@ public final class OverviewView {
 
         VBox box = new VBox(12, title, sub, list);
         box.getStyleClass().add("panel");
-        HBox.setHgrow(box, Priority.ALWAYS);
+        box.setMinWidth(280);
+        box.setPrefWidth(450);
         box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
         return box;
     }
 

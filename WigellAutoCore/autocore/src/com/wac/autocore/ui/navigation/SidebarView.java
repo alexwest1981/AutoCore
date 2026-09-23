@@ -89,7 +89,7 @@ public class SidebarView {
         }
 
         if (isSv) {
-            switchTrack.setStyle("-fx-background-color: -wac-accent; -fx-background-radius: 12; -fx-cursor: hand;");
+            switchTrack.setStyle("-fx-background-color: -wac-accent; -fx-border-color: transparent; -fx-border-radius: 12; -fx-border-width: 1; -fx-background-radius: 12; -fx-cursor: hand;");
             svLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 12px;");
             enLabel.setStyle("-fx-text-fill: #71717a; -fx-font-weight: normal; -fx-font-size: 12px;");
         } else {
@@ -147,8 +147,9 @@ public class SidebarView {
 
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
-        sidebar.setPrefWidth(236);
-        sidebar.setMinWidth(200);
+        sidebar.setMinWidth(240);
+        sidebar.setPrefWidth(240);
+        sidebar.setMaxWidth(240);
         sidebar.getChildren().addAll(brandRow, navScroll, langToggle);
         return sidebar;
     }
@@ -156,19 +157,29 @@ public class SidebarView {
     private HBox buildLanguageToggle() {
         enLabel = new Label("EN");
         enLabel.getStyleClass().add("lang-switch-label");
+        enLabel.setMinWidth(26);
+        enLabel.setPrefWidth(26);
+        enLabel.setMaxWidth(26);
+        enLabel.setAlignment(Pos.CENTER);
 
         svLabel = new Label("SV");
         svLabel.getStyleClass().add("lang-switch-label");
+        svLabel.setMinWidth(26);
+        svLabel.setPrefWidth(26);
+        svLabel.setMaxWidth(26);
+        svLabel.setAlignment(Pos.CENTER);
 
         switchThumb = new StackPane();
         switchThumb.getStyleClass().add("lang-switch-thumb");
         switchThumb.setPrefSize(18, 18);
+        switchThumb.setMinSize(18, 18);
         switchThumb.setMaxSize(18, 18);
         switchThumb.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 9; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.35), 3, 0, 0, 1);");
 
         switchTrack = new StackPane(switchThumb);
         switchTrack.getStyleClass().add("lang-switch-track");
         switchTrack.setPrefSize(44, 24);
+        switchTrack.setMinSize(44, 24);
         switchTrack.setMaxSize(44, 24);
         switchTrack.setAlignment(Pos.CENTER_LEFT);
         switchTrack.setPadding(new Insets(3));
@@ -178,6 +189,9 @@ public class SidebarView {
         HBox switchRow = new HBox(10, enLabel, switchTrack, svLabel);
         switchRow.getStyleClass().add("lang-switch-row");
         switchRow.setAlignment(Pos.CENTER);
+        switchRow.setMinWidth(124);
+        switchRow.setPrefWidth(124);
+        switchRow.setMaxWidth(124);
         switchRow.setCursor(Cursor.HAND);
         switchRow.setOnMouseClicked(e -> {
             I18n.setLanguage(I18n.isSwedish() ? I18n.LANG_EN : I18n.LANG_SV);
@@ -186,7 +200,9 @@ public class SidebarView {
         HBox container = new HBox(switchRow);
         container.getStyleClass().add("sidebar-lang-container");
         container.setAlignment(Pos.CENTER);
-        container.setMaxWidth(Double.MAX_VALUE);
+        container.setMinWidth(240);
+        container.setPrefWidth(240);
+        container.setMaxWidth(240);
         return container;
     }
 

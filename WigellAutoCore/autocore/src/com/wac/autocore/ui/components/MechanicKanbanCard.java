@@ -296,6 +296,10 @@ public class MechanicKanbanCard {
     private Button createViewButton(String label, KanbanViewMode mode) {
         Button btn = new Button(label);
         btn.getStyleClass().add("kanban-toggle-btn-compact");
+        btn.setMinWidth(58);
+        btn.setPrefWidth(58);
+        btn.setMaxWidth(58);
+        btn.setAlignment(Pos.CENTER);
         if (this.currentMode == mode) {
             btn.getStyleClass().add("active");
         }
@@ -509,17 +513,25 @@ public class MechanicKanbanCard {
 
         Label dayLabel = new Label(dateStr);
         dayLabel.getStyleClass().add("kanban-week-day-name");
+        dayLabel.setMinWidth(55);
         dayLabel.setPrefWidth(55);
+        dayLabel.setMaxWidth(55);
 
         // Beläggningspill
         String loadClass = "load-" + dl.getLevel().getCode();
         Label pill = new Label(I18n.get("kanban.load." + dl.getLevel().getCode()));
         pill.getStyleClass().addAll("kanban-load-pill-compact", loadClass);
+        pill.setMinWidth(85);
         pill.setPrefWidth(85);
+        pill.setMaxWidth(85);
+        pill.setAlignment(Pos.CENTER);
 
         // Siffror (t.ex. 3/9 h)
         Label countLabel = new Label(dl.getBookedHours() + "/" + dl.getTotalHours() + "h");
         countLabel.getStyleClass().add("kanban-week-count-compact");
+        countLabel.setMinWidth(45);
+        countLabel.setPrefWidth(45);
+        countLabel.setMaxWidth(45);
         // 9 timboxar (kl. 07:00 till 16:00) där bokade timmar markeras med belastningsfärg
         HBox hourBoxes = new HBox(2);
         hourBoxes.getStyleClass().add("kanban-hour-boxes");
@@ -774,7 +786,9 @@ public class MechanicKanbanCard {
             Label head = new Label(headers[c]);
             head.getStyleClass().add("kanban-month-head-compact");
             head.setAlignment(Pos.CENTER);
+            head.setMinWidth(30);
             head.setPrefWidth(30);
+            head.setMaxWidth(30);
             grid.add(head, c, 0);
         }
 
@@ -799,7 +813,9 @@ public class MechanicKanbanCard {
 
     private StackPane buildCompactMonthCell(MonthDayStatus s) {
         StackPane cell = new StackPane();
+        cell.setMinSize(30, 24);
         cell.setPrefSize(30, 24);
+        cell.setMaxSize(30, 24);
         cell.getStyleClass().add("kanban-month-cell-compact");
 
         Label num = new Label(String.valueOf(s.getDate().getDayOfMonth()));

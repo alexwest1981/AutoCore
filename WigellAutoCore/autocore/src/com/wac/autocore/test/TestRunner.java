@@ -15,6 +15,8 @@ public class TestRunner {
     private static final List<String> failures = new ArrayList<String>();
 
     public static void main(String[] args) {
+        com.wac.autocore.data.Db.initTables();
+
         System.out.println("==================================================");
         System.out.println("    Wigell AutoCore - Automatiserade Enhetstester");
         System.out.println("==================================================");

@@ -26,6 +26,8 @@ public class AutoCoreApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        com.wac.autocore.data.Db.initTables();
+
         BorderPane stage = new BorderPane();
         stage.setPadding(Insets.EMPTY);
         stage.getStyleClass().addAll("root", "stage");
@@ -39,7 +41,7 @@ public class AutoCoreApp extends Application {
         ScrollPane scroll = new ScrollPane(pageBox);
         scroll.setFitToWidth(true);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
         // Initiera navigering och sidhanterare med SidebarView
         PageRouter router = new PageRouter(garage, pageBox);
