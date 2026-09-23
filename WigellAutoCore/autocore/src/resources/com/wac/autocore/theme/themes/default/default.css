@@ -109,14 +109,39 @@
     -fx-spacing: 14;
 }
 
-/* ---- Table column headers left-aligned ---- */
+/* ---- Table column headers: mörkgrå list med vit text ---- */
+.table-view .column-header-background,
+TableView .column-header-background {
+    -fx-background-color: #282d2b;
+    -fx-background-radius: 4 4 0 0;
+}
+.table-view .filler,
+TableView .filler {
+    -fx-background-color: #282d2b;
+    -fx-border-color: transparent;
+}
 .table-view .column-header,
 TableView .column-header {
+    -fx-background-color: #282d2b;
+    -fx-border-color: transparent #3d4642 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 8 8;
     -fx-alignment: CENTER_LEFT;
+}
+.table-view .column-header:hover,
+TableView .column-header:hover {
+    -fx-background-color: #353c39;
 }
 .table-view .column-header .label,
 TableView .column-header .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
     -fx-alignment: CENTER_LEFT;
+}
+.table-view .column-header .arrow,
+TableView .column-header .arrow {
+    -fx-background-color: #ffffff;
 }
 
 /* ---- Sök-dropdown ---- */
