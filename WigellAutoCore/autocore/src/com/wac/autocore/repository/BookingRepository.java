@@ -1,0 +1,142 @@
+package com.wac.autocore.repository;
+
+import com.wac.autocore.data.Db;
+import com.wac.autocore.model.Booking;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BookingRepository {
+
+    public void save(Booking booking) throws SQLException {
+        if (booking.getId() == 0 || findById(booking.getId()) == null) {
+            insert(booking);
+        } else {
+            update(booking);
+        }
+    }
+
+    public List<Booking> findAll() throws SQLException {
+        List<Booking> bookings = new ArrayList<Booking>();
+        String sql = "SELECT id, vehicle_id, date, description, status FROM bookings";
+
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                bookings.add(buildBooking(resultSet));
+            }
+        }
+
+        return bookings;
+    }
+
+    public Booking findById(int id) throws SQLException {
+        String sql = "SELECT id, vehicle_id, date, description, status FROM bookings WHERE id = ?";
+
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return buildBooking(resultSet);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public void delete(int id) throws SQLException {
+        String sql = "DELETE FROM bookings WHERE id = ?";
+
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+            statement.executeUpdate();
+        }
+    }
+
+    private void insert(Booking booking) throws SQLException {
+        String sql = "INSERT INTO bookings (vehicle_id, start_time, end_time, mechanic_id, service_item_id, "
+                + "date, description, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            statement.setInt(1, booking.getVehicleId());
+            setTimeSlots(statement, booking);
+            setDate(statement, 6, booking.getDate());
+            statement.setString(7, booking.getDescription());
+            statement.setString(8, booking.getStatus());
+            statement.executeUpdate();
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    booking.setId(generatedKeys.getInt(1));
+                }
+            }
+        }
+    }
+
+    private void update(Booking booking) throws SQLException {
+        String sql = "UPDATE bookings SET vehicle_id = ?, start_time = ?, end_time = ?, mechanic_id = ?, "
+                + "service_item_id = ?, date = ?, description = ?, status = ? WHERE id = ?";
+
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, booking.getVehicleId());
+            setTimeSlots(statement, booking);
+            setDate(statement, 6, booking.getDate());
+            statement.setString(7, booking.getDescription());
+            statement.setString(8, booking.getStatus());
+            statement.setInt(9, booking.getId());
+            statement.executeUpdate();
+        }
+    }
+
+    private void setTimeSlots(PreparedStatement statement, Booking booking) throws SQLException {
+        statement.setNull(2, Types.VARCHAR);
+        statement.setNull(3, Types.VARCHAR);
+        statement.setNull(4, Types.INTEGER);
+        statement.setNull(5, Types.INTEGER);
+    }
+
+    private void setDate(PreparedStatement statement, int position, LocalDate date) throws SQLException {
+        if (date == null) {
+            statement.setNull(position, Types.VARCHAR);
+        } else {
+            statement.setString(position, date.toString());
+        }
+    }
+
+    private Booking buildBooking(ResultSet resultSet) throws SQLException {
+        String dateText = resultSet.getString("date");
+
+        Booking booking = new Booking(
+                resultSet.getInt("id"),
+                resultSet.getInt("vehicle_id"),
+                dateText == null ? null : LocalDate.parse(dateText),
+                resultSet.getString("description")
+        );
+
+        String status = resultSet.getString("status");
+        if (status != null) {
+            booking.setStatus(status);
+        }
+
+        return booking;
+    }
+}

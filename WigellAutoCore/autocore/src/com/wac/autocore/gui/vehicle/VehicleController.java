@@ -1,6 +1,5 @@
 package com.wac.autocore.gui.vehicle;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
 import javafx.collections.FXCollections;
@@ -89,7 +88,7 @@ public class VehicleController {
         vehicleModelColumn.setCellValueFactory(new PropertyValueFactory<>("model"));
         vehicleYearColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
         vehicleCustomerIdColumn.setCellValueFactory(new PropertyValueFactory<>("customerId"));
-        List<Vehicle> vehicleList = Database.getVehicles();
+        List<Vehicle> vehicleList = garageSystem.getVehicles();
 
         if (vehicleList.isEmpty()) {
             vehicleTableView.setPlaceholder(new Label("Hittade inga fordon"));

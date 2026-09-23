@@ -14,6 +14,12 @@ bin/
 target/
 *.class
 
+# Lokal databas, skapas av appen och ska inte versionshanteras.
+# Snedstrecket först ankrar regeln till repo-roten, annars träffar den
+# även källkodsmappen com/wac/autocore/data/ och då försvinner nya filer där.
+/data/
+*.db
+
 # Archives & Temporary files
 *.zip
 *.pdf

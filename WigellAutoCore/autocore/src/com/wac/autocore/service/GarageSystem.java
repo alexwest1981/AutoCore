@@ -1,6 +1,5 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
@@ -9,7 +8,10 @@ import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.repository.MechanicRepository;
+import com.wac.autocore.repository.ServiceItemRepository;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -29,11 +31,21 @@ public class GarageSystem {
     }
 
     public List<ServiceItem> getServiceItems() {
-        return Collections.unmodifiableList(Database.getServiceItems());
+        try {
+            return serviceItemRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read service items: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public List<Mechanic> getMechanics() {
-        return Collections.unmodifiableList(Database.getMechanics());
+        try {
+            return mechanicRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read mechanics: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public List<WorkOrder> getWorkOrders() {
@@ -55,37 +67,39 @@ public class GarageSystem {
     private final BookingService bookingService = new BookingService();
     private final BillingService billingService = new BillingService();
     private final PaymentService paymentService = new PaymentService();
+    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final MechanicRepository mechanicRepository = new MechanicRepository();
 
     public void showCustomers() {
-        printer.printCustomers(Database.getCustomers());
+        printer.printCustomers(customerService.getAll());
     }
 
     public void showVehicles() {
-        printer.printVehicles(Database.getVehicles());
+        printer.printVehicles(vehicleService.getAll());
     }
 
     public void showBookings() {
-        printer.printBookings(Database.getBookings());
+        printer.printBookings(bookingService.getAll());
     }
 
     public void showServiceItems() {
-        printer.printServiceItems(Database.getServiceItems());
+        printer.printServiceItems(getServiceItems());
     }
 
     public void showMechanics() {
-        printer.printMechanics(Database.getMechanics());
+        printer.printMechanics(getMechanics());
     }
 
     public void showWorkOrders() {
-        printer.printWorkOrders(Database.getWorkOrders());
+        printer.printWorkOrders(workOrderService.getAll());
     }
 
     public void showInvoices() {
-        printer.printInvoices(Database.getInvoices());
+        printer.printInvoices(billingService.getAll());
     }
 
     public void showPayments() {
-        printer.printPayments(Database.getPayments());
+        printer.printPayments(paymentService.getAll());
     }
 
     public Customer createCustomer(String name, String phone, String email) {

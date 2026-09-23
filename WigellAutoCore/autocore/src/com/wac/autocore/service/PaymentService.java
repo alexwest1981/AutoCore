@@ -1,9 +1,11 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Payment;
+import com.wac.autocore.repository.InvoiceRepository;
+import com.wac.autocore.repository.PaymentRepository;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,23 +14,31 @@ import java.util.List;
  *
  * Ansvarar för:
  * - Validering av fakturastatus (att fakturan finns och är obetald)
- * - Behandling av betalning via olika betalsätt (förberett för Strategy Pattern / PaymentMethod)
+ * - Behandling av betalning via olika betalsätt
  * - Uppdatering av fakturans status till betald (paid = true)
  * - Registrering i betalningsjournalen
  */
 public class PaymentService {
 
+    private final PaymentRepository paymentRepository = new PaymentRepository();
+    private final InvoiceRepository invoiceRepository = new InvoiceRepository();
+
     public List<Payment> getAll() {
-        return Collections.unmodifiableList(Database.getPayments());
+        try {
+            return paymentRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read payments: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public Payment findById(int id) {
-        for (Payment payment : Database.getPayments()) {
-            if (payment.getId() == id) {
-                return payment;
-            }
+        try {
+            return paymentRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read payment " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     public Payment processPayment(int invoiceId, String paymentType) {
@@ -43,13 +53,7 @@ public class PaymentService {
             return null;
         }
 
-        int id = Database.getPayments().size() + 1;
-        Payment payment = new Payment(
-                id,
-                invoiceId,
-                invoice.getTotalAmount(),
-                paymentType
-        );
+        Payment payment = new Payment(0, invoiceId, invoice.getTotalAmount(), paymentType);
 
         boolean successful = false;
 
@@ -69,10 +73,23 @@ public class PaymentService {
         }
 
         payment.setSuccessful(successful);
-        Database.getPayments().add(payment);
+
+        try {
+            paymentRepository.save(payment);
+        } catch (SQLException e) {
+            System.out.println("Could not save payment: " + e.getMessage());
+            return null;
+        }
 
         if (successful) {
             invoice.setPaid(true);
+
+            try {
+                invoiceRepository.save(invoice);
+            } catch (SQLException e) {
+                System.out.println("Could not update invoice " + invoiceId + ": " + e.getMessage());
+            }
+
             System.out.println("Payment completed successfully.");
             System.out.println("Sending payment confirmation to customer...");
             System.out.println("Confirmation sent.");
@@ -84,11 +101,11 @@ public class PaymentService {
     }
 
     private Invoice findInvoice(int id) {
-        for (Invoice invoice : Database.getInvoices()) {
-            if (invoice.getId() == id) {
-                return invoice;
-            }
+        try {
+            return invoiceRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read invoice " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 }

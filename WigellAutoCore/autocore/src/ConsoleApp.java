@@ -1,4 +1,5 @@
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.service.GarageSystem;
 
 import java.time.LocalDate;
@@ -11,6 +12,8 @@ public class ConsoleApp {
     private static final GarageSystem garageSystem = new GarageSystem();
 
     public static void main(String[] args) {
+
+        Db.initTables();
 
         boolean running = true;
 
