@@ -28,7 +28,11 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
+import javafx.scene.shape.SVGPath;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -350,7 +354,44 @@ public class MechanicKanbanCard {
         HBox toggleGroup = new HBox(2, dayBtn, weekBtn, monthBtn);
         toggleGroup.getStyleClass().add("kanban-toggle-group-compact");
 
-        HBox topRow = new HBox(8, mechTitle, spacer, toggleGroup);
+        Button optionsBtn = new Button();
+        optionsBtn.getStyleClass().addAll("kanban-options-btn", "ghost", "small");
+        optionsBtn.setTooltip(new Tooltip(I18n.get("kanban.card.options")));
+
+        SVGPath dotsIcon = new SVGPath();
+        dotsIcon.setContent("M 2 3.2 a 1.2 1.2 0 1 1 0 -2.4 a 1.2 1.2 0 0 1 0 2.4 z M 2 7.2 a 1.2 1.2 0 1 1 0 -2.4 a 1.2 1.2 0 0 1 0 2.4 z M 2 11.2 a 1.2 1.2 0 1 1 0 -2.4 a 1.2 1.2 0 0 1 0 2.4 z");
+        dotsIcon.setFill(javafx.scene.paint.Color.web("#59635e"));
+        dotsIcon.getStyleClass().add("kanban-options-icon");
+        optionsBtn.setGraphic(dotsIcon);
+
+        ContextMenu optionsMenu = new ContextMenu();
+        MenuItem editItem = new MenuItem(I18n.get("kanban.card.edit_mech"));
+        editItem.setOnAction(e -> javafx.application.Platform.runLater(() ->
+                ActionDialogs.showEditMechanicDialog(garage, mech, () -> {
+                    render();
+                    if (onRefresh != null) onRefresh.run();
+                })
+        ));
+
+        MenuItem deleteItem = new MenuItem(I18n.get("kanban.card.delete_mech"));
+        deleteItem.getStyleClass().add("menu-item-danger");
+        deleteItem.setOnAction(e -> javafx.application.Platform.runLater(() ->
+                ActionDialogs.showDeleteMechanicConfirmation(garage, mech, () -> {
+                    if (onRefresh != null) onRefresh.run();
+                })
+        ));
+
+        optionsMenu.getItems().addAll(editItem, new SeparatorMenuItem(), deleteItem);
+
+        optionsBtn.setOnAction(e -> {
+            if (optionsMenu.isShowing()) {
+                optionsMenu.hide();
+            } else {
+                optionsMenu.show(optionsBtn, javafx.geometry.Side.BOTTOM, 0, 4);
+            }
+        });
+
+        HBox topRow = new HBox(6, mechTitle, spacer, toggleGroup, optionsBtn);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         // Rad 2: Specialisering och tillgänglighetsbadge
@@ -460,8 +501,34 @@ public class MechanicKanbanCard {
         List<TimeSlot> slots = schedule.getSlotsForDay(mech.getId(), selectedDate);
 
         VBox slotList = new VBox(4);
+        int bookedCount = 0;
         for (TimeSlot slot : slots) {
+            if (slot.isBooked()) {
+                bookedCount++;
+            }
             slotList.getChildren().add(buildCompactTimeSlotRow(mech, slot));
+        }
+
+        if (bookedCount == 0) {
+            LocalDate nextDate = schedule.getNextBookingDate(mech.getId(), selectedDate);
+            if (nextDate != null) {
+                String nextDayStr = nextDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, locale);
+                nextDayStr = nextDayStr.substring(0, 1).toUpperCase(locale) + nextDayStr.substring(1);
+                String nextDateFormatted = nextDate.format(DateTimeFormatter.ofPattern("d MMM", locale));
+                String fullNextStr = nextDayStr + " " + nextDateFormatted;
+
+                Button jumpBtn = new Button("📅 " + I18n.get("kanban.card.next_booking", fullNextStr));
+                jumpBtn.getStyleClass().addAll("ghost", "small");
+                jumpBtn.setStyle("-fx-font-size: 11px; -fx-padding: 3px 6px; -fx-text-fill: -wac-accent; -fx-cursor: hand;");
+                jumpBtn.setOnAction(e -> {
+                    selectedDate = nextDate;
+                    renderBody();
+                });
+                HBox jumpBox = new HBox(jumpBtn);
+                jumpBox.setAlignment(Pos.CENTER);
+                jumpBox.setPadding(new Insets(2, 0, 0, 0));
+                slotList.getChildren().add(jumpBox);
+            }
         }
 
         return new VBox(6, navBar, slotList);

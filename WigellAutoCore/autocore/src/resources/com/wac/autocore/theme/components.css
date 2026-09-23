@@ -1195,6 +1195,52 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-padding: 0 4px 0 0;
 }
 
+.kanban-options-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 2px 4px;
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+}
+.kanban-options-btn:hover {
+    -fx-background-color: -wac-line;
+}
+.kanban-options-icon {
+    -fx-fill: #59635e;
+}
+.kanban-options-btn:hover .kanban-options-icon {
+    -fx-fill: -wac-text;
+}
+
+.context-menu {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 3);
+}
+.context-menu .menu-item {
+    -fx-padding: 6px 12px;
+    -fx-background-radius: 4;
+}
+.context-menu .menu-item .label {
+    -fx-text-fill: -wac-text;
+    -fx-font-size: 12px;
+}
+.context-menu .menu-item:focused,
+.context-menu .menu-item:hover {
+    -fx-background-color: -wac-surface;
+}
+.context-menu .menu-item-danger .label {
+    -fx-text-fill: -wac-danger;
+}
+.context-menu .menu-item-danger:focused,
+.context-menu .menu-item-danger:hover {
+    -fx-background-color: -wac-danger-soft;
+}
+
 .kanban-date-title-compact {
     -fx-font-size: 11px;
     -fx-font-weight: bold;

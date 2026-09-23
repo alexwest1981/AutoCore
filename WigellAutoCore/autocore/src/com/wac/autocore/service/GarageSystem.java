@@ -150,4 +150,23 @@ public class GarageSystem {
     public Payment processPayment(int invoiceId, String paymentType) {
         return paymentService.processPayment(invoiceId, paymentType);
     }
+
+    public void updateMechanic(Mechanic mechanic) throws SQLException {
+        mechanicRepository.save(mechanic);
+    }
+
+    public boolean canDeleteMechanic(int mechanicId) {
+        List<WorkOrder> orders = getWorkOrders();
+        for (WorkOrder wo : orders) {
+            if (wo.getMechanicId() == mechanicId && !"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void deleteMechanic(int mechanicId) throws SQLException {
+        mechanicRepository.delete(mechanicId);
+        MechanicSchedule.getInstance().removeSlotsForMechanic(mechanicId);
+    }
 }

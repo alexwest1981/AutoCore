@@ -223,6 +223,18 @@
         "header": "Registrera ny mekaniker",
         "desc": "Lägg till en ny mekaniker i verkstadens team."
       },
+      "edit": {
+        "title": "Redigera mekaniker",
+        "header": "Uppdatera mekanikeruppgifter",
+        "desc": "Ändra information eller tillgänglighet för mekanikern."
+      },
+      "delete": {
+        "title": "Ta bort mekaniker",
+        "header": "Bekräfta borttagning",
+        "confirm": "Är du säker på att du vill ta bort {0}? Alla schemalagda tidsluckor försvinner.",
+        "has_active_orders": "Kan inte ta bort {0} eftersom mekanikern har aktiva eller tilldelade arbetsordrar."
+      },
+      "available": "Tillgänglig för bokningar",
       "spec_prompt": "T.ex. Däck & Hjul, Motor, AC",
       "default_spec": "Allmän service",
       "name_prompt": "T.ex. Anders Svensson",
@@ -398,6 +410,12 @@
       "empty": "Inga mekaniker matchar valt filter."
     },
     "empty_mechanics": "Inga mekaniker registrerade.",
-    "no_mechanic": "Ingen mekaniker"
+    "no_mechanic": "Ingen mekaniker",
+    "card": {
+      "options": "Alternativ",
+      "edit_mech": "Redigera mekaniker",
+      "delete_mech": "Ta bort mekaniker",
+      "next_booking": "Nästa bokning: {0} →"
+    }
   }
 }

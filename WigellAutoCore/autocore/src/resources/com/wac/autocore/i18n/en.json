@@ -223,6 +223,18 @@
         "header": "Register New Mechanic",
         "desc": "Add a new mechanic to the workshop team."
       },
+      "edit": {
+        "title": "Edit Mechanic",
+        "header": "Update Mechanic Details",
+        "desc": "Modify information or availability for the mechanic."
+      },
+      "delete": {
+        "title": "Delete Mechanic",
+        "header": "Confirm Deletion",
+        "confirm": "Are you sure you want to delete {0}? All scheduled time slots will be removed.",
+        "has_active_orders": "Cannot delete {0} because the mechanic has active or assigned work orders."
+      },
+      "available": "Available for bookings",
       "spec_prompt": "E.g. Tyres & Wheels, Engine, AC",
       "default_spec": "General service",
       "name_prompt": "E.g. Anders Svensson",
@@ -398,6 +410,12 @@
       "empty": "No mechanics match the selected filter."
     },
     "empty_mechanics": "No mechanics registered.",
-    "no_mechanic": "No mechanic"
+    "no_mechanic": "No mechanic",
+    "card": {
+      "options": "Options",
+      "edit_mech": "Edit mechanic",
+      "delete_mech": "Delete mechanic",
+      "next_booking": "Next booking: {0} →"
+    }
   }
 }

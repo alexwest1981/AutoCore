@@ -144,4 +144,22 @@ public class MechanicScheduleTest {
         TestRunner.assertNotNull(unavailStatus, "Dag 15 ska hittas i otillgänglig lista");
         TestRunner.assertFalse(unavailStatus.isAvailableForBooking(), "Mekaniker som är ej tillgänglig ska inte ha öppna dagar");
     }
+
+    public void testGetNextBookingDate() {
+        MechanicSchedule schedule = new MechanicSchedule();
+        schedule.resetForTest();
+
+        LocalDate d1 = LocalDate.of(2026, 9, 23);
+        LocalDate d2 = LocalDate.of(2026, 9, 25);
+
+        // Ingen bokning ännu
+        TestRunner.assertTrue(schedule.getNextBookingDate(1, d1) == null, "Ingen framtida bokning ska ge null");
+
+        // Boka 25:e
+        schedule.bookSlot(1, d2, 10, 999, "Test Person", "TST123", "Service");
+
+        LocalDate next = schedule.getNextBookingDate(1, d1);
+        TestRunner.assertNotNull(next, "Ska hitta nästa bokade dag");
+        TestRunner.assertEquals(d2, next, "Nästa bokade dag ska vara 2026-09-25");
+    }
 }
