@@ -14,7 +14,6 @@ public class PageRouter {
     private final GarageSystem garage;
     private final VBox pageBox;
     private SidebarView sidebar;
-    private TopNavView topNav;
 
     private FilterableTable<?> activeTable;
     private String currentPageKey;
@@ -38,10 +37,6 @@ public class PageRouter {
 
     public void setSidebar(SidebarView sidebar) {
         this.sidebar = sidebar;
-    }
-
-    public void setTopNav(TopNavView topNav) {
-        this.topNav = topNav;
     }
 
     public void setActiveTable(FilterableTable<?> table) {
@@ -110,9 +105,6 @@ public class PageRouter {
         }
         if (sidebar != null) {
             sidebar.setSelectedPage(key);
-        }
-        if (topNav != null) {
-            topNav.setSelectedPage(key);
         }
         activeTable = null;
         pageBox.getChildren().clear();

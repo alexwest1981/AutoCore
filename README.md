@@ -100,11 +100,9 @@ WigellAutoCore/autocore/
 * **100 % Nyckelparitet:** Både `sv.json` och `en.json` innehåller samtliga 396 språknycklar för menyer, dialoger, tabeller, statusar och felmeddelanden.
 * **Dynamisk formatering:** Datum formateras automatiskt på rätt språk (t.ex. *"Måndag 23 september 2026"* vs *"Monday 23 September 2026"*) och statusord mappas via `UiFormatters`.
 
-### TopBar & Granulär Global Sökning
-* **Inbyggd i `AutoCoreApp.java`:** Toppmenyn ligger direkt i applikationskoden för enkel hantering och kan stängas av med en enda rad kommentar (`// mainCol.setTop(buildTopBar(router));`).
-* **Sektionsindelad global sökvy (`SearchResultsView`):** När användaren söker i toppbarens sökfält söks hela systemet igenom (Kunder, Fordon, Arbetsordrar, Bokningar, Mekaniker, Fakturor och Tjänster).
-* **Granulära sektioner:** Träffarna delas in i tydliga sektionspaneler (t.ex. *Customers (2)*, *Vehicles (1)*, *Work Orders (3)*). Endast sektioner med aktiva träffar visas.
-* **Sömlöst flöde:** Söker du t.ex. "Anna" visas kunder/ordrar för Anna; ändrar du direkt till "Volvo" visas fordon och bokningar för Volvo utan att du behöver gå tillbaka till Overview. Tömmer du sökfältet återgår vyn automatiskt till din tidigare sida.
+### Ren Sidomenynavigering (SidebarView)
+* **Permanent Sidebar:** Navigeringen är uteslutande placerad i den vänstra sidomenyn med tydlig sektionsindelning, mjuka hover-effekter och integrerad språkväxlingsknapp.
+* **Granulär tabellsökning:** Samtliga entitetsvyer har integrerad filtrering och sökning via `TableFactory` med omedelbar filtrering över alla kolumner.
 
 ### Automatiserade tester & Audit (`com.wac.autocore.test`)
 Systemet skyddas av **50 automatiserade tester och kvalitetskontroller** som körs på under 1 sekund:

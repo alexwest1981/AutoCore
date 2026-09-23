@@ -86,9 +86,8 @@ Systemarkitektur/
         │       │   └── MechanicSchedule.java # Timme-för-timme schema & dubbelbokningsskydd
         │       │
         │       ├── theme/                    # Temamotor & stildefinitioner
-        │       │   ├── ThemeManager.java     # Hanterar aktivt tema, växling & CSS-laddning
-        │       │   ├── ThemeCatalog.java     # Katalog över appens officiella tema (Emerald)
-        │       │   └── ThemePickerApp.java   # Fristående app för granskning av designsystemet
+        │       │   ├── ThemeManager.java     # Hanterar aktivt tema och CSS-laddning
+        │       │   └── ThemeCatalog.java     # Katalog över appens officiella tema (Emerald)
         │       │
         │       ├── ui/                       # Presentationslager (JavaFX GUI & CLI)
         │       │   ├── AutoCoreApp.java      # Huvudfönster, layout och övergripande ramverk
@@ -97,13 +96,11 @@ Systemarkitektur/
         │       │   ├── components/           # Återanvändbara gränssnittskomponenter
         │       │   │   ├── UiComponents.java # Kort, badges, knappar och varningsrutor
         │       │   │   ├── TableFactory.java # Tabellbyggare med filter & zebramönster
-        │       │   │   ├── SearchDropdown.java# Kompakt filtreringsdropdown
         │       │   │   └── MechanicKanbanCard.java # Kanban-kort för mekanikerschema
         │       │   ├── i18n/                 # Flerspråksstöd
         │       │   │   └── I18n.java         # Dynamisk realtidsöversättningsmotor
         │       │   ├── navigation/           # Navigationsstruktur
         │       │   │   ├── SidebarView.java  # Luftig sidomeny med sektioner och språkknapp
-        │       │   │   ├── TopNavView.java   # Horisontell toppmeny
         │       │   │   └── PageRouter.java   # Sidrouter med händelselyssnare
         │       │   ├── util/                 # Gränssnittshjälpare
         │       │   │   ├── UiFormatters.java # Valuta, datum, statusord och badge-mappning
@@ -111,8 +108,7 @@ Systemarkitektur/
         │       │   │   └── GlobalSearch.java # Systemomfattande granulär sökning
         │       │   └── views/                # Sidspecifika vyer
         │       │       ├── OverviewView.java # Dashboard med KPI:er och snabböversikt
-        │       │       ├── EntityPages.java  # Vyer för Kunder, Fordon, Ordrar, etc.
-        │       │       └── SearchResultsView.java # Sektionsindelad sökresultatvy
+        │       │       └── EntityPages.java  # Vyer för Kunder, Fordon, Ordrar, etc.
         │       │
         │       └── test/                     # Komplett automatiserad test- och auditsvit
         │           ├── TestRunner.java       # Fristående testmotor (körs utan externa ramverk)

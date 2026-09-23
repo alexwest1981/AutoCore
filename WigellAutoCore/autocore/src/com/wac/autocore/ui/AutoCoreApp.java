@@ -49,8 +49,6 @@ public class AutoCoreApp extends Application {
         BorderPane mainCol = new BorderPane();
         mainCol.getStyleClass().add("col");
 
-        // Sökfältet / TopBar är tillfälligt bortkommenterat under Sprint 2
-        // mainCol.setTop(buildTopBar(router));
         mainCol.setCenter(scroll);
 
         // Sidebar används permanent enligt beställarens önskemål
@@ -68,34 +66,6 @@ public class AutoCoreApp extends Application {
 
         router.navigate("overview");
     }
-
-    /**
-     * TopBar med sökfält är tillfälligt bortkommenterat för Sprint 2.
-     */
-    /*
-    private VBox buildTopBar(PageRouter router) {
-        javafx.scene.control.TextField searchField = new javafx.scene.control.TextField();
-        searchField.getStyleClass().add("search");
-        searchField.setPromptText("Search work orders, customers or vehicles…");
-        searchField.setPrefWidth(320);
-        // Koppla interaktiv sök-dropdown som fälls ut direkt under sökfältet
-        com.wac.autocore.ui.components.SearchDropdown.attach(searchField, garage, router);
-
-        searchField.setOnAction(e -> {
-            if (router != null) {
-                router.smartNavigateForSearch(searchField.getText());
-            }
-        });
-
-        javafx.scene.layout.HBox topRow = new javafx.scene.layout.HBox(14, searchField);
-        topRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        topRow.getStyleClass().add("topbar");
-
-        VBox topBarContainer = new VBox(0, topRow);
-        topBarContainer.getStyleClass().add("topbar-container");
-        return topBarContainer;
-    }
-    */
 
     public static void main(String[] args) {
         launch(args);
