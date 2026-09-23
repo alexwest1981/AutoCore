@@ -504,7 +504,7 @@ public class MechanicKanbanCard {
             HBox.setHgrow(descLabel, Priority.ALWAYS);
 
             Label dot = new Label("●");
-            dot.setStyle("-fx-text-fill: #eab308; -fx-font-size: 10px;");
+            dot.setStyle("-fx-text-fill: #eab308; -fx-font-size: 11px;");
             dot.setMinWidth(Region.USE_PREF_SIZE);
 
             row.getChildren().addAll(timeBadge, regBadge, descLabel, dot);
@@ -518,8 +518,12 @@ public class MechanicKanbanCard {
             HBox.setHgrow(spr, Priority.ALWAYS);
 
             Button bookBtn = new Button("+");
-            bookBtn.getStyleClass().addAll("primary", "small", "kanban-slot-plus-btn");
-            bookBtn.setTooltip(new javafx.scene.control.Tooltip(I18n.get("kanban.action.book_hour")));
+            bookBtn.getStyleClass().addAll("primary", "kanban-slot-plus-btn");
+            String bookSlotText = I18n.get("kanban.action.book_hour") + " (" + slot.getHour() + ":00)";
+            bookBtn.setTooltip(new javafx.scene.control.Tooltip(bookSlotText));
+            bookBtn.setAccessibleRole(javafx.scene.AccessibleRole.BUTTON);
+            bookBtn.setAccessibleText(bookSlotText);
+            bookBtn.setAccessibleHelp(bookSlotText);
             bookBtn.setOnAction(e -> {
                 ActionDialogs.showCreateBookingDialog(garage, selectedDate, mech, slot.getHour(), () -> {
                     if (onRefresh != null) onRefresh.run();

@@ -211,10 +211,19 @@ public class WcagAccessibilityTest {
      * WCAG 1.4.4 Textstorlek / AAA: Verifierar att ingen text i temat understiger minimigränsen 11px.
      */
     public static void testWcagMinimumFontSize() {
+        java.util.List<String> sheets = new java.util.ArrayList<String>();
         for (ThemeCatalog.Theme t : ThemeCatalog.all()) {
-            InputStream in = WcagAccessibilityTest.class.getResourceAsStream(t.stylesheet);
+            sheets.add(t.stylesheet);
+        }
+        sheets.add("/com/wac/autocore/theme/components.css");
+
+        for (String stylesheet : sheets) {
+            InputStream in = WcagAccessibilityTest.class.getResourceAsStream(stylesheet);
             if (in == null) {
-                File f = new File("WigellAutoCore/autocore/src/resources" + t.stylesheet);
+                File f = new File("WigellAutoCore/autocore/src/resources" + stylesheet);
+                if (!f.exists()) {
+                    f = new File("WigellAutoCore/autocore/src" + stylesheet);
+                }
                 if (f.exists()) {
                     try {
                         in = new java.io.FileInputStream(f);
@@ -232,8 +241,8 @@ public class WcagAccessibilityTest {
                     while (m.find()) {
                         int size = Integer.parseInt(m.group(1));
                         TestRunner.assertTrue(size >= MIN_FONT_SIZE_PX,
-                                String.format("Tema '%s' innehåller textstorlek %dpx som understiger minimigränsen %dpx (WCAG AAA)",
-                                        t.name, size, MIN_FONT_SIZE_PX));
+                                String.format("Stilmallen '%s' innehåller textstorlek %dpx som understiger minimigränsen %dpx (WCAG AAA)",
+                                        stylesheet, size, MIN_FONT_SIZE_PX));
                     }
                 }
                 br.close();
