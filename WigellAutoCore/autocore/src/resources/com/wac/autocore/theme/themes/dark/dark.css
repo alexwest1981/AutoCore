@@ -163,11 +163,28 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-padding: 9px 14px;
     -fx-font-size: 13px;
     -fx-alignment: CENTER_LEFT;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 4px;
+    -fx-border-radius: 4 8 8 4;
 }
 .nav-item:hover { -fx-background-color: -wac-side-hover; }
 .nav-item.selected {
     -fx-background-color: -wac-accent;
     -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent transparent transparent -wac-accent2;
+    -fx-border-width: 0 0 0 4px;
+}
+.nav-group-head {
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3px;
+}
+.nav-group-head.active-group {
+    -fx-border-color: transparent transparent transparent -wac-accent2;
+    -fx-border-width: 0 0 0 3px;
+}
+.nav-group-head.active-group .side-label, .side-label.active-group {
+    -fx-text-fill: -wac-accent2;
     -fx-font-weight: bold;
 }
 

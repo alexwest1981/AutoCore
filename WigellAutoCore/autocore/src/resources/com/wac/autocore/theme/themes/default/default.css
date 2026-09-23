@@ -40,7 +40,25 @@
 }
 
 /* ---- Active sidebar nav button (SCRUM-73) ---- */
+.nav-item {
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 4px;
+}
 .nav-item.selected {
+    -fx-font-weight: bold;
+    -fx-border-color: transparent transparent transparent -fx-accent;
+    -fx-border-width: 0 0 0 4px;
+}
+.nav-group-head {
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3px;
+}
+.nav-group-head.active-group {
+    -fx-border-color: transparent transparent transparent -fx-accent;
+    -fx-border-width: 0 0 0 3px;
+}
+.nav-group-head.active-group .side-label, .side-label.active-group {
+    -fx-text-fill: -fx-accent;
     -fx-font-weight: bold;
 }
 

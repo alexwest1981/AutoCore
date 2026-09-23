@@ -543,11 +543,14 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
 }
 .side-link, .side-overview, .side-current, .fleet-nav, .nav-item {
     -fx-background-color: transparent;
-    -fx-background-radius: 10;
+    -fx-background-radius: 8;
     -fx-text-fill: -wac-side-text;
-    -fx-padding: 9 12;
+    -fx-padding: 9 12 9 14;
     -fx-cursor: hand;
     -fx-alignment: CENTER_LEFT;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 4px;
+    -fx-border-radius: 4 8 8 4;
 }
 .side-link:hover, .side-overview:hover, .fleet-nav:hover, .nav-item:hover {
     -fx-background-color: -wac-side-hover;
@@ -555,6 +558,9 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
 .side-current, .fleet-nav-active, .nav-item.selected {
     -fx-background-color: -wac-accent;
     -fx-text-fill: -wac-on-accent;
+    -fx-border-color: transparent transparent transparent -wac-accent2;
+    -fx-border-width: 0 0 0 4px;
+    -fx-font-weight: bold;
 }
 .nav-group-title, .side-label, .nav-group-head {
     -fx-text-fill: -wac-side-muted;
@@ -564,9 +570,19 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
 .nav-group-head {
     -fx-padding: 10 12 4 14;
     -fx-cursor: hand;
-    -fx-background-radius: 8;
+    -fx-background-radius: 6;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3px;
 }
 .nav-group-head:hover { -fx-background-color: -wac-side-hover; }
+.nav-group-head.active-group {
+    -fx-border-color: transparent transparent transparent -wac-accent2;
+    -fx-border-width: 0 0 0 3px;
+}
+.nav-group-head.active-group .side-label, .side-label.active-group {
+    -fx-text-fill: -wac-accent2;
+    -fx-font-weight: bold;
+}
 
 /* ============================================================
    10. SKUGGOR OCH SEKTIONSRUBRIKER
