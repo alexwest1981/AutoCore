@@ -1,6 +1,5 @@
 package com.wac.autocore.gui.booking;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.service.GarageSystem;
 import javafx.fxml.FXML;
@@ -72,7 +71,7 @@ public class BookingController {
             }
         });
 
-        bookingTable.getItems().addAll(Database.getBookings());
+        bookingTable.getItems().addAll(garageSystem.getBookings());
     }
 
     @FXML

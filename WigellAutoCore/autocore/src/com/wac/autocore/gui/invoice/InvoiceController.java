@@ -1,6 +1,5 @@
 package com.wac.autocore.gui.invoice;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.service.GarageSystem;
 import javafx.fxml.FXML;
@@ -109,7 +108,7 @@ public class InvoiceController {
         });
 
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("paid"));
-        invoiceTable.getItems().addAll(Database.getInvoices());
+        invoiceTable.getItems().addAll(garageSystem.getInvoices());
     }
 
     public void refreshTable() {

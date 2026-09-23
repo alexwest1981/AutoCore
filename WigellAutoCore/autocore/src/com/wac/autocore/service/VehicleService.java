@@ -1,9 +1,10 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.repository.VehicleRepository;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,13 +13,14 @@ import java.util.List;
  *
  * Ansvarar för:
  * - Validering av fordonets ägare (att kund existerar)
- * - Skapande och ID-generering för nya fordon
+ * - Skapande av nya fordon
  * - Uppslag av fordon baserat på ID
- * - Tillhandahållande av oföränderlig vy över fordonsregistret
+ * - Tillhandahållande av vy över fordonsregistret
  */
 public class VehicleService {
 
     private final CustomerService customerService;
+    private final VehicleRepository vehicleRepository = new VehicleRepository();
 
     public VehicleService() {
         this(new CustomerService());
@@ -29,16 +31,21 @@ public class VehicleService {
     }
 
     public List<Vehicle> getAll() {
-        return Collections.unmodifiableList(Database.getVehicles());
+        try {
+            return vehicleRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read vehicles: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public Vehicle findById(int id) {
-        for (Vehicle vehicle : Database.getVehicles()) {
-            if (vehicle.getId() == id) {
-                return vehicle;
-            }
+        try {
+            return vehicleRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read vehicle " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     public Vehicle createVehicle(String registrationNumber,
@@ -54,18 +61,14 @@ public class VehicleService {
             return null;
         }
 
-        int id = Database.getVehicles().size() + 1;
+        Vehicle vehicle = new Vehicle(0, registrationNumber, brand, model, year, customerId);
 
-        Vehicle vehicle = new Vehicle(
-                id,
-                registrationNumber,
-                brand,
-                model,
-                year,
-                customerId
-        );
-
-        Database.getVehicles().add(vehicle);
+        try {
+            vehicleRepository.save(vehicle);
+        } catch (SQLException e) {
+            System.out.println("Could not save vehicle: " + e.getMessage());
+            return null;
+        }
 
         System.out.println("Vehicle created successfully.");
         System.out.println(vehicle);

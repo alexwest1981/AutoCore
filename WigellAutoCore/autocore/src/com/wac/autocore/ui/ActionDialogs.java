@@ -6,8 +6,8 @@ import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.repository.MechanicRepository;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
@@ -27,6 +27,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,8 @@ import java.util.List;
 public final class ActionDialogs {
 
     private ActionDialogs() {}
+
+    private static final MechanicRepository mechanicRepository = new MechanicRepository();
 
     private static void styleDialog(Dialog<?> dialog) {
         DialogPane pane = dialog.getDialogPane();
@@ -533,9 +536,15 @@ public final class ActionDialogs {
                     return;
                 }
 
-                int id = Database.getMechanics().size() + 1;
-                Mechanic mechanic = new Mechanic(id, name, phone, spec.isEmpty() ? I18n.get("dialog.mechanic.default_spec") : spec);
-                Database.getMechanics().add(mechanic);
+                Mechanic mechanic = new Mechanic(0, name, phone, spec.isEmpty() ? I18n.get("dialog.mechanic.default_spec") : spec);
+
+                try {
+                    mechanicRepository.save(mechanic);
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
+
                 if (onSuccess != null) onSuccess.run();
             }
         });

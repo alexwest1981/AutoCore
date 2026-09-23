@@ -1,13 +1,19 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.repository.BookingRepository;
+import com.wac.autocore.repository.CustomerRepository;
+import com.wac.autocore.repository.InvoiceRepository;
+import com.wac.autocore.repository.ServiceItemRepository;
+import com.wac.autocore.repository.VehicleRepository;
+import com.wac.autocore.repository.WorkOrderRepository;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -17,22 +23,34 @@ import java.util.List;
  *
  * Ansvarar för:
  * - Summering av priser för utförda tjänster på en slutförd arbetsorder
- * - Tillämpning av VIP-rabatt och kampanjkoder (förberett för Strategy Pattern)
+ * - Tillämpning av VIP-rabatt och kampanjkoder
  * - Skapande och registrering av fakturor
  */
 public class BillingService {
 
+    private final InvoiceRepository invoiceRepository = new InvoiceRepository();
+    private final WorkOrderRepository workOrderRepository = new WorkOrderRepository();
+    private final BookingRepository bookingRepository = new BookingRepository();
+    private final VehicleRepository vehicleRepository = new VehicleRepository();
+    private final CustomerRepository customerRepository = new CustomerRepository();
+    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+
     public List<Invoice> getAll() {
-        return Collections.unmodifiableList(Database.getInvoices());
+        try {
+            return invoiceRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read invoices: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public Invoice findById(int id) {
-        for (Invoice invoice : Database.getInvoices()) {
-            if (invoice.getId() == id) {
-                return invoice;
-            }
+        try {
+            return invoiceRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read invoice " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     public Invoice createInvoice(int workOrderId, String discountCode) {
@@ -84,11 +102,15 @@ public class BillingService {
             discount = amount;
         }
 
-        int id = Database.getInvoices().size() + 1;
-        Invoice invoice = new Invoice(id, workOrderId, LocalDate.now(), amount);
+        Invoice invoice = new Invoice(0, workOrderId, LocalDate.now(), amount);
         invoice.setDiscount(discount);
 
-        Database.getInvoices().add(invoice);
+        try {
+            invoiceRepository.save(invoice);
+        } catch (SQLException e) {
+            System.out.println("Could not save invoice: " + e.getMessage());
+            return null;
+        }
 
         System.out.println("Invoice created successfully.");
         System.out.println(invoice);
@@ -99,47 +121,47 @@ public class BillingService {
     }
 
     private WorkOrder findWorkOrder(int id) {
-        for (WorkOrder order : Database.getWorkOrders()) {
-            if (order.getId() == id) {
-                return order;
-            }
+        try {
+            return workOrderRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read work order " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     private Booking findBooking(int id) {
-        for (Booking booking : Database.getBookings()) {
-            if (booking.getId() == id) {
-                return booking;
-            }
+        try {
+            return bookingRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read booking " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     private Vehicle findVehicle(int id) {
-        for (Vehicle vehicle : Database.getVehicles()) {
-            if (vehicle.getId() == id) {
-                return vehicle;
-            }
+        try {
+            return vehicleRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read vehicle " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     private Customer findCustomer(int id) {
-        for (Customer customer : Database.getCustomers()) {
-            if (customer.getId() == id) {
-                return customer;
-            }
+        try {
+            return customerRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read customer " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     private ServiceItem findServiceItem(int id) {
-        for (ServiceItem item : Database.getServiceItems()) {
-            if (item.getId() == id) {
-                return item;
-            }
+        try {
+            return serviceItemRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read service item " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 }

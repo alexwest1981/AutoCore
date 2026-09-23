@@ -1,6 +1,5 @@
 package com.wac.autocore.gui.payment;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Payment;
 import com.wac.autocore.service.GarageSystem;
@@ -56,7 +55,7 @@ public class PaymentController {
         }
 
         Invoice invoice = null;
-        for (Invoice inv : Database.getInvoices()) {
+        for (Invoice inv : garageSystem.getInvoices()) {
             if (inv.getId() == invoiceId) {
                 invoice = inv;
                 break;
@@ -120,7 +119,7 @@ public class PaymentController {
         paymentDateColumn.setCellValueFactory(new PropertyValueFactory<>("paymentDate"));
         successfulColumn.setCellValueFactory(new PropertyValueFactory<>("successful"));
         paymentTypeComboBox.getItems().addAll("CARD", "SWISH", "CASH");
-        paymentTable.getItems().addAll(Database.getPayments());
+        paymentTable.getItems().addAll(garageSystem.getPayments());
     }
 
     public void refreshTable() {

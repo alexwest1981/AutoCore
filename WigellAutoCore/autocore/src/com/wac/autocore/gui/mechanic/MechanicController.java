@@ -1,7 +1,7 @@
 package com.wac.autocore.gui.mechanic;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Mechanic;
+import com.wac.autocore.service.GarageSystem;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -12,6 +12,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 public class MechanicController {
+
+    private final GarageSystem garageSystem = new GarageSystem();
 
     @FXML
     private TableView<Mechanic> mechanicTable;
@@ -57,7 +59,7 @@ public class MechanicController {
             }
         });
 
-        ObservableList<Mechanic> allMechanics = FXCollections.observableArrayList(Database.getMechanics());
+        ObservableList<Mechanic> allMechanics = FXCollections.observableArrayList(garageSystem.getMechanics());
         filteredMechanics = new FilteredList<>(allMechanics, mechanic -> true);
         mechanicTable.setItems(filteredMechanics);
 

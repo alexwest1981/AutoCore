@@ -1,6 +1,5 @@
 package com.wac.autocore.gui.workorder;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import javafx.fxml.FXML;
@@ -74,7 +73,7 @@ public class WorkOrderController {
             }
         });
 
-        workOrderTable.getItems().addAll(Database.getWorkOrders());
+        workOrderTable.getItems().addAll(garageSystem.getWorkOrders());
     }
 
     @FXML
@@ -168,7 +167,7 @@ public class WorkOrderController {
             return null;
         }
 
-        for (WorkOrder workOrder : Database.getWorkOrders()) {
+        for (WorkOrder workOrder : garageSystem.getWorkOrders()) {
             if (workOrder.getId() == workOrderId) {
                 return workOrder;
             }

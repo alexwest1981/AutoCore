@@ -1,11 +1,15 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.repository.BookingRepository;
+import com.wac.autocore.repository.MechanicRepository;
+import com.wac.autocore.repository.ServiceItemRepository;
+import com.wac.autocore.repository.WorkOrderRepository;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,17 +24,27 @@ import java.util.List;
  */
 public class WorkOrderService {
 
+    private final WorkOrderRepository workOrderRepository = new WorkOrderRepository();
+    private final BookingRepository bookingRepository = new BookingRepository();
+    private final MechanicRepository mechanicRepository = new MechanicRepository();
+    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+
     public List<WorkOrder> getAll() {
-        return Collections.unmodifiableList(Database.getWorkOrders());
+        try {
+            return workOrderRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read work orders: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public WorkOrder findById(int id) {
-        for (WorkOrder workOrder : Database.getWorkOrders()) {
-            if (workOrder.getId() == id) {
-                return workOrder;
-            }
+        try {
+            return workOrderRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read work order " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, int... serviceItemIds) {
@@ -58,15 +72,21 @@ public class WorkOrderService {
             }
         }
 
-        int id = Database.getWorkOrders().size() + 1;
-        WorkOrder workOrder = new WorkOrder(id, bookingId, mechanicId);
+        WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
 
         for (int serviceItemId : serviceItemIds) {
             workOrder.addServiceItem(serviceItemId);
         }
 
-        Database.getWorkOrders().add(workOrder);
+        try {
+            workOrderRepository.save(workOrder);
+        } catch (SQLException e) {
+            System.out.println("Could not save work order: " + e.getMessage());
+            return null;
+        }
+
         booking.setStatus("WORK_ORDER_CREATED");
+        saveBooking(booking);
 
         System.out.println("Work order created successfully.");
         System.out.println(workOrder);
@@ -91,13 +111,17 @@ public class WorkOrderService {
 
         if (mechanic != null) {
             mechanic.setAvailable(false);
+            saveMechanic(mechanic);
         }
 
         if (booking != null) {
             booking.setStatus("IN_PROGRESS");
+            saveBooking(booking);
         }
 
         workOrder.setStatus("IN_PROGRESS");
+        saveWorkOrder(workOrder);
+
         System.out.println("Work order " + workOrderId + " has been started.");
         return true;
     }
@@ -118,13 +142,16 @@ public class WorkOrderService {
         Booking booking = findBooking(workOrder.getBookingId());
 
         workOrder.setStatus("COMPLETED");
+        saveWorkOrder(workOrder);
 
         if (mechanic != null) {
             mechanic.setAvailable(true);
+            saveMechanic(mechanic);
         }
 
         if (booking != null) {
             booking.setStatus("COMPLETED");
+            saveBooking(booking);
         }
 
         System.out.println("Work order " + workOrderId + " has been completed.");
@@ -132,29 +159,53 @@ public class WorkOrderService {
     }
 
     private Booking findBooking(int id) {
-        for (Booking booking : Database.getBookings()) {
-            if (booking.getId() == id) {
-                return booking;
-            }
+        try {
+            return bookingRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read booking " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     private Mechanic findMechanic(int id) {
-        for (Mechanic mechanic : Database.getMechanics()) {
-            if (mechanic.getId() == id) {
-                return mechanic;
-            }
+        try {
+            return mechanicRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read mechanic " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     private ServiceItem findServiceItem(int id) {
-        for (ServiceItem item : Database.getServiceItems()) {
-            if (item.getId() == id) {
-                return item;
-            }
+        try {
+            return serviceItemRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read service item " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
+    }
+
+    private void saveBooking(Booking booking) {
+        try {
+            bookingRepository.save(booking);
+        } catch (SQLException e) {
+            System.out.println("Could not update booking " + booking.getId() + ": " + e.getMessage());
+        }
+    }
+
+    private void saveMechanic(Mechanic mechanic) {
+        try {
+            mechanicRepository.save(mechanic);
+        } catch (SQLException e) {
+            System.out.println("Could not update mechanic " + mechanic.getId() + ": " + e.getMessage());
+        }
+    }
+
+    private void saveWorkOrder(WorkOrder workOrder) {
+        try {
+            workOrderRepository.save(workOrder);
+        } catch (SQLException e) {
+            System.out.println("Could not update work order " + workOrder.getId() + ": " + e.getMessage());
+        }
     }
 }

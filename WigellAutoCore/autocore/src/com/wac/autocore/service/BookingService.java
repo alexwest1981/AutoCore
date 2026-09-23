@@ -1,9 +1,11 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.repository.BookingRepository;
+import com.wac.autocore.repository.VehicleRepository;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -18,17 +20,25 @@ import java.util.List;
  */
 public class BookingService {
 
+    private final BookingRepository bookingRepository = new BookingRepository();
+    private final VehicleRepository vehicleRepository = new VehicleRepository();
+
     public List<Booking> getAll() {
-        return Collections.unmodifiableList(Database.getBookings());
+        try {
+            return bookingRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read bookings: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public Booking findById(int id) {
-        for (Booking booking : Database.getBookings()) {
-            if (booking.getId() == id) {
-                return booking;
-            }
+        try {
+            return bookingRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read booking " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     public Booking createBooking(int vehicleId, LocalDate date, String description) {
@@ -38,10 +48,14 @@ public class BookingService {
             return null;
         }
 
-        int id = Database.getBookings().size() + 1;
-        Booking booking = new Booking(id, vehicleId, date, description);
+        Booking booking = new Booking(0, vehicleId, date, description);
 
-        Database.getBookings().add(booking);
+        try {
+            bookingRepository.save(booking);
+        } catch (SQLException e) {
+            System.out.println("Could not save booking: " + e.getMessage());
+            return null;
+        }
 
         System.out.println("Booking created successfully.");
         System.out.println(booking);
@@ -50,11 +64,11 @@ public class BookingService {
     }
 
     private Vehicle findVehicle(int id) {
-        for (Vehicle vehicle : Database.getVehicles()) {
-            if (vehicle.getId() == id) {
-                return vehicle;
-            }
+        try {
+            return vehicleRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read vehicle " + id + ": " + e.getMessage());
+            return null;
         }
-        return null;
     }
 }
