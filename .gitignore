@@ -5,6 +5,8 @@
 .project
 .classpath
 run.sh
+.mise.toml
+.mise.*.toml
 
 # Build output
 out/
