@@ -92,7 +92,7 @@ WigellAutoCore/autocore/
 └── resources/
     └── com/wac/autocore/
         ├── i18n/                     # Dictionaries (sv.json, en.json) med 100% paritet
-        └── theme/                    # CSS-designsystem & 8 teman (Emerald standard)
+        └── theme/                    # CSS-designsystem & officiellt tema (Emerald)
 ```
 
 ### Flerspråksstöd i realtid (SV / EN)
@@ -123,10 +123,10 @@ Systemet skyddas av **50 automatiserade tester och kvalitetskontroller** som kö
   - `./test.sh` för snabb enhetstestkörning.
 
 ### UI & Tillgänglighet (WCAG 2.1 AA)
-* **Zebramönstrade tabeller:** Varannan rad har dämpad kontrastfärg i samtliga teman för snabbare och behagligare läsning.
+* **Zebramönstrade tabeller:** Varannan rad har dämpad kontrastfärg för snabbare och behagligare läsning.
 * **Luftig och ren sidomeny:** Tydliga sektionsrubriker med 22 px avstånd och inga förvirrande dragspelsprickar.
 * **Naturlig textvisning i schemat:** Kanban-kortens tidsrader expanderar naturligt och klipper endast med `…` när texten når kanten.
-* **Färgteman:** 8 kompletta teman (`emerald` som standard, samt `dark`, `night`, `light`, `azure`, `classic`, `volt` och `default`).
+* **Färgtema (Emerald):** Designsystemet är låst till det officiella temat **`emerald`** med skarp grafitgrå list på tabeller och harmonisk färgpalett.
 * **Tangentbordsfokus (WCAG 2.4.7):** Tydliga `:focused`-stilar och fokusringar på alla interaktiva kontroller.
 
 ## Design & Styleguide

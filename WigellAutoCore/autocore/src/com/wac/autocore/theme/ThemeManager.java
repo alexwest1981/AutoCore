@@ -15,8 +15,7 @@ import javafx.scene.Parent;
  *     ThemeManager.applyDefault(scene);       // applies the default theme
  *     // or: ThemeManager.apply(scene, "slug");
  *
- * Available slugs: "default" (plain JavaFX), "light", "dark",
- *                  "azure", "classic", "emerald", "night", "volt".
+ * Available slugs: "emerald" (officiellt tema för Wigell AutoCore).
  *
  * The scene root should carry the style class "root" (add it once):
  *     root.getStyleClass().add("root");
@@ -89,28 +88,15 @@ public final class ThemeManager {
         if (theme == null) return;
 
         List<String> sheets = new ArrayList<String>();
-
-        if (DEFAULT_PLAIN_SLUG.equals(slug)) {
-            // "default" — skip components.css (which uses -wac-* colour tokens
-            // that Modena doesn't define) but do load the layout-only CSS so the
-            // sidebar, topbar and page canvas keep their correct spacing.
-            URL themeUrl = resolveResource(theme.stylesheet);
-            if (themeUrl != null) {
-                sheets.add(themeUrl.toExternalForm());
-            }
+        URL components = resolveResource(COMPONENTS);
+        if (components != null) {
+            sheets.add(components.toExternalForm());
+        }
+        URL themeUrl = resolveResource(theme.stylesheet);
+        if (themeUrl != null) {
+            sheets.add(themeUrl.toExternalForm());
         } else {
-            // All other themes: load the shared component layer first, then the
-            // theme-specific colour / token file on top.
-            URL components = resolveResource(COMPONENTS);
-            if (components != null) {
-                sheets.add(components.toExternalForm());
-            }
-            URL themeUrl = resolveResource(theme.stylesheet);
-            if (themeUrl != null) {
-                sheets.add(themeUrl.toExternalForm());
-            } else {
-                System.err.println("[ThemeManager] Warning: Could not find stylesheet for theme '" + slug + "': " + theme.stylesheet);
-            }
+            System.err.println("[ThemeManager] Warning: Could not find stylesheet for theme '" + currentSlug + "': " + theme.stylesheet);
         }
 
         // Apply all stylesheets atomically in a single operation so JavaFX doesn't

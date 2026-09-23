@@ -87,8 +87,8 @@ Systemarkitektur/
         │       │
         │       ├── theme/                    # Temamotor & stildefinitioner
         │       │   ├── ThemeManager.java     # Hanterar aktivt tema, växling & CSS-laddning
-        │       │   ├── ThemeCatalog.java     # Katalog över alla 8 färgteman
-        │       │   └── ThemePickerApp.java   # Fristående app för att testa teman
+        │       │   ├── ThemeCatalog.java     # Katalog över appens officiella tema (Emerald)
+        │       │   └── ThemePickerApp.java   # Fristående app för granskning av designsystemet
         │       │
         │       ├── ui/                       # Presentationslager (JavaFX GUI & CLI)
         │       │   ├── AutoCoreApp.java      # Huvudfönster, layout och övergripande ramverk
@@ -133,10 +133,9 @@ Systemarkitektur/
                 │   ├── sv.json               # Svensk språkordbok (396 nycklar)
                 │   └── en.json               # Engelsk språkordbok (396 nycklar)
                 └── theme/
-                    ├── dark.css / light.css  # Basstilar
-                    ├── emerald.css (standard)# Modernt mörkgrönt verkstadstema
-                    ├── night.css / azure.css # Alternativa mörka teman
-                    └── classic.css / volt.css# Högkontrastteman
+                    ├── components.css        # Återanvändbara komponent- och layoutstilar
+                    └── themes/emerald/
+                        └── emerald.css       # Officiellt tema: modernt mörkgrönt verkstadstema
 ```
 
 ---
@@ -254,7 +253,7 @@ Hela systemet kvalitetssäkras med det automatiska verifieringsskriptet `./check
    - `MechanicScheduleTest` (5 tester): Timme-för-timme slots, färgprogression och skydd mot dubbelbokningar.
 2. **Modul 2: Kodkvalitet & Arkitektur (4 kontroller – 100% godkända)**
    - Språkordböckernas integritet och 100% nyckelparitet (396 nycklar).
-   - Temaintegritet för alla 8 teman i `ThemeCatalog`.
+   - Temaintegritet för det officiella temat i `ThemeCatalog`.
    - Frikoppling av servicelager från GUI-beroenden.
    - Maxgränser för källkodsfilers komplexitet samt 0 aktiva TODO/FIXME-noteringar.
 3. **Modul 3: Säkerhetsgranskning (4 kontroller – 100% godkända)**
