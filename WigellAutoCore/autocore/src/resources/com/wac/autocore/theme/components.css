@@ -38,6 +38,7 @@
     -wac-danger-soft:              #450a0a;
     -wac-drift:                    #27272a;
     -wac-drift-text:               #e4e4e7;
+    -wac-row-alt:                  #26262a;
     -wac-drift-muted:              #71717a;
     -wac-drift-track:              #3f3f46;
     -wac-bg:                       #111113;
@@ -369,8 +370,16 @@
     -fx-border-width: 0 0 1 0;
     -fx-padding: 9 6;
 }
-.orders-table .table-row-cell {
+.orders-table .table-row-cell:filled:even {
     -fx-background-color: transparent;
+}
+.orders-table .table-row-cell:filled:odd {
+    -fx-background-color: -wac-row-alt;
+}
+.orders-table .table-row-cell:filled:hover,
+.orders-table .table-row-cell:filled:odd:hover,
+.orders-table .table-row-cell:filled:even:hover {
+    -fx-background-color: -wac-side-hover;
 }
 .orders-table .table-row-cell .table-cell-split { -fx-background-color: transparent; }
 .orders-table .table-row-cell:selected .table-cell { -fx-text-fill: -wac-on-accent; }
@@ -398,7 +407,16 @@ TableView .column-header .label,
 /* BUGG 2 — OSYNLIG MARKERAD RAD (gäller alla teman):
  * Modenas egna selektorer för table-cell skriver vid selektion över
  * -wac-text med sin inbyggda vit/svart-färg. */
-TableView .table-cell { -fx-text-fill: -wac-text; }
+TableColumn, TableView .table-cell { -fx-text-fill: -wac-text; }
+TableView .table-row-cell:filled:even { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:odd { -fx-background-color: -wac-row-alt; }
+TableView .table-row-cell:filled:hover,
+TableView .table-row-cell:filled:odd:hover,
+TableView .table-row-cell:filled:even:hover { -fx-background-color: -wac-side-hover; }
+TableView .table-row-cell:selected,
+TableView .table-row-cell:filled:selected,
+TableView .table-row-cell:filled:odd:selected,
+TableView .table-row-cell:filled:even:selected { -fx-background-color: -wac-accent-soft; }
 TableView .table-row-cell:selected .table-cell { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }
 TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }
 
