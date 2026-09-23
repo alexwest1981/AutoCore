@@ -13,7 +13,7 @@ public class ConsoleApp {
 
     public static void main(String[] args) {
 
-        Db.initTables();
+        Db.ensureReady();
 
         boolean running = true;
 

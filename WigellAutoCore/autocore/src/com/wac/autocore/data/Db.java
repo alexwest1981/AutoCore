@@ -13,12 +13,23 @@ public class Db {
 
     private static final String DATABASE_PATH = "data/autocore.db";
 
+    private static boolean ready = false;
+
     public static Connection getConnection() throws SQLException {
         File dataDirectory = new File("data");
         if (!dataDirectory.exists()) {
             dataDirectory.mkdirs();
         }
         return DriverManager.getConnection("jdbc:sqlite:" + DATABASE_PATH);
+    }
+
+    public static void ensureReady() {
+        if (ready) {
+            return;
+        }
+        ready = true;
+        initTables();
+        SeedData.seedIfEmpty();
     }
 
     public static void initTables() {
