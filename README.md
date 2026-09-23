@@ -56,12 +56,13 @@ git pull origin develop
   - **Mekaniker:** `com.wac.autocore.gui.mechanic.TestMechanicApp`
   - **Tjänster:** `com.wac.autocore.gui.serviceItem.TestServiceItemApp`
 
-> **Kör du från IntelliJ och får `No suitable driver found for jdbc:sqlite`?**
-> Då saknar IDE-projektet databasdrivrutinen. Lägg till
-> `WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar` en gång:
+> **Får du `No suitable driver found for jdbc:sqlite`?**
+> Databasdrivrutinen ligger som ett projektberoende i `.idea/libraries/`, så den följer med i giten.
+> Felet betyder i så fall att din IntelliJ kör med en gammal projektmodell: välj
+> **File → Reload All from Disk**, eller stäng och öppna projektet igen.
+> Går det ändå inte, lägg till `WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar` manuellt via
 > **File → Project Structure → Modules → Dependencies → `+` → JARs or directories**.
-> Posten hamnar i din lokala `.iml`-fil, som inte versionshanteras, så den behöver göras en gång per
-> dator. `./start.sh` behöver den inte.
+> `./start.sh` behöver inget av detta.
 
 ## Arkitektur & Modularisering
 
