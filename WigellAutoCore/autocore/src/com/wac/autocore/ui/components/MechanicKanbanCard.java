@@ -20,6 +20,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -385,6 +386,7 @@ public class MechanicKanbanCard {
     private Node buildCompactTimeSlotRow(Mechanic mech, TimeSlot slot) {
         Label timeBadge = new Label(String.format("%02d:00", slot.getHour()));
         timeBadge.getStyleClass().add("kanban-time-badge-compact");
+        timeBadge.setMinWidth(Region.USE_PREF_SIZE);
 
         HBox row = new HBox(6);
         row.setAlignment(Pos.CENTER_LEFT);
@@ -405,19 +407,23 @@ public class MechanicKanbanCard {
 
             Label regBadge = new Label(slot.getVehicleReg() != null ? slot.getVehicleReg() : I18n.get("kanban.slot.booked"));
             regBadge.getStyleClass().addAll("badge", "info", "small");
+            regBadge.setMinWidth(Region.USE_PREF_SIZE);
 
             String desc = slot.getDescription() != null ? slot.getDescription() : I18n.get("table.col.service");
-            if (desc.length() > 18) desc = desc.substring(0, 16) + "…";
             Label descLabel = new Label(desc);
             descLabel.getStyleClass().add("kanban-slot-desc-compact");
-
-            Region spr = new Region();
-            HBox.setHgrow(spr, Priority.ALWAYS);
+            descLabel.setMinWidth(0);
+            descLabel.setMaxWidth(Double.MAX_VALUE);
+            descLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
+            descLabel.setEllipsisString("…");
+            descLabel.setAlignment(Pos.CENTER_LEFT);
+            HBox.setHgrow(descLabel, Priority.ALWAYS);
 
             Label dot = new Label("●");
             dot.setStyle("-fx-text-fill: #eab308; -fx-font-size: 10px;");
+            dot.setMinWidth(Region.USE_PREF_SIZE);
 
-            row.getChildren().addAll(timeBadge, regBadge, descLabel, spr, dot);
+            row.getChildren().addAll(timeBadge, regBadge, descLabel, dot);
         } else {
             row.getStyleClass().add("free");
 
