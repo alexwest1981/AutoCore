@@ -51,10 +51,6 @@ public class SidebarView {
                 b.getStyleClass().add("selected");
             }
         }
-        for (GroupHeader g : groupHeaders) {
-            boolean active = key != null && g.itemKeys.contains(key);
-            g.setActive(active);
-        }
     }
 
     public void refreshTexts() {
@@ -210,47 +206,16 @@ public class SidebarView {
     private static class GroupHeader {
         final String i18nKey;
         final Label label;
-        final Label chev;
-        final HBox head;
-        final VBox list;
-        final List<String> itemKeys;
-
-        GroupHeader(String i18nKey, Label label, Label chev, HBox head, VBox list, List<String> itemKeys) {
+        GroupHeader(String i18nKey, Label label) {
             this.i18nKey = i18nKey;
             this.label = label;
-            this.chev = chev;
-            this.head = head;
-            this.list = list;
-            this.itemKeys = itemKeys;
-        }
-
-        void setActive(boolean active) {
-            if (active) {
-                if (!head.getStyleClass().contains("active-group")) {
-                    head.getStyleClass().add("active-group");
-                }
-                if (!label.getStyleClass().contains("active-group")) {
-                    label.getStyleClass().add("active-group");
-                }
-                if (!chev.getStyleClass().contains("active-group")) {
-                    chev.getStyleClass().add("active-group");
-                }
-                if (!list.isVisible()) {
-                    list.setVisible(true);
-                    list.setManaged(true);
-                    chev.setText("\u25BE");
-                }
-            } else {
-                head.getStyleClass().remove("active-group");
-                label.getStyleClass().remove("active-group");
-                chev.getStyleClass().remove("active-group");
-            }
         }
     }
 
     private void addGroup(VBox parent, String i18nKey, NavSpec... items) {
         Label t = new Label(I18n.get(i18nKey).toUpperCase());
         t.getStyleClass().add("side-label");
+        groupHeaders.add(new GroupHeader(i18nKey, t));
 
         Label chev = new Label("\u25BE");
         chev.getStyleClass().add("side-label");
@@ -259,18 +224,13 @@ public class SidebarView {
         HBox.setHgrow(spr, Priority.ALWAYS);
 
         HBox head = new HBox(6, t, spr, chev);
-        head.getStyleClass().add("nav-group-head");
         head.setPadding(new Insets(10, 12, 4, 14));
         head.setCursor(Cursor.HAND);
 
         VBox list = new VBox(2);
-        List<String> itemKeys = new ArrayList<String>();
         for (NavSpec s : items) {
-            itemKeys.add(s.key);
             addNav(list, s.key, I18n.get(s.i18nKey));
         }
-
-        groupHeaders.add(new GroupHeader(i18nKey, t, chev, head, list, itemKeys));
 
         head.setOnMouseClicked(e -> {
             boolean show = !list.isVisible();

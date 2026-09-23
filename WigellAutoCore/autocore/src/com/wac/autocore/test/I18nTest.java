@@ -94,13 +94,4 @@ public class I18nTest {
         TestRunner.assertTrue(missingInEn.isEmpty(), "Följande nycklar saknas i en.json: " + missingInEn);
         TestRunner.assertEquals(en.size(), sv.size(), "Båda språkfilerna skall ha exakt samma antal nycklar (" + en.size() + ")");
     }
-
-    public static void testSidebarSectionMarkingAndSelection() {
-        com.wac.autocore.ui.navigation.SidebarView sidebar = new com.wac.autocore.ui.navigation.SidebarView(key -> {});
-        sidebar.setSelectedPage("vehicles");
-        sidebar.setSelectedPage("workorders");
-        sidebar.setSelectedPage("overview");
-        sidebar.setSelectedPage("customers");
-        TestRunner.assertTrue(sidebar.getView() != null, "Sidebar view skall finnas och hantera sidmarkering utan fel");
-    }
 }
