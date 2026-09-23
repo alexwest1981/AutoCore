@@ -43,7 +43,8 @@ git pull origin develop
 ### Köra och testa applikationen
 
 * **Huvudapplikationen (AutoCore GUI):** Kör `Main.java` i IntelliJ (eller via terminal: `./run.sh`)
-* **Automatiserade enhetstester:** Kör `./test.sh` (eller `com.wac.autocore.test.TestRunner`)
+* **Total systemaudit (50 kontroller):** Kör `./check.sh` (eller `./audit.sh`) för en komplett rapport över enhetstester, kodkvalitet, säkerhet och WCAG 2.1 AA.
+* **Snabba enhetstester:** Kör `./test.sh` (eller `com.wac.autocore.test.TestRunner`)
 * **Konsolversionen (CLI):** Kör `ConsoleApp.java` (eller via terminal: `./run.sh ConsoleApp`)
 * **Modulvisa testappar:**
   - **Kunder:** `com.wac.autocore.gui.customers.TestCustomer`
@@ -55,51 +56,78 @@ git pull origin develop
   - **Mekaniker:** `com.wac.autocore.gui.mechanic.TestMechanicApp`
   - **Tjänster:** `com.wac.autocore.gui.serviceItem.TestServiceItemApp`
 
-## JavaFX UI Arkitektur & Refaktorisering
+## Arkitektur & Modularisering
 
-JavaFX-gränssnittet i `com.wac.autocore.ui` är uppbyggt enligt Single Responsibility Principle för hög modularitet, enkel utbyggnad och hög testbarhet:
+Systemet är uppbyggt enligt ren skiktad arkitektur (Layered Architecture) och SOLID-principerna:
 
 ```
-com.wac.autocore.ui/
-├── AutoCoreApp.java               # Huvudapplikation – Stage, Scene, Shell samt inbyggd TopBar
-├── ActionDialogs.java             # Modaler för Ny bokning, Ny order, Skapa faktura, Betalning m.fl.
-├── components/
-│   ├── UiComponents.java          # Återanvändbara knappar, paneler, KPI-kort och sidhuvuden
-│   └── TableFactory.java          # Fabrik för typade, sökbara TableView med FilteredList och badge-chips
-├── navigation/
-│   ├── SidebarView.java           # Kollapsbara menysektioner och brand-information
-│   └── PageRouter.java            # Sidrouter med sökbevarande och smart navigation
-├── util/
-│   ├── UiFormatters.java          # Ren formateringslogik (valuta, datum, statusord, badge-klasser)
-│   └── EntityLookup.java          # Snabb uppslagning av relaterade entitetsnamn via ID
-└── views/
-    ├── OverviewView.java          # Dashboard med 4 KPI-kort, snabbknappar, statusfördelning och sökbar orderlista
-    └── EntityPages.java           # Dedikerade vyer för Kunder, Fordon, Bokningar, Arbetsordrar, Tjänster, etc.
+WigellAutoCore/autocore/
+├── lib/
+│   └── sqlite-jdbc-3.53.4.0.jar      # Databasdrivrutin för lokal SQLite-persistens
+├── src/
+│   ├── Main.java                     # JavaFX GUI Startpunkt
+│   ├── ConsoleApp.java               # Textbaserat CLI-gränssnitt
+│   └── com/wac/autocore/
+│       ├── data/
+│       │   └── Database.java         # Datalager & seed data (förberett för SQLite)
+│       ├── model/                    # Domänmodeller (Customer, Vehicle, Booking, etc.)
+│       ├── service/                  # Servicelager & Fasad
+│       │   ├── GarageSystem.java     # Huvudfasad (Facade Pattern) mot delsystem
+│       │   ├── CustomerService.java  # Kundhantering & validering
+│       │   ├── VehicleService.java   # Fordonsregistrering & ägarkoppling
+│       │   ├── BookingService.java   # Tidsbokning & validering
+│       │   ├── WorkOrderService.java # Arbetsorderns livscykel (CREATED -> IN_PROGRESS -> COMPLETED)
+│       │   ├── BillingService.java   # Fakturaberäkning, rabatter & momshantering
+│       │   ├── PaymentService.java   # Betalningstransaktioner (Kort, Swish, Kontant)
+│       │   └── MechanicSchedule.java # Schemaläggning & beläggningsberäkning (timme-för-timme)
+│       ├── ui/                       # Presentationslager (JavaFX GUI)
+│       │   ├── AutoCoreApp.java      # Fönsterram, layout & sidnavigation
+│       │   ├── ActionDialogs.java    # Modala dialoger för CRUD och transaktioner
+│       │   ├── components/           # Återanvändbara UI-komponenter & Kanban-kort
+│       │   ├── i18n/                 # Flerspråksmotor (I18n.java) med realtidsväxling
+│       │   ├── navigation/           # Sidomeny (SidebarView) & Sidrouter (PageRouter)
+│       │   ├── util/                 # Formatering (UiFormatters), sök och uppslag
+│       │   └── views/                # Översikt, Dashboard och entitetsvyer
+│       └── test/                     # Automatiserad testsvit (50 tester)
+└── resources/
+    └── com/wac/autocore/
+        ├── i18n/                     # Dictionaries (sv.json, en.json) med 100% paritet
+        └── theme/                    # CSS-designsystem & 8 teman (Emerald standard)
 ```
+
+### Flerspråksstöd i realtid (SV / EN)
+* **Realtidsväxling:** Växla sömlöst mellan svenska och engelska med knappen i sidomenyn utan att behöva starta om applikationen.
+* **100 % Nyckelparitet:** Både `sv.json` och `en.json` innehåller samtliga 396 språknycklar för menyer, dialoger, tabeller, statusar och felmeddelanden.
+* **Dynamisk formatering:** Datum formateras automatiskt på rätt språk (t.ex. *"Måndag 23 september 2026"* vs *"Monday 23 September 2026"*) och statusord mappas via `UiFormatters`.
 
 ### TopBar & Granulär Global Sökning
 * **Inbyggd i `AutoCoreApp.java`:** Toppmenyn ligger direkt i applikationskoden för enkel hantering och kan stängas av med en enda rad kommentar (`// mainCol.setTop(buildTopBar(router));`).
 * **Sektionsindelad global sökvy (`SearchResultsView`):** När användaren söker i toppbarens sökfält söks hela systemet igenom (Kunder, Fordon, Arbetsordrar, Bokningar, Mekaniker, Fakturor och Tjänster).
 * **Granulära sektioner:** Träffarna delas in i tydliga sektionspaneler (t.ex. *Customers (2)*, *Vehicles (1)*, *Work Orders (3)*). Endast sektioner med aktiva träffar visas.
-* **Snabblänkar:** Varje sektion har en "Open in [Sektion] →"-knapp för att direkt öppna den relevanta entitetssidan.
 * **Sömlöst flöde:** Söker du t.ex. "Anna" visas kunder/ordrar för Anna; ändrar du direkt till "Volvo" visas fordon och bokningar för Volvo utan att du behöver gå tillbaka till Overview. Tömmer du sökfältet återgår vyn automatiskt till din tidigare sida.
-* **Robust sökalgoritm (`GlobalSearch`):** Isolerad ren söklogik i `com.wac.autocore.ui.util.GlobalSearch` som testas till 100% utan GUI.
 
-### Automatiserade tester (`com.wac.autocore.test`)
-All beräknings-, formaterings-, sök- och uppslagslogik har isolerats och täcks av automatiserade enhetstester:
-* **`GlobalSearchTest`**: Verifierar granulär sökning över kunder, fordon, mekaniker, ordrar, skiftlägesokänslighet och tomma sökningar.
+### Automatiserade tester & Audit (`com.wac.autocore.test`)
+Systemet skyddas av **50 automatiserade tester och kvalitetskontroller** som körs på under 1 sekund:
+* **`GlobalSearchTest`**: Verifierar granulär sökning över kunder, fordon, mekaniker, ordrar, skiftlägesokänslighet och prefix.
 * **`TableFactoryTest`**: Verifierar flerkolumnssökning och regressionsskyddar mot indexbuggar vid filtrering.
 * **`UiFormattersTest`**: Valuta (long/double), trunkering, statusöversättning, datum och badge-CSS-klasser.
 * **`EntityLookupTest`**: Uppslagning mot `GarageSystem` för kundnamn, fordonsreg, mekaniker och tjänster.
 * **`OverviewMetricsTest`**: Verifiering av KPI-mätetal (aktiva ordrar, omsättning, tillgänglighet).
-* **Kör tester:** Kör `./test.sh` i terminalen. Alla 24 enhetstester körs på under en sekund.
+* **`I18nTest`**: Språkväxling i realtid, parameteriserade strängar, fallback och komplett paritet mellan språkfiler.
+* **`MechanicScheduleTest`**: Dagslots, veckobelastning, färgprogression och skydd mot dubbelbokningar.
+* **`CodeQualityTest`**: 100% språkparitet, temaintegritet, frikoppling av servicelager och komplexitetsgränser.
+* **`SecurityAuditTest`**: Skanning mot hårdkodade hemligheter, SQL-injektionsmönster, processkörning och PII-loggning.
+* **`WcagAccessibilityTest`**: WCAG 2.1 AA kontrastmätningar (>= 4.5:1), fokusindikatorer och minsta teckenstorlek.
+* **Kör tester:**
+  - `./check.sh` för komplett grafisk auditrapport (Alla 4 moduler).
+  - `./test.sh` för snabb enhetstestkörning.
 
-### Tema- och stilhantering
-* **Stöd för Light/Dark-mode & färgteman:** `dark`, `night`, `light`, `azure`, `classic`, `emerald`, `volt` samt `default` (Plain JavaFX).
-* **Ren CSS-styrning:** Temaväljaren och popup-listan styrs via CSS (`components.css`, `dark.css`, `night.css`) utan hackiga inline-stilar på återanvända celler.
-* **Inga CSS-varningar:** Popup-scenen synkroniserar stilklassen `.root` med huvudscenen så att Modenas tokens (`-fx-accent`, `-fx-box-border`) alltid finns tillgängliga.
-* **Tydliga rubriker i default-temat:** Plain JavaFX har tydliga sidrubriker (24px fetstil) och markerad aktiv vy i sidomenyn.
-* **Modaler & Alerts:** Ärver automatiskt det aktiva temat via `setOnShowing`-lyssnare.
+### UI & Tillgänglighet (WCAG 2.1 AA)
+* **Zebramönstrade tabeller:** Varannan rad har dämpad kontrastfärg i samtliga teman för snabbare och behagligare läsning.
+* **Luftig och ren sidomeny:** Tydliga sektionsrubriker med 22 px avstånd och inga förvirrande dragspelsprickar.
+* **Naturlig textvisning i schemat:** Kanban-kortens tidsrader expanderar naturligt och klipper endast med `…` när texten når kanten.
+* **Färgteman:** 8 kompletta teman (`emerald` som standard, samt `dark`, `night`, `light`, `azure`, `classic`, `volt` och `default`).
+* **Tangentbordsfokus (WCAG 2.4.7):** Tydliga `:focused`-stilar och fokusringar på alla interaktiva kontroller.
 
 ## Design & Styleguide
 Projektets visuella riktlinjer, komponentbibliotek och färgteman finns sammanställda i den interaktiva styleguiden:
