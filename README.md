@@ -42,10 +42,10 @@ git pull origin develop
 
 ### Köra och testa applikationen
 
-* **Huvudapplikationen (AutoCore GUI):** Kör `Main.java` i IntelliJ (eller via terminal: `./run.sh`)
+* **Huvudapplikationen (AutoCore GUI):** Kör `./start.sh` i terminalen, eller `Main.java` i IntelliJ
 * **Total systemaudit (50 kontroller):** Kör `./check.sh` (eller `./audit.sh`) för en komplett rapport över enhetstester, kodkvalitet, säkerhet och WCAG 2.1 AAA.
 * **Snabba enhetstester:** Kör `./test.sh` (eller `com.wac.autocore.test.TestRunner`)
-* **Konsolversionen (CLI):** Kör `ConsoleApp.java` (eller via terminal: `./run.sh ConsoleApp`)
+* **Konsolversionen (CLI):** Kör `./start.sh ConsoleApp` i terminalen, eller `ConsoleApp.java` i IntelliJ
 * **Modulvisa testappar:**
   - **Kunder:** `com.wac.autocore.gui.customers.TestCustomer`
   - **Fordon:** `com.wac.autocore.gui.vehicle.VehicleTest`
@@ -55,6 +55,13 @@ git pull origin develop
   - **Betalningar:** `com.wac.autocore.gui.payment.TestPaymentApp`
   - **Mekaniker:** `com.wac.autocore.gui.mechanic.TestMechanicApp`
   - **Tjänster:** `com.wac.autocore.gui.serviceItem.TestServiceItemApp`
+
+> **Kör du från IntelliJ och får `No suitable driver found for jdbc:sqlite`?**
+> Då saknar IDE-projektet databasdrivrutinen. Lägg till
+> `WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar` en gång:
+> **File → Project Structure → Modules → Dependencies → `+` → JARs or directories**.
+> Posten hamnar i din lokala `.iml`-fil, som inte versionshanteras, så den behöver göras en gång per
+> dator. `./start.sh` behöver den inte.
 
 ## Arkitektur & Modularisering
 
