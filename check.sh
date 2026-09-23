@@ -23,22 +23,44 @@ MAGENTA="\033[38;5;213m"
 RESET="\033[0m"
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-JDK8_HOME="${JDK8_HOME:-/home/alex/jdks/jdk8u504-full}"
 
-if [ ! -d "$JDK8_HOME" ]; then
-    # Fallback till systemets standard-Java om den är kompatibel
-    if command -v java >/dev/null 2>&1; then
-        JAVA_BIN="java"
-        JAVAC_BIN="javac"
-    else
-        echo -e "${RED}Fel: Kunde inte hitta Liberica JDK 8 på $JDK8_HOME eller i PATH${RESET}"
-        exit 1
-    fi
-else
-    export JAVA_HOME="$JDK8_HOME"
-    JAVA_BIN="$JAVA_HOME/bin/java"
-    JAVAC_BIN="$JAVA_HOME/bin/javac"
+# Hitta en Java 8. JDK8_HOME vinner om den är satt, annars letas en JDK 8 upp på
+# de vanligaste platserna i Linux, macOS och Windows (körs då från Git Bash).
+if [ -z "$JDK8_HOME" ]; then
+    for candidate in \
+        "$HOME/.jdks"/*1.8* \
+        "$HOME/jdks"/jdk8* \
+        "$HOME/.sdkman/candidates/java"/*1.8* \
+        /usr/lib/jvm/*1.8* \
+        /usr/lib/jvm/java-8* \
+        /Library/Java/JavaVirtualMachines/*1.8*/Contents/Home \
+        "/c/Program Files/Java"/jdk1.8* \
+        "/c/Program Files (x86)/Java"/jdk1.8* ; do
+        if [ -x "$candidate/bin/javac" ] || [ -x "$candidate/bin/javac.exe" ]; then
+            JDK8_HOME="$candidate"
+            break
+        fi
+    done
 fi
+
+if [ -z "$JDK8_HOME" ]; then
+    echo -e "${RED}Fel: Hittade ingen Java 8.${RESET}"
+    echo -e "Sätt JDK8_HOME till din JDK 8 och kör igen, till exempel:"
+    echo -e "  Linux:   export JDK8_HOME=\$HOME/.jdks/liberica-full-1.8.0_504"
+    echo -e "  macOS:   export JDK8_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_412.jdk/Contents/Home"
+    echo -e "  Windows: export JDK8_HOME=\"/c/Program Files/Java/jdk1.8.0_412\"   (i Git Bash)"
+    exit 1
+fi
+
+# På Windows heter filerna java.exe och javac.exe
+EXE=""
+if [ -x "$JDK8_HOME/bin/javac.exe" ]; then
+    EXE=".exe"
+fi
+
+export JAVA_HOME="$JDK8_HOME"
+JAVA_BIN="$JDK8_HOME/bin/java$EXE"
+JAVAC_BIN="$JDK8_HOME/bin/javac$EXE"
 
 SRC_DIR="$DIR/WigellAutoCore/autocore/src"
 RES_DIR="$DIR/WigellAutoCore/autocore/src/resources"
@@ -82,7 +104,10 @@ echo ""
 
 # Steg 0: Kompilering
 echo -ne "${BOLD}[0/4] Bygger och kompilerar källkod...${RESET} "
-SOURCES=($(find "$SRC_DIR" -name "*.java"))
+SOURCES=()
+while IFS= read -r source_file; do
+    SOURCES+=("$source_file")
+done < <(find "$SRC_DIR" -name "*.java")
 BUILD_OUT=$("$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" "${CP_ARG[@]}" "${SOURCES[@]}" 2>&1) || {
     echo -e "${RED}MISSLYCKADES${RESET}"
     echo -e "${RED}$BUILD_OUT${RESET}"
