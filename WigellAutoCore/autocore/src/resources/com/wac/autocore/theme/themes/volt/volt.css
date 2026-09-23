@@ -40,6 +40,7 @@
     -wac-drift-track: #3f4142;
     -wac-bg: #b9c5bd;
     -wac-surface: #f4f6f4;
+    -wac-row-alt: #f4f7f4;
     -fx-font-family: "Arial";
     -fx-font-size: 13px;
 }
@@ -116,7 +117,11 @@ TableView .column-header .label {
     -fx-alignment: CENTER_LEFT;
 }
 TableView .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
-TableView .table-row-cell:filled { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:even { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:odd { -fx-background-color: -wac-row-alt; }
+TableView .table-row-cell:filled:hover,
+TableView .table-row-cell:filled:odd:hover,
+TableView .table-row-cell:filled:even:hover { -fx-background-color: -wac-side-hover; }
 TableView .table-view { -fx-padding: 0; }
 
 /* ---- App shell (mirrors the web dashboard) ---- */

@@ -86,7 +86,9 @@ public final class UiComponents {
             topRow.getChildren().add(actionBox);
         }
 
-        table.setPlaceholder(new Label("No rows"));
+        Label placeholder = new Label(com.wac.autocore.ui.i18n.I18n.get("table.empty"));
+        placeholder.getStyleClass().add("text-muted");
+        table.setPlaceholder(placeholder);
         HBox.setHgrow(table, Priority.ALWAYS);
 
         VBox inner = new VBox();

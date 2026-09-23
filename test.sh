@@ -19,6 +19,11 @@ JDBC_JAR="$DIR/WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 
 mkdir -p "$OUT_DIR"
 
+# Kopiera resurser (CSS-teman, JSON-språkfiler etc.) till out
+if [ -d "$RES_DIR" ]; then
+    cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
+fi
+
 # Kompilera alla källfiler inklusive tester
 mapfile -t SOURCES < <(find "$SRC_DIR" -name "*.java")
 "$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" -cp "$JDBC_JAR" "${SOURCES[@]}"

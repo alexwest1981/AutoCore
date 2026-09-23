@@ -8,6 +8,7 @@ import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.GlobalSearch;
@@ -178,7 +179,7 @@ public final class SearchDropdown {
             emptyBox.setAlignment(Pos.CENTER);
             emptyBox.setPadding(new Insets(20, 16, 20, 16));
             emptyBox.setStyle("-fx-background-color: " + solidBg + ";");
-            Label l = new Label("Inga träffar för \"" + query + "\"");
+            Label l = new Label(I18n.get("search.category.empty_query", query));
             l.setStyle("-fx-text-fill: " + mutedColor + "; -fx-font-size: 13px;");
             emptyBox.getChildren().add(l);
             container.getChildren().add(emptyBox);
@@ -187,13 +188,13 @@ public final class SearchDropdown {
 
         // 1. KUNDER
         if (!results.getCustomers().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Kunder", results.getCustomers().size(), headerBg, solidBorder, mutedColor));
+            container.getChildren().add(createCategoryHeader(I18n.get("search.category.customers"), results.getCustomers().size(), headerBg, solidBorder, mutedColor));
             List<Customer> list = results.getCustomers();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
                 Customer c = list.get(i);
                 container.getChildren().add(createItemRow(
-                        "KUND", "info",
+                        I18n.get("search.badge.customer"), "info",
                         c.getName() + (c.isVip() ? " ★ VIP" : ""),
                         c.getPhone() + " • " + c.getEmail(),
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
@@ -210,16 +211,16 @@ public final class SearchDropdown {
 
         // 2. FORDON
         if (!results.getVehicles().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Fordon", results.getVehicles().size(), headerBg, solidBorder, mutedColor));
+            container.getChildren().add(createCategoryHeader(I18n.get("search.category.vehicles"), results.getVehicles().size(), headerBg, solidBorder, mutedColor));
             List<Vehicle> list = results.getVehicles();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
                 Vehicle v = list.get(i);
                 String owner = EntityLookup.customerName(garage, v.getCustomerId());
                 container.getChildren().add(createItemRow(
-                        "FORDON", "success",
+                        I18n.get("search.badge.vehicle"), "success",
                         v.getBrand() + " " + v.getModel() + " (" + v.getYear() + ")",
-                        "Reg: " + v.getRegistrationNumber() + " • Ägare: " + owner,
+                        "Reg: " + v.getRegistrationNumber() + " • " + I18n.get("search.category.owner") + " " + owner,
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
@@ -234,15 +235,15 @@ public final class SearchDropdown {
 
         // 3. MEKANIKER
         if (!results.getMechanics().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Mekaniker", results.getMechanics().size(), headerBg, solidBorder, mutedColor));
+            container.getChildren().add(createCategoryHeader(I18n.get("search.category.mechanics"), results.getMechanics().size(), headerBg, solidBorder, mutedColor));
             List<Mechanic> list = results.getMechanics();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
                 Mechanic m = list.get(i);
                 container.getChildren().add(createItemRow(
-                        "MEK", "warn",
+                        I18n.get("search.badge.mechanic"), "warn",
                         m.getName(),
-                        m.getSpecialization() + " • " + (m.isAvailable() ? "Tillgänglig" : "Upptagen"),
+                        m.getSpecialization() + " • " + (m.isAvailable() ? I18n.get("table.col.available") : I18n.get("table.col.unavailable")),
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
@@ -257,15 +258,15 @@ public final class SearchDropdown {
 
         // 4. BOKNINGAR
         if (!results.getBookings().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Bokningar", results.getBookings().size(), headerBg, solidBorder, mutedColor));
+            container.getChildren().add(createCategoryHeader(I18n.get("search.category.bookings"), results.getBookings().size(), headerBg, solidBorder, mutedColor));
             List<Booking> list = results.getBookings();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
                 Booking b = list.get(i);
                 String veh = EntityLookup.bookingVehicleReg(garage, b.getId());
                 container.getChildren().add(createItemRow(
-                        "BOKNING", "info",
-                        "Bokning #" + b.getId() + " - " + b.getDescription(),
+                        I18n.get("search.badge.booking"), "info",
+                        I18n.get("table.col.booking") + " #" + b.getId() + " - " + b.getDescription(),
                         b.getDate() + " • " + veh,
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
@@ -281,7 +282,7 @@ public final class SearchDropdown {
 
         // 5. ARBETSORDRAR
         if (!results.getWorkOrders().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Arbetsordrar", results.getWorkOrders().size(), headerBg, solidBorder, mutedColor));
+            container.getChildren().add(createCategoryHeader(I18n.get("search.category.workorders"), results.getWorkOrders().size(), headerBg, solidBorder, mutedColor));
             List<WorkOrder> list = results.getWorkOrders();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
@@ -289,8 +290,8 @@ public final class SearchDropdown {
                 String cust = EntityLookup.workOrderCustomerName(garage, wo);
                 String veh = EntityLookup.workOrderVehicleReg(garage, wo);
                 container.getChildren().add(createItemRow(
-                        "ORDER", "accent",
-                        "Arbetsorder #" + wo.getId() + " (" + UiFormatters.statusWord(wo.getStatus()) + ")",
+                        I18n.get("search.badge.workorder"), "accent",
+                        I18n.get("table.col.workorder") + " #" + wo.getId() + " (" + UiFormatters.statusWord(wo.getStatus()) + ")",
                         cust + " • " + veh,
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
@@ -306,13 +307,13 @@ public final class SearchDropdown {
 
         // 6. TJÄNSTER
         if (!results.getServices().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Tjänster", results.getServices().size(), headerBg, solidBorder, mutedColor));
+            container.getChildren().add(createCategoryHeader(I18n.get("search.category.services"), results.getServices().size(), headerBg, solidBorder, mutedColor));
             List<ServiceItem> list = results.getServices();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
                 ServiceItem s = list.get(i);
                 container.getChildren().add(createItemRow(
-                        "TJÄNST", "muted",
+                        I18n.get("search.badge.service"), "muted",
                         s.getName() + " (" + UiFormatters.formatMoney(s.getPrice()) + ")",
                         s.getEstimatedMinutes() + " min • " + s.getDescription(),
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
@@ -329,16 +330,16 @@ public final class SearchDropdown {
 
         // 7. FAKTUROR
         if (!results.getInvoices().isEmpty()) {
-            container.getChildren().add(createCategoryHeader("Fakturor", results.getInvoices().size(), headerBg, solidBorder, mutedColor));
+            container.getChildren().add(createCategoryHeader(I18n.get("search.category.invoices"), results.getInvoices().size(), headerBg, solidBorder, mutedColor));
             List<Invoice> list = results.getInvoices();
             int limit = Math.min(list.size(), MAX_ITEMS_PER_SECTION);
             for (int i = 0; i < limit; i++) {
                 Invoice inv = list.get(i);
                 String cust = EntityLookup.invoiceCustomerName(garage, inv);
                 container.getChildren().add(createItemRow(
-                        "FAKTURA", "warn",
-                        "Faktura #" + inv.getId() + " (" + UiFormatters.formatMoney(inv.getTotalAmount()) + ")",
-                        cust + " • " + (inv.isPaid() ? "Betald" : "Obetald"),
+                        I18n.get("search.badge.invoice"), "warn",
+                        I18n.get("table.col.invoice") + " #" + inv.getId() + " (" + UiFormatters.formatMoney(inv.getTotalAmount()) + ")",
+                        cust + " • " + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")),
                         solidBg, hoverBg, solidBorder, textColor, mutedColor,
                         () -> {
                             hide();
@@ -356,7 +357,7 @@ public final class SearchDropdown {
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setPadding(new Insets(10, 14, 10, 14));
         footer.setStyle("-fx-background-color: " + headerBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;");
-        Label footerLbl = new Label("Visa alla " + results.getTotalMatches() + " träffar i fullständig översikt →");
+        Label footerLbl = new Label(I18n.get("search.category.view_all_matches", results.getTotalMatches()));
         footerLbl.setStyle("-fx-text-fill: " + accentColor + "; -fx-font-weight: bold; -fx-font-size: 12px;");
         footer.getChildren().add(footerLbl);
         footer.setOnMouseEntered(e -> footer.setStyle("-fx-background-color: " + hoverBg + "; -fx-border-color: " + solidBorder + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;"));

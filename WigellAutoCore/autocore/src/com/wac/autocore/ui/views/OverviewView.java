@@ -8,6 +8,7 @@ import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.UiComponents;
+import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 import javafx.geometry.Pos;
@@ -58,19 +59,19 @@ public final class OverviewView {
             }
         }
 
-        VBox head = UiComponents.pageHead("Overview", "Current status of the workshop",
+        VBox head = UiComponents.pageHead(I18n.get("overview.title"), I18n.get("overview.meta"),
                 "AutoCore \u00b7 " + UiFormatters.todayFormatted());
 
-        Button quickBooking = UiComponents.primaryButton("+ New booking");
+        Button quickBooking = UiComponents.primaryButton(I18n.get("overview.action.booking"));
         quickBooking.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, onRefresh));
 
-        Button quickOrder = UiComponents.secondaryButton("+ New work order");
+        Button quickOrder = UiComponents.secondaryButton(I18n.get("overview.action.workorder"));
         quickOrder.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, onRefresh));
 
-        Button quickInvoice = UiComponents.secondaryButton("+ Create invoice");
+        Button quickInvoice = UiComponents.secondaryButton(I18n.get("overview.action.invoice"));
         quickInvoice.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, onRefresh));
 
-        Button quickPay = UiComponents.secondaryButton("+ Register payment");
+        Button quickPay = UiComponents.secondaryButton(I18n.get("overview.action.payment"));
         quickPay.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, onRefresh));
 
         HBox quickBar = new HBox(10, quickBooking, quickOrder, quickInvoice, quickPay);
@@ -79,10 +80,10 @@ public final class OverviewView {
         HBox kpis = new HBox(14);
         kpis.setAlignment(Pos.CENTER_LEFT);
         kpis.getChildren().addAll(
-                UiComponents.kpi("Active work orders", String.valueOf(active)),
-                UiComponents.kpi("Total revenue", UiFormatters.formatMoney(revenue)),
-                UiComponents.kpi("Bookings", String.valueOf(bookings.size())),
-                UiComponents.kpi("Mechanics on duty", avail + "/" + garage.getMechanics().size()));
+                UiComponents.kpi(I18n.get("overview.kpi.workorders"), String.valueOf(active)),
+                UiComponents.kpi(I18n.get("overview.kpi.revenue"), UiFormatters.formatMoney(revenue)),
+                UiComponents.kpi(I18n.get("overview.kpi.bookings"), String.valueOf(bookings.size())),
+                UiComponents.kpi(I18n.get("overview.kpi.mechanics"), avail + "/" + garage.getMechanics().size()));
 
         HBox panels = new HBox(14);
         panels.setAlignment(Pos.CENTER_LEFT);
@@ -90,25 +91,27 @@ public final class OverviewView {
                 statusPanel(workOrders),
                 bookingsPanel(garage, bookings));
 
-        TableView<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders, router);
-        VBox recentPanel = UiComponents.panel("Recent work orders",
-                "The latest jobs registered in the system", recent);
+        VBox kanbanBoard = com.wac.autocore.ui.components.MechanicKanbanCard.buildBoard(garage, router, onRefresh);
 
-        return new VBox(18, head, quickBar, kpis, panels, recentPanel);
+        TableView<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders, router);
+        VBox recentPanel = UiComponents.panel(I18n.get("overview.section.recent_workorders"),
+                I18n.get("overview.section.recent_workorders_sub"), recent);
+
+        return new VBox(18, head, quickBar, kpis, kanbanBoard, panels, recentPanel);
     }
 
     private static VBox statusPanel(List<WorkOrder> workOrders) {
-        Label title = new Label("Work orders by status");
+        Label title = new Label(I18n.get("overview.section.workorders_by_status"));
         title.getStyleClass().add("panel-title");
-        Label sub = new Label("Distribution across all work orders");
+        Label sub = new Label(I18n.get("overview.section.workorders_by_status_sub"));
         sub.getStyleClass().add("panel-sub");
 
         Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
-        counts.put("Completed", 0);
-        counts.put("In progress", 0);
-        counts.put("Work order created", 0);
-        counts.put("Created", 0);
-        counts.put("Booked", 0);
+        counts.put(I18n.get("status.completed"), 0);
+        counts.put(I18n.get("status.in_progress"), 0);
+        counts.put(I18n.get("status.work_order_created"), 0);
+        counts.put(I18n.get("status.created"), 0);
+        counts.put(I18n.get("status.booked"), 0);
         for (WorkOrder wo : workOrders) {
             String w = UiFormatters.statusWord(wo.getStatus());
             counts.put(w, counts.containsKey(w) ? counts.get(w) + 1 : 1);
@@ -132,7 +135,7 @@ public final class OverviewView {
             list.getChildren().add(row);
         }
         if (list.getChildren().isEmpty()) {
-            list.getChildren().add(UiComponents.mutedNote("No work orders yet"));
+            list.getChildren().add(UiComponents.mutedNote(I18n.get("overview.empty.workorders")));
         }
 
         VBox box = new VBox(12, title, sub, list);
@@ -143,9 +146,9 @@ public final class OverviewView {
     }
 
     private static VBox bookingsPanel(GarageSystem garage, List<Booking> bookings) {
-        Label title = new Label("Upcoming bookings");
+        Label title = new Label(I18n.get("overview.section.upcoming_bookings"));
         title.getStyleClass().add("panel-title");
-        Label sub = new Label("Next scheduled jobs");
+        Label sub = new Label(I18n.get("overview.section.upcoming_bookings_sub"));
         sub.getStyleClass().add("panel-sub");
 
         VBox list = new VBox(9);
@@ -156,7 +159,7 @@ public final class OverviewView {
             }
             Label dot = new Label();
             dot.getStyleClass().addAll("sdot", UiFormatters.dotClass(b.getStatus()));
-            Label vehicle = new Label(EntityLookup.vehicleReg(garage, b.getVehicleId()) + " · " + b.getDate());
+            Label vehicle = new Label(EntityLookup.vehicleReg(garage, b.getVehicleId()) + " \u00b7 " + b.getDate());
             vehicle.getStyleClass().add("srow-title");
             Label desc = new Label(UiFormatters.truncate(b.getDescription(), 42));
             desc.getStyleClass().addAll("srow-sub", "small");
@@ -171,7 +174,7 @@ public final class OverviewView {
             shown++;
         }
         if (list.getChildren().isEmpty()) {
-            list.getChildren().add(UiComponents.mutedNote("No bookings yet"));
+            list.getChildren().add(UiComponents.mutedNote(I18n.get("overview.empty.bookings")));
         }
 
         VBox box = new VBox(12, title, sub, list);
@@ -186,11 +189,11 @@ public final class OverviewView {
         TableFactory.FilterableTable<WorkOrder> table = TableFactory.create(orders);
         TableView<WorkOrder> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col("ID", 70, c -> String.valueOf(c.getId())),
-                TableFactory.col("Booking", 90, c -> String.valueOf(c.getBookingId())),
-                TableFactory.col("Mechanic", 180, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
-                TableFactory.col("Services", 300, c -> EntityLookup.serviceNames(garage, c.getServiceItemIds())),
-                TableFactory.badgeCol("Status", 140, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
+                TableFactory.col(I18n.get("table.col.booking"), 90, c -> String.valueOf(c.getBookingId())),
+                TableFactory.col(I18n.get("table.col.mechanic"), 180, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
+                TableFactory.col(I18n.get("table.col.services"), 300, c -> EntityLookup.serviceNames(garage, c.getServiceItemIds())),
+                TableFactory.badgeCol(I18n.get("table.col.status"), 140, c -> UiFormatters.statusWord(c.getStatus())));
         if (router != null) {
             router.setActiveTable(table);
         }

@@ -14,7 +14,7 @@ Systemet hanterar den dagliga operativa verksamheten på en bilverkstad:
 ## Skärmbilder
 JavaFX-gränssnittet (AutoCore, tema *Emerald*):
 
-![AutoCore JavaFX-gränssnitt](WigellAutoCore/docs/autocore-javafx-gui.png)
+![AutoCore JavaFX-gränssnitt](WigellAutoCore/docs/autocore-overview.png)
 
 ## Teknisk stack
 - Java (JDK 8, BellSoft Liberica Full med JavaFX)
