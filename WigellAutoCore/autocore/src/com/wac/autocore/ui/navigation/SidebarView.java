@@ -119,11 +119,12 @@ public class SidebarView {
         brandRow.getStyleClass().add("brand-row");
         brandRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox nav = new VBox(3);
+        VBox nav = new VBox(6);
         nav.setPadding(new Insets(14, 0, 0, 0));
         overviewBtn = addNav(nav, "overview", I18n.get("nav.section.overview"));
 
-        VBox groups = new VBox(2);
+        VBox groups = new VBox(14);
+        groups.setPadding(new Insets(10, 0, 0, 0));
         addGroup(groups, "nav.section.customers", navItem("customers", "nav.item.customers"));
         addGroup(groups, "nav.section.vehicles", navItem("vehicles", "nav.item.vehicles"));
         addGroup(groups, "nav.section.bookings", navItem("bookings", "nav.item.bookings"));
@@ -217,29 +218,18 @@ public class SidebarView {
         t.getStyleClass().add("side-label");
         groupHeaders.add(new GroupHeader(i18nKey, t));
 
-        Label chev = new Label("\u25BE");
-        chev.getStyleClass().add("side-label");
-
-        Region spr = new Region();
-        HBox.setHgrow(spr, Priority.ALWAYS);
-
-        HBox head = new HBox(6, t, spr, chev);
-        head.setPadding(new Insets(10, 12, 4, 14));
-        head.setCursor(Cursor.HAND);
+        HBox head = new HBox(t);
+        head.getStyleClass().add("nav-group-head");
+        head.setPadding(new Insets(0, 14, 4, 14));
 
         VBox list = new VBox(2);
         for (NavSpec s : items) {
             addNav(list, s.key, I18n.get(s.i18nKey));
         }
 
-        head.setOnMouseClicked(e -> {
-            boolean show = !list.isVisible();
-            list.setVisible(show);
-            list.setManaged(show);
-            chev.setText(show ? "\u25BE" : "\u25B8");
-        });
-
-        parent.getChildren().add(new VBox(1, head, list));
+        VBox groupBox = new VBox(0, head, list);
+        groupBox.getStyleClass().add("nav-group-box");
+        parent.getChildren().add(groupBox);
     }
 
     private Button addNav(VBox nav, String key, String label) {

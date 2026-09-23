@@ -562,11 +562,9 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-font-weight: bold;
 }
 .nav-group-head {
-    -fx-padding: 10 12 4 14;
-    -fx-cursor: hand;
-    -fx-background-radius: 8;
+    -fx-padding: 0 14 4 14;
+    -fx-background-color: transparent;
 }
-.nav-group-head:hover { -fx-background-color: -wac-side-hover; }
 
 /* ============================================================
    10. SKUGGOR OCH SEKTIONSRUBRIKER
