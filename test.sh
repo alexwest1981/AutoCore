@@ -20,20 +20,6 @@ JDBC_JAR="$DIR/WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 mkdir -p "$OUT_DIR"
 
 # Kompilera alla källfiler inklusive tester
-mapfile -t SOURCES < <(findProjektarbete feature/persistens-grund  ? ❯ git status
-                           On branch feature/persistens-grund
-                           Your branch is up to date with 'origin/feature/persistens-grund'.
-
-                           Changes not staged for commit:
-                             (use "git add <file>..." to update what will be committed)
-                             (use "git restore <file>..." to discard changes in working directory)
-                                   modified:   test.sh
-
-                           Untracked files:
-                             (use "git add <file>..." to include in what will be committed)
-                                   WigellAutoCore/autocore/lib/
-
-                           no changes added to commit (use "git add" and/or "git commit -a") "$SRC_DIR" -name "*.java")
 "$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" -cp "$JDBC_JAR" "${SOURCES[@]}"
 
 # Kör test-runner
