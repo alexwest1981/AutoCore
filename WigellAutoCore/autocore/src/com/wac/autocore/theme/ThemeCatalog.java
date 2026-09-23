@@ -27,7 +27,7 @@ public final class ThemeCatalog {
     private static final List<Theme> THEMES = new ArrayList<Theme>();
     static {
         Collections.addAll(THEMES,
-            new Theme("emerald", "Emerald", "/com/wac/autocore/theme/themes/emerald/emerald.css", false, "#159e72"));
+            new Theme("emerald", "Emerald", "/com/wac/autocore/theme/themes/emerald/emerald.css", false, "#025941"));
     }
 
     public static List<Theme> all() {

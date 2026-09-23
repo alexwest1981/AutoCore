@@ -12,16 +12,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Automatiserade tillgänglighetskontroller (WCAG 2.1 AA) för gränssnitt,
+ * Automatiserade tillgänglighetskontroller (WCAG 2.1 AAA) för gränssnitt,
  * färgkontraster, teckenstorlekar och tangentbordsnavigering.
  */
 public class WcagAccessibilityTest {
 
-    // WCAG 2.1 AA kontrastkrav:
-    // Normal text (< 18pt eller < 14pt fet): minst 4.5:1
-    // Stor text (>= 18pt eller >= 14pt fet) och grafiska UI-komponenter: minst 3.0:1
-    private static final double MIN_CONTRAST_NORMAL_TEXT = 4.5;
-    private static final double MIN_CONTRAST_UI_COMPONENT = 3.0;
+    // WCAG 2.1 AAA kontrastkrav:
+    // Normal text: minst 7.0:1 (WCAG 1.4.6 Contrast Enhanced Level AAA)
+    // Stor text (>= 18pt eller >= 14pt fet) och grafiska UI-komponenter: minst 4.5:1
+    private static final double MIN_CONTRAST_AAA_NORMAL_TEXT = 7.0;
+    private static final double MIN_CONTRAST_AAA_LARGE_OR_UI = 4.5;
+    private static final int MIN_FONT_SIZE_PX = 11;
 
     /**
      * Beräknar relativ luminans enligt WCAG 2.1 formel:
@@ -101,7 +102,7 @@ public class WcagAccessibilityTest {
     }
 
     /**
-     * WCAG 1.4.3 Kontrast (Minimum): Text mot panel/kort i alla teman.
+     * WCAG 1.4.6 Kontrast (Enhanced / Level AAA): Text och dämpad text mot panel/kort och sida.
      */
     public static void testWcagCardTextContrast() {
         for (ThemeCatalog.Theme t : ThemeCatalog.all()) {
@@ -109,16 +110,34 @@ public class WcagAccessibilityTest {
             Map<String, String> pal = parsePalette(t.stylesheet);
             String card = pal.get("-wac-card");
             String text = pal.get("-wac-text");
+            String muted = pal.get("-wac-muted");
+            String page = pal.get("-wac-page");
+
             if (card != null && text != null) {
                 double ratio = contrastRatio(card, text);
-                TestRunner.assertTrue(ratio >= MIN_CONTRAST_NORMAL_TEXT,
-                        String.format("Tema '%s': Text/Kort-kontrast %.2f:1 måste vara >= 4.5:1", t.name, ratio));
+                TestRunner.assertTrue(ratio >= MIN_CONTRAST_AAA_NORMAL_TEXT,
+                        String.format("Tema '%s': Text/Kort-kontrast %.2f:1 måste vara >= 7.0:1 (WCAG 2.1 AAA)", t.name, ratio));
+            }
+            if (card != null && muted != null) {
+                double ratio = contrastRatio(card, muted);
+                TestRunner.assertTrue(ratio >= MIN_CONTRAST_AAA_NORMAL_TEXT,
+                        String.format("Tema '%s': Dämpad text/Kort-kontrast %.2f:1 måste vara >= 7.0:1 (WCAG 2.1 AAA)", t.name, ratio));
+            }
+            if (page != null && text != null) {
+                double ratio = contrastRatio(page, text);
+                TestRunner.assertTrue(ratio >= MIN_CONTRAST_AAA_NORMAL_TEXT,
+                        String.format("Tema '%s': Text/Sida-kontrast %.2f:1 måste vara >= 7.0:1 (WCAG 2.1 AAA)", t.name, ratio));
+            }
+            if (page != null && muted != null) {
+                double ratio = contrastRatio(page, muted);
+                TestRunner.assertTrue(ratio >= MIN_CONTRAST_AAA_NORMAL_TEXT,
+                        String.format("Tema '%s': Dämpad text/Sida-kontrast %.2f:1 måste vara >= 7.0:1 (WCAG 2.1 AAA)", t.name, ratio));
             }
         }
     }
 
     /**
-     * WCAG 1.4.3 Kontrast: Primärknapp och accent-text mot accentbakgrund.
+     * WCAG 1.4.6 Kontrast (Enhanced / Level AAA): Primärknapp och accent-text mot accentbakgrund.
      */
     public static void testWcagAccentButtonContrast() {
         for (ThemeCatalog.Theme t : ThemeCatalog.all()) {
@@ -128,14 +147,14 @@ public class WcagAccessibilityTest {
             String onAccent = pal.get("-wac-on-accent");
             if (accent != null && onAccent != null) {
                 double ratio = contrastRatio(accent, onAccent);
-                TestRunner.assertTrue(ratio >= MIN_CONTRAST_UI_COMPONENT,
-                        String.format("Tema '%s': Knapp/Text-kontrast %.2f:1 måste vara >= 3.0:1 (WCAG AA komponent)", t.name, ratio));
+                TestRunner.assertTrue(ratio >= MIN_CONTRAST_AAA_NORMAL_TEXT,
+                        String.format("Tema '%s': Knapp/Text-kontrast %.2f:1 måste vara >= 7.0:1 (WCAG 2.1 AAA)", t.name, ratio));
             }
         }
     }
 
     /**
-     * WCAG 1.4.3 Kontrast: Sidomenytext mot sidomenybakgrund.
+     * WCAG 1.4.6 Kontrast (Enhanced / Level AAA): Sidomenytext och dämpad text mot sidomenybakgrund.
      */
     public static void testWcagSidebarContrast() {
         for (ThemeCatalog.Theme t : ThemeCatalog.all()) {
@@ -143,10 +162,17 @@ public class WcagAccessibilityTest {
             Map<String, String> pal = parsePalette(t.stylesheet);
             String sidebar = pal.get("-wac-sidebar");
             String sideText = pal.get("-wac-side-text");
+            String sideMuted = pal.get("-wac-side-muted");
+
             if (sidebar != null && sideText != null) {
                 double ratio = contrastRatio(sidebar, sideText);
-                TestRunner.assertTrue(ratio >= MIN_CONTRAST_NORMAL_TEXT,
-                        String.format("Tema '%s': Sidomenykontrast %.2f:1 måste vara >= 4.5:1", t.name, ratio));
+                TestRunner.assertTrue(ratio >= MIN_CONTRAST_AAA_NORMAL_TEXT,
+                        String.format("Tema '%s': Sidomenykontrast %.2f:1 måste vara >= 7.0:1 (WCAG 2.1 AAA)", t.name, ratio));
+            }
+            if (sidebar != null && sideMuted != null) {
+                double ratio = contrastRatio(sidebar, sideMuted);
+                TestRunner.assertTrue(ratio >= MIN_CONTRAST_AAA_NORMAL_TEXT,
+                        String.format("Tema '%s': Sidomeny dämpad text-kontrast %.2f:1 måste vara >= 7.0:1 (WCAG 2.1 AAA)", t.name, ratio));
             }
         }
     }
@@ -179,11 +205,11 @@ public class WcagAccessibilityTest {
             br.close();
         } catch (Exception ignored) {}
 
-        TestRunner.assertTrue(hasFocusedRule, "WCAG 2.4.7 kräver att :focused-stil finns för tangentbordsnavigering");
+        TestRunner.assertTrue(hasFocusedRule, "WCAG 2.4.7 (Level AAA) kräver att :focused-stil finns för tangentbordsnavigering");
     }
 
     /**
-     * WCAG 1.4.4 Textstorlek: Verifierar att ingen text i CSS är mindre än 10px.
+     * WCAG 1.4.4 Textstorlek / AAA: Verifierar att ingen text i temat understiger minimigränsen 11px.
      */
     public static void testWcagMinimumFontSize() {
         for (ThemeCatalog.Theme t : ThemeCatalog.all()) {
@@ -206,8 +232,9 @@ public class WcagAccessibilityTest {
                     Matcher m = p.matcher(line);
                     while (m.find()) {
                         int size = Integer.parseInt(m.group(1));
-                        TestRunner.assertTrue(size >= 10,
-                                String.format("Tema '%s' innehåller textstorlek %dpx som understiger minimigränsen 10px", t.name, size));
+                        TestRunner.assertTrue(size >= MIN_FONT_SIZE_PX,
+                                String.format("Tema '%s' innehåller textstorlek %dpx som understiger minimigränsen %dpx (WCAG AAA)",
+                                        t.name, size, MIN_FONT_SIZE_PX));
                     }
                 }
                 br.close();

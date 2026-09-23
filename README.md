@@ -43,7 +43,7 @@ git pull origin develop
 ### Köra och testa applikationen
 
 * **Huvudapplikationen (AutoCore GUI):** Kör `Main.java` i IntelliJ (eller via terminal: `./run.sh`)
-* **Total systemaudit (50 kontroller):** Kör `./check.sh` (eller `./audit.sh`) för en komplett rapport över enhetstester, kodkvalitet, säkerhet och WCAG 2.1 AA.
+* **Total systemaudit (50 kontroller):** Kör `./check.sh` (eller `./audit.sh`) för en komplett rapport över enhetstester, kodkvalitet, säkerhet och WCAG 2.1 AAA.
 * **Snabba enhetstester:** Kör `./test.sh` (eller `com.wac.autocore.test.TestRunner`)
 * **Konsolversionen (CLI):** Kör `ConsoleApp.java` (eller via terminal: `./run.sh ConsoleApp`)
 * **Modulvisa testappar:**
@@ -115,16 +115,16 @@ Systemet skyddas av **50 automatiserade tester och kvalitetskontroller** som kö
 * **`MechanicScheduleTest`**: Dagslots, veckobelastning, färgprogression och skydd mot dubbelbokningar.
 * **`CodeQualityTest`**: 100% språkparitet, temaintegritet, frikoppling av servicelager och komplexitetsgränser.
 * **`SecurityAuditTest`**: Skanning mot hårdkodade hemligheter, SQL-injektionsmönster, processkörning och PII-loggning.
-* **`WcagAccessibilityTest`**: WCAG 2.1 AA kontrastmätningar (>= 4.5:1), fokusindikatorer och minsta teckenstorlek.
+* **`WcagAccessibilityTest`**: WCAG 2.1 AAA kontrastmätningar (>= 7.0:1 för normal text, >= 4.5:1 för UI), fokusindikatorer och minsta teckenstorlek.
 * **Kör tester:**
   - `./check.sh` för komplett grafisk auditrapport (Alla 4 moduler).
   - `./test.sh` för snabb enhetstestkörning.
 
-### UI & Tillgänglighet (WCAG 2.1 AA)
+### UI & Tillgänglighet (WCAG 2.1 AAA)
 * **Zebramönstrade tabeller:** Varannan rad har dämpad kontrastfärg för snabbare och behagligare läsning.
 * **Luftig och ren sidomeny:** Tydliga sektionsrubriker med 22 px avstånd och inga förvirrande dragspelsprickar.
 * **Naturlig textvisning i schemat:** Kanban-kortens tidsrader expanderar naturligt och klipper endast med `…` när texten når kanten.
-* **Färgtema (Emerald):** Designsystemet är låst till det officiella temat **`emerald`** med skarp grafitgrå list på tabeller och harmonisk färgpalett.
+* **Färgtema (Emerald - Level AAA):** Designsystemet är låst till det officiella temat **`emerald`** med skarp grafitgrå list på tabeller och ultrahög kontrast (7.0:1 till 16.5:1) som uppfyller WCAG 2.1 Level AAA.
 * **Tangentbordsfokus (WCAG 2.4.7):** Tydliga `:focused`-stilar och fokusringar på alla interaktiva kontroller.
 
 ## Design & Styleguide

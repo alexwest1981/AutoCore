@@ -6,7 +6,7 @@
 #   1. Enhetstester       - Alla 37 enhetstester (I18n, schema, formatters, etc.)
 #   2. Kodkvalitetstest   - Språkparitet, temaintegritet, arkitektur, modularitet
 #   3. Säkerhetstest      - Hårdkodade hemligheter, SQL-injektion, fil- & logsäkerhet
-#   4. WCAG 2.1 Kontroll  - Färgkontrast (>=4.5:1), fokusindikatorer, teckenstorlek
+#   4. WCAG 2.1 AAA Kontroll - Färgkontrast (>=7.0:1), fokusindikatorer, teckenstorlek
 # ==============================================================================
 
 set -o pipefail
@@ -85,7 +85,7 @@ if [ "$MODE" = "--help" ] || [ "$MODE" = "-h" ]; then
     echo "  --unit     - Kör endast enhetstester"
     echo "  --quality  - Kör endast kodkvalitet- och arkitekturkontroller"
     echo "  --security - Kör endast säkerhets- och sårbarhetsgranskning"
-    echo "  --wcag     - Kör endast WCAG 2.1 AA tillgänglighetskontroll"
+    echo "  --wcag     - Kör endast WCAG 2.1 AAA tillgänglighetskontroll"
     exit 0
 fi
 
@@ -98,7 +98,7 @@ fi
 echo ""
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${RESET}"
 echo -e "${CYAN}║${RESET} ${BOLD}WIGELL AUTOCORE  •  SYSTEMAUDIT & KVALITETSKONTROLL${RESET}                      ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET} ${DIM}Enhetstester  •  Kodkvalitet  •  Säkerhetsanalys  •  WCAG 2.1 AA Tillgänglighet${RESET} ${CYAN}║${RESET}"
+echo -e "${CYAN}║${RESET} ${DIM}Enhetstester  •  Kodkvalitet  •  Säkerhetsanalys  •  WCAG 2.1 AAA Tillgänglighet${RESET}${CYAN}║${RESET}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${RESET}"
 echo ""
 
@@ -178,7 +178,7 @@ fi
 
 # 4. WCAG-kontroll
 if [ "$MODE" = "all" ] || [ "$MODE" = "--wcag" ] || [ "$MODE" = "wcag" ]; then
-    run_module "wcag" "WCAG 2.1 AA KONTROLL (Kontrastförhållande, Fokus & Textstorlek)" "[4/4]"
+    run_module "wcag" "WCAG 2.1 AAA KONTROLL (Kontrastförhållande >= 7.0:1, Fokus & Textstorlek)" "[4/4]"
 fi
 
 # Slutresultat & sammanfattning
@@ -193,7 +193,7 @@ if [ "$MODE" = "all" ]; then
     echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Enhetstester:${RESET}         37/37 tester godkända (100%)                       ${CYAN}║${RESET}"
     echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Kodkvalitet:${RESET}          4/4 kontroller godkända (Paritet, arkitektur, teman) ${CYAN}║${RESET}"
     echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Säkerhet:${RESET}             4/4 kontroller godkända (0 sårbarheter, 0 hemligheter)${CYAN}║${RESET}"
-    echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}WCAG 2.1 AA:${RESET}          5/5 kontroller godkända (Kontrast, fokus, teckenstrl) ${CYAN}║${RESET}"
+    echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}WCAG 2.1 AAA:${RESET}         5/5 kontroller godkända (Kontrast >=7:1, fokus, text) ${CYAN}║${RESET}"
     echo -e "${CYAN}╠════════════════════════════════════════════════════════════════════════════╣${RESET}"
     echo -e "${CYAN}║${RESET}  ${GREEN}${BOLD}TOTALRESULTAT:${RESET} 50/50 KONTROLLER GODKÄNDA (100% PASS RATE)                 ${CYAN}║${RESET}"
     echo -e "${CYAN}║${RESET}  ${DIM}Koden uppfyller kraven för produktion, release och integration.${RESET}           ${CYAN}║${RESET}"

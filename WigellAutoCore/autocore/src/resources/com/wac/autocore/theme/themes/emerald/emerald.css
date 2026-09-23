@@ -16,19 +16,19 @@
     -wac-header: #ffffff;
     -wac-sidebar: #282d2b;
     -wac-side-text: #f3f6f4;
-    -wac-side-muted: #93a099;
+    -wac-side-muted: #bac7bf;
     -wac-side-hover: #373f3b;
     -wac-text: #14221b;
     -wac-ink: #171918;
-    -wac-muted: #4e5f55;
+    -wac-muted: #425248;
     -wac-line: #d2ded5;
-    -wac-accent: #047857;
-    -wac-accent-hover: #065f46;
-    -wac-accent-pressed: #064e3b;
+    -wac-accent: #025941;
+    -wac-accent-hover: #024835;
+    -wac-accent-pressed: #013829;
     -wac-accent-soft: #e1f3eb;
     -wac-on-accent: #ffffff;
     -wac-accent2: #2bb88a;
-    -wac-ring: #059669;
+    -wac-ring: #025941;
     -wac-success: #148a63;
     -wac-success-soft: #e5f3ed;
     -wac-info: #3b9ef5;
@@ -199,13 +199,13 @@ TableView .table-view { -fx-padding: 0; }
 }
 .brand-sub {
     -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
-    -fx-font-size: 10px;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-side-muted;
     -fx-opacity: 0.85;
 }
 .side-label {
-    -fx-font-size: 10px;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-side-muted;
 }
@@ -339,7 +339,7 @@ TableView .table-view { -fx-padding: 0; }
     -fx-text-fill: -wac-muted;
     -fx-background-radius: 999;
     -fx-padding: 3px 9px;
-    -fx-font-size: 10px;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
 }
 .badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: #14532d; }

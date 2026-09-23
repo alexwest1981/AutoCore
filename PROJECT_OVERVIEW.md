@@ -18,14 +18,14 @@ Dokumentet fungerar som teknisk referens och arkitekturhandledning för utveckli
    - 3.5 Domänmodeller
 4. [Arkitektonisk analys: Från monolit till skiktad arkitektur](#4-arkitektonisk-analys-från-monolit-till-skiktad-arkitektur)
 5. [Implementerade Design Patterns (GoF)](#5-implementerade-design-patterns-gof)
-6. [Kvalitetssäkring, Säkerhetsanalys & WCAG 2.1 AA](#6-kvalitetssäkring-säkerhetsanalys--wcag-21-aa)
+6. [Kvalitetssäkring, Säkerhetsanalys & WCAG 2.1 AAA](#6-kvalitetssäkring-säkerhetsanalys--wcag-21-aaa)
 7. [Färdplan, Arbetsfördelning & Git-rutiner](#7-färdplan-arbetsfördelning--git-rutiner)
 
 ---
 
 ## 1. Övergripande syfte & Domän
 
-**Wigell AutoCore** är ett affärs- och verkstadssystem (Core ERP / Garage Management System) utvecklat för koncernen *Wigell Group*. Systemet hanterar den dagliga operativa verksamheten på en bilverkstad med fokus på hög driftsäkerhet, tydlig separation of concerns, modern tillgänglighet (WCAG 2.1 AA) och realtidsstöd för flera språk.
+**Wigell AutoCore** är ett affärs- och verkstadssystem (Core ERP / Garage Management System) utvecklat för koncernen *Wigell Group*. Systemet hanterar den dagliga operativa verksamheten på en bilverkstad med fokus på hög driftsäkerhet, tydlig separation of concerns, modern tillgänglighet (WCAG 2.1 AAA) och realtidsstöd för flera språk.
 
 ### Kärnfunktioner i domänen:
 * **Kunder & Fordon:** Registrering, uppslagning och koppling av ägare till fordon. Full validering vid inmatning.
@@ -121,7 +121,7 @@ Systemarkitektur/
         │           ├── UiFormattersTest.java # Tester för valuta, datum och statusord
         │           ├── CodeQualityTest.java  # Kodkvalitet, arkitekturgränser & språkparitet
         │           ├── SecurityAuditTest.java# Sårbarhetsscanning (SQLi, hemligheter, PII)
-        │           └── WcagAccessibilityTest.java # WCAG 2.1 AA kontrast- och tillgänglighetstest
+        │           └── WcagAccessibilityTest.java # WCAG 2.1 AAA kontrast- och tillgänglighetstest
         │
         └── resources/
             └── com/wac/autocore/
@@ -205,9 +205,9 @@ Vid projektets start innehöll koden flera typiska "Code Smells" som nu har refa
 | **Monolitisk "God Class"** (`GarageSystem` hade 400+ rader och skötte allt från utskrifter till rabattregler). | **Fasadmönstret implementerat:** `GarageSystem` delegerar nu till 7 specialiserade tjänster (`BillingService`, `CustomerService`, etc.). |
 | **UI sammanflätat med affärslogik** (`System.out.println` spridda i domänmetoder). | **Skiktseparation:** All utskriftslogik flyttad till `ConsolePrinter`. Alla servicemetoder returnerar rena domänobjekt eller felkoder. |
 | **Hårdkodad och duplicerad sökning** i linjära for-loopar. | **Granulär sökmotor:** `GlobalSearch` och `EntityLookup` indexerar och söker över alla entiteter med prefixstöd och skiftlägesokänslighet. |
-| **Frånvaro av tester:** Inga automatiserade tester existerade i startpaketet. | **Omfattande test- och audit-svit:** 50 automatiserade tester för enhet, kvalitet, säkerhet och WCAG 2.1 AA med 100% pass rate. |
+| **Frånvaro av tester:** Inga automatiserade tester existerade i startpaketet. | **Omfattande test- och audit-svit:** 50 automatiserade tester för enhet, kvalitet, säkerhet och WCAG 2.1 AAA med 100% pass rate. |
 | **Hårdkodat språk och texter:** Svenska texter hårdkodade i Java-strängar. | **Full I18n-motor:** Extern ordbok i JSON med 396 nycklar och momentan språkväxling mellan svenska och engelska. |
-| **Ingen tillgänglighetsstandard:** Konsolfönster utan kontrastkrav. | **WCAG 2.1 AA certifiering:** Färgkontrast $\ge 4.5:1$, tangentbordsfokus (`:focused`), zebramönstrade tabeller och dynamisk layout. |
+| **Ingen tillgänglighetsstandard:** Konsolfönster utan kontrastkrav. | **WCAG 2.1 AAA certifiering:** Färgkontrast $\ge 7.0:1$ för all löpande text, tangentbordsfokus (`:focused`), zebramönstrade tabeller och dynamisk layout. |
 
 ---
 
@@ -227,14 +227,14 @@ Vid projektets start innehöll koden flera typiska "Code Smells" som nu har refa
 
 ---
 
-## 6. Kvalitetssäkring, Säkerhetsanalys & WCAG 2.1 AA
+## 6. Kvalitetssäkring, Säkerhetsanalys & WCAG 2.1 AAA
 
 Hela systemet kvalitetssäkras med det automatiska verifieringsskriptet `./check.sh` (eller `./audit.sh`). Skriptet exekverar 50 kontroller fördelade på 4 moduler:
 
 ```bash
 ./check.sh          # Kör hela audit-sviten (Alla 4 moduler)
 ./check.sh --unit   # Endast enhetstester (37 tester)
-./check.sh --wcag   # Endast WCAG 2.1 AA tillgänglighet (5 tester)
+./check.sh --wcag   # Endast WCAG 2.1 AAA tillgänglighet (5 tester)
 ```
 
 ### De fyra modulerna:
@@ -257,12 +257,12 @@ Hela systemet kvalitetssäkras med det automatiska verifieringsskriptet `./check
    - SQL-injektionsskydd: Verifierar att framtida SQL-anrop är förberedda för parameterized queries (`PreparedStatement`).
    - Förbud mot farliga processkörningar (`Runtime.getRuntime().exec`).
    - Skydd mot loggning av känsliga personuppgifter (PII).
-4. **Modul 4: WCAG 2.1 AA Tillgänglighet (5 kontroller – 100% godkända)**
-   - Färgkontrast på text mot kortbakgrunder $\ge 4.5:1$.
-   - Färgkontrast på accentknappar $\ge 4.5:1$.
-   - Färgkontrast i sidonavigationen $\ge 4.5:1$.
+4. **Modul 4: WCAG 2.1 AAA Tillgänglighet (5 kontroller – 100% godkända)**
+   - Färgkontrast på text och dämpad text mot kort- och sidbakgrunder $\ge 7.0:1$ (WCAG 1.4.6 Contrast Enhanced Level AAA: upp till 16.5:1).
+   - Färgkontrast på accentknappar $\ge 7.0:1$ (8.37:1 i temat Emerald).
+   - Färgkontrast i sidonavigationen $\ge 7.0:1$ (12.86:1 aktiv text, 8.00:1 dämpad text).
    - Tydliga fokusindikatorer (`:focused`) på alla interaktiva kontroller (WCAG 2.4.7).
-   - Minsta tillåtna teckenstorlek ($\ge 11$ px på all löpande text).
+   - Minsta tillåtna teckenstorlek ($\ge 11$ px på all löpande text, WCAG 1.4.4).
 
 ---
 
