@@ -112,15 +112,39 @@ WigellAutoCore/autocore/
 * **Permanent Sidebar:** Navigeringen är uteslutande placerad i den vänstra sidomenyn med tydlig sektionsindelning, mjuka hover-effekter och integrerad språkväxlingsknapp.
 * **Granulär tabellsökning:** Samtliga entitetsvyer har integrerad filtrering och sökning via `TableFactory` med omedelbar filtrering över alla kolumner.
 
+### Interaktiv Mekaniker-Kanban & Schemaläggning (MechanicKanbanCard)
+Översiktspanelen (`OverviewView`) innehåller en fullt interaktiv, realtidsstyrd Kanban-tavla för verkstadens mekaniker:
+* **Trelägesvyer (Dag, Vecka, Månad):**
+  - **Dagsvy (07:00–16:00):** Visar 9 distinkta timboxar. Lediga tider har en klickbar SVG-plusknapp (`+`) som öppnar bokningsdialogen direkt förvald på mekanikern och vald timme.
+  - **Inline Drawer:** Ett klick på en bokad timme fäller mjukt ut en inline detaljlåda under slotten med fordonets registreringsnummer, kundnamn och fullständig arbetsorderbeskrivning.
+  - **Veckovy & Beläggningsgrad:** 7-dagarsvy med färgkodad 4-stegs belastningsprogression:
+    - 🟢 **Ledig (0–2 h):** Grön belastningsindikator.
+    - 🟡 **Måttlig (3–4 h):** Gul belastningsindikator.
+    - 🟠 **Hög (5–6 h):** Orange belastningsindikator.
+    - 🔴 **Fullbokad (7+ h):** Röd belastningsindikator.
+  - **Månadsvy:** Interaktiv månadskalender som visualiserar tjänstgöringsdagar och tillgänglighet för framtida bokningar.
+* **Smart Snabbnavigering till nästa bokning:**
+  - Om mekanikern saknar bokade timmar på vald dag visas en klickbar genväg (`📅 Nästa bokning: [Dag] [Datum] →`) som med ett klick hoppar direkt till nästa dag då mekanikern har ett inbokat arbete.
+* **Kontextuell Kebabmeny (`⋮`):**
+  - Diskret 3-prickars meny uppe till höger på varje mekanikerkort med alternativ för:
+    - **Redigera mekaniker:** Uppdatera namn, specialisering och tillgänglighet via modal dialog.
+    - **Ta bort mekaniker:** Raderar mekanikern ur systemet, skyddad av en säkerhetsspärr i `GarageSystem` som förhindrar borttagning om mekanikern har pågående aktiva arbetsordrar.
+* **Realtidssynkronisering mot SQLite-databasen:**
+  - `MechanicSchedule.syncFromDatabase()` läser automatiskt in aktiva arbetsordrar från SQLite (`work_orders`, `bookings`, `vehicles`, `customers`) och mappar in dem i lediga timluckor. Nya arbetsordrar syns direkt utan omstart.
+* **Filtrering & Horisontell Navigering:**
+  - Snabbfilter för mekanikernas specialiseringar (t.ex. *Motor*, *Bromsar*, *El & Diagnostik*) och horisontella rullningskontroller (`<`, `>`) som möjliggör smidig hantering av obegränsat antal mekaniker utan layout-hopp.
+* **Plattforms- & Tillgänglighetsoptimerad:**
+  - Vektorbaserade `SVGPath`-ikoner, standardiserade Unicode-pilar (`<`, `>`, `\u25BC`) och justerad typografi förhindrar avhuggna symboler och överlappande text på macOS. Fullt förenlig med WCAG 2.1 AAA.
+
 ### Automatiserade tester & Audit (`com.wac.autocore.test`)
-Systemet skyddas av **50 automatiserade tester och kvalitetskontroller** som körs på under 1 sekund:
+Systemet skyddas av **51 automatiserade tester och kvalitetskontroller** som körs på under 1 sekund:
 * **`GlobalSearchTest`**: Verifierar granulär sökning över kunder, fordon, mekaniker, ordrar, skiftlägesokänslighet och prefix.
 * **`TableFactoryTest`**: Verifierar flerkolumnssökning och regressionsskyddar mot indexbuggar vid filtrering.
 * **`UiFormattersTest`**: Valuta (long/double), trunkering, statusöversättning, datum och badge-CSS-klasser.
 * **`EntityLookupTest`**: Uppslagning mot `GarageSystem` för kundnamn, fordonsreg, mekaniker och tjänster.
 * **`OverviewMetricsTest`**: Verifiering av KPI-mätetal (aktiva ordrar, omsättning, tillgänglighet).
 * **`I18nTest`**: Språkväxling i realtid, parameteriserade strängar, fallback och komplett paritet mellan språkfiler.
-* **`MechanicScheduleTest`**: Dagslots, veckobelastning, färgprogression och skydd mot dubbelbokningar.
+* **`MechanicScheduleTest`**: Dagslots, veckobelastning, färgprogression, skydd mot dubbelbokningar och `getNextBookingDate`.
 * **`CodeQualityTest`**: 100% språkparitet, temaintegritet, frikoppling av servicelager och komplexitetsgränser.
 * **`SecurityAuditTest`**: Skanning mot hårdkodade hemligheter, SQL-injektionsmönster, processkörning och PII-loggning.
 * **`WcagAccessibilityTest`**: WCAG 2.1 AAA kontrastmätningar (>= 7.0:1 för normal text, >= 4.5:1 för UI), fokusindikatorer och minsta teckenstorlek.
