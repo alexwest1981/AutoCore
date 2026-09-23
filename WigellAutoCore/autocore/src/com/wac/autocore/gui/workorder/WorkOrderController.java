@@ -128,6 +128,9 @@ public class WorkOrderController {
         bookingIdField.clear();
         mechanicIdField.clear();
         serviceItemIdsField.clear();
+
+        int duration = garageSystem.getEstimatedDuration(serviceItemIds);
+        System.out.println("Estimated duration for this work order: " + duration + " minutes");
     }
 
     @FXML

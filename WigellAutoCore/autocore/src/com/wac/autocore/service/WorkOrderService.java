@@ -158,6 +158,18 @@ public class WorkOrderService {
         return true;
     }
 
+    public int getTotalEstimatedMinutes(int... serviceItemsIDs) {
+        int totalMinutes = 0;
+
+        for (int serviceItemId : serviceItemsIDs){
+            ServiceItem item = findServiceItem(serviceItemId);
+            if (item != null) {
+                totalMinutes += item.getEstimatedMinutes();
+            }
+        }
+        return totalMinutes;
+    }
+
     private Booking findBooking(int id) {
         try {
             return bookingRepository.findById(id);
