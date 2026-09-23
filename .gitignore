@@ -1,6 +1,15 @@
 # IDE / Editor files
+# .idea-mappar ignoreras, utom i projektroten och där bara modulfilen,
+# projektbiblioteken och modullistan. Det är de filerna som pekar ut
+# databasdrivrutinen, så att Run-knappen i IntelliJ fungerar efter en pull.
+# workspace.xml lämnas utanför, den ändras hela tiden och har maskinlokala sökvägar.
 .idea/
+!/.idea/
+/.idea/*
+!/.idea/libraries/
+!/.idea/modules.xml
 *.iml
+!Projektarbete.iml
 .vscode/
 .project
 .classpath
