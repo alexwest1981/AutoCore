@@ -13,7 +13,7 @@ import javafx.application.Application;
 public class Main {
 
     public static void main(String[] args) {
-        Db.initTables();
+        Db.ensureReady();
         Application.launch(AutoCoreApp.class, args);
     }
 }

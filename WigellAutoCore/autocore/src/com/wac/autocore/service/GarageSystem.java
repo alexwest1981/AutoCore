@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
@@ -17,6 +18,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class GarageSystem {
+
+    public GarageSystem() {
+        Db.ensureReady();
+    }
 
     public List<Customer> getCustomers() {
         return customerService.getAll();
