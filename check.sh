@@ -43,6 +43,15 @@ fi
 SRC_DIR="$DIR/WigellAutoCore/autocore/src"
 RES_DIR="$DIR/WigellAutoCore/autocore/src/resources"
 OUT_DIR="$DIR/out/production/Systemarkitektur"
+JDBC_JAR="$DIR/WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
+
+if [ -f "$JDBC_JAR" ]; then
+    CP_RUN="$OUT_DIR:$JDBC_JAR"
+    CP_ARG=(-cp "$JDBC_JAR")
+else
+    CP_RUN="$OUT_DIR"
+    CP_ARG=()
+fi
 
 MODE="${1:-all}"
 
@@ -73,7 +82,8 @@ echo ""
 
 # Steg 0: Kompilering
 echo -ne "${BOLD}[0/4] Bygger och kompilerar källkod...${RESET} "
-BUILD_OUT=$("$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" $(find "$SRC_DIR" -name "*.java") 2>&1) || {
+SOURCES=($(find "$SRC_DIR" -name "*.java"))
+BUILD_OUT=$("$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" "${CP_ARG[@]}" "${SOURCES[@]}" 2>&1) || {
     echo -e "${RED}MISSLYCKADES${RESET}"
     echo -e "${RED}$BUILD_OUT${RESET}"
     exit 1
@@ -94,7 +104,7 @@ run_module() {
     echo -e "${BOLD}${num} ${title}${RESET}"
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 
-    OUTPUT=$("$JAVA_BIN" -cp "$OUT_DIR" com.wac.autocore.test.TestRunner "$code" 2>&1)
+    OUTPUT=$("$JAVA_BIN" -cp "$CP_RUN" com.wac.autocore.test.TestRunner "$code" 2>&1)
     EXIT_CODE=$?
 
     # Skriv ut detaljerna snyggt indragna

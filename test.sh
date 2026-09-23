@@ -25,6 +25,7 @@ if [ -d "$RES_DIR" ]; then
 fi
 
 # Kompilera alla källfiler inklusive tester
+SOURCES=($(find "$SRC_DIR" -name "*.java"))
 "$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" -cp "$JDBC_JAR" "${SOURCES[@]}"
 
 # Kör test-runner
