@@ -119,12 +119,12 @@ public class SidebarView {
         brandRow.getStyleClass().add("brand-row");
         brandRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox nav = new VBox(6);
+        VBox nav = new VBox(0);
         nav.setPadding(new Insets(14, 0, 0, 0));
         overviewBtn = addNav(nav, "overview", I18n.get("nav.section.overview"));
 
-        VBox groups = new VBox(14);
-        groups.setPadding(new Insets(10, 0, 0, 0));
+        VBox groups = new VBox(22);
+        groups.setPadding(new Insets(18, 0, 16, 0));
         addGroup(groups, "nav.section.customers", navItem("customers", "nav.item.customers"));
         addGroup(groups, "nav.section.vehicles", navItem("vehicles", "nav.item.vehicles"));
         addGroup(groups, "nav.section.bookings", navItem("bookings", "nav.item.bookings"));
@@ -220,7 +220,7 @@ public class SidebarView {
 
         HBox head = new HBox(t);
         head.getStyleClass().add("nav-group-head");
-        head.setPadding(new Insets(0, 14, 4, 14));
+        head.setPadding(new Insets(0, 14, 6, 14));
 
         VBox list = new VBox(2);
         for (NavSpec s : items) {
