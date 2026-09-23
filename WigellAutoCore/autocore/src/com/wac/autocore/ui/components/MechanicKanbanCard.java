@@ -7,7 +7,6 @@ import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.service.MechanicSchedule.DayLoad;
-import com.wac.autocore.service.MechanicSchedule.LoadLevel;
 import com.wac.autocore.service.MechanicSchedule.MonthDayStatus;
 import com.wac.autocore.service.MechanicSchedule.TimeSlot;
 import com.wac.autocore.ui.ActionDialogs;
@@ -34,7 +33,6 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 

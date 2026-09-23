@@ -21,7 +21,6 @@ public class WcagAccessibilityTest {
     // Normal text: minst 7.0:1 (WCAG 1.4.6 Contrast Enhanced Level AAA)
     // Stor text (>= 18pt eller >= 14pt fet) och grafiska UI-komponenter: minst 4.5:1
     private static final double MIN_CONTRAST_AAA_NORMAL_TEXT = 7.0;
-    private static final double MIN_CONTRAST_AAA_LARGE_OR_UI = 4.5;
     private static final int MIN_FONT_SIZE_PX = 11;
 
     /**

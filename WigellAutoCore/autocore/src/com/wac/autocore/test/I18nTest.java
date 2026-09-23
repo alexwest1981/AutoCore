@@ -64,6 +64,7 @@ public class I18nTest {
     public static void testUiLanguageChange() {
         I18n.setLanguage("en");
         com.wac.autocore.ui.navigation.SidebarView sidebar = new com.wac.autocore.ui.navigation.SidebarView(key -> {});
+        TestRunner.assertNotNull(sidebar.getView(), "Sidebar-vy skall initieras");
         I18n.setLanguage("sv");
         TestRunner.assertTrue(I18n.isSwedish(), "Aktivt språk skall vara svenska");
         TestRunner.assertEquals("Översikt", I18n.get("nav.section.overview"), "Nav översikt på svenska");

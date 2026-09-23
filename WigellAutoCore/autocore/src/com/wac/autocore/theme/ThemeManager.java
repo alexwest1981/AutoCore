@@ -55,14 +55,8 @@ public final class ThemeManager {
      * Kept here rather than in a single app so that every app using a theme
      * receives the layer automatically. It is placed FIRST in the list so that
      * the theme's own rules win where they overlap.
-     *
-     * NOTE: components.css is intentionally skipped for the "default" theme so
-     * that JavaFX's built-in Modena stylesheet is left completely intact.
      */
     private static final String COMPONENTS = "/com/wac/autocore/theme/components.css";
-
-    /** Slug for the plain-JavaFX theme — no custom CSS is applied at all. */
-    private static final String DEFAULT_PLAIN_SLUG = "default";
 
     private static URL resolveResource(String path) {
         if (path == null) return null;
