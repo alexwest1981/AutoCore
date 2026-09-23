@@ -788,7 +788,7 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
 .sidebar-lang-container {
     -fx-border-color: rgba(255, 255, 255, 0.08) transparent transparent transparent;
     -fx-border-width: 1 0 0 0;
-    -fx-padding: 14 16 16 16;
+    -fx-padding: 14 0 16 0;
     -fx-alignment: CENTER;
 }
 

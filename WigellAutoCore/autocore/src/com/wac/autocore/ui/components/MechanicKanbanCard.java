@@ -86,6 +86,7 @@ public class MechanicKanbanCard {
         // Rad med alla mekanikerkort sida vid sida
         HBox cardsRow = new HBox(12);
         cardsRow.setAlignment(Pos.TOP_LEFT);
+        cardsRow.setMinWidth(Region.USE_PREF_SIZE);
 
         if (mechanics.isEmpty()) {
             cardsRow.getChildren().add(new Label(I18n.get("kanban.empty_mechanics")));
@@ -183,7 +184,8 @@ public class MechanicKanbanCard {
 
         this.cardContainer = new VBox(8);
         this.cardContainer.getStyleClass().addAll("kanban-card", "kanban-card-compact");
-        this.cardContainer.setMinWidth(260);
+        this.cardContainer.setMinWidth(290);
+        this.cardContainer.setPrefWidth(350);
 
         this.headerBox = new VBox(6);
         this.bodyContent = new VBox(6);
@@ -222,32 +224,20 @@ public class MechanicKanbanCard {
 
         Mechanic mech = getActiveMechanic();
 
-        // Rad 1: Pilar för mekanikerbyte + Mekanikernamn + Vyväxlare
-        Button prevMechBtn = new Button("❮");
-        prevMechBtn.getStyleClass().addAll("ghost", "kanban-nav-arrow-compact");
-        prevMechBtn.setTooltip(new javafx.scene.control.Tooltip(I18n.get("kanban.nav.prev")));
-        prevMechBtn.setOnAction(e -> {
-            activeMechanicIndex = (activeMechanicIndex - 1 + mechanics.size()) % mechanics.size();
-            render();
-        });
-
-        Button nextMechBtn = new Button("❯");
-        nextMechBtn.getStyleClass().addAll("ghost", "kanban-nav-arrow-compact");
-        nextMechBtn.setTooltip(new javafx.scene.control.Tooltip(I18n.get("kanban.nav.next")));
-        nextMechBtn.setOnAction(e -> {
-            activeMechanicIndex = (activeMechanicIndex + 1) % mechanics.size();
-            render();
-        });
-
         // Avatar
         String initials = getInitials(mech.getName());
         StackPane avatar = new StackPane(new Label(initials));
         avatar.getStyleClass().add("kanban-avatar-compact");
         avatar.setPrefSize(26, 26);
         avatar.setMinSize(26, 26);
+        avatar.setMaxSize(26, 26);
 
         Label nameLabel = new Label(mech.getName());
         nameLabel.getStyleClass().add("kanban-mech-name-compact");
+        nameLabel.setMinWidth(Region.USE_PREF_SIZE);
+
+        HBox mechTitle = new HBox(6, avatar, nameLabel);
+        mechTitle.setAlignment(Pos.CENTER_LEFT);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -260,7 +250,7 @@ public class MechanicKanbanCard {
         HBox toggleGroup = new HBox(2, dayBtn, weekBtn, monthBtn);
         toggleGroup.getStyleClass().add("kanban-toggle-group-compact");
 
-        HBox topRow = new HBox(4, prevMechBtn, avatar, nameLabel, nextMechBtn, spacer, toggleGroup);
+        HBox topRow = new HBox(8, mechTitle, spacer, toggleGroup);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         // Rad 2: Specialisering och tillgänglighetsbadge
@@ -296,9 +286,7 @@ public class MechanicKanbanCard {
     private Button createViewButton(String label, KanbanViewMode mode) {
         Button btn = new Button(label);
         btn.getStyleClass().add("kanban-toggle-btn-compact");
-        btn.setMinWidth(58);
-        btn.setPrefWidth(58);
-        btn.setMaxWidth(58);
+        btn.setMinWidth(Region.USE_PREF_SIZE);
         btn.setAlignment(Pos.CENTER);
         if (this.currentMode == mode) {
             btn.getStyleClass().add("active");

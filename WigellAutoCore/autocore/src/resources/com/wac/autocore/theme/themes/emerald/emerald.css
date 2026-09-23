@@ -86,6 +86,31 @@ Button.ghost, .button.ghost {
 }
 Button.ghost:hover { -fx-background-color: -wac-side-hover; }
 
+Button.small, .button.small {
+    -fx-padding: 3px 8px;
+    -fx-font-size: 11px;
+}
+
+Button.kanban-toggle-btn-compact, .button.kanban-toggle-btn-compact {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3px 8px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+Button.kanban-toggle-btn-compact:hover, .button.kanban-toggle-btn-compact:hover {
+    -fx-text-fill: -wac-text;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+Button.kanban-toggle-btn-compact.active, .button.kanban-toggle-btn-compact.active {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
 TextField, PasswordField, TextArea, ComboBox {
     -fx-background-color: -wac-card;
     -fx-text-fill: -wac-text;
@@ -163,7 +188,7 @@ TableView .table-view { -fx-padding: 0; }
     -fx-background-radius: 0;
     -fx-border-color: transparent #202523 transparent transparent;
     -fx-border-width: 0 1 0 0;
-    -fx-padding: 24px 16px 18px 18px;
+    -fx-padding: 24px 0 0 0;
 }
 .col {
     -fx-background-color: -wac-shell;

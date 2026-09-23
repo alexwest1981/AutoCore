@@ -117,9 +117,10 @@ public class SidebarView {
         HBox brandRow = new HBox(12, mark, brandTitles);
         brandRow.getStyleClass().add("brand-row");
         brandRow.setAlignment(Pos.CENTER_LEFT);
+        brandRow.setPadding(new Insets(0, 16, 0, 16));
 
         VBox nav = new VBox(0);
-        nav.setPadding(new Insets(14, 0, 0, 0));
+        nav.setPadding(new Insets(14, 16, 0, 16));
         overviewBtn = addNav(nav, "overview", I18n.get("nav.section.overview"));
 
         VBox groups = new VBox(22);
@@ -189,9 +190,9 @@ public class SidebarView {
         HBox switchRow = new HBox(10, enLabel, switchTrack, svLabel);
         switchRow.getStyleClass().add("lang-switch-row");
         switchRow.setAlignment(Pos.CENTER);
-        switchRow.setMinWidth(124);
-        switchRow.setPrefWidth(124);
-        switchRow.setMaxWidth(124);
+        switchRow.setMinWidth(140);
+        switchRow.setPrefWidth(140);
+        switchRow.setMaxWidth(140);
         switchRow.setCursor(Cursor.HAND);
         switchRow.setOnMouseClicked(e -> {
             I18n.setLanguage(I18n.isSwedish() ? I18n.LANG_EN : I18n.LANG_SV);
