@@ -390,6 +390,13 @@
       "brakes": "Brakes",
       "diagnostics": "Diagnostics"
     },
+    "filter": {
+      "all": "All",
+      "showing": "Showing {0} of {1} mechanics",
+      "scroll_prev": "Scroll left",
+      "scroll_next": "Scroll right",
+      "empty": "No mechanics match the selected filter."
+    },
     "empty_mechanics": "No mechanics registered.",
     "no_mechanic": "No mechanic"
   }

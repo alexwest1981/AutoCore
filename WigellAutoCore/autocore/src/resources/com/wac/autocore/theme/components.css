@@ -1148,6 +1148,52 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-text-fill: -wac-on-accent;
 }
 
+.kanban-filter-chip {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-cursor: hand;
+}
+.kanban-filter-chip:hover {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-ring;
+}
+.kanban-filter-chip.active {
+    -fx-background-color: -wac-accent;
+    -fx-border-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+.kanban-scroll-btn {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 3px 8px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-cursor: hand;
+}
+.kanban-scroll-btn:hover {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-ring;
+}
+
+.kanban-count-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-padding: 0 4px 0 0;
+}
+
 .kanban-date-title-compact {
     -fx-font-size: 11px;
     -fx-font-weight: bold;

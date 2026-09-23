@@ -28,13 +28,18 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import javafx.scene.control.Tooltip;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Kompakt Kanban-kort för mekaniker på Dashboard/Översikten.
@@ -70,8 +75,8 @@ public class MechanicKanbanCard {
         addMechBtn.getStyleClass().addAll("secondary", "small");
         addMechBtn.setOnAction(e -> javafx.application.Platform.runLater(() -> ActionDialogs.showCreateMechanicDialog(garage, onRefresh)));
 
-        Region spr = new Region();
-        HBox.setHgrow(spr, Priority.ALWAYS);
+        Region spr1 = new Region();
+        HBox.setHgrow(spr1, Priority.ALWAYS);
 
         // Belastningslegend
         HBox legend = buildCompactLegend();
@@ -79,25 +84,14 @@ public class MechanicKanbanCard {
         HBox headLeft = new HBox(12, new VBox(2, title, sub), addMechBtn);
         headLeft.setAlignment(Pos.CENTER_LEFT);
 
-        HBox boardHead = new HBox(12, headLeft, spr, legend);
+        HBox boardHead = new HBox(12, headLeft, spr1, legend);
         boardHead.setAlignment(Pos.CENTER_LEFT);
         boardHead.setPadding(new Insets(0, 0, 4, 0));
 
         // Rad med alla mekanikerkort sida vid sida
-        HBox cardsRow = new HBox(12);
+        HBox cardsRow = new HBox(14);
         cardsRow.setAlignment(Pos.TOP_LEFT);
         cardsRow.setMinWidth(Region.USE_PREF_SIZE);
-
-        if (mechanics.isEmpty()) {
-            cardsRow.getChildren().add(new Label(I18n.get("kanban.empty_mechanics")));
-        } else {
-            for (int i = 0; i < mechanics.size(); i++) {
-                MechanicKanbanCard card = new MechanicKanbanCard(garage, i, router, onRefresh);
-                VBox cardView = card.getView();
-                HBox.setHgrow(cardView, Priority.ALWAYS);
-                cardsRow.getChildren().add(cardView);
-            }
-        }
 
         // Horisontell scroll om många mekaniker tillkommer
         ScrollPane scroll = new ScrollPane(cardsRow);
@@ -107,7 +101,113 @@ public class MechanicKanbanCard {
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
 
-        VBox board = new VBox(10, boardHead, scroll);
+        // Rad 2: Filter-chips & Scroll-kontroller
+        HBox filterBox = new HBox(8);
+        filterBox.setAlignment(Pos.CENTER_LEFT);
+
+        Label countLabel = new Label();
+        countLabel.getStyleClass().add("kanban-count-label");
+
+        Button scrollLeftBtn = new Button("❮");
+        scrollLeftBtn.getStyleClass().addAll("kanban-scroll-btn", "small");
+        scrollLeftBtn.setTooltip(new Tooltip(I18n.get("kanban.filter.scroll_prev")));
+        scrollLeftBtn.setOnAction(e -> scroll.setHvalue(Math.max(0.0, scroll.getHvalue() - 0.35)));
+
+        Button scrollRightBtn = new Button("❯");
+        scrollRightBtn.getStyleClass().addAll("kanban-scroll-btn", "small");
+        scrollRightBtn.setTooltip(new Tooltip(I18n.get("kanban.filter.scroll_next")));
+        scrollRightBtn.setOnAction(e -> scroll.setHvalue(Math.min(1.0, scroll.getHvalue() + 0.35)));
+
+        HBox scrollControls = new HBox(8, countLabel, scrollLeftBtn, scrollRightBtn);
+        scrollControls.setAlignment(Pos.CENTER_RIGHT);
+
+        Region spr2 = new Region();
+        HBox.setHgrow(spr2, Priority.ALWAYS);
+
+        HBox controlBar = new HBox(10, filterBox, spr2, scrollControls);
+        controlBar.setAlignment(Pos.CENTER_LEFT);
+        controlBar.setPadding(new Insets(4, 0, 6, 0));
+
+        final String[] activeFilter = new String[]{null};
+        final List<Button> filterButtons = new ArrayList<Button>();
+
+        Runnable populateCards = () -> {
+            cardsRow.getChildren().clear();
+            if (mechanics.isEmpty()) {
+                cardsRow.getChildren().add(new Label(I18n.get("kanban.empty_mechanics")));
+                countLabel.setText(I18n.get("kanban.filter.showing", 0, 0));
+                return;
+            }
+
+            int count = 0;
+            for (int i = 0; i < mechanics.size(); i++) {
+                Mechanic m = mechanics.get(i);
+                if (activeFilter[0] == null || activeFilter[0].equalsIgnoreCase(m.getSpecialization())) {
+                    MechanicKanbanCard card = new MechanicKanbanCard(garage, i, router, onRefresh);
+                    VBox cardView = card.getView();
+                    cardView.setMinWidth(310);
+                    cardView.setPrefWidth(350);
+                    cardView.setMaxWidth(480);
+                    HBox.setHgrow(cardView, Priority.ALWAYS);
+                    cardsRow.getChildren().add(cardView);
+                    count++;
+                }
+            }
+
+            if (count == 0) {
+                Label empty = new Label(I18n.get("kanban.filter.empty"));
+                empty.setStyle("-fx-text-fill: -wac-muted; -fx-padding: 24 16; -fx-font-style: italic;");
+                cardsRow.getChildren().add(empty);
+            }
+
+            countLabel.setText(I18n.get("kanban.filter.showing", count, mechanics.size()));
+            scroll.setHvalue(0.0);
+        };
+
+        // Samla unika specialiseringar och räkna mekaniker per kategori
+        Map<String, Integer> specCounts = new LinkedHashMap<String, Integer>();
+        for (Mechanic m : mechanics) {
+            String spec = m.getSpecialization();
+            if (spec != null && !spec.trim().isEmpty()) {
+                specCounts.put(spec, specCounts.containsKey(spec) ? specCounts.get(spec) + 1 : 1);
+            }
+        }
+
+        // Knapp: Alla
+        Button allBtn = new Button(I18n.get("kanban.filter.all") + " (" + mechanics.size() + ")");
+        allBtn.getStyleClass().addAll("kanban-filter-chip", "active");
+        filterButtons.add(allBtn);
+        allBtn.setOnAction(e -> {
+            activeFilter[0] = null;
+            for (Button b : filterButtons) {
+                b.getStyleClass().remove("active");
+            }
+            allBtn.getStyleClass().add("active");
+            populateCards.run();
+        });
+        filterBox.getChildren().add(allBtn);
+
+        // Knappar för varje specialisering
+        for (Map.Entry<String, Integer> entry : specCounts.entrySet()) {
+            final String specKey = entry.getKey();
+            String displaySpec = formatSpecialization(specKey) + " (" + entry.getValue() + ")";
+            Button chip = new Button(displaySpec);
+            chip.getStyleClass().add("kanban-filter-chip");
+            filterButtons.add(chip);
+            chip.setOnAction(e -> {
+                activeFilter[0] = specKey;
+                for (Button b : filterButtons) {
+                    b.getStyleClass().remove("active");
+                }
+                chip.getStyleClass().add("active");
+                populateCards.run();
+            });
+            filterBox.getChildren().add(chip);
+        }
+
+        populateCards.run();
+
+        VBox board = new VBox(8, boardHead, controlBar, scroll);
         board.getStyleClass().addAll("panel", "kanban-board-panel");
         return board;
     }
@@ -269,7 +369,7 @@ public class MechanicKanbanCard {
         headerBox.getChildren().addAll(topRow, subRow);
     }
 
-    private String formatSpecialization(String spec) {
+    private static String formatSpecialization(String spec) {
         if (spec == null) return "";
         if (spec.equalsIgnoreCase("General service") || spec.equalsIgnoreCase("Allmän service")) {
             return I18n.get("kanban.specialization.general_service");

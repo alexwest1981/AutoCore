@@ -111,6 +111,45 @@ Button.kanban-toggle-btn-compact.active, .button.kanban-toggle-btn-compact.activ
     -fx-text-fill: -wac-on-accent;
 }
 
+Button.kanban-filter-chip, .button.kanban-filter-chip {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-cursor: hand;
+}
+Button.kanban-filter-chip:hover, .button.kanban-filter-chip:hover {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-ring;
+}
+Button.kanban-filter-chip.active, .button.kanban-filter-chip.active {
+    -fx-background-color: -wac-accent;
+    -fx-border-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+Button.kanban-scroll-btn, .button.kanban-scroll-btn {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 3px 8px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-cursor: hand;
+}
+Button.kanban-scroll-btn:hover, .button.kanban-scroll-btn:hover {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-ring;
+}
+
 TextField, PasswordField, TextArea, ComboBox {
     -fx-background-color: -wac-card;
     -fx-text-fill: -wac-text;

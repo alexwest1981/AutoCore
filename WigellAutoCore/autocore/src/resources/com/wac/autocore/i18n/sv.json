@@ -390,6 +390,13 @@
       "brakes": "Bromsar",
       "diagnostics": "Diagnostik & Felsökning"
     },
+    "filter": {
+      "all": "Alla",
+      "showing": "Visar {0} av {1} mekaniker",
+      "scroll_prev": "Bläddra vänster",
+      "scroll_next": "Bläddra höger",
+      "empty": "Inga mekaniker matchar valt filter."
+    },
     "empty_mechanics": "Inga mekaniker registrerade.",
     "no_mechanic": "Ingen mekaniker"
   }
