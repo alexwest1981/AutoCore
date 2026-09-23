@@ -517,8 +517,14 @@ public class MechanicKanbanCard {
             Region spr = new Region();
             HBox.setHgrow(spr, Priority.ALWAYS);
 
-            Button bookBtn = new Button("+");
+            Button bookBtn = new Button();
             bookBtn.getStyleClass().addAll("primary", "kanban-slot-plus-btn");
+
+            javafx.scene.shape.SVGPath plusIcon = new javafx.scene.shape.SVGPath();
+            plusIcon.setContent("M 4 0 H 6 V 4 H 10 V 6 H 6 V 10 H 4 V 6 H 0 V 4 H 4 Z");
+            plusIcon.setFill(javafx.scene.paint.Color.WHITE);
+            plusIcon.getStyleClass().add("kanban-slot-plus-icon");
+            bookBtn.setGraphic(plusIcon);
             String bookSlotText = I18n.get("kanban.action.book_hour") + " (" + slot.getHour() + ":00)";
             bookBtn.setTooltip(new javafx.scene.control.Tooltip(bookSlotText));
             bookBtn.setAccessibleRole(javafx.scene.AccessibleRole.BUTTON);

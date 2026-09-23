@@ -1232,8 +1232,7 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-font-style: italic;
 }
 .kanban-slot-plus-btn {
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
+    -fx-font-size: 11px;
     -fx-padding: 0;
     -fx-min-width: 24px;
     -fx-pref-width: 24px;
@@ -1244,10 +1243,14 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-background-radius: 12px;
     -fx-border-radius: 12px;
     -fx-alignment: CENTER;
+    -fx-content-display: graphic-only;
     -fx-cursor: hand;
 }
 .kanban-slot-plus-btn:hover {
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.35), 3, 0, 0, 1);
+}
+.kanban-slot-plus-icon {
+    -fx-fill: -wac-on-accent;
 }
 
 .kanban-week-row-compact {
