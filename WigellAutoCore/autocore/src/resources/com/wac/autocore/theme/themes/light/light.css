@@ -38,6 +38,7 @@
     -wac-drift-track:    #374151;
     -wac-bg:             #f0f0f0;
     -wac-surface:        #f7f7f7;
+    -wac-row-alt:        #f8f9fa;
     -fx-font-family:     "Arial";
     -fx-font-size:       13px;
 }
@@ -114,7 +115,11 @@ TableView .column-header .label {
     -fx-alignment: CENTER_LEFT;
 }
 TableView .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
-TableView .table-row-cell:filled { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:even { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:odd { -fx-background-color: -wac-row-alt; }
+TableView .table-row-cell:filled:hover,
+TableView .table-row-cell:filled:odd:hover,
+TableView .table-row-cell:filled:even:hover { -fx-background-color: -wac-side-hover; }
 
 /* ---- App shell ---- */
 .stage { -fx-background-color: -wac-page; }

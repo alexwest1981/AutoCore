@@ -29,6 +29,11 @@ public class PageRouter {
         this.garage = garage;
         this.pageBox = pageBox;
         this.sidebar = sidebar;
+        com.wac.autocore.ui.i18n.I18n.addListener(lang -> {
+            if (currentPageKey != null) {
+                navigate(currentPageKey);
+            }
+        });
     }
 
     public void setSidebar(SidebarView sidebar) {
@@ -80,6 +85,22 @@ public class PageRouter {
 
     public String getCurrentPageKey() {
         return currentPageKey;
+    }
+
+    public void navigateToWorkOrder(int workOrderId) {
+        navigate("workorders");
+        if (workOrderId > 0 && activeTable != null) {
+            activeTable.applySearch(String.valueOf(workOrderId));
+            javafx.scene.control.TableView<?> tv = activeTable.getTableView();
+            int idx = 0;
+            for (Object item : tv.getItems()) {
+                if (item instanceof com.wac.autocore.model.WorkOrder && ((com.wac.autocore.model.WorkOrder) item).getId() == workOrderId) {
+                    tv.getSelectionModel().select(idx);
+                    break;
+                }
+                idx++;
+            }
+        }
     }
 
     public void navigate(String key) {

@@ -32,6 +32,9 @@ public final class TableFactory {
             this.baseList = FXCollections.observableArrayList(data);
             this.filteredList = new FilteredList<S>(this.baseList);
             this.tableView = new TableView<S>(this.filteredList);
+            Label placeholder = new Label(com.wac.autocore.ui.i18n.I18n.get("table.empty"));
+            placeholder.getStyleClass().add("text-muted");
+            this.tableView.setPlaceholder(placeholder);
         }
 
         public TableView<S> getTableView() {

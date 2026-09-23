@@ -40,6 +40,7 @@
     -wac-drift-track: #525454;
     -wac-bg: #151717;
     -wac-surface: #202222;
+    -wac-row-alt: #1e2020;
     -fx-font-family: "Arial";
     -fx-font-size: 13px;
 }
@@ -116,7 +117,11 @@ TableView .column-header .label {
     -fx-alignment: CENTER_LEFT;
 }
 TableView .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
-TableView .table-row-cell:filled { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:even { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:odd { -fx-background-color: -wac-row-alt; }
+TableView .table-row-cell:filled:hover,
+TableView .table-row-cell:filled:odd:hover,
+TableView .table-row-cell:filled:even:hover { -fx-background-color: -wac-side-hover; }
 /* Explicit table-cell-färg: Modenas standard är mörk text (osynlig på mörk bakgrund) */
 TableView .table-cell { -fx-text-fill: -wac-text; }
 TableView .table-row-cell:selected .table-cell { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }

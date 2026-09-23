@@ -1,0 +1,396 @@
+{
+  "nav": {
+    "brand": {
+      "title": "AutoCore",
+      "subtitle": "Workshop System"
+    },
+    "section": {
+      "overview": "Overview",
+      "customers": "Customers",
+      "vehicles": "Vehicles",
+      "bookings": "Bookings",
+      "workshop": "Workshop",
+      "finance": "Finance"
+    },
+    "item": {
+      "customers": "Show customers",
+      "vehicles": "Show vehicles",
+      "bookings": "Show bookings",
+      "services": "Show services",
+      "mechanics": "Show mechanics",
+      "workorders": "Show work orders",
+      "invoices": "Show invoices",
+      "payments": "Show payments"
+    },
+    "lang": {
+      "toggle_label": "Language",
+      "sv": "SV",
+      "en": "EN"
+    }
+  },
+  "overview": {
+    "title": "Overview",
+    "meta": "Current status of the workshop",
+    "kpi": {
+      "workorders": "Active work orders",
+      "revenue": "Total revenue",
+      "bookings": "Bookings",
+      "mechanics": "Mechanics on duty"
+    },
+    "action": {
+      "booking": "+ New booking",
+      "workorder": "+ New work order",
+      "invoice": "+ Create invoice",
+      "payment": "+ Register payment"
+    },
+    "section": {
+      "workorders_by_status": "Work orders by status",
+      "workorders_by_status_sub": "Distribution across all work orders",
+      "upcoming_bookings": "Upcoming bookings",
+      "upcoming_bookings_sub": "Next scheduled jobs",
+      "recent_workorders": "Recent work orders",
+      "recent_workorders_sub": "The latest jobs registered in the system"
+    },
+    "empty": {
+      "workorders": "No work orders yet",
+      "bookings": "No upcoming bookings",
+      "table": "No content in table"
+    }
+  },
+  "entity": {
+    "customers": {
+      "title": "Customers",
+      "subtitle": "Directory of private and corporate clients",
+      "meta": "{0} registered",
+      "action_create": "+ Create Customer"
+    },
+    "vehicles": {
+      "title": "Vehicles",
+      "subtitle": "Registered vehicles in the garage database",
+      "meta": "{0} registered",
+      "action_create": "+ Register Vehicle"
+    },
+    "bookings": {
+      "title": "Bookings",
+      "subtitle": "Upcoming and past service appointments",
+      "meta": "{0} bookings",
+      "action_create": "+ Create Booking"
+    },
+    "services": {
+      "title": "Services",
+      "subtitle": "Service catalog and price list",
+      "meta": "{0} services"
+    },
+    "mechanics": {
+      "title": "Mechanics",
+      "subtitle": "Workshop staff, competence and availability",
+      "meta": "{0} employees"
+    },
+    "workorders": {
+      "title": "Work Orders",
+      "subtitle": "Ongoing and completed garage work orders",
+      "meta": "{0} work orders",
+      "action_create": "+ Create Work Order",
+      "action_start": "▶ Start order",
+      "action_complete": "✔ Complete order"
+    },
+    "invoices": {
+      "title": "Invoices",
+      "subtitle": "Issued invoices and payment status",
+      "meta": "{0} invoices",
+      "action_create": "+ Create Invoice",
+      "action_pay": "Pay selected invoice"
+    },
+    "payments": {
+      "title": "Payments",
+      "subtitle": "Processed transactions and receipts",
+      "meta": "{0} payments",
+      "action_create": "+ Register Payment"
+    }
+  },
+  "table": {
+    "empty": "No content in table",
+    "col": {
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "reg_nr": "Reg nr",
+      "brand": "Brand",
+      "model": "Model",
+      "year": "Year",
+      "customer": "Customer",
+      "vehicle": "Vehicle",
+      "date": "Date",
+      "service": "Service",
+      "services": "Services",
+      "mechanic": "Mechanic",
+      "status": "Status",
+      "price": "Price",
+      "amount": "Amount",
+      "due_date": "Due date",
+      "discount": "Discount",
+      "total": "Total",
+      "method": "Method",
+      "specialty": "Specialty",
+      "specialisation": "Specialisation",
+      "available": "Available",
+      "unavailable": "Busy",
+      "workorder": "Work Order",
+      "booking": "Booking",
+      "actions": "Actions",
+      "vip": "VIP",
+      "description": "Description",
+      "time": "Time",
+      "invoice": "Invoice",
+      "type": "Type",
+      "datetime": "Date/time",
+      "paid": "Paid"
+    }
+  },
+  "status": {
+    "booked": "Booked",
+    "confirmed": "Confirmed",
+    "in_progress": "In progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "pending": "Pending",
+    "active": "Active",
+    "inactive": "Inactive",
+    "created": "Created",
+    "work_order_created": "Work order created",
+    "successful": "Successful",
+    "failed": "Failed"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "currency": "kr",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "search": "Search",
+    "search_placeholder": "Filter table rows...",
+    "action": "Action"
+  },
+  "dialog": {
+    "customer": {
+      "create": {
+        "title": "New Customer",
+        "header": "Register Customer",
+        "desc": "Fill in customer contact details below."
+      },
+      "name": "Full name",
+      "email": "Email address",
+      "phone": "Phone number",
+      "is_business": "Business customer (company)",
+      "name_prompt": "First and last name",
+      "phone_prompt": "555-1234567",
+      "email_prompt": "name@example.com"
+    },
+    "vehicle": {
+      "create": {
+        "title": "Register Vehicle",
+        "header": "New Vehicle",
+        "desc": "Link a vehicle to a customer in the database."
+      },
+      "reg_nr": "Registration number (e.g. ABC123)",
+      "brand": "Brand",
+      "model": "Model",
+      "year": "Model year",
+      "customer_select": "Select owner (customer)",
+      "reg_prompt": "ABC123",
+      "brand_prompt": "Volvo",
+      "model_prompt": "V60",
+      "year_prompt": "2022"
+    },
+    "booking": {
+      "create": {
+        "title": "New Booking",
+        "header": "Schedule Booking",
+        "desc": "Create a service booking for a registered vehicle."
+      },
+      "vehicle_select": "Select vehicle",
+      "date": "Booking date",
+      "service_select": "Select primary service",
+      "desc_prompt": "E.g. Annual service and brake replacement"
+    },
+    "mechanic": {
+      "create": {
+        "title": "New Mechanic",
+        "header": "Register New Mechanic",
+        "desc": "Add a new mechanic to the workshop team."
+      },
+      "spec_prompt": "E.g. Tyres & Wheels, Engine, AC",
+      "default_spec": "General service",
+      "name_prompt": "E.g. Anders Svensson",
+      "phone_prompt": "070-1234567"
+    },
+    "slot": {
+      "header": "Booking details: {0}",
+      "time_date": "Time & date:",
+      "booked_status": "Booked (not started)",
+      "open_order": "Open in Work Orders",
+      "create_order": "Create & open work order"
+    },
+    "workorder": {
+      "create": {
+        "title": "New Work Order",
+        "header": "Open Work Order",
+        "desc": "Assign mechanic and services to a booking."
+      },
+      "booking_select": "Select booking",
+      "mechanic_select": "Select mechanic",
+      "services_select": "Select services included",
+      "status_change": "Update Work Order Status",
+      "details_header": "Details for work order #{0}",
+      "open_in_orders": "Open in Work Orders"
+    },
+    "invoice": {
+      "create": {
+        "title": "Create Invoice",
+        "header": "Issue Invoice",
+        "desc": "Generate invoice for a completed work order."
+      },
+      "workorder_select": "Select work order",
+      "discount": "Discount / Promotion (SEK)",
+      "discount_prompt": "E.g. WELCOME10 or SERVICE200 (optional)"
+    },
+    "payment": {
+      "create": {
+        "title": "Register Payment",
+        "header": "Process Payment",
+        "desc": "Record payment for an unpaid invoice."
+      },
+      "invoice_select": "Select invoice",
+      "method": "Payment method",
+      "method_card": "Credit Card",
+      "method_swish": "Swish",
+      "method_cash": "Cash",
+      "amount": "Amount to pay"
+    },
+    "validation": {
+      "required": "Please fill in all required fields.",
+      "invalid_number": "Please enter a valid numeric value."
+    },
+    "success": {
+      "saved": "Saved successfully."
+    },
+    "confirm": {
+      "title": "Confirm"
+    }
+  },
+  "search": {
+    "placeholder": "Search work orders, customers or vehicles…",
+    "results": {
+      "title": "Search Results",
+      "subtitle": "Results matching \"{0}\"",
+      "empty": "No matching results found for \"{0}\"",
+      "empty_title": "No matches found for \"{0}\"",
+      "empty_desc": "No customers, vehicles, work orders, bookings or mechanics matched your query.",
+      "empty_tips": "Tips: Try searching for a customer name (e.g. Anna), vehicle registration number (e.g. ABC 123), car brand (e.g. Volvo), or mechanic name."
+    },
+    "category": {
+      "customers": "Customers",
+      "vehicles": "Vehicles",
+      "bookings": "Bookings",
+      "workorders": "Work Orders",
+      "mechanics": "Mechanics",
+      "services": "Services",
+      "invoices": "Invoices",
+      "owner": "Owner:",
+      "empty_query": "No matches found for \"{0}\"",
+      "view_all_matches": "View all {0} matches in full overview →"
+    },
+    "global": {
+      "title": "Global Search",
+      "query_title": "Search results for \"{0}\"",
+      "hint": "Type in the top search bar to search across all system records",
+      "no_matches": "No matches found across any section",
+      "matches_found": "{0} matches found across {1} {2}",
+      "section": "section",
+      "sections": "sections"
+    },
+    "view_all": "View all results...",
+    "badge": {
+      "customer": "CUSTOMER",
+      "vehicle": "VEHICLE",
+      "mechanic": "MECHANIC",
+      "booking": "BOOKING",
+      "workorder": "ORDER",
+      "service": "SERVICE",
+      "invoice": "INVOICE"
+    }
+  },
+  "kanban": {
+    "title": "Mechanic Schedule & Workload",
+    "subtitle": "Interactive planning and slot booking for workshop mechanics",
+    "today": "Today",
+    "action": {
+      "book_hour": "Book this slot"
+    },
+    "status": {
+      "available": "Available",
+      "busy": "Busy"
+    },
+    "view": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "nav": {
+      "prev": "Previous mechanic",
+      "next": "Next mechanic",
+      "counter": "Mechanic {0} of {1}",
+      "today": "Today"
+    },
+    "day": {
+      "title": "Daily Schedule",
+      "workday": "Work hours: 07:00 – 16:00",
+      "available": "Available for booking",
+      "booked": "Booked",
+      "book_button": "+ Book slot",
+      "empty_notice": "No bookings scheduled for this day."
+    },
+    "week": {
+      "title": "Week {0}",
+      "hours_booked": "{0} of {1} h ({2}%)",
+      "fully_booked": "Fully booked",
+      "switch_to_day": "Click to open day view"
+    },
+    "month": {
+      "title": "Monthly Overview",
+      "available_day": "Available",
+      "unavailable_day": "Unavailable",
+      "weekend": "Weekend",
+      "full_day": "Fully booked",
+      "hint": "Click a day to view detailed schedule"
+    },
+    "slot": {
+      "booked": "Booked",
+      "click_to_expand": "Click to expand",
+      "tooltip": "Work Order #{0} · Click to view details"
+    },
+    "drawer": {
+      "work_order": "Work Order #{0}",
+      "booked": "Booked appointment",
+      "open_order": "Open in Work Orders ↗",
+      "create_order": "Create Work Order ↗"
+    },
+    "load": {
+      "free": "Low workload",
+      "moderate": "Moderate workload",
+      "busy": "Heavy workload",
+      "full": "Fully booked"
+    },
+    "specialization": {
+      "general_service": "General service",
+      "brakes": "Brakes",
+      "diagnostics": "Diagnostics"
+    },
+    "empty_mechanics": "No mechanics registered.",
+    "no_mechanic": "No mechanic"
+  }
+}
