@@ -32,6 +32,7 @@ target/
 # Archives & Temporary files
 *.zip
 *.pdf
+RetrospektDagbok.md
 
 # OS files
 .DS_Store
