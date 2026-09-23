@@ -464,13 +464,7 @@ public class MechanicKanbanCard {
             slotList.getChildren().add(buildCompactTimeSlotRow(mech, slot));
         }
 
-        ScrollPane scroll = new ScrollPane(slotList);
-        scroll.setFitToWidth(true);
-        scroll.setMaxHeight(260);
-        scroll.setPrefHeight(260);
-        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
-
-        return new VBox(4, navBar, scroll);
+        return new VBox(6, navBar, slotList);
     }
 
     private Node buildCompactTimeSlotRow(Mechanic mech, TimeSlot slot) {
