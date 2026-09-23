@@ -11,6 +11,7 @@
 *.iml
 !Projektarbete.iml
 .vscode/
+.agents/
 .project
 .classpath
 run.sh
