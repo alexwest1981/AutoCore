@@ -15,6 +15,7 @@ JAVAC_BIN="$JAVA_HOME/bin/javac"
 SRC_DIR="$DIR/WigellAutoCore/autocore/src"
 RES_DIR="$DIR/WigellAutoCore/autocore/src/resources"
 OUT_DIR="$DIR/out/production/Systemarkitektur"
+JDBC_JAR="$DIR/WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 
 mkdir -p "$OUT_DIR"
 
@@ -24,7 +25,7 @@ if [ -d "$RES_DIR" ]; then
 fi
 
 # Kompilera alla källfiler inklusive tester
-"$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" $(find "$SRC_DIR" -name "*.java")
+"$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" -cp "$JDBC_JAR" "${SOURCES[@]}"
 
 # Kör test-runner
-exec "$JAVA_BIN" -cp "$OUT_DIR" com.wac.autocore.test.TestRunner "$@"
+exec "$JAVA_BIN" -cp "$OUT_DIR:$JDBC_JAR" com.wac.autocore.test.TestRunner "$@"
