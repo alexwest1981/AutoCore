@@ -41,7 +41,7 @@ public final class ActionDialogs {
 
     private static final MechanicRepository mechanicRepository = new MechanicRepository();
 
-    private static void styleDialog(Dialog<?> dialog) {
+    static void styleDialog(Dialog<?> dialog) {
         DialogPane pane = dialog.getDialogPane();
         if (!pane.getStyleClass().contains("root")) {
             pane.getStyleClass().add("root");
@@ -105,6 +105,93 @@ public final class ActionDialogs {
                 }
 
                 garage.createCustomer(name, phone, email);
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showEditCustomerDialog(GarageSystem garage, Customer customer, Runnable onSuccess) {
+        if (customer == null) return;
+
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.customer.edit.title"));
+        dialog.setHeaderText(I18n.get("dialog.customer.edit.header"));
+        styleDialog(dialog);
+
+        GridPane grid = createGrid();
+
+        TextField nameField = new TextField(customer.getName());
+        nameField.setPromptText(I18n.get("dialog.customer.name_prompt"));
+        TextField phoneField = new TextField(customer.getPhone() != null ? customer.getPhone() : "");
+        phoneField.setPromptText(I18n.get("dialog.customer.phone_prompt"));
+        TextField emailField = new TextField(customer.getEmail() != null ? customer.getEmail() : "");
+        emailField.setPromptText(I18n.get("dialog.customer.email_prompt"));
+        CheckBox vipBox = new CheckBox(I18n.get("table.col.vip"));
+        vipBox.setSelected(customer.isVip());
+
+        grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label(I18n.get("dialog.customer.phone") + ":"), 0, 1);
+        grid.add(phoneField, 1, 1);
+        grid.add(new Label(I18n.get("dialog.customer.email") + ":"), 0, 2);
+        grid.add(emailField, 1, 2);
+        grid.add(new Label(I18n.get("table.col.vip") + ":"), 0, 3);
+        grid.add(vipBox, 1, 3);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String name = nameField.getText().trim();
+                String phone = phoneField.getText().trim();
+                String email = emailField.getText().trim();
+
+                if (name.isEmpty() || phone.isEmpty()) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                    return;
+                }
+
+                customer.setName(name);
+                customer.setPhone(phone);
+                customer.setEmail(email);
+                customer.setVip(vipBox.isSelected());
+
+                try {
+                    garage.updateCustomer(customer);
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
+
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showDeleteCustomerConfirmation(GarageSystem garage, Customer customer, Runnable onSuccess) {
+        if (customer == null) return;
+
+        if (!garage.canDeleteCustomer(customer.getId())) {
+            showError(I18n.get("dialog.customer.delete.title"),
+                    I18n.get("dialog.customer.delete.has_active_orders", customer.getName()));
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(I18n.get("dialog.customer.delete.title"));
+        alert.setHeaderText(I18n.get("dialog.customer.delete.header"));
+        alert.setContentText(I18n.get("dialog.customer.delete.confirm", customer.getName()));
+        styleDialog(alert);
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    garage.deleteCustomer(customer.getId());
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
                 if (onSuccess != null) onSuccess.run();
             }
         });
@@ -180,6 +267,124 @@ public final class ActionDialogs {
                 }
 
                 garage.createVehicle(reg, brand, model, year, owner.getId());
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showEditVehicleDialog(GarageSystem garage, Vehicle vehicle, Runnable onSuccess) {
+        if (vehicle == null) return;
+
+        List<Customer> customers = garage.getCustomers();
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.vehicle.edit.title"));
+        dialog.setHeaderText(I18n.get("dialog.vehicle.edit.header"));
+        styleDialog(dialog);
+
+        GridPane grid = createGrid();
+
+        ComboBox<Customer> customerBox = new ComboBox<Customer>();
+        customerBox.getItems().addAll(customers);
+        for (Customer c : customers) {
+            if (c.getId() == vehicle.getCustomerId()) {
+                customerBox.getSelectionModel().select(c);
+                break;
+            }
+        }
+        customerBox.setConverter(new StringConverter<Customer>() {
+            @Override
+            public String toString(Customer c) {
+                return c == null ? "" : c.getId() + " - " + c.getName() + " (" + c.getPhone() + ")";
+            }
+            @Override
+            public Customer fromString(String string) { return null; }
+        });
+
+        TextField regField = new TextField(vehicle.getRegistrationNumber());
+        regField.setPromptText(I18n.get("dialog.vehicle.reg_prompt"));
+        TextField brandField = new TextField(vehicle.getBrand() != null ? vehicle.getBrand() : "");
+        brandField.setPromptText(I18n.get("dialog.vehicle.brand_prompt"));
+        TextField modelField = new TextField(vehicle.getModel() != null ? vehicle.getModel() : "");
+        modelField.setPromptText(I18n.get("dialog.vehicle.model_prompt"));
+        TextField yearField = new TextField(String.valueOf(vehicle.getYear()));
+        yearField.setPromptText(I18n.get("dialog.vehicle.year_prompt"));
+
+        grid.add(new Label(I18n.get("dialog.vehicle.customer_select") + ":"), 0, 0);
+        grid.add(customerBox, 1, 0);
+        grid.add(new Label(I18n.get("dialog.vehicle.reg_nr") + ":"), 0, 1);
+        grid.add(regField, 1, 1);
+        grid.add(new Label(I18n.get("dialog.vehicle.brand") + ":"), 0, 2);
+        grid.add(brandField, 1, 2);
+        grid.add(new Label(I18n.get("dialog.vehicle.model") + ":"), 0, 3);
+        grid.add(modelField, 1, 3);
+        grid.add(new Label(I18n.get("dialog.vehicle.year") + ":"), 0, 4);
+        grid.add(yearField, 1, 4);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                Customer cust = customerBox.getValue();
+                String reg = regField.getText().trim().toUpperCase();
+                String brand = brandField.getText().trim();
+                String model = modelField.getText().trim();
+                String yearStr = yearField.getText().trim();
+
+                if (cust == null || reg.isEmpty() || brand.isEmpty() || model.isEmpty() || yearStr.isEmpty()) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                    return;
+                }
+
+                int year;
+                try {
+                    year = Integer.parseInt(yearStr);
+                } catch (NumberFormatException e) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
+                    return;
+                }
+
+                vehicle.setCustomerId(cust.getId());
+                vehicle.setRegistrationNumber(reg);
+                vehicle.setBrand(brand);
+                vehicle.setModel(model);
+                vehicle.setYear(year);
+
+                try {
+                    garage.updateVehicle(vehicle);
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
+
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showDeleteVehicleConfirmation(GarageSystem garage, Vehicle vehicle, Runnable onSuccess) {
+        if (vehicle == null) return;
+
+        if (!garage.canDeleteVehicle(vehicle.getId())) {
+            showError(I18n.get("dialog.vehicle.delete.title"),
+                    I18n.get("dialog.vehicle.delete.has_active_orders", vehicle.getRegistrationNumber()));
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(I18n.get("dialog.vehicle.delete.title"));
+        alert.setHeaderText(I18n.get("dialog.vehicle.delete.header"));
+        alert.setContentText(I18n.get("dialog.vehicle.delete.confirm", vehicle.getRegistrationNumber()));
+        styleDialog(alert);
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    garage.deleteVehicle(vehicle.getId());
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
                 if (onSuccess != null) onSuccess.run();
             }
         });
@@ -262,6 +467,143 @@ public final class ActionDialogs {
                             EntityLookup.customerName(garage, v.getCustomerId()),
                             v.getRegistrationNumber(), desc
                     );
+                }
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showEditBookingDialog(GarageSystem garage, Booking booking, Runnable onSuccess) {
+        if (booking == null) return;
+
+        List<Vehicle> vehicles = garage.getVehicles();
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.booking.edit.title"));
+        dialog.setHeaderText(I18n.get("dialog.booking.edit.header"));
+        styleDialog(dialog);
+
+        GridPane grid = createGrid();
+
+        ComboBox<Vehicle> vehicleBox = new ComboBox<Vehicle>();
+        vehicleBox.getItems().addAll(vehicles);
+        for (Vehicle v : vehicles) {
+            if (v.getId() == booking.getVehicleId()) {
+                vehicleBox.getSelectionModel().select(v);
+                break;
+            }
+        }
+        vehicleBox.setConverter(new StringConverter<Vehicle>() {
+            @Override
+            public String toString(Vehicle v) {
+                return v == null ? "" : v.getId() + " - " + v.getRegistrationNumber() + " (" + v.getBrand() + " " + v.getModel() + ")";
+            }
+            @Override
+            public Vehicle fromString(String string) { return null; }
+        });
+
+        DatePicker datePicker = new DatePicker(booking.getDate() != null ? booking.getDate() : LocalDate.now());
+        TextField descField = new TextField(booking.getDescription() != null ? booking.getDescription() : "");
+        descField.setPromptText(I18n.get("dialog.booking.desc_prompt"));
+
+        ComboBox<String> statusBox = new ComboBox<String>();
+        statusBox.getItems().addAll("BOOKED", "CONFIRMED", "CANCELLED");
+        statusBox.getSelectionModel().select(booking.getStatus() != null ? booking.getStatus() : "BOOKED");
+
+        int rowIdx = 0;
+        grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, rowIdx);
+        grid.add(vehicleBox, 1, rowIdx++);
+
+        grid.add(new Label(I18n.get("dialog.booking.date") + ":"), 0, rowIdx);
+        grid.add(datePicker, 1, rowIdx++);
+
+        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
+        grid.add(descField, 1, rowIdx++);
+
+        grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
+        grid.add(statusBox, 1, rowIdx++);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                Vehicle v = vehicleBox.getValue();
+                LocalDate date = datePicker.getValue();
+                String desc = descField.getText().trim();
+                String status = statusBox.getValue();
+
+                if (v == null || date == null || desc.isEmpty()) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                    return;
+                }
+
+                booking.setVehicleId(v.getId());
+                booking.setDate(date);
+                booking.setDescription(desc);
+                booking.setStatus(status);
+
+                try {
+                    garage.updateBooking(booking);
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
+
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showCancelBookingConfirmation(GarageSystem garage, Booking booking, Runnable onSuccess) {
+        if (booking == null) return;
+
+        if (!garage.canCancelOrDeleteBooking(booking.getId())) {
+            showError(I18n.get("dialog.booking.cancel.title"),
+                    I18n.get("dialog.booking.cancel.has_active_orders", booking.getId()));
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(I18n.get("dialog.booking.cancel.title"));
+        alert.setHeaderText(I18n.get("dialog.booking.cancel.header"));
+        alert.setContentText(I18n.get("dialog.booking.cancel.confirm", booking.getId()));
+        styleDialog(alert);
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    garage.cancelBooking(booking.getId());
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showDeleteBookingConfirmation(GarageSystem garage, Booking booking, Runnable onSuccess) {
+        if (booking == null) return;
+
+        if (!garage.canCancelOrDeleteBooking(booking.getId())) {
+            showError(I18n.get("dialog.booking.delete.title"),
+                    I18n.get("dialog.booking.delete.has_active_orders", booking.getId()));
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(I18n.get("dialog.booking.delete.title"));
+        alert.setHeaderText(I18n.get("dialog.booking.delete.header"));
+        alert.setContentText(I18n.get("dialog.booking.delete.confirm", booking.getId()));
+        styleDialog(alert);
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    garage.deleteBooking(booking.getId());
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
                 }
                 if (onSuccess != null) onSuccess.run();
             }
@@ -638,232 +980,183 @@ public final class ActionDialogs {
         });
     }
 
-    // ------------------------------------------------- 8. Slot / Work Order Details
+    // --------------------------------------------------------- 8. ServiceItem
+    public static void showCreateServiceItemDialog(GarageSystem garage, Runnable onSuccess) {
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.service.create.title"));
+        dialog.setHeaderText(I18n.get("dialog.service.create.header"));
+        styleDialog(dialog);
+
+        GridPane grid = createGrid();
+
+        TextField nameField = new TextField();
+        nameField.setPromptText(I18n.get("dialog.service.name_prompt"));
+        TextField descField = new TextField();
+        descField.setPromptText(I18n.get("dialog.service.desc_prompt"));
+        TextField priceField = new TextField();
+        priceField.setPromptText(I18n.get("dialog.service.price_prompt"));
+        TextField timeField = new TextField();
+        timeField.setPromptText(I18n.get("dialog.service.time_prompt"));
+
+        grid.add(new Label(I18n.get("table.col.name") + ":"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, 1);
+        grid.add(descField, 1, 1);
+        grid.add(new Label(I18n.get("table.col.price") + ":"), 0, 2);
+        grid.add(priceField, 1, 2);
+        grid.add(new Label(I18n.get("table.col.time") + ":"), 0, 3);
+        grid.add(timeField, 1, 3);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String name = nameField.getText().trim();
+                String desc = descField.getText().trim();
+                String priceStr = priceField.getText().trim();
+                String timeStr = timeField.getText().trim();
+
+                if (name.isEmpty() || priceStr.isEmpty() || timeStr.isEmpty()) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                    return;
+                }
+
+                double price;
+                int time;
+                try {
+                    price = Double.parseDouble(priceStr.replace(",", "."));
+                    time = Integer.parseInt(timeStr);
+                } catch (NumberFormatException e) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
+                    return;
+                }
+
+                try {
+                    garage.createServiceItem(name, desc, price, time);
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
+
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showEditServiceItemDialog(GarageSystem garage, ServiceItem serviceItem, Runnable onSuccess) {
+        if (serviceItem == null) return;
+
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.service.edit.title"));
+        dialog.setHeaderText(I18n.get("dialog.service.edit.header"));
+        styleDialog(dialog);
+
+        GridPane grid = createGrid();
+
+        TextField nameField = new TextField(serviceItem.getName() != null ? serviceItem.getName() : "");
+        nameField.setPromptText(I18n.get("dialog.service.name_prompt"));
+        TextField descField = new TextField(serviceItem.getDescription() != null ? serviceItem.getDescription() : "");
+        descField.setPromptText(I18n.get("dialog.service.desc_prompt"));
+        TextField priceField = new TextField(String.valueOf(serviceItem.getPrice()));
+        priceField.setPromptText(I18n.get("dialog.service.price_prompt"));
+        TextField timeField = new TextField(String.valueOf(serviceItem.getEstimatedMinutes()));
+        timeField.setPromptText(I18n.get("dialog.service.time_prompt"));
+
+        grid.add(new Label(I18n.get("table.col.name") + ":"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, 1);
+        grid.add(descField, 1, 1);
+        grid.add(new Label(I18n.get("table.col.price") + ":"), 0, 2);
+        grid.add(priceField, 1, 2);
+        grid.add(new Label(I18n.get("table.col.time") + ":"), 0, 3);
+        grid.add(timeField, 1, 3);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String name = nameField.getText().trim();
+                String desc = descField.getText().trim();
+                String priceStr = priceField.getText().trim();
+                String timeStr = timeField.getText().trim();
+
+                if (name.isEmpty() || priceStr.isEmpty() || timeStr.isEmpty()) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                    return;
+                }
+
+                double price;
+                int time;
+                try {
+                    price = Double.parseDouble(priceStr.replace(",", "."));
+                    time = Integer.parseInt(timeStr);
+                } catch (NumberFormatException e) {
+                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
+                    return;
+                }
+
+                serviceItem.setName(name);
+                serviceItem.setDescription(desc);
+                serviceItem.setPrice(price);
+                serviceItem.setEstimatedMinutes(time);
+
+                try {
+                    garage.updateServiceItem(serviceItem);
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
+
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    public static void showDeleteServiceItemConfirmation(GarageSystem garage, ServiceItem serviceItem, Runnable onSuccess) {
+        if (serviceItem == null) return;
+
+        if (!garage.canDeleteServiceItem(serviceItem.getId())) {
+            showError(I18n.get("dialog.service.delete.title"),
+                    I18n.get("dialog.service.delete.has_active_orders", serviceItem.getName()));
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(I18n.get("dialog.service.delete.title"));
+        alert.setHeaderText(I18n.get("dialog.service.delete.header"));
+        alert.setContentText(I18n.get("dialog.service.delete.confirm", serviceItem.getName()));
+        styleDialog(alert);
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    garage.deleteServiceItem(serviceItem.getId());
+                } catch (SQLException e) {
+                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                }
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
+    // ------------------------------------------------- 9. Slot / Work Order Details
     public static void showSlotDetailsDialog(GarageSystem garage,
                                              com.wac.autocore.service.MechanicSchedule.TimeSlot slot,
                                              com.wac.autocore.ui.navigation.PageRouter router,
                                              Runnable onRefresh) {
-        if (slot == null || !slot.isBooked()) {
-            return;
-        }
-
-        // Hitta arbetsorder och/eller bokning för detta slot
-        WorkOrder targetOrder = null;
-        if (slot.getWorkOrderId() > 0) {
-            for (WorkOrder wo : garage.getWorkOrders()) {
-                if (wo.getId() == slot.getWorkOrderId()) {
-                    targetOrder = wo;
-                    break;
-                }
-            }
-        }
-        if (targetOrder == null && slot.getBookingId() > 0) {
-            for (WorkOrder wo : garage.getWorkOrders()) {
-                if (wo.getBookingId() == slot.getBookingId()) {
-                    targetOrder = wo;
-                    slot.setWorkOrderId(wo.getId());
-                    break;
-                }
-            }
-        }
-
-        Booking booking = null;
-        if (targetOrder != null) {
-            for (Booking bk : garage.getBookings()) {
-                if (bk.getId() == targetOrder.getBookingId()) {
-                    booking = bk;
-                    break;
-                }
-            }
-        }
-        if (booking == null && slot.getBookingId() > 0) {
-            for (Booking bk : garage.getBookings()) {
-                if (bk.getId() == slot.getBookingId()) {
-                    booking = bk;
-                    break;
-                }
-            }
-        }
-
-        final WorkOrder wo = targetOrder;
-        final Booking b = booking;
-
-        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        boolean hasWorkOrder = (wo != null);
-        String title = hasWorkOrder
-                ? I18n.get("kanban.drawer.work_order", wo.getId())
-                : I18n.get("kanban.drawer.booked");
-        dialog.setTitle(title);
-        dialog.setHeaderText(I18n.get("dialog.slot.header", slot.getDate().toString() + " (" + slot.getTimeRange() + ")"));
-        styleDialog(dialog);
-
-        GridPane grid = createGrid();
-        int rowIdx = 0;
-
-        // Datum & Tid
-        grid.add(new Label(I18n.get("dialog.slot.time_date")), 0, rowIdx);
-        Label timeLabel = new Label(slot.getDate() + "  |  " + slot.getTimeRange());
-        timeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent;");
-        grid.add(timeLabel, 1, rowIdx++);
-
-        // Mekaniker
-        grid.add(new Label(I18n.get("table.col.mechanic") + ":"), 0, rowIdx);
-        grid.add(new Label(EntityLookup.mechanicName(garage, slot.getMechanicId())), 1, rowIdx++);
-
-        // Fordon
-        String reg = slot.getVehicleReg() != null && !slot.getVehicleReg().isEmpty() ? slot.getVehicleReg() : "-";
-        if (b != null) {
-            reg = EntityLookup.vehicleReg(garage, b.getVehicleId());
-        }
-        grid.add(new Label(I18n.get("table.col.vehicle") + ":"), 0, rowIdx);
-        grid.add(new Label(reg), 1, rowIdx++);
-
-        // Kund
-        String cust = slot.getCustomerName() != null && !slot.getCustomerName().isEmpty() ? slot.getCustomerName() : "-";
-        grid.add(new Label(I18n.get("table.col.customer") + ":"), 0, rowIdx);
-        grid.add(new Label(cust), 1, rowIdx++);
-
-        // Beskrivning
-        String desc = slot.getDescription() != null && !slot.getDescription().isEmpty() ? slot.getDescription() : "-";
-        if (b != null && b.getDescription() != null && !b.getDescription().isEmpty()) {
-            desc = b.getDescription();
-        }
-        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
-        grid.add(new Label(desc), 1, rowIdx++);
-
-        // Status och Tjänster
-        if (hasWorkOrder) {
-            grid.add(new Label(I18n.get("table.col.services") + ":"), 0, rowIdx);
-            grid.add(new Label(EntityLookup.serviceNames(garage, wo.getServiceItemIds())), 1, rowIdx++);
-
-            grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
-            Label stLabel = new Label(com.wac.autocore.ui.util.UiFormatters.statusWord(wo.getStatus()));
-            stLabel.getStyleClass().addAll("badge", com.wac.autocore.ui.util.UiFormatters.badgeClass(stLabel.getText()));
-            grid.add(stLabel, 1, rowIdx++);
-        } else {
-            grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
-            Label stLabel = new Label(I18n.get("dialog.slot.booked_status"));
-            stLabel.getStyleClass().addAll("badge", "yellow");
-            grid.add(stLabel, 1, rowIdx++);
-        }
-
-        ButtonType actionBtnType = new ButtonType(
-                hasWorkOrder ? I18n.get("dialog.slot.open_order")
-                             : I18n.get("dialog.slot.create_order"),
-                javafx.scene.control.ButtonBar.ButtonData.OTHER
-        );
-        ButtonType closeType = ButtonType.CLOSE;
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(actionBtnType, closeType);
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == actionBtnType && router != null) {
-                if (wo != null) {
-                    router.navigateToWorkOrder(wo.getId());
-                } else {
-                    // Skapa workorder för denna bokade timme om ingen finns
-                    Booking targetBooking = b;
-                    if (targetBooking == null) {
-                        int vehicleId = 1;
-                        for (Vehicle v : garage.getVehicles()) {
-                            if (v.getRegistrationNumber().equalsIgnoreCase(slot.getVehicleReg())) {
-                                vehicleId = v.getId();
-                                break;
-                            }
-                        }
-                        targetBooking = garage.createBooking(vehicleId, slot.getDate(), slot.getDescription());
-                        slot.setBookingId(targetBooking.getId());
-                    }
-                    WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId(), 1);
-                    if (createdWo != null) {
-                        slot.setWorkOrderId(createdWo.getId());
-                        if (onRefresh != null) onRefresh.run();
-                        router.navigateToWorkOrder(createdWo.getId());
-                    }
-                }
-            }
-        });
+        SlotDetailsDialog.showSlotDetailsDialog(garage, slot, router, onRefresh);
     }
 
     public static void showWorkOrderDetailsDialog(GarageSystem garage, int workOrderId,
-                                                 com.wac.autocore.ui.navigation.PageRouter router, Runnable onRefresh) {
-        WorkOrder targetOrder = null;
-        for (WorkOrder wo : garage.getWorkOrders()) {
-            if (wo.getId() == workOrderId) {
-                targetOrder = wo;
-                break;
-            }
-        }
-
-        if (targetOrder == null && !garage.getWorkOrders().isEmpty()) {
-            targetOrder = garage.getWorkOrders().get(0);
-        }
-
-        if (targetOrder == null) {
-            showError(I18n.get("dialog.confirm.title"), I18n.get("overview.empty.workorders"));
-            return;
-        }
-
-        final WorkOrder wo = targetOrder;
-        Booking b = null;
-        for (Booking bk : garage.getBookings()) {
-            if (bk.getId() == wo.getBookingId()) {
-                b = bk;
-                break;
-            }
-        }
-
-        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("kanban.drawer.work_order", wo.getId()));
-        dialog.setHeaderText(I18n.get("dialog.workorder.details_header", wo.getId()));
-        styleDialog(dialog);
-
-        GridPane grid = createGrid();
-
-        int rowIdx = 0;
-        grid.add(new Label(I18n.get("table.col.id") + ":"), 0, rowIdx);
-        Label idLbl = new Label("#" + wo.getId());
-        idLbl.setStyle("-fx-font-weight: bold;");
-        grid.add(idLbl, 1, rowIdx++);
-
-        grid.add(new Label(I18n.get("table.col.mechanic") + ":"), 0, rowIdx);
-        grid.add(new Label(EntityLookup.mechanicName(garage, wo.getMechanicId())), 1, rowIdx++);
-
-        if (b != null) {
-            grid.add(new Label(I18n.get("table.col.vehicle") + ":"), 0, rowIdx);
-            grid.add(new Label(EntityLookup.vehicleReg(garage, b.getVehicleId())), 1, rowIdx++);
-
-            grid.add(new Label(I18n.get("table.col.date") + ":"), 0, rowIdx);
-            grid.add(new Label(b.getDate().toString()), 1, rowIdx++);
-
-            grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
-            grid.add(new Label(b.getDescription()), 1, rowIdx++);
-        }
-
-        grid.add(new Label(I18n.get("table.col.services") + ":"), 0, rowIdx);
-        grid.add(new Label(EntityLookup.serviceNames(garage, wo.getServiceItemIds())), 1, rowIdx++);
-
-        grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
-        Label stLabel = new Label(com.wac.autocore.ui.util.UiFormatters.statusWord(wo.getStatus()));
-        stLabel.getStyleClass().addAll("badge", com.wac.autocore.ui.util.UiFormatters.badgeClass(stLabel.getText()));
-        grid.add(stLabel, 1, rowIdx++);
-
-        ButtonType gotoType = new ButtonType(I18n.get("dialog.workorder.open_in_orders"), javafx.scene.control.ButtonBar.ButtonData.OTHER);
-        ButtonType closeType = ButtonType.CLOSE;
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(gotoType, closeType);
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == gotoType && router != null) {
-                router.navigateToWorkOrder(wo.getId());
-            }
-        });
+                                                  com.wac.autocore.ui.navigation.PageRouter router, Runnable onRefresh) {
+        SlotDetailsDialog.showWorkOrderDetailsDialog(garage, workOrderId, router, onRefresh);
     }
 
     // ----------------------------------------------------------- Helpers
-    private static GridPane createGrid() {
+    static GridPane createGrid() {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -871,7 +1164,7 @@ public final class ActionDialogs {
         return grid;
     }
 
-    private static void showError(String title, String message) {
+    static void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
         alert.setHeaderText(null);

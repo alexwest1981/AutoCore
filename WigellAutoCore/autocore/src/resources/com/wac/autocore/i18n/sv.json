@@ -62,29 +62,42 @@
       "title": "Kunder",
       "subtitle": "Register över privat- och företagskunder",
       "meta": "{0} registrerade",
-      "action_create": "+ Ny kund"
+      "action_create": "+ Ny kund",
+      "action_edit": "Redigera kund",
+      "action_delete": "Ta bort kund"
     },
     "vehicles": {
       "title": "Fordon",
       "subtitle": "Registrerade fordon i verkstadens databas",
       "meta": "{0} registrerade",
-      "action_create": "+ Registrera fordon"
+      "action_create": "+ Registrera fordon",
+      "action_edit": "Redigera fordon",
+      "action_delete": "Ta bort fordon"
     },
     "bookings": {
       "title": "Bokningar",
       "subtitle": "Kommande och tidigare bokade servicetillfällen",
       "meta": "{0} bokningar",
-      "action_create": "+ Ny bokning"
+      "action_create": "+ Ny bokning",
+      "action_cancel": "Avboka",
+      "action_edit": "Redigera bokning",
+      "action_delete": "Ta bort bokning"
     },
     "services": {
       "title": "Tjänster",
       "subtitle": "Tjänstekatalog och prislista",
-      "meta": "{0} tjänster"
+      "meta": "{0} tjänster",
+      "action_create": "+ Skapa tjänst",
+      "action_edit": "Redigera tjänst",
+      "action_delete": "Ta bort tjänst"
     },
     "mechanics": {
       "title": "Mekaniker",
       "subtitle": "Verkstadens mekaniker, kompetens och tillgänglighet",
-      "meta": "{0} anställda"
+      "meta": "{0} anställda",
+      "action_create": "+ Lägg till mekaniker",
+      "action_edit": "Redigera mekaniker",
+      "action_delete": "Ta bort mekaniker"
     },
     "workorders": {
       "title": "Arbetsordrar",
@@ -182,6 +195,17 @@
         "header": "Registrera kund",
         "desc": "Fyll i kundens kontaktuppgifter nedan."
       },
+      "edit": {
+        "title": "Redigera kund",
+        "header": "Uppdatera kunduppgifter",
+        "desc": "Ändra kundens kontaktuppgifter eller VIP-status."
+      },
+      "delete": {
+        "title": "Ta bort kund",
+        "header": "Bekräfta borttagning",
+        "confirm": "Är du säker på att du vill ta bort {0}? Alla fordon kopplade till kunden tas också bort.",
+        "has_active_orders": "Kan inte ta bort {0} eftersom kunden har fordon med aktiva bokningar eller arbetsordrar."
+      },
       "name": "Fullständigt namn",
       "email": "E-postadress",
       "phone": "Telefonnummer",
@@ -195,6 +219,17 @@
         "title": "Registrera fordon",
         "header": "Nytt fordon",
         "desc": "Koppla ett fordon till en kund i databasen."
+      },
+      "edit": {
+        "title": "Redigera fordon",
+        "header": "Uppdatera fordon",
+        "desc": "Ändra fordonsuppgifter eller ägarkoppling."
+      },
+      "delete": {
+        "title": "Ta bort fordon",
+        "header": "Bekräfta borttagning",
+        "confirm": "Är du säker på att du vill ta bort fordon {0}?",
+        "has_active_orders": "Kan inte ta bort fordon {0} eftersom det har aktiva bokningar eller arbetsordrar."
       },
       "reg_nr": "Registreringsnummer (t.ex. ABC123)",
       "brand": "Märke",
@@ -212,10 +247,49 @@
         "header": "Schemalägg bokning",
         "desc": "Skapa en servicebokning för ett registrerat fordon."
       },
+      "edit": {
+        "title": "Redigera bokning",
+        "header": "Uppdatera bokning",
+        "desc": "Ändra fordon, datum, beskrivning eller status för bokningen."
+      },
+      "cancel": {
+        "title": "Avboka bokning",
+        "header": "Bekräfta avbokning",
+        "confirm": "Är du säker på att du vill avboka bokning #{0}?",
+        "has_active_orders": "Kan inte avboka bokning #{0} eftersom den har en aktiv arbetsorder."
+      },
+      "delete": {
+        "title": "Ta bort bokning",
+        "header": "Bekräfta borttagning",
+        "confirm": "Är du säker på att du vill ta bort bokning #{0}?",
+        "has_active_orders": "Kan inte ta bort bokning #{0} eftersom den har en aktiv arbetsorder."
+      },
       "vehicle_select": "Välj fordon",
       "date": "Bokningsdatum",
       "service_select": "Välj huvudtjänst",
       "desc_prompt": "T.ex. Årlig service och bromsbyte"
+    },
+    "service": {
+      "create": {
+        "title": "Ny tjänst",
+        "header": "Skapa tjänst",
+        "desc": "Lägg till en ny tjänst i verkstadens tjänstekatalog."
+      },
+      "edit": {
+        "title": "Redigera tjänst",
+        "header": "Uppdatera tjänst",
+        "desc": "Ändra namn, beskrivning, pris eller tidsåtgång."
+      },
+      "delete": {
+        "title": "Ta bort tjänst",
+        "header": "Bekräfta borttagning",
+        "confirm": "Är du säker på att du vill ta bort tjänsten {0}?",
+        "has_active_orders": "Kan inte ta bort tjänsten {0} eftersom den ingår i en aktiv arbetsorder."
+      },
+      "name_prompt": "Tjänstens namn (t.ex. Bromsbyte)",
+      "desc_prompt": "Beskrivning av arbetet",
+      "price_prompt": "Pris i kr (t.ex. 1200)",
+      "time_prompt": "Beräknad tid i minuter (t.ex. 60)"
     },
     "mechanic": {
       "create": {
