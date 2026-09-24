@@ -14,6 +14,7 @@ import com.wac.autocore.repository.ServiceItemRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -123,6 +124,13 @@ public class GarageSystem {
                                  LocalDate date,
                                  String description) {
         return bookingService.createBooking(vehicleId, date, description);
+    }
+
+    public Booking createBooking(int vehicleId,
+                                 LocalDate date,
+                                 String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
+        return bookingService.createBooking(vehicleId, date, description,
+                startTime, mechanicId, serviceItemId);
     }
 
     public WorkOrder createWorkOrder(int bookingId,
