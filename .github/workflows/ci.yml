@@ -30,13 +30,13 @@ jobs:
         run: chmod +x test.sh check.sh start.sh
 
       - name: Verify compilation and quality checks
-        run: ./check.sh --quality
+        run: xvfb-run --auto-servernum ./check.sh --quality
 
       - name: Verify security audits
         run: ./check.sh --security
 
       - name: Verify WCAG 2.1 AAA accessibility
-        run: ./check.sh --wcag
+        run: xvfb-run --auto-servernum ./check.sh --wcag
 
       - name: Run automated test suite
-        run: ./test.sh
+        run: xvfb-run --auto-servernum ./test.sh

@@ -24,6 +24,14 @@ RESET="\033[0m"
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# På headless Linux utan DISPLAY (t.ex. GitHub Actions CI) körs under xvfb-run om tillgängligt
+if [ -z "$DISPLAY" ] && [ -z "$IN_XVFB" ]; then
+    if command -v xvfb-run >/dev/null 2>&1; then
+        export IN_XVFB=true
+        exec xvfb-run --auto-servernum "$0" "$@"
+    fi
+fi
+
 # 1. Identifiera operativsystem och sätt rätt klassvägsseparator
 IS_WINDOWS=false
 IS_MACOS=false

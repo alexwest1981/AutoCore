@@ -4,6 +4,14 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
+# På headless Linux utan DISPLAY (t.ex. GitHub Actions CI) körs under xvfb-run om tillgängligt
+if [ -z "$DISPLAY" ] && [ -z "$IN_XVFB" ]; then
+    if command -v xvfb-run >/dev/null 2>&1; then
+        export IN_XVFB=true
+        exec xvfb-run --auto-servernum "$0" "$@"
+    fi
+fi
+
 # ==============================================================================
 # VARFÖR JAVA 8 (JDK 8)?
 # Projektets arkitektur- och kurskriterier kräver att den befintliga Java-
