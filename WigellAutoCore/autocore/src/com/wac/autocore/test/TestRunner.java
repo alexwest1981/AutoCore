@@ -35,6 +35,7 @@ public class TestRunner {
             runClass(GlobalSearchTest.class);
             runClass(I18nTest.class);
             runClass(MechanicScheduleTest.class);
+            runClass(PersistenceRestartTest.class);
         }
         if (runQuality) {
             runClass(CodeQualityTest.class);
@@ -119,4 +120,6 @@ public class TestRunner {
             throw new AssertionError(message != null ? message : "Förväntade icke-null men fick null");
         }
     }
+
+
 }
