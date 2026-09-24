@@ -25,7 +25,7 @@ public class BookingRepository {
 
     public List<Booking> findAll() throws SQLException {
         List<Booking> bookings = new ArrayList<Booking>();
-        String sql = "SELECT id, vehicle_id, start_time, end_time, mechanic_id, service_item_id, date, description, status FROM bookings";
+        String sql = "SELECT id, vehicle_id, date, description, status FROM bookings";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -40,7 +40,7 @@ public class BookingRepository {
     }
 
     public Booking findById(int id) throws SQLException {
-        String sql = "SELECT id, vehicle_id, start_time, end_time, mechanic_id, service_item_id, date, description, status FROM bookings WHERE id = ?";
+        String sql = "SELECT id, vehicle_id, date, description, status FROM bookings WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -108,26 +108,10 @@ public class BookingRepository {
     }
 
     private void setTimeSlots(PreparedStatement statement, Booking booking) throws SQLException {
-        if (booking.getStartTime() != null) {
-            statement.setString(2, booking.getStartTime().toString());
-        } else {
-            statement.setNull(2, Types.VARCHAR);
-        }
-        if (booking.getEndTime() != null) {
-            statement.setString(3, booking.getEndTime().toString());
-        } else {
-            statement.setNull(3, Types.VARCHAR);
-        }
-        if (booking.getMechanicId() > 0) {
-            statement.setInt(4, booking.getMechanicId());
-        } else {
-            statement.setNull(4, Types.INTEGER);
-        }
-        if (booking.getServiceItemId() > 0) {
-            statement.setInt(5, booking.getServiceItemId());
-        } else {
-            statement.setNull(5, Types.INTEGER);
-        }
+        statement.setNull(2, Types.VARCHAR);
+        statement.setNull(3, Types.VARCHAR);
+        statement.setNull(4, Types.INTEGER);
+        statement.setNull(5, Types.INTEGER);
     }
 
     private void setDate(PreparedStatement statement, int position, LocalDate date) throws SQLException {
@@ -152,23 +136,6 @@ public class BookingRepository {
         if (status != null) {
             booking.setStatus(status);
         }
-
-        String startTimeStr = resultSet.getString("start_time");
-        if (startTimeStr != null && !startTimeStr.trim().isEmpty()) {
-            try {
-                booking.setStartTime(java.time.LocalTime.parse(startTimeStr));
-            } catch (Exception ignored) {}
-        }
-
-        String endTimeStr = resultSet.getString("end_time");
-        if (endTimeStr != null && !endTimeStr.trim().isEmpty()) {
-            try {
-                booking.setEndTime(java.time.LocalTime.parse(endTimeStr));
-            } catch (Exception ignored) {}
-        }
-
-        booking.setMechanicId(resultSet.getInt("mechanic_id"));
-        booking.setServiceItemId(resultSet.getInt("service_item_id"));
 
         return booking;
     }
