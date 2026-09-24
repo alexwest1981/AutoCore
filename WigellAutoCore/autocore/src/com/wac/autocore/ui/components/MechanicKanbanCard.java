@@ -78,6 +78,7 @@ public class MechanicKanbanCard {
 
         Button addMechBtn = new Button("+ " + I18n.get("dialog.mechanic.create.title"));
         addMechBtn.getStyleClass().addAll("secondary", "small");
+        addMechBtn.setMinWidth(Region.USE_PREF_SIZE);
         addMechBtn.setOnAction(e -> javafx.application.Platform.runLater(() -> ActionDialogs.showCreateMechanicDialog(garage, onRefresh)));
 
         Region spr1 = new Region();
@@ -181,6 +182,7 @@ public class MechanicKanbanCard {
         // Knapp: Alla
         Button allBtn = new Button(I18n.get("kanban.filter.all") + " (" + mechanics.size() + ")");
         allBtn.getStyleClass().addAll("kanban-filter-chip", "active");
+        allBtn.setMinWidth(Region.USE_PREF_SIZE);
         filterButtons.add(allBtn);
         allBtn.setOnAction(e -> {
             activeFilter[0] = null;
@@ -198,6 +200,7 @@ public class MechanicKanbanCard {
             String displaySpec = formatSpecialization(specKey) + " (" + entry.getValue() + ")";
             Button chip = new Button(displaySpec);
             chip.getStyleClass().add("kanban-filter-chip");
+            chip.setMinWidth(Region.USE_PREF_SIZE);
             filterButtons.add(chip);
             chip.setOnAction(e -> {
                 activeFilter[0] = specKey;
@@ -520,6 +523,7 @@ public class MechanicKanbanCard {
 
                 Button jumpBtn = new Button("📅 " + I18n.get("kanban.card.next_booking", fullNextStr));
                 jumpBtn.getStyleClass().addAll("ghost", "small");
+                jumpBtn.setMinWidth(Region.USE_PREF_SIZE);
                 jumpBtn.setStyle("-fx-font-size: 11px; -fx-padding: 3px 6px; -fx-text-fill: -wac-accent; -fx-cursor: hand;");
                 jumpBtn.setOnAction(e -> {
                     selectedDate = nextDate;
@@ -849,6 +853,7 @@ public class MechanicKanbanCard {
 
             Button openBtn = new Button(I18n.get("kanban.drawer.open_order"));
             openBtn.getStyleClass().addAll("primary", "small");
+            openBtn.setMinWidth(Region.USE_PREF_SIZE);
             openBtn.setOnAction(e -> {
                 if (router != null) {
                     router.navigateToWorkOrder(wo.getId());
@@ -862,6 +867,7 @@ public class MechanicKanbanCard {
 
             Button createBtn = new Button(I18n.get("kanban.drawer.create_order"));
             createBtn.getStyleClass().addAll("primary", "small");
+            createBtn.setMinWidth(Region.USE_PREF_SIZE);
             createBtn.setOnAction(e -> {
                 Booking targetBooking = b;
                 if (targetBooking == null) {

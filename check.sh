@@ -24,51 +24,160 @@ RESET="\033[0m"
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Hitta en Java 8. JDK8_HOME vinner om den är satt, annars letas en JDK 8 upp på
-# de vanligaste platserna i Linux, macOS och Windows (körs då från Git Bash).
-if [ -z "$JDK8_HOME" ]; then
-    for candidate in \
-        "$HOME/.jdks"/*1.8* \
-        "$HOME/jdks"/jdk8* \
-        "$HOME/.sdkman/candidates/java"/*1.8* \
-        /usr/lib/jvm/*1.8* \
-        /usr/lib/jvm/java-8* \
-        /Library/Java/JavaVirtualMachines/*1.8*/Contents/Home \
-        "/c/Program Files/Java"/jdk1.8* \
-        "/c/Program Files (x86)/Java"/jdk1.8* ; do
-        if [ -x "$candidate/bin/javac" ] || [ -x "$candidate/bin/javac.exe" ]; then
-            JDK8_HOME="$candidate"
+# På headless Linux utan DISPLAY (t.ex. GitHub Actions CI) körs under xvfb-run om tillgängligt
+if [ -z "$DISPLAY" ] && [ -z "$IN_XVFB" ]; then
+    if command -v xvfb-run >/dev/null 2>&1; then
+        export IN_XVFB=true
+        exec xvfb-run --auto-servernum "$0" "$@"
+    fi
+fi
+
+# 1. Identifiera operativsystem och sätt rätt klassvägsseparator
+IS_WINDOWS=false
+IS_MACOS=false
+CP_SEP=":"
+
+case "$(uname -s 2>/dev/null || echo "unknown")" in
+    CYGWIN*|MINGW*|MSYS*)
+        IS_WINDOWS=true
+        CP_SEP=";"
+        ;;
+    Darwin*)
+        IS_MACOS=true
+        CP_SEP=":"
+        ;;
+    *)
+        CP_SEP=":"
+        ;;
+esac
+
+# Hjälpfunktion för att kontrollera om en sökväg är en giltig Java 8 JDK
+is_jdk8() {
+    local home="$1"
+    [ -n "$home" ] || return 1
+    local javac="$home/bin/javac"
+    local java="$home/bin/java"
+    [ -x "$javac" ] || [ -x "$javac.exe" ] || return 1
+    [ -x "$java" ] || [ -x "$java.exe" ] || return 1
+    local ver
+    ver="$("$java" -version 2>&1 | head -n 1)"
+    echo "$ver" | grep -q '1\.8\|"8\.' || return 1
+    return 0
+}
+
+# 2. Hitta en Java 8 JDK
+FOUND_JDK=""
+
+if [ -n "$JDK8_HOME" ] && is_jdk8 "$JDK8_HOME"; then
+    FOUND_JDK="$JDK8_HOME"
+elif [ -n "$JAVA_HOME" ] && is_jdk8 "$JAVA_HOME"; then
+    FOUND_JDK="$JAVA_HOME"
+fi
+
+if [ -z "$FOUND_JDK" ] && [ "$IS_MACOS" = true ] && [ -x "/usr/libexec/java_home" ]; then
+    MAC_CANDIDATE="$(/usr/libexec/java_home -v 1.8 2>/dev/null || /usr/libexec/java_home -v 8 2>/dev/null || true)"
+    if [ -n "$MAC_CANDIDATE" ] && is_jdk8 "$MAC_CANDIDATE"; then
+        FOUND_JDK="$MAC_CANDIDATE"
+    fi
+fi
+
+if [ -z "$FOUND_JDK" ]; then
+    if command -v javac >/dev/null 2>&1 && command -v java >/dev/null 2>&1; then
+        PATH_JAVA_VER="$(java -version 2>&1 | head -n 1)"
+        if echo "$PATH_JAVA_VER" | grep -q '1\.8\|"8\.'; then
+            JAVAC_REAL="$(command -v javac)"
+            while [ -L "$JAVAC_REAL" ]; do
+                JAVAC_DIR="$(cd "$(dirname "$JAVAC_REAL")" && pwd)"
+                JAVAC_REAL="$(readlink "$JAVAC_REAL")"
+                [[ "$JAVAC_REAL" != /* ]] && JAVAC_REAL="$JAVAC_DIR/$JAVAC_REAL"
+            done
+            BIN_DIR="$(cd "$(dirname "$JAVAC_REAL")" && pwd)"
+            CANDIDATE_HOME="$(cd "$BIN_DIR/.." && pwd)"
+            if is_jdk8 "$CANDIDATE_HOME"; then
+                FOUND_JDK="$CANDIDATE_HOME"
+            fi
+        fi
+    fi
+fi
+
+if [ -z "$FOUND_JDK" ]; then
+    CANDIDATES=(
+        # Linux & allmänna
+        "$HOME/.jdks"/jdk8*
+        "$HOME/.jdks"/*1.8*
+        "$HOME/.jdks"/*8*
+        "$HOME/jdks"/jdk8*
+        "$HOME/jdks"/*1.8*
+        "$HOME/jdks"/*8*
+        "$HOME/.sdkman/candidates/java"/*1.8*
+        "$HOME/.sdkman/candidates/java"/*8*
+        /usr/lib/jvm/*1.8*
+        /usr/lib/jvm/java-8*
+        /usr/lib/jvm/*jdk-8*
+        /usr/lib/jvm/*liberica*8*
+        /usr/lib/jvm/*zulu*8*
+
+        # macOS
+        /Library/Java/JavaVirtualMachines/*/Contents/Home
+        /opt/homebrew/opt/openjdk@8
+        /opt/homebrew/opt/openjdk@8/libexec/openjdk.jdk/Contents/Home
+        /usr/local/opt/openjdk@8
+        /usr/local/opt/openjdk@8/libexec/openjdk.jdk/Contents/Home
+        "$HOME/.asdf/installs/java"/*1.8*
+        "$HOME/.asdf/installs/java"/*8*
+
+        # Windows (Git Bash / MSYS)
+        "/c/Program Files/BellSoft"/*8*
+        "/c/Program Files/BellSoft"/*
+        "/c/Program Files/Java"/*8*
+        "/c/Program Files/Java"/jdk1.8*
+        "/c/Program Files/Eclipse Adoptium"/*8*
+        "/c/Program Files/Eclipse Adoptium"/*
+        "/c/Program Files/Zulu"/*8*
+        "/c/Program Files/Amazon Corretto"/*8*
+        "/c/Program Files (x86)/BellSoft"/*8*
+        "/c/Program Files (x86)/Java"/*1.8*
+        "$LOCALAPPDATA/Programs/Eclipse Adoptium"/*8*
+        "$USERPROFILE/.jdks"/*8*
+        "$USERPROFILE/jdks"/*8*
+    )
+
+    for c in "${CANDIDATES[@]}"; do
+        if is_jdk8 "$c"; then
+            FOUND_JDK="$c"
             break
         fi
     done
 fi
 
-if [ -z "$JDK8_HOME" ]; then
-    echo -e "${RED}Fel: Hittade ingen Java 8.${RESET}"
-    echo -e "Sätt JDK8_HOME till din JDK 8 och kör igen, till exempel:"
+if [ -z "$FOUND_JDK" ]; then
+    echo -e "${RED}Fel: Hittade ingen Java 8 (JDK 8).${RESET}"
+    echo -e "Sätt JDK8_HOME till din Java 8-katalog och kör igen, till exempel:"
     echo -e "  Linux:   export JDK8_HOME=\$HOME/.jdks/liberica-full-1.8.0_504"
-    echo -e "  macOS:   export JDK8_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_412.jdk/Contents/Home"
-    echo -e "  Windows: export JDK8_HOME=\"/c/Program Files/Java/jdk1.8.0_412\"   (i Git Bash)"
+    echo -e "  macOS:   export JDK8_HOME=/Library/Java/JavaVirtualMachines/liberica-jdk8-full.jdk/Contents/Home"
+    echo -e "           (eller kör: export JDK8_HOME=\$(/usr/libexec/java_home -v 1.8))"
+    echo -e "  Windows: export JDK8_HOME=\"/c/Program Files/BellSoft/LibericaJDK-8-Full\" (i Git Bash)"
     exit 1
 fi
 
-# På Windows heter filerna java.exe och javac.exe
+export JDK8_HOME="$FOUND_JDK"
+export JAVA_HOME="$FOUND_JDK"
+
 EXE=""
-if [ -x "$JDK8_HOME/bin/javac.exe" ]; then
+if [ -x "$FOUND_JDK/bin/javac.exe" ]; then
     EXE=".exe"
 fi
 
-export JAVA_HOME="$JDK8_HOME"
-JAVA_BIN="$JDK8_HOME/bin/java$EXE"
-JAVAC_BIN="$JDK8_HOME/bin/javac$EXE"
+JAVA_BIN="$FOUND_JDK/bin/java$EXE"
+JAVAC_BIN="$FOUND_JDK/bin/javac$EXE"
 
-SRC_DIR="$DIR/WigellAutoCore/autocore/src"
-RES_DIR="$DIR/WigellAutoCore/autocore/src/resources"
-OUT_DIR="$DIR/out/production/Systemarkitektur"
-JDBC_JAR="$DIR/WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
+SRC_DIR="WigellAutoCore/autocore/src"
+RES_DIR="WigellAutoCore/autocore/src/resources"
+OUT_DIR="out/production/Systemarkitektur"
+JDBC_JAR="WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 
 if [ -f "$JDBC_JAR" ]; then
-    CP_RUN="$OUT_DIR:$JDBC_JAR"
+    CP_RUN="$OUT_DIR$CP_SEP$JDBC_JAR"
     CP_ARG=(-cp "$JDBC_JAR")
 else
     CP_RUN="$OUT_DIR"
@@ -92,7 +201,7 @@ fi
 # Rensa och förbered kataloger
 mkdir -p "$OUT_DIR"
 if [ -d "$RES_DIR" ]; then
-    cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
+    cp -R "$RES_DIR/." "$OUT_DIR/" 2>/dev/null || cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
 fi
 
 echo ""
@@ -104,15 +213,15 @@ echo ""
 
 # Steg 0: Kompilering
 echo -ne "${BOLD}[0/4] Bygger och kompilerar källkod...${RESET} "
-SOURCES=()
-while IFS= read -r source_file; do
-    SOURCES+=("$source_file")
-done < <(find "$SRC_DIR" -name "*.java")
-BUILD_OUT=$("$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" "${CP_ARG[@]}" "${SOURCES[@]}" 2>&1) || {
+SOURCES_FILE="$OUT_DIR/sources.txt"
+find "$SRC_DIR" -name "*.java" > "$SOURCES_FILE"
+BUILD_OUT=$("$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" "${CP_ARG[@]}" @"$SOURCES_FILE" 2>&1) || {
     echo -e "${RED}MISSLYCKADES${RESET}"
     echo -e "${RED}$BUILD_OUT${RESET}"
+    rm -f "$SOURCES_FILE"
     exit 1
 }
+rm -f "$SOURCES_FILE"
 echo -e "${GREEN}${BOLD}✔ OK${RESET}"
 
 TOTAL_PASSED=0
@@ -164,6 +273,23 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--quality" ] || [ "$MODE" = "quality" ]; 
     # Extra statisk granskning: TODO/FIXME-räkning
     TODO_COUNT=$(grep -rnE "(TODO|FIXME)" "$SRC_DIR" 2>/dev/null | grep -v "Test.java" | wc -l || true)
     echo -e "  ${CYAN}ℹ Statisk analys:${RESET} ${DIM}Totalt ${TODO_COUNT} aktiva TODO/FIXME-noteringar i källkoden.${RESET}"
+
+    # Extra kontroll: Teckenkodning (anti-mojibake) och tomma strängar i språkfiler
+    MOJIBAKE_HITS=$(grep -rnE "(Ã¥|Ã¤|Ã¶|Ã…|Ã„|Ã–|Ã©|Ã¨)" "$RES_DIR"/com/wac/autocore/i18n/*.json 2>/dev/null || true)
+    EMPTY_STR_HITS=$(grep -rnE ':[[:space:]]*""' "$RES_DIR"/com/wac/autocore/i18n/*.json 2>/dev/null || true)
+    if [ -n "$MOJIBAKE_HITS" ]; then
+        echo -e "  ${RED}❌ Teckenkodningsfel (mojibake) upptäcktes i språkfilerna:${RESET}"
+        echo "$MOJIBAKE_HITS" | head -n 5
+        TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ERRORS+=("TECKENKODNING (Mojibake i språkfiler)")
+    elif [ -n "$EMPTY_STR_HITS" ]; then
+        echo -e "  ${RED}❌ Tomma översättningssträngar upptäcktes i språkfilerna:${RESET}"
+        echo "$EMPTY_STR_HITS" | head -n 5
+        TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ERRORS+=("SPRÅKFILER (Tomma översättningar)")
+    else
+        echo -e "  ${GREEN}✔${RESET} Teckenkodning och UTF-8-integritet verifierad i språkfiler (0 mojibake, 0 tomma strängar)"
+    fi
 fi
 
 # 3. Säkerhetstest

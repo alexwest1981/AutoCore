@@ -18,6 +18,7 @@ import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 
@@ -43,11 +44,45 @@ public final class EntityPages {
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.customers.action_create"));
         addBtn.setOnAction(e -> ActionDialogs.showCreateCustomerDialog(garage, () -> router.navigate("customers")));
 
+        Button editBtn = UiComponents.secondaryButton(I18n.get("entity.customers.action_edit"));
+        Button deleteBtn = UiComponents.secondaryButton(I18n.get("entity.customers.action_delete"));
+        editBtn.setDisable(true);
+        deleteBtn.setDisable(true);
+
+        t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
+            editBtn.setDisable(sel == null);
+            deleteBtn.setDisable(sel == null);
+        });
+
+        editBtn.setOnAction(e -> {
+            Customer sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showEditCustomerDialog(garage, sel, () -> router.navigate("customers"));
+            }
+        });
+
+        deleteBtn.setOnAction(e -> {
+            Customer sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showDeleteCustomerConfirmation(garage, sel, () -> router.navigate("customers"));
+            }
+        });
+
+        t.setRowFactory(tv -> {
+            TableRow<Customer> row = new TableRow<Customer>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showEditCustomerDialog(garage, row.getItem(), () -> router.navigate("customers"));
+                }
+            });
+            return row;
+        });
+
         return UiComponents.buildEntityPage(
                 I18n.get("entity.customers.title"),
                 I18n.get("entity.customers.meta", garage.getCustomers().size()),
                 I18n.get("entity.customers.subtitle"),
-                t, addBtn);
+                t, deleteBtn, editBtn, addBtn);
     }
 
     public static VBox buildVehiclesPage(GarageSystem garage, PageRouter router) {
@@ -65,32 +100,113 @@ public final class EntityPages {
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.vehicles.action_create"));
         addBtn.setOnAction(e -> ActionDialogs.showCreateVehicleDialog(garage, () -> router.navigate("vehicles")));
 
+        Button editBtn = UiComponents.secondaryButton(I18n.get("entity.vehicles.action_edit"));
+        Button deleteBtn = UiComponents.secondaryButton(I18n.get("entity.vehicles.action_delete"));
+        editBtn.setDisable(true);
+        deleteBtn.setDisable(true);
+
+        t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
+            editBtn.setDisable(sel == null);
+            deleteBtn.setDisable(sel == null);
+        });
+
+        editBtn.setOnAction(e -> {
+            Vehicle sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showEditVehicleDialog(garage, sel, () -> router.navigate("vehicles"));
+            }
+        });
+
+        deleteBtn.setOnAction(e -> {
+            Vehicle sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showDeleteVehicleConfirmation(garage, sel, () -> router.navigate("vehicles"));
+            }
+        });
+
+        t.setRowFactory(tv -> {
+            TableRow<Vehicle> row = new TableRow<Vehicle>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showEditVehicleDialog(garage, row.getItem(), () -> router.navigate("vehicles"));
+                }
+            });
+            return row;
+        });
+
         return UiComponents.buildEntityPage(
                 I18n.get("entity.vehicles.title"),
                 I18n.get("entity.vehicles.meta", garage.getVehicles().size()),
                 I18n.get("entity.vehicles.subtitle"),
-                t, addBtn);
+                t, deleteBtn, editBtn, addBtn);
     }
 
     public static VBox buildBookingsPage(GarageSystem garage, PageRouter router) {
         FilterableTable<Booking> table = TableFactory.create(garage.getBookings());
         TableView<Booking> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 60, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.vehicle"), 140, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
-                TableFactory.col(I18n.get("table.col.date"), 130, c -> String.valueOf(c.getDate())),
-                TableFactory.col(I18n.get("table.col.description"), 320, Booking::getDescription),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 140, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.col(I18n.get("table.col.id"), 50, c -> String.valueOf(c.getId())),
+                TableFactory.col(I18n.get("table.col.vehicle"), 120, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
+                TableFactory.col(I18n.get("table.col.date"), 110, c -> String.valueOf(c.getDate())),
+                TableFactory.col(I18n.get("table.col.time"), 120, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
+                TableFactory.col(I18n.get("table.col.service"), 150, c -> EntityLookup.serviceName(garage, c.getServiceItemId())),
+                TableFactory.col(I18n.get("table.col.mechanic"), 140, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
+                TableFactory.col(I18n.get("table.col.description"), 240, Booking::getDescription),
+                TableFactory.badgeCol(I18n.get("table.col.status"), 120, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.bookings.action_create"));
         addBtn.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, () -> router.navigate("bookings")));
 
+        Button cancelBtn = UiComponents.secondaryButton(I18n.get("entity.bookings.action_cancel"));
+        Button editBtn = UiComponents.secondaryButton(I18n.get("entity.bookings.action_edit"));
+        Button deleteBtn = UiComponents.secondaryButton(I18n.get("entity.bookings.action_delete"));
+        cancelBtn.setDisable(true);
+        editBtn.setDisable(true);
+        deleteBtn.setDisable(true);
+
+        t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
+            cancelBtn.setDisable(sel == null || "CANCELLED".equalsIgnoreCase(sel.getStatus()));
+            editBtn.setDisable(sel == null);
+            deleteBtn.setDisable(sel == null);
+        });
+
+        editBtn.setOnAction(e -> {
+            Booking sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showEditBookingDialog(garage, sel, () -> router.navigate("bookings"));
+            }
+        });
+
+        cancelBtn.setOnAction(e -> {
+            Booking sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showCancelBookingConfirmation(garage, sel, () -> router.navigate("bookings"));
+            }
+        });
+
+        deleteBtn.setOnAction(e -> {
+            Booking sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showDeleteBookingConfirmation(garage, sel, () -> router.navigate("bookings"));
+            }
+        });
+
+        t.setRowFactory(tv -> {
+            TableRow<Booking> row = new TableRow<Booking>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showEditBookingDialog(garage, row.getItem(), () -> router.navigate("bookings"));
+                }
+            });
+            return row;
+        });
+
         return UiComponents.buildEntityPage(
                 I18n.get("entity.bookings.title"),
                 I18n.get("entity.bookings.meta", garage.getBookings().size()),
                 I18n.get("entity.bookings.subtitle"),
-                t, addBtn);
+                t, cancelBtn, deleteBtn, editBtn, addBtn);
     }
 
     public static VBox buildWorkOrdersPage(GarageSystem garage, PageRouter router) {
@@ -151,11 +267,48 @@ public final class EntityPages {
                 TableFactory.col(I18n.get("table.col.time"), 100, c -> c.getEstimatedMinutes() + " min"));
         router.setActiveTable(table);
 
+        Button addBtn = UiComponents.primaryButton(I18n.get("entity.services.action_create"));
+        addBtn.setOnAction(e -> ActionDialogs.showCreateServiceItemDialog(garage, () -> router.navigate("services")));
+
+        Button editBtn = UiComponents.secondaryButton(I18n.get("entity.services.action_edit"));
+        Button deleteBtn = UiComponents.secondaryButton(I18n.get("entity.services.action_delete"));
+        editBtn.setDisable(true);
+        deleteBtn.setDisable(true);
+
+        t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
+            editBtn.setDisable(sel == null);
+            deleteBtn.setDisable(sel == null);
+        });
+
+        editBtn.setOnAction(e -> {
+            ServiceItem sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showEditServiceItemDialog(garage, sel, () -> router.navigate("services"));
+            }
+        });
+
+        deleteBtn.setOnAction(e -> {
+            ServiceItem sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showDeleteServiceItemConfirmation(garage, sel, () -> router.navigate("services"));
+            }
+        });
+
+        t.setRowFactory(tv -> {
+            TableRow<ServiceItem> row = new TableRow<ServiceItem>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showEditServiceItemDialog(garage, row.getItem(), () -> router.navigate("services"));
+                }
+            });
+            return row;
+        });
+
         return UiComponents.buildEntityPage(
                 I18n.get("entity.services.title"),
                 I18n.get("entity.services.meta", garage.getServiceItems().size()),
                 I18n.get("entity.services.subtitle"),
-                t);
+                t, deleteBtn, editBtn, addBtn);
     }
 
     public static VBox buildMechanicsPage(GarageSystem garage, PageRouter router) {
@@ -169,11 +322,48 @@ public final class EntityPages {
                 TableFactory.badgeCol(I18n.get("table.col.available"), 130, c -> c.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 
+        Button addBtn = UiComponents.primaryButton(I18n.get("entity.mechanics.action_create"));
+        addBtn.setOnAction(e -> ActionDialogs.showCreateMechanicDialog(garage, () -> router.navigate("mechanics")));
+
+        Button editBtn = UiComponents.secondaryButton(I18n.get("entity.mechanics.action_edit"));
+        Button deleteBtn = UiComponents.secondaryButton(I18n.get("entity.mechanics.action_delete"));
+        editBtn.setDisable(true);
+        deleteBtn.setDisable(true);
+
+        t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
+            editBtn.setDisable(sel == null);
+            deleteBtn.setDisable(sel == null);
+        });
+
+        editBtn.setOnAction(e -> {
+            Mechanic sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showEditMechanicDialog(garage, sel, () -> router.navigate("mechanics"));
+            }
+        });
+
+        deleteBtn.setOnAction(e -> {
+            Mechanic sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showDeleteMechanicConfirmation(garage, sel, () -> router.navigate("mechanics"));
+            }
+        });
+
+        t.setRowFactory(tv -> {
+            TableRow<Mechanic> row = new TableRow<Mechanic>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showEditMechanicDialog(garage, row.getItem(), () -> router.navigate("mechanics"));
+                }
+            });
+            return row;
+        });
+
         return UiComponents.buildEntityPage(
                 I18n.get("entity.mechanics.title"),
                 I18n.get("entity.mechanics.meta", garage.getMechanics().size()),
                 I18n.get("entity.mechanics.subtitle"),
-                t);
+                t, deleteBtn, editBtn, addBtn);
     }
 
     public static VBox buildInvoicesPage(GarageSystem garage, PageRouter router) {

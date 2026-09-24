@@ -2,48 +2,159 @@
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"
 
-# Hitta en Java 8. JDK8_HOME vinner om den är satt, annars letas en JDK 8 upp på
-# de vanligaste platserna i Linux, macOS och Windows (körs då från Git Bash).
-if [ -z "$JDK8_HOME" ]; then
-    for candidate in \
-        "$HOME/.jdks"/*1.8* \
-        "$HOME/jdks"/jdk8* \
-        "$HOME/.sdkman/candidates/java"/*1.8* \
-        /usr/lib/jvm/*1.8* \
-        /usr/lib/jvm/java-8* \
-        /Library/Java/JavaVirtualMachines/*1.8*/Contents/Home \
-        "/c/Program Files/Java"/jdk1.8* \
-        "/c/Program Files (x86)/Java"/jdk1.8* ; do
-        if [ -x "$candidate/bin/javac" ] || [ -x "$candidate/bin/javac.exe" ]; then
-            JDK8_HOME="$candidate"
+# ==============================================================================
+# VARFÖR JAVA 8 (JDK 8)?
+# Projektets arkitektur- och kurskriterier kräver att den befintliga Java-
+# versionen (Java 8) bibehålls. Den JDK som används måste dessutom innehålla
+# JavaFX (t.ex. BellSoft Liberica JDK 8 Full eller motsvarande distribution
+# med inbyggd JavaFX-runtime).
+# ==============================================================================
+
+# 1. Identifiera operativsystem och sätt rätt klassvägsseparator
+IS_WINDOWS=false
+IS_MACOS=false
+CP_SEP=":"
+
+case "$(uname -s 2>/dev/null || echo "unknown")" in
+    CYGWIN*|MINGW*|MSYS*)
+        IS_WINDOWS=true
+        CP_SEP=";"
+        ;;
+    Darwin*)
+        IS_MACOS=true
+        CP_SEP=":"
+        ;;
+    *)
+        CP_SEP=":"
+        ;;
+esac
+
+# Hjälpfunktion för att kontrollera om en sökväg är en giltig Java 8 JDK
+is_jdk8() {
+    local home="$1"
+    [ -n "$home" ] || return 1
+    local javac="$home/bin/javac"
+    local java="$home/bin/java"
+    [ -x "$javac" ] || [ -x "$javac.exe" ] || return 1
+    [ -x "$java" ] || [ -x "$java.exe" ] || return 1
+    local ver
+    ver="$("$java" -version 2>&1 | head -n 1)"
+    echo "$ver" | grep -q '1\.8\|"8\.' || return 1
+    return 0
+}
+
+# 2. Hitta en Java 8 JDK
+FOUND_JDK=""
+
+if [ -n "$JDK8_HOME" ] && is_jdk8 "$JDK8_HOME"; then
+    FOUND_JDK="$JDK8_HOME"
+elif [ -n "$JAVA_HOME" ] && is_jdk8 "$JAVA_HOME"; then
+    FOUND_JDK="$JAVA_HOME"
+fi
+
+if [ -z "$FOUND_JDK" ] && [ "$IS_MACOS" = true ] && [ -x "/usr/libexec/java_home" ]; then
+    MAC_CANDIDATE="$(/usr/libexec/java_home -v 1.8 2>/dev/null || /usr/libexec/java_home -v 8 2>/dev/null || true)"
+    if [ -n "$MAC_CANDIDATE" ] && is_jdk8 "$MAC_CANDIDATE"; then
+        FOUND_JDK="$MAC_CANDIDATE"
+    fi
+fi
+
+if [ -z "$FOUND_JDK" ]; then
+    if command -v javac >/dev/null 2>&1 && command -v java >/dev/null 2>&1; then
+        PATH_JAVA_VER="$(java -version 2>&1 | head -n 1)"
+        if echo "$PATH_JAVA_VER" | grep -q '1\.8\|"8\.'; then
+            JAVAC_REAL="$(command -v javac)"
+            while [ -L "$JAVAC_REAL" ]; do
+                JAVAC_DIR="$(cd "$(dirname "$JAVAC_REAL")" && pwd)"
+                JAVAC_REAL="$(readlink "$JAVAC_REAL")"
+                [[ "$JAVAC_REAL" != /* ]] && JAVAC_REAL="$JAVAC_DIR/$JAVAC_REAL"
+            done
+            BIN_DIR="$(cd "$(dirname "$JAVAC_REAL")" && pwd)"
+            CANDIDATE_HOME="$(cd "$BIN_DIR/.." && pwd)"
+            if is_jdk8 "$CANDIDATE_HOME"; then
+                FOUND_JDK="$CANDIDATE_HOME"
+            fi
+        fi
+    fi
+fi
+
+if [ -z "$FOUND_JDK" ]; then
+    CANDIDATES=(
+        # Linux & allmänna
+        "$HOME/.jdks"/jdk8*
+        "$HOME/.jdks"/*1.8*
+        "$HOME/.jdks"/*8*
+        "$HOME/jdks"/jdk8*
+        "$HOME/jdks"/*1.8*
+        "$HOME/jdks"/*8*
+        "$HOME/.sdkman/candidates/java"/*1.8*
+        "$HOME/.sdkman/candidates/java"/*8*
+        /usr/lib/jvm/*1.8*
+        /usr/lib/jvm/java-8*
+        /usr/lib/jvm/*jdk-8*
+        /usr/lib/jvm/*liberica*8*
+        /usr/lib/jvm/*zulu*8*
+
+        # macOS
+        /Library/Java/JavaVirtualMachines/*/Contents/Home
+        /opt/homebrew/opt/openjdk@8
+        /opt/homebrew/opt/openjdk@8/libexec/openjdk.jdk/Contents/Home
+        /usr/local/opt/openjdk@8
+        /usr/local/opt/openjdk@8/libexec/openjdk.jdk/Contents/Home
+        "$HOME/.asdf/installs/java"/*1.8*
+        "$HOME/.asdf/installs/java"/*8*
+
+        # Windows (Git Bash / MSYS)
+        "/c/Program Files/BellSoft"/*8*
+        "/c/Program Files/BellSoft"/*
+        "/c/Program Files/Java"/*8*
+        "/c/Program Files/Java"/jdk1.8*
+        "/c/Program Files/Eclipse Adoptium"/*8*
+        "/c/Program Files/Eclipse Adoptium"/*
+        "/c/Program Files/Zulu"/*8*
+        "/c/Program Files/Amazon Corretto"/*8*
+        "/c/Program Files (x86)/BellSoft"/*8*
+        "/c/Program Files (x86)/Java"/*1.8*
+        "$LOCALAPPDATA/Programs/Eclipse Adoptium"/*8*
+        "$USERPROFILE/.jdks"/*8*
+        "$USERPROFILE/jdks"/*8*
+    )
+
+    for c in "${CANDIDATES[@]}"; do
+        if is_jdk8 "$c"; then
+            FOUND_JDK="$c"
             break
         fi
     done
 fi
 
-if [ -z "$JDK8_HOME" ]; then
-    echo "Fel: Hittade ingen Java 8."
-    echo "Sätt JDK8_HOME till din JDK 8 och kör igen, till exempel:"
+if [ -z "$FOUND_JDK" ]; then
+    echo "Fel: Hittade ingen Java 8 (JDK 8)."
+    echo "Sätt JDK8_HOME till din Java 8-katalog och kör igen, till exempel:"
     echo "  Linux:   export JDK8_HOME=\$HOME/.jdks/liberica-full-1.8.0_504"
-    echo "  macOS:   export JDK8_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_412.jdk/Contents/Home"
-    echo "  Windows: export JDK8_HOME=\"/c/Program Files/Java/jdk1.8.0_412\"   (i Git Bash)"
+    echo "  macOS:   export JDK8_HOME=/Library/Java/JavaVirtualMachines/liberica-jdk8-full.jdk/Contents/Home"
+    echo "           (eller kör: export JDK8_HOME=\$(/usr/libexec/java_home -v 1.8))"
+    echo "  Windows: export JDK8_HOME=\"/c/Program Files/BellSoft/LibericaJDK-8-Full\" (i Git Bash)"
     exit 1
 fi
 
-# På Windows heter filerna java.exe och javac.exe
+export JDK8_HOME="$FOUND_JDK"
+export JAVA_HOME="$FOUND_JDK"
+
 EXE=""
-if [ -x "$JDK8_HOME/bin/javac.exe" ]; then
+if [ -x "$FOUND_JDK/bin/javac.exe" ]; then
     EXE=".exe"
 fi
 
-export JAVA_HOME="$JDK8_HOME"
-JAVA_BIN="$JDK8_HOME/bin/java$EXE"
-JAVAC_BIN="$JDK8_HOME/bin/javac$EXE"
-SRC_DIR="$DIR/WigellAutoCore/autocore/src"
-RES_DIR="$DIR/WigellAutoCore/autocore/src/resources"
-OUT_DIR="$DIR/out/production/Systemarkitektur"
-JDBC_JAR="$DIR/WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
+JAVA_BIN="$FOUND_JDK/bin/java$EXE"
+JAVAC_BIN="$FOUND_JDK/bin/javac$EXE"
+
+SRC_DIR="WigellAutoCore/autocore/src"
+RES_DIR="WigellAutoCore/autocore/src/resources"
+OUT_DIR="out/production/Systemarkitektur"
+JDBC_JAR="WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 
 # Startklassen går att välja: ./start.sh kör GUI:t, ./start.sh ConsoleApp kör textversionen.
 MAIN_CLASS="${1:-Main}"
@@ -53,18 +164,13 @@ mkdir -p "$OUT_DIR"
 
 # Kopiera resurser (CSS-teman, JSON-språkfiler etc.) till out
 if [ -d "$RES_DIR" ]; then
-    cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
+    cp -R "$RES_DIR/." "$OUT_DIR/" 2>/dev/null || cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
 fi
 
-# Samla källfilerna i en lista. Tål mellanslag i sökvägen, och fungerar även på
-# macOS inbyggda bash 3.2 som saknar mapfile.
-SOURCES=()
-while IFS= read -r source_file; do
-    SOURCES+=("$source_file")
-done < <(find "$SRC_DIR" -name "*.java")
+SOURCES_FILE="$OUT_DIR/sources.txt"
+find "$SRC_DIR" -name "*.java" > "$SOURCES_FILE"
 
-# Drivrutinen måste ligga på klassvägen både vid kompilering och vid körning,
-# annars svarar appen "No suitable driver found for jdbc:sqlite".
-"$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR:$RES_DIR" -cp "$JDBC_JAR" "${SOURCES[@]}"
+"$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" -cp "$JDBC_JAR" @"$SOURCES_FILE"
+rm -f "$SOURCES_FILE"
 
-exec "$JAVA_BIN" -cp "$OUT_DIR:$JDBC_JAR" "$MAIN_CLASS" "$@"
+exec "$JAVA_BIN" -cp "$OUT_DIR$CP_SEP$JDBC_JAR" "$MAIN_CLASS" "$@"

@@ -90,13 +90,21 @@ WigellAutoCore/autocore/
 │       │   └── MechanicSchedule.java # Schemaläggning & beläggningsberäkning (timme-för-timme)
 │       ├── ui/                       # Presentationslager (JavaFX GUI)
 │       │   ├── AutoCoreApp.java      # Fönsterram, layout & sidnavigation
-│       │   ├── ActionDialogs.java    # Modala dialoger för CRUD och transaktioner
+│       │   ├── ActionDialogs.java    # Lättviktig fasad (Facade) för modala formulärdialoger
+│       │   ├── CustomerDialogs.java  # Kunddialoger (skapa, redigera, ta bort)
+│       │   ├── VehicleDialogs.java   # Fordonsdialoger (skapa, redigera, ta bort)
+│       │   ├── BookingDialogs.java   # Bokningsdialoger (tjänst, mekaniker, arbetspass)
+│       │   ├── WorkOrderDialogs.java # Arbetsorderdialoger med tjänstekoppling
+│       │   ├── BillingDialogs.java   # Faktura- och betalningsdialoger
+│       │   ├── MechanicDialogs.java  # Mekanikerdialoger (specialisering, tillgänglighet)
+│       │   ├── ServiceItemDialogs.java # Verkstadstjänster & prissättning
+│       │   ├── SlotDetailsDialog.java # Detaljdialoger för schema- och arbetsordrar
 │       │   ├── components/           # Återanvändbara UI-komponenter & Kanban-kort
 │       │   ├── i18n/                 # Flerspråksmotor (I18n.java) med realtidsväxling
 │       │   ├── navigation/           # Sidomeny (SidebarView) & Sidrouter (PageRouter)
 │       │   ├── util/                 # Formatering (UiFormatters), sök och uppslag
 │       │   └── views/                # Översikt, Dashboard och entitetsvyer
-│       └── test/                     # Automatiserad testsvit (50 tester)
+│       └── test/                     # Automatiserad testsvit (54 tester)
 └── resources/
     └── com/wac/autocore/
         ├── i18n/                     # Dictionaries (sv.json, en.json) med 100% paritet
@@ -137,7 +145,7 @@ WigellAutoCore/autocore/
   - Vektorbaserade `SVGPath`-ikoner, standardiserade Unicode-pilar (`<`, `>`, `\u25BC`) och justerad typografi förhindrar avhuggna symboler och överlappande text på macOS. Fullt förenlig med WCAG 2.1 AAA.
 
 ### Automatiserade tester & Audit (`com.wac.autocore.test`)
-Systemet skyddas av **51 automatiserade tester och kvalitetskontroller** som körs på under 1 sekund:
+Systemet skyddas av **54 automatiserade tester och kvalitetskontroller** samt automatisk GitHub Actions CI:
 * **`GlobalSearchTest`**: Verifierar granulär sökning över kunder, fordon, mekaniker, ordrar, skiftlägesokänslighet och prefix.
 * **`TableFactoryTest`**: Verifierar flerkolumnssökning och regressionsskyddar mot indexbuggar vid filtrering.
 * **`UiFormattersTest`**: Valuta (long/double), trunkering, statusöversättning, datum och badge-CSS-klasser.
@@ -145,12 +153,14 @@ Systemet skyddas av **51 automatiserade tester och kvalitetskontroller** som kö
 * **`OverviewMetricsTest`**: Verifiering av KPI-mätetal (aktiva ordrar, omsättning, tillgänglighet).
 * **`I18nTest`**: Språkväxling i realtid, parameteriserade strängar, fallback och komplett paritet mellan språkfiler.
 * **`MechanicScheduleTest`**: Dagslots, veckobelastning, färgprogression, skydd mot dubbelbokningar och `getNextBookingDate`.
-* **`CodeQualityTest`**: 100% språkparitet, temaintegritet, frikoppling av servicelager och komplexitetsgränser.
+* **`PersistenceRestartTest`**: Säkerställer att sparade kunder och bokningar bevaras i SQLite och överlever app-omstart utan dubblering.
+* **`CodeQualityTest`**: 100% språkparitet, temaintegritet, frikoppling av servicelager och komplexitetsgränser (< 1200 rader).
 * **`SecurityAuditTest`**: Skanning mot hårdkodade hemligheter, SQL-injektionsmönster, processkörning och PII-loggning.
 * **`WcagAccessibilityTest`**: WCAG 2.1 AAA kontrastmätningar (>= 7.0:1 för normal text, >= 4.5:1 för UI), fokusindikatorer och minsta teckenstorlek.
+* **GitHub Actions CI (`.github/workflows/ci.yml`)**: Körs automatiskt vid varje push/PR med Liberica JDK 8 (med JavaFX) och virtuell framebuffer (`xvfb-run`).
 * **Kör tester:**
-  - `./check.sh` för komplett grafisk auditrapport (Alla 4 moduler).
-  - `./test.sh` för snabb enhetstestkörning.
+  - `./check.sh` för komplett grafisk auditrapport (Alla 4 moduler, 50 kontroller).
+  - `./test.sh` för snabb enhetstestkörning (54 tester).
 
 ### UI & Tillgänglighet (WCAG 2.1 AAA)
 * **Zebramönstrade tabeller:** Varannan rad har dämpad kontrastfärg för snabbare och behagligare läsning.

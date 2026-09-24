@@ -62,29 +62,42 @@
       "title": "Customers",
       "subtitle": "Directory of private and corporate clients",
       "meta": "{0} registered",
-      "action_create": "+ Create Customer"
+      "action_create": "+ Create Customer",
+      "action_edit": "Edit Customer",
+      "action_delete": "Delete Customer"
     },
     "vehicles": {
       "title": "Vehicles",
       "subtitle": "Registered vehicles in the garage database",
       "meta": "{0} registered",
-      "action_create": "+ Register Vehicle"
+      "action_create": "+ Register Vehicle",
+      "action_edit": "Edit Vehicle",
+      "action_delete": "Delete Vehicle"
     },
     "bookings": {
       "title": "Bookings",
       "subtitle": "Upcoming and past service appointments",
       "meta": "{0} bookings",
-      "action_create": "+ Create Booking"
+      "action_create": "+ Create Booking",
+      "action_cancel": "Cancel Booking",
+      "action_edit": "Edit Booking",
+      "action_delete": "Delete Booking"
     },
     "services": {
       "title": "Services",
       "subtitle": "Service catalog and price list",
-      "meta": "{0} services"
+      "meta": "{0} services",
+      "action_create": "+ Create Service",
+      "action_edit": "Edit Service",
+      "action_delete": "Delete Service"
     },
     "mechanics": {
       "title": "Mechanics",
       "subtitle": "Workshop staff, competence and availability",
-      "meta": "{0} employees"
+      "meta": "{0} employees",
+      "action_create": "+ Add Mechanic",
+      "action_edit": "Edit Mechanic",
+      "action_delete": "Delete Mechanic"
     },
     "workorders": {
       "title": "Work Orders",
@@ -182,6 +195,17 @@
         "header": "Register Customer",
         "desc": "Fill in customer contact details below."
       },
+      "edit": {
+        "title": "Edit Customer",
+        "header": "Update Customer Details",
+        "desc": "Modify customer contact details or VIP status."
+      },
+      "delete": {
+        "title": "Delete Customer",
+        "header": "Confirm Deletion",
+        "confirm": "Are you sure you want to delete {0}? All vehicles associated with this customer will also be removed.",
+        "has_active_orders": "Cannot delete {0} because the customer has vehicles with active bookings or work orders."
+      },
       "name": "Full name",
       "email": "Email address",
       "phone": "Phone number",
@@ -195,6 +219,17 @@
         "title": "Register Vehicle",
         "header": "New Vehicle",
         "desc": "Link a vehicle to a customer in the database."
+      },
+      "edit": {
+        "title": "Edit Vehicle",
+        "header": "Update Vehicle",
+        "desc": "Modify vehicle details or owner link."
+      },
+      "delete": {
+        "title": "Delete Vehicle",
+        "header": "Confirm Deletion",
+        "confirm": "Are you sure you want to delete vehicle {0}?",
+        "has_active_orders": "Cannot delete vehicle {0} because it has active bookings or work orders."
       },
       "reg_nr": "Registration number (e.g. ABC123)",
       "brand": "Brand",
@@ -212,10 +247,55 @@
         "header": "Schedule Booking",
         "desc": "Create a service booking for a registered vehicle."
       },
+      "edit": {
+        "title": "Edit Booking",
+        "header": "Update Booking",
+        "desc": "Modify vehicle, date, description or status for the booking."
+      },
+      "cancel": {
+        "title": "Cancel Booking",
+        "header": "Confirm Cancellation",
+        "confirm": "Are you sure you want to cancel booking #{0}?",
+        "has_active_orders": "Cannot cancel booking #{0} because it has an active work order."
+      },
+      "delete": {
+        "title": "Delete Booking",
+        "header": "Confirm Deletion",
+        "confirm": "Are you sure you want to delete booking #{0}?",
+        "has_active_orders": "Cannot delete booking #{0} because it has an active work order."
+      },
       "vehicle_select": "Select vehicle",
       "date": "Booking date",
-      "service_select": "Select primary service",
+      "service_select": "Select service",
+      "mechanic_select": "Select mechanic",
+      "time_select": "Select start time",
+      "no_service": "No specific service",
+      "no_mechanic": "No mechanic (assign later)",
+      "estimated_end": "Estimated end time: {0} ({1} min)",
+      "time_window": "Working slot: {0} – {1}",
       "desc_prompt": "E.g. Annual service and brake replacement"
+    },
+    "service": {
+      "create": {
+        "title": "New Service",
+        "header": "Create Service",
+        "desc": "Add a new service to the workshop service catalog."
+      },
+      "edit": {
+        "title": "Edit Service",
+        "header": "Update Service",
+        "desc": "Modify name, description, price or estimated duration."
+      },
+      "delete": {
+        "title": "Delete Service",
+        "header": "Confirm Deletion",
+        "confirm": "Are you sure you want to delete service {0}?",
+        "has_active_orders": "Cannot delete service {0} because it is included in an active work order."
+      },
+      "name_prompt": "Service name (e.g. Brake replacement)",
+      "desc_prompt": "Work description",
+      "price_prompt": "Price in SEK (e.g. 1200)",
+      "time_prompt": "Estimated time in minutes (e.g. 60)"
     },
     "mechanic": {
       "create": {
