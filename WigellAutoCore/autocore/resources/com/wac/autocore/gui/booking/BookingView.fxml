@@ -21,7 +21,7 @@
             <TableColumn fx:id="statusColumn" text="Status"/>
             <TableColumn fx:id="startTimeColumn" text="Start time"/>
             <TableColumn fx:id="mechanicIdColumn" text="Mechanic-ID"/>
-            <TableColumn fx:id="serviceItemColumn" text="ServiceItem-ID"/>
+            <TableColumn fx:id="serviceItemIdColumn" text="ServiceItem-ID"/>
         </columns>
 
     </TableView>

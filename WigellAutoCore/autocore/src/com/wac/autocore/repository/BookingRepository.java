@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,8 @@ public class BookingRepository {
 
     public List<Booking> findAll() throws SQLException {
         List<Booking> bookings = new ArrayList<Booking>();
-        String sql = "SELECT id, vehicle_id, date, description, status FROM bookings";
+        String sql = "SELECT id, vehicle_id, date, description, status, start_time, end_time, " +
+                "mechanic_id, service_item_id FROM bookings";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -40,7 +42,8 @@ public class BookingRepository {
     }
 
     public Booking findById(int id) throws SQLException {
-        String sql = "SELECT id, vehicle_id, date, description, status FROM bookings WHERE id = ?";
+        String sql = "SELECT id, vehicle_id, date, description, status, start_time, end_time, " +
+                "mechanic_id, service_item_id FROM bookings WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -108,10 +111,30 @@ public class BookingRepository {
     }
 
     private void setTimeSlots(PreparedStatement statement, Booking booking) throws SQLException {
-        statement.setNull(2, Types.VARCHAR);
-        statement.setNull(3, Types.VARCHAR);
-        statement.setNull(4, Types.INTEGER);
-        statement.setNull(5, Types.INTEGER);
+        setTime(statement, 2, booking.getStartTime());
+        setTime(statement, 3, booking.getEndTime());
+        statement.setInt(4, booking.getMechanicId());
+        statement.setInt(5, booking.getServiceItemId());
+
+        if (booking.getMechanicId() == 0) {
+            statement.setNull(4, java.sql.Types.INTEGER);
+        } else {
+            statement.setInt(4, booking.getMechanicId());
+        }
+        if (booking.getServiceItemId() == 0) {
+            statement.setNull(5, java.sql.Types.INTEGER);
+        } else {
+            statement.setInt(5, booking.getServiceItemId());
+        }
+    }
+
+    private void setTime(PreparedStatement statement, int position, LocalTime time) throws SQLException {
+        if (time == null) {
+            statement.setNull(position, Types.VARCHAR);
+        }
+        else {
+            statement.setString(position, time.toString());
+        }
     }
 
     private void setDate(PreparedStatement statement, int position, LocalDate date) throws SQLException {
@@ -135,6 +158,30 @@ public class BookingRepository {
         String status = resultSet.getString("status");
         if (status != null) {
             booking.setStatus(status);
+        }
+
+        String startText = resultSet.getString("start_time");
+        if (startText != null) {
+            booking.setStartTime(LocalTime.parse(startText));
+        }
+        String endText = resultSet.getString("end_time");
+        if (endText != null) {
+            booking.setEndTime(LocalTime.parse(endText));
+        }
+
+
+        int mechanicId = resultSet.getInt("mechanic_id");
+        if (resultSet.wasNull()) {
+            booking.setMechanicId(0);
+        } else {
+            booking.setMechanicId(mechanicId);
+        }
+
+        int serviceItemId = resultSet.getInt("service_item_id");
+        if (resultSet.wasNull()) {
+            booking.setServiceItemId(0);
+        } else {
+            booking.setServiceItemId(serviceItemId);
         }
 
         return booking;

@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -36,7 +37,7 @@ public class BookingController {
     private TableColumn<Booking, Integer> mechanicIdColumn;
 
     @FXML
-    private TableColumn<Booking, Integer> serviceIdColumn;
+    private TableColumn<Booking, Integer> serviceItemIdColumn;
 
     @FXML
     private TextField vehicleIdField;
@@ -67,7 +68,7 @@ public class BookingController {
 
         startTimeColumn.setCellValueFactory(new PropertyValueFactory<>("startTime"));
         mechanicIdColumn.setCellValueFactory(new PropertyValueFactory<>("mechanicId"));
-        serviceIdColumn.setCellValueFactory(new PropertyValueFactory<>("serviceId"));
+        serviceItemIdColumn.setCellValueFactory(new PropertyValueFactory<>("serviceItemId"));
 
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusColumn.setCellFactory(column -> new TableCell<Booking, String>() {

@@ -24,21 +24,26 @@ import java.util.List;
  */
 public class BookingService {
 
-    BookingRepository bookingRepository = new BookingRepository();
-    VehicleRepository vehicleRepository = new VehicleRepository();
-    ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final BookingRepository bookingRepository = new BookingRepository();
+    private final VehicleRepository vehicleRepository = new VehicleRepository();
+    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
 
     public List<Booking> getAll() {
-        return Collections.unmodifiableList(Database.getBookings());
+        try {
+            return bookingRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read bookings: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public Booking findById(int id) {
-        for (Booking booking : Database.getBookings()) {
-            if (booking.getId() == id) {
-                return booking;
-            }
+        try {
+            return bookingRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read booking: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     public Booking createBooking(int vehicleId, LocalDate date, String description) {
@@ -78,7 +83,7 @@ public class BookingService {
             System.out.println("Service item with ID " + serviceItemId + " does not exist ");
         }
         //Beräkna endTime automatiskt utifrån startTime och estimatedMinutes
-        LocalTime endTime = startTime.plusMinutes(serviceItem.getEstimatedMinutes());
+        LocalTime endTime = serviceItem != null ? startTime.plusMinutes(serviceItem.getEstimatedMinutes()) : startTime.plusMinutes(60);
 
         Booking booking = new Booking(vehicleId, date, description, startTime, endTime, mechanicId, serviceItemId);
 

@@ -34,6 +34,7 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.shape.SVGPath;
 
+import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -877,7 +878,8 @@ public class MechanicKanbanCard {
                             break;
                         }
                     }
-                    targetBooking = garage.createBooking(vehicleId, slot.getDate(), slot.getDescription());
+                        targetBooking = garage.createBooking(vehicleId, slot.getDate(), slot.getDescription());
+
                     slot.setBookingId(targetBooking.getId());
                 }
                 WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId(), 1);
