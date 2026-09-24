@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 /**
@@ -35,12 +36,14 @@ public final class UiComponents {
     public static Button primaryButton(String text) {
         Button b = new Button(text);
         b.getStyleClass().addAll("button", "primary");
+        b.setMinWidth(Region.USE_PREF_SIZE);
         return b;
     }
 
     public static Button secondaryButton(String text) {
         Button b = new Button(text);
         b.getStyleClass().addAll("button", "secondary-button");
+        b.setMinWidth(Region.USE_PREF_SIZE);
         return b;
     }
 
@@ -86,12 +89,12 @@ public final class UiComponents {
             for (Node act : actions) {
                 if (act instanceof Button) {
                     Button b = (Button) act;
-                    b.setMinWidth(150);
-                    b.setPrefWidth(150);
+                    b.setMinWidth(Region.USE_PREF_SIZE);
                 }
             }
             HBox actionBox = new HBox(8, actions);
             actionBox.setAlignment(Pos.CENTER_RIGHT);
+            actionBox.setMinWidth(Region.USE_PREF_SIZE);
             topRow.getChildren().add(actionBox);
         }
 
