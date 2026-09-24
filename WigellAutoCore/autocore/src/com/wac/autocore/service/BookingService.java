@@ -48,8 +48,13 @@ public class BookingService {
             return null;
         }
 
-        int id = Database.getBookings().size() + 1;
-        Booking booking = new Booking(id, vehicleId, date, description);
+        Booking booking = new Booking(vehicleId, date, description);
+        try {
+            bookingRepository.save(booking);
+        } catch (SQLException e) {
+            int id = Database.getBookings().size() + 1;
+            booking = new Booking(id, vehicleId, date, description);
+        }
 
         Database.getBookings().add(booking);
 
@@ -86,6 +91,10 @@ public class BookingService {
     }
 
     private Vehicle findVehicle(int id) {
+        try {
+            Vehicle v = vehicleRepository.findById(id);
+            if (v != null) return v;
+        } catch (SQLException ignored) {}
         for (Vehicle vehicle : Database.getVehicles()) {
             if (vehicle.getId() == id) {
                 return vehicle;
