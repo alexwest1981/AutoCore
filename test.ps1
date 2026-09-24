@@ -19,6 +19,16 @@ if (-not $foundJdk -and $env:JAVA_HOME -and (Test-Path "$env:JAVA_HOME\bin\javac
 }
 
 if (-not $foundJdk) {
+    $whereJavac = Get-Command javac -ErrorAction SilentlyContinue
+    if ($whereJavac) {
+        $ver = & java -version 2>&1 | Select-Object -First 1
+        if ($ver -match '1\.8|"8\.') {
+            $foundJdk = Split-Path -Parent (Split-Path -Parent $whereJavac.Source)
+        }
+    }
+}
+
+if (-not $foundJdk) {
     $candidates = @(
         "C:\Program Files\BellSoft\LibericaJDK-8-Full",
         "C:\Program Files\BellSoft\LibericaJDK-8",
