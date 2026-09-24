@@ -1,6 +1,5 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
@@ -24,38 +23,46 @@ import java.util.List;
  */
 public class BookingService {
 
-    BookingRepository bookingRepository = new BookingRepository();
-    VehicleRepository vehicleRepository = new VehicleRepository();
-    ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final BookingRepository bookingRepository = new BookingRepository();
+    private final VehicleRepository vehicleRepository = new VehicleRepository();
+    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
 
     public List<Booking> getAll() {
-        return Collections.unmodifiableList(Database.getBookings());
+        try {
+            return bookingRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read bookings: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public Booking findById(int id) {
-        for (Booking booking : Database.getBookings()) {
-            if (booking.getId() == id) {
-                return booking;
-            }
+        try {
+            return bookingRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read booking: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
-    public Booking createBooking(int vehicleId, LocalDate date, String description) {
+    public Booking createBooking(int vehicleId, LocalDate date, String description) throws SQLException {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
             System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
             return null;
         }
 
-        int id = Database.getBookings().size() + 1;
-        Booking booking = new Booking(id, vehicleId, date, description);
 
-        Database.getBookings().add(booking);
+        Booking booking = new Booking(vehicleId, date, description);
+        try {
+            bookingRepository.save(booking);
+        } catch (SQLException e) {
+            System.out.println("Could not save booking: " + e.getMessage());
+            return null;
+        }
 
         System.out.println("Booking created successfully.");
         System.out.println(booking);
-
         return booking;
     }
 
@@ -71,6 +78,7 @@ public class BookingService {
                 .orElse(null);
         if (serviceItem == null) {
             System.out.println("Service item with ID " + serviceItemId + " does not exist ");
+            return null;
         }
         //Beräkna endTime automatiskt utifrån startTime och estimatedMinutes
         LocalTime endTime = startTime.plusMinutes(serviceItem.getEstimatedMinutes());
@@ -86,11 +94,11 @@ public class BookingService {
     }
 
     private Vehicle findVehicle(int id) {
-        for (Vehicle vehicle : Database.getVehicles()) {
-            if (vehicle.getId() == id) {
-                return vehicle;
-            }
+        try {
+            return vehicleRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read vehicle: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 }

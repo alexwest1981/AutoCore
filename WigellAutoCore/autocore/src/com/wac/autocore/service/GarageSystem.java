@@ -122,7 +122,7 @@ public class GarageSystem {
 
     public Booking createBooking(int vehicleId,
                                  LocalDate date,
-                                 String description) {
+                                 String description) throws SQLException {
         return bookingService.createBooking(vehicleId, date, description);
     }
 
