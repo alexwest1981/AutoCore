@@ -49,13 +49,13 @@ public class BookingController {
     private TextField descriptionField;
 
     @FXML
-    private ComboBox<String> hoursComboBox;
+    private TextField startTimeField;
 
     @FXML
     private TextField mechanicIdField;
 
     @FXML
-    private TextField serviceIdField;
+    private TextField serviceItemField;
 
     private final GarageSystem garageSystem = new GarageSystem();
 
@@ -98,7 +98,6 @@ public class BookingController {
     private void handleCreateBooking() {
 
         int vehicleId;
-
         try {
             vehicleId = Integer.parseInt(vehicleIdField.getText());
         } catch (NumberFormatException e) {
@@ -107,25 +106,68 @@ public class BookingController {
         }
 
         LocalDate date = datePicker.getValue();
-
         if (date == null) {
             showAlert("Please select a date.");
             return;
         }
 
-        String description = descriptionField.getText();
-
-        Booking booking = garageSystem.createBooking(vehicleId, date, description);
-
-        if (booking == null) {
-            showAlert("Could not create booking. Check that the vehicle exists.");
+        // 1. Hämta och validera starttid (HH:mm)
+        java.time.LocalTime startTime;
+        try {
+            startTime = java.time.LocalTime.parse(startTimeField.getText());
+        } catch (Exception e) {
+            showAlert("Please enter a valid time (format HH:mm, e.g., 08:30).");
             return;
         }
 
-        bookingTable.getItems().add(booking);
-        vehicleIdField.clear();
-        datePicker.setValue(null);
-        descriptionField.clear();
+        // 2. Hämta ID för mekaniker och tjänst från textfälten
+        int mechanicId;
+        int serviceItemId;
+        try {
+            mechanicId = Integer.parseInt(mechanicIdField.getText());
+            serviceItemId = Integer.parseInt(serviceItemField.getText());
+        } catch (NumberFormatException e) {
+            showAlert("Mechanic ID and Service Item ID must be numbers.");
+            return;
+        }
+
+        String description = descriptionField.getText();
+
+        // 3. Omslut med try-catch för att fånga krockar och databasfel
+        try {
+            // Skicka med alla 6 parametrar till din Facade (GarageSystem)
+            // Ordning: vehicleId, date, description, startTime, mechanicId, serviceItemId
+            Booking booking = garageSystem.createBooking(
+                    vehicleId,
+                    date,
+                    description,
+                    startTime,
+                    mechanicId,
+                    serviceItemId
+            );
+
+            if (booking == null) {
+                showAlert("Could not create booking. Check that the vehicle exists.");
+                return;
+            }
+
+            // Om allt gick bra, lägg till i tabellen och rensa alla fält
+            bookingTable.getItems().add(booking);
+
+            vehicleIdField.clear();
+            datePicker.setValue(null);
+            descriptionField.clear();
+            startTimeField.clear();
+            mechanicIdField.clear();
+            serviceItemField.clear();
+
+        } catch (IllegalArgumentException e) {
+            // 4. Här fångas felmeddelandet om mekanikern är upptagen!
+            showAlert(e.getMessage());
+        } catch (java.sql.SQLException e) {
+            // Fångar upp eventuella databasfel
+            showAlert("Database error: " + e.getMessage());
+        }
     }
 
     private void showAlert(String message) {
