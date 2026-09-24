@@ -265,6 +265,23 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--quality" ] || [ "$MODE" = "quality" ]; 
     # Extra statisk granskning: TODO/FIXME-räkning
     TODO_COUNT=$(grep -rnE "(TODO|FIXME)" "$SRC_DIR" 2>/dev/null | grep -v "Test.java" | wc -l || true)
     echo -e "  ${CYAN}ℹ Statisk analys:${RESET} ${DIM}Totalt ${TODO_COUNT} aktiva TODO/FIXME-noteringar i källkoden.${RESET}"
+
+    # Extra kontroll: Teckenkodning (anti-mojibake) och tomma strängar i språkfiler
+    MOJIBAKE_HITS=$(grep -rnE "(Ã¥|Ã¤|Ã¶|Ã…|Ã„|Ã–|Ã©|Ã¨)" "$RES_DIR"/com/wac/autocore/i18n/*.json 2>/dev/null || true)
+    EMPTY_STR_HITS=$(grep -rnE ':[[:space:]]*""' "$RES_DIR"/com/wac/autocore/i18n/*.json 2>/dev/null || true)
+    if [ -n "$MOJIBAKE_HITS" ]; then
+        echo -e "  ${RED}❌ Teckenkodningsfel (mojibake) upptäcktes i språkfilerna:${RESET}"
+        echo "$MOJIBAKE_HITS" | head -n 5
+        TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ERRORS+=("TECKENKODNING (Mojibake i språkfiler)")
+    elif [ -n "$EMPTY_STR_HITS" ]; then
+        echo -e "  ${RED}❌ Tomma översättningssträngar upptäcktes i språkfilerna:${RESET}"
+        echo "$EMPTY_STR_HITS" | head -n 5
+        TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ERRORS+=("SPRÅKFILER (Tomma översättningar)")
+    else
+        echo -e "  ${GREEN}✔${RESET} Teckenkodning och UTF-8-integritet verifierad i språkfiler (0 mojibake, 0 tomma strängar)"
+    fi
 fi
 
 # 3. Säkerhetstest

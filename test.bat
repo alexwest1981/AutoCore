@@ -4,6 +4,14 @@ setlocal enabledelayedexpansion
 set "DIR=%~dp0"
 cd /d "%DIR%"
 
+:: ==============================================================================
+:: VARFOR JAVA 8 (JDK 8)?
+:: Projektets arkitektur- och kurskriterier kraver att den befintliga Java-
+:: versionen (Java 8) bibehalls. Den JDK som anvands maste dessutom innehalla
+:: JavaFX (t.ex. BellSoft Liberica JDK 8 Full eller motsvarande distribution
+:: med inbyggd JavaFX-runtime).
+:: ==============================================================================
+
 :: 1. Hitta Java 8 JDK på Windows
 set "FOUND_JDK="
 set "JAVA_BIN="

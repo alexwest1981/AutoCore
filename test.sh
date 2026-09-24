@@ -4,6 +4,14 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
+# ==============================================================================
+# VARFÖR JAVA 8 (JDK 8)?
+# Projektets arkitektur- och kurskriterier kräver att den befintliga Java-
+# versionen (Java 8) bibehålls. Den JDK som används måste dessutom innehålla
+# JavaFX (t.ex. BellSoft Liberica JDK 8 Full eller motsvarande distribution
+# med inbyggd JavaFX-runtime).
+# ==============================================================================
+
 # 1. Identifiera operativsystem och sätt rätt klassvägsseparator
 IS_WINDOWS=false
 IS_MACOS=false

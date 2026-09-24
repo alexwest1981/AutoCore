@@ -4,6 +4,14 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptDir
 
+# ==============================================================================
+# VARFÖR JAVA 8 (JDK 8)?
+# Projektets arkitektur- och kurskriterier kräver att den befintliga Java-
+# versionen (Java 8) bibehålls. Den JDK som används måste dessutom innehålla
+# JavaFX (t.ex. BellSoft Liberica JDK 8 Full eller motsvarande distribution
+# med inbyggd JavaFX-runtime).
+# ==============================================================================
+
 # 1. Hitta Java 8 JDK
 $foundJdk = $null
 

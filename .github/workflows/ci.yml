@@ -1,0 +1,41 @@
+name: AutoCore CI
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  verify:
+    name: Build, Test & Quality Audits
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 8 with JavaFX (BellSoft Liberica JDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'liberica'
+          java-version: '8'
+
+      - name: Set executable permissions
+        run: chmod +x test.sh check.sh start.sh
+
+      - name: Verify compilation and quality checks
+        run: ./check.sh --quality
+
+      - name: Verify security audits
+        run: ./check.sh --security
+
+      - name: Verify WCAG 2.1 AAA accessibility
+        run: ./check.sh --wcag
+
+      - name: Run automated test suite
+        run: ./test.sh

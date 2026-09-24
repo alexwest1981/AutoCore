@@ -1,0 +1,32 @@
+# Auto-detektera alla textfiler och normalisera radslut
+* text=auto
+
+# Källkod, skript och konfigurationsfiler ska alltid ha Unix-radslut (LF)
+*.sh text eol=lf
+*.java text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.fxml text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.properties text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Windows skriptfiler ska ha Windows-radslut (CRLF)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binära filer ska aldrig röras av Git
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.db binary
+*.class binary
