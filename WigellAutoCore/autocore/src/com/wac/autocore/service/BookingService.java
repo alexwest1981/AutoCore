@@ -6,6 +6,7 @@ import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.ServiceItemRepository;
+import com.wac.autocore.repository.VehicleRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ import java.util.List;
 public class BookingService {
 
     BookingRepository bookingRepository = new BookingRepository();
+    VehicleRepository vehicleRepository = new VehicleRepository();
     ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
 
     public List<Booking> getAll() {
