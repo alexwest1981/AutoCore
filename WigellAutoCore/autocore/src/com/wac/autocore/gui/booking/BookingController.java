@@ -95,7 +95,7 @@ public class BookingController {
     }
 
     @FXML
-    private void handleCreateBooking() throws SQLException {
+    private void handleCreateBooking() {
 
         int vehicleId;
 

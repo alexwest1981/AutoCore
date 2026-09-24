@@ -45,7 +45,7 @@ public class BookingService {
         }
     }
 
-    public Booking createBooking(int vehicleId, LocalDate date, String description) throws SQLException {
+    public Booking createBooking(int vehicleId, LocalDate date, String description) {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
             System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
@@ -66,16 +66,21 @@ public class BookingService {
         return booking;
     }
 
-    public Booking createBooking(int vehicleId, LocalDate date, String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
+    public Booking createBooking(int vehicleId, LocalDate date, String description, LocalTime startTime, int mechanicId, int serviceItemId) {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
             System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
             return null;
         }
-        ServiceItem serviceItem = serviceItemRepository.findAll().stream()
-                .filter(item -> item.getId() == serviceItemId)
-                .findFirst()
-                .orElse(null);
+        ServiceItem serviceItem = null;
+        try {
+            serviceItem = serviceItemRepository.findAll().stream()
+                    .filter(item -> item.getId() == serviceItemId)
+                    .findFirst()
+                    .orElse(null);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         if (serviceItem == null) {
             System.out.println("Service item with ID " + serviceItemId + " does not exist ");
             return null;
@@ -84,8 +89,12 @@ public class BookingService {
         LocalTime endTime = startTime.plusMinutes(serviceItem.getEstimatedMinutes());
 
         Booking booking = new Booking(vehicleId, date, description, startTime, endTime, mechanicId, serviceItemId);
-
-        bookingRepository.save(booking);
+        try {
+            bookingRepository.save(booking);
+        } catch (SQLException e) {
+            System.out.println("Could not save booking: " + e.getMessage());
+            return null;
+        }
 
         System.out.println("Booking created successfully.");
         System.out.println(booking);

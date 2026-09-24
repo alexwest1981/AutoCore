@@ -186,7 +186,7 @@ public class ConsoleApp {
         );
     }
 
-    private static void createBooking() throws SQLException {
+    private static void createBooking() {
 
         System.out.println();
         System.out.println("=== CREATE BOOKING ===");

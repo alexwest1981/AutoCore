@@ -254,11 +254,9 @@ public final class ActionDialogs {
                 }
 
                 Booking b = null;
-                try {
+
                     b = garage.createBooking(v.getId(), date, desc);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+
                 if (defaultMechanic != null && defaultHour != null && b != null) {
                     WorkOrder wo = garage.createWorkOrder(b.getId(), defaultMechanic.getId(), 1);
                     int woId = wo != null ? wo.getId() : 0;
@@ -777,11 +775,8 @@ public final class ActionDialogs {
                                 break;
                             }
                         }
-                        try {
                             targetBooking = garage.createBooking(vehicleId, slot.getDate(), slot.getDescription());
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
+
                         slot.setBookingId(targetBooking.getId());
                     }
                     WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId(), 1);
@@ -869,6 +864,7 @@ public final class ActionDialogs {
                 router.navigateToWorkOrder(wo.getId());
             }
         });
+
     }
 
     // ----------------------------------------------------------- Helpers

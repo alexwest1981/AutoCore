@@ -115,6 +115,17 @@ public class BookingRepository {
         setTime(statement, 3, booking.getEndTime());
         statement.setInt(4, booking.getMechanicId());
         statement.setInt(5, booking.getServiceItemId());
+
+        if (booking.getMechanicId() == 0) {
+            statement.setNull(4, java.sql.Types.INTEGER);
+        } else {
+            statement.setInt(4, booking.getMechanicId());
+        }
+        if (booking.getServiceItemId() == 0) {
+            statement.setNull(5, java.sql.Types.INTEGER);
+        } else {
+            statement.setInt(5, booking.getServiceItemId());
+        }
     }
 
     private void setTime(PreparedStatement statement, int position, LocalTime time) throws SQLException {
@@ -158,8 +169,20 @@ public class BookingRepository {
             booking.setEndTime(LocalTime.parse(endText));
         }
 
-        booking.setMechanicId(resultSet.getInt("mechanic_id"));
-        booking.setServiceItemId(resultSet.getInt("service_item_id"));
+
+        int mechanicId = resultSet.getInt("mechanic_id");
+        if (resultSet.wasNull()) {
+            booking.setMechanicId(0);
+        } else {
+            booking.setMechanicId(mechanicId);
+        }
+
+        int serviceItemId = resultSet.getInt("service_item_id");
+        if (resultSet.wasNull()) {
+            booking.setServiceItemId(0);
+        } else {
+            booking.setServiceItemId(serviceItemId);
+        }
 
         return booking;
     }

@@ -872,11 +872,8 @@ public class MechanicKanbanCard {
                             break;
                         }
                     }
-                    try {
                         targetBooking = garage.createBooking(vehicleId, slot.getDate(), slot.getDescription());
-                    } catch (SQLException ex) {
-                        throw new RuntimeException(ex);
-                    }
+
                     slot.setBookingId(targetBooking.getId());
                 }
                 WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId(), 1);
