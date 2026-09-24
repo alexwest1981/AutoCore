@@ -266,7 +266,13 @@
       },
       "vehicle_select": "Välj fordon",
       "date": "Bokningsdatum",
-      "service_select": "Välj huvudtjänst",
+      "service_select": "Välj tjänst",
+      "mechanic_select": "Välj mekaniker",
+      "time_select": "Välj starttid",
+      "no_service": "Ingen specifik tjänst",
+      "no_mechanic": "Ingen mekaniker (tilldelas senare)",
+      "estimated_end": "Beräknad sluttid: {0} ({1} min)",
+      "time_window": "Arbetspass: {0} – {1}",
       "desc_prompt": "T.ex. Årlig service och bromsbyte"
     },
     "service": {

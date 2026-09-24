@@ -53,6 +53,18 @@ public final class EntityLookup {
         return "Mechanic #" + id;
     }
 
+    public static String serviceName(GarageSystem garage, int id) {
+        if (garage == null || id <= 0) {
+            return "-";
+        }
+        for (ServiceItem s : garage.getServiceItems()) {
+            if (s.getId() == id) {
+                return s.getName();
+            }
+        }
+        return "Service #" + id;
+    }
+
     public static String serviceNames(GarageSystem garage, List<Integer> ids) {
         if (ids == null || ids.isEmpty() || garage == null) {
             return "";

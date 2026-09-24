@@ -145,11 +145,14 @@ public final class EntityPages {
         FilterableTable<Booking> table = TableFactory.create(garage.getBookings());
         TableView<Booking> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 60, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.vehicle"), 140, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
-                TableFactory.col(I18n.get("table.col.date"), 130, c -> String.valueOf(c.getDate())),
-                TableFactory.col(I18n.get("table.col.description"), 320, Booking::getDescription),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 140, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.col(I18n.get("table.col.id"), 50, c -> String.valueOf(c.getId())),
+                TableFactory.col(I18n.get("table.col.vehicle"), 120, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
+                TableFactory.col(I18n.get("table.col.date"), 110, c -> String.valueOf(c.getDate())),
+                TableFactory.col(I18n.get("table.col.time"), 120, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
+                TableFactory.col(I18n.get("table.col.service"), 150, c -> EntityLookup.serviceName(garage, c.getServiceItemId())),
+                TableFactory.col(I18n.get("table.col.mechanic"), 140, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
+                TableFactory.col(I18n.get("table.col.description"), 240, Booking::getDescription),
+                TableFactory.badgeCol(I18n.get("table.col.status"), 120, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.bookings.action_create"));

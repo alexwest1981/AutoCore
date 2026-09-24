@@ -392,222 +392,24 @@ public final class ActionDialogs {
 
     // ---------------------------------------------------------- 3. Booking
     public static void showCreateBookingDialog(GarageSystem garage, Runnable onSuccess) {
-        showCreateBookingDialog(garage, null, null, null, onSuccess);
+        BookingDialogs.showCreateBookingDialog(garage, onSuccess);
     }
 
     public static void showCreateBookingDialog(GarageSystem garage, LocalDate defaultDate,
                                                Mechanic defaultMechanic, Integer defaultHour, Runnable onSuccess) {
-        List<Vehicle> vehicles = garage.getVehicles();
-        if (vehicles.isEmpty()) {
-            showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
-            return;
-        }
-
-        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.booking.create.title"));
-        dialog.setHeaderText(I18n.get("dialog.booking.create.header"));
-        styleDialog(dialog);
-
-        GridPane grid = createGrid();
-
-        ComboBox<Vehicle> vehicleBox = new ComboBox<Vehicle>();
-        vehicleBox.getItems().addAll(vehicles);
-        vehicleBox.getSelectionModel().selectFirst();
-        vehicleBox.setConverter(new StringConverter<Vehicle>() {
-            @Override
-            public String toString(Vehicle v) {
-                return v == null ? "" : v.getId() + " - " + v.getRegistrationNumber() + " (" + v.getBrand() + " " + v.getModel() + ")";
-            }
-            @Override
-            public Vehicle fromString(String string) { return null; }
-        });
-
-        LocalDate initialDate = defaultDate != null ? defaultDate : LocalDate.now().plusDays(1);
-        DatePicker datePicker = new DatePicker(initialDate);
-        TextField descField = new TextField();
-        descField.setPromptText(I18n.get("dialog.booking.desc_prompt"));
-
-        int rowIdx = 0;
-        grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, rowIdx);
-        grid.add(vehicleBox, 1, rowIdx++);
-
-        grid.add(new Label(I18n.get("dialog.booking.date") + ":"), 0, rowIdx);
-        grid.add(datePicker, 1, rowIdx++);
-
-        if (defaultMechanic != null && defaultHour != null) {
-            Label mechInfo = new Label(defaultMechanic.getName() + " (" + String.format("%02d:00 - %02d:00", defaultHour, defaultHour + 1) + ")");
-            mechInfo.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent;");
-            grid.add(new Label(I18n.get("table.col.mechanic") + ":"), 0, rowIdx);
-            grid.add(mechInfo, 1, rowIdx++);
-        }
-
-        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
-        grid.add(descField, 1, rowIdx++);
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                Vehicle v = vehicleBox.getValue();
-                LocalDate date = datePicker.getValue();
-                String desc = descField.getText().trim();
-
-                if (date == null || desc.isEmpty()) {
-                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
-                    return;
-                }
-
-                Booking b = garage.createBooking(v.getId(), date, desc);
-                if (defaultMechanic != null && defaultHour != null && b != null) {
-                    WorkOrder wo = garage.createWorkOrder(b.getId(), defaultMechanic.getId(), 1);
-                    int woId = wo != null ? wo.getId() : 0;
-                    com.wac.autocore.service.MechanicSchedule.getInstance().bookSlot(
-                            defaultMechanic.getId(), date, defaultHour, b.getId(), woId,
-                            EntityLookup.customerName(garage, v.getCustomerId()),
-                            v.getRegistrationNumber(), desc
-                    );
-                }
-                if (onSuccess != null) onSuccess.run();
-            }
-        });
+        BookingDialogs.showCreateBookingDialog(garage, defaultDate, defaultMechanic, defaultHour, onSuccess);
     }
 
     public static void showEditBookingDialog(GarageSystem garage, Booking booking, Runnable onSuccess) {
-        if (booking == null) return;
-
-        List<Vehicle> vehicles = garage.getVehicles();
-        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.booking.edit.title"));
-        dialog.setHeaderText(I18n.get("dialog.booking.edit.header"));
-        styleDialog(dialog);
-
-        GridPane grid = createGrid();
-
-        ComboBox<Vehicle> vehicleBox = new ComboBox<Vehicle>();
-        vehicleBox.getItems().addAll(vehicles);
-        for (Vehicle v : vehicles) {
-            if (v.getId() == booking.getVehicleId()) {
-                vehicleBox.getSelectionModel().select(v);
-                break;
-            }
-        }
-        vehicleBox.setConverter(new StringConverter<Vehicle>() {
-            @Override
-            public String toString(Vehicle v) {
-                return v == null ? "" : v.getId() + " - " + v.getRegistrationNumber() + " (" + v.getBrand() + " " + v.getModel() + ")";
-            }
-            @Override
-            public Vehicle fromString(String string) { return null; }
-        });
-
-        DatePicker datePicker = new DatePicker(booking.getDate() != null ? booking.getDate() : LocalDate.now());
-        TextField descField = new TextField(booking.getDescription() != null ? booking.getDescription() : "");
-        descField.setPromptText(I18n.get("dialog.booking.desc_prompt"));
-
-        ComboBox<String> statusBox = new ComboBox<String>();
-        statusBox.getItems().addAll("BOOKED", "CONFIRMED", "CANCELLED");
-        statusBox.getSelectionModel().select(booking.getStatus() != null ? booking.getStatus() : "BOOKED");
-
-        int rowIdx = 0;
-        grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, rowIdx);
-        grid.add(vehicleBox, 1, rowIdx++);
-
-        grid.add(new Label(I18n.get("dialog.booking.date") + ":"), 0, rowIdx);
-        grid.add(datePicker, 1, rowIdx++);
-
-        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
-        grid.add(descField, 1, rowIdx++);
-
-        grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
-        grid.add(statusBox, 1, rowIdx++);
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                Vehicle v = vehicleBox.getValue();
-                LocalDate date = datePicker.getValue();
-                String desc = descField.getText().trim();
-                String status = statusBox.getValue();
-
-                if (v == null || date == null || desc.isEmpty()) {
-                    showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
-                    return;
-                }
-
-                booking.setVehicleId(v.getId());
-                booking.setDate(date);
-                booking.setDescription(desc);
-                booking.setStatus(status);
-
-                try {
-                    garage.updateBooking(booking);
-                } catch (SQLException e) {
-                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                }
-
-                if (onSuccess != null) onSuccess.run();
-            }
-        });
+        BookingDialogs.showEditBookingDialog(garage, booking, onSuccess);
     }
 
     public static void showCancelBookingConfirmation(GarageSystem garage, Booking booking, Runnable onSuccess) {
-        if (booking == null) return;
-
-        if (!garage.canCancelOrDeleteBooking(booking.getId())) {
-            showError(I18n.get("dialog.booking.cancel.title"),
-                    I18n.get("dialog.booking.cancel.has_active_orders", booking.getId()));
-            return;
-        }
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.get("dialog.booking.cancel.title"));
-        alert.setHeaderText(I18n.get("dialog.booking.cancel.header"));
-        alert.setContentText(I18n.get("dialog.booking.cancel.confirm", booking.getId()));
-        styleDialog(alert);
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                try {
-                    garage.cancelBooking(booking.getId());
-                } catch (SQLException e) {
-                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                }
-                if (onSuccess != null) onSuccess.run();
-            }
-        });
+        BookingDialogs.showCancelBookingConfirmation(garage, booking, onSuccess);
     }
 
     public static void showDeleteBookingConfirmation(GarageSystem garage, Booking booking, Runnable onSuccess) {
-        if (booking == null) return;
-
-        if (!garage.canCancelOrDeleteBooking(booking.getId())) {
-            showError(I18n.get("dialog.booking.delete.title"),
-                    I18n.get("dialog.booking.delete.has_active_orders", booking.getId()));
-            return;
-        }
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.get("dialog.booking.delete.title"));
-        alert.setHeaderText(I18n.get("dialog.booking.delete.header"));
-        alert.setContentText(I18n.get("dialog.booking.delete.confirm", booking.getId()));
-        styleDialog(alert);
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                try {
-                    garage.deleteBooking(booking.getId());
-                } catch (SQLException e) {
-                    showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                }
-                if (onSuccess != null) onSuccess.run();
-            }
-        });
+        BookingDialogs.showDeleteBookingConfirmation(garage, booking, onSuccess);
     }
 
     // --------------------------------------------------- 4. Work order

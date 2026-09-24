@@ -266,7 +266,13 @@
       },
       "vehicle_select": "Select vehicle",
       "date": "Booking date",
-      "service_select": "Select primary service",
+      "service_select": "Select service",
+      "mechanic_select": "Select mechanic",
+      "time_select": "Select start time",
+      "no_service": "No specific service",
+      "no_mechanic": "No mechanic (assign later)",
+      "estimated_end": "Estimated end time: {0} ({1} min)",
+      "time_window": "Working slot: {0} – {1}",
       "desc_prompt": "E.g. Annual service and brake replacement"
     },
     "service": {
