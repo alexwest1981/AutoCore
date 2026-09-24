@@ -3,14 +3,11 @@ package com.wac.autocore.gui.booking;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.service.GarageSystem;
 import javafx.fxml.FXML;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class BookingController {
 
@@ -33,6 +30,15 @@ public class BookingController {
     private TableColumn<Booking, String> statusColumn;
 
     @FXML
+    private TableColumn<Booking, LocalTime> startTimeColumn;
+
+    @FXML
+    private TableColumn<Booking, Integer> mechanicIdColumn;
+
+    @FXML
+    private TableColumn<Booking, Integer> serviceIdColumn;
+
+    @FXML
     private TextField vehicleIdField;
 
     @FXML
@@ -40,6 +46,15 @@ public class BookingController {
 
     @FXML
     private TextField descriptionField;
+
+    @FXML
+    private ComboBox<String> hoursComboBox;
+
+    @FXML
+    private TextField mechanicIdField;
+
+    @FXML
+    private TextField serviceIdField;
 
     private final GarageSystem garageSystem = new GarageSystem();
 
@@ -49,6 +64,10 @@ public class BookingController {
         vehicleIdColumn.setCellValueFactory(new PropertyValueFactory<>("vehicleId"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        startTimeColumn.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+        mechanicIdColumn.setCellValueFactory(new PropertyValueFactory<>("mechanicId"));
+        serviceIdColumn.setCellValueFactory(new PropertyValueFactory<>("serviceId"));
 
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusColumn.setCellFactory(column -> new TableCell<Booking, String>() {

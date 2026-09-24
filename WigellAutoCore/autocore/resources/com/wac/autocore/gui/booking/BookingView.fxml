@@ -19,6 +19,9 @@
             <TableColumn fx:id="dateColumn" text="Date"/>
             <TableColumn fx:id="descriptionColumn" text="Description"/>
             <TableColumn fx:id="statusColumn" text="Status"/>
+            <TableColumn fx:id="startTimeColumn" text="Start time"/>
+            <TableColumn fx:id="mechanicIdColumn" text="Mechanic-ID"/>
+            <TableColumn fx:id="serviceItemColumn" text="ServiceItem-ID"/>
         </columns>
 
     </TableView>
@@ -26,6 +29,9 @@
     <TextField fx:id="vehicleIdField" promptText="Vehicle ID"/>
     <DatePicker fx:id="datePicker" promptText="Date"/>
     <TextField fx:id="descriptionField" promptText="Description"/>
+    <TextField fx:id="startTimeField" promptText="Start Time"/>
+    <TextField fx:id="mechanicIdField" promptText="Mechanic-ID"/>
+    <TextField fx:id="serviceItemField" promptText="ServiceItem-ID"/>
     <Button text="Create booking" onAction="#handleCreateBooking"/>
 
 
