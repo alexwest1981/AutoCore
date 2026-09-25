@@ -44,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Kompakt Kanban-kort för mekaniker på Dashboard/Översikten.
@@ -147,7 +148,7 @@ public class MechanicKanbanCard {
             int count = 0;
             for (int i = 0; i < mechanics.size(); i++) {
                 Mechanic m = mechanics.get(i);
-                if (activeFilter[0] == null || activeFilter[0].equalsIgnoreCase(m.getSpecialization())) {
+                if (activeFilter[0] == null || activeFilter[0].equalsIgnoreCase(SeedText.resolve(m.getSpecialization()))) {
                     MechanicKanbanCard card = new MechanicKanbanCard(garage, i, router, onRefresh);
                     VBox cardView = card.getView();
                     cardView.setMinWidth(310);
@@ -172,7 +173,7 @@ public class MechanicKanbanCard {
         // Samla unika specialiseringar och räkna mekaniker per kategori
         Map<String, Integer> specCounts = new LinkedHashMap<String, Integer>();
         for (Mechanic m : mechanics) {
-            String spec = m.getSpecialization();
+            String spec = SeedText.resolve(m.getSpecialization());
             if (spec != null && !spec.trim().isEmpty()) {
                 specCounts.put(spec, specCounts.containsKey(spec) ? specCounts.get(spec) + 1 : 1);
             }
@@ -398,7 +399,7 @@ public class MechanicKanbanCard {
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         // Rad 2: Specialisering och tillgänglighetsbadge
-        Label specLabel = new Label(formatSpecialization(mech.getSpecialization()));
+        Label specLabel = new Label(formatSpecialization(SeedText.resolve(mech.getSpecialization())));
         specLabel.getStyleClass().add("kanban-mech-sub-compact");
 
         Region spr2 = new Region();
@@ -564,7 +565,7 @@ public class MechanicKanbanCard {
             regBadge.getStyleClass().addAll("badge", "info", "small");
             regBadge.setMinWidth(Region.USE_PREF_SIZE);
 
-            String desc = slot.getDescription() != null ? slot.getDescription() : I18n.get("table.col.service");
+            String desc = slot.getDescription() != null ? SeedText.resolve(slot.getDescription()) : I18n.get("table.col.service");
             Label descLabel = new Label(desc);
             descLabel.getStyleClass().add("kanban-slot-desc-compact");
             descLabel.setMinWidth(0);
@@ -711,7 +712,7 @@ public class MechanicKanbanCard {
                 if (isExpanded(slot)) {
                     box.setStyle("-fx-border-color: #ffffff; -fx-border-width: 1.5px; -fx-border-radius: 2px;");
                 }
-                String desc = slot.getDescription() != null ? slot.getDescription() : "";
+                String desc = slot.getDescription() != null ? SeedText.resolve(slot.getDescription()) : "";
                 String reg = slot.getVehicleReg() != null ? " (" + slot.getVehicleReg() + ")" : "";
                 String clickHint = " · " + I18n.get("kanban.slot.click_to_expand");
                 javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(
@@ -825,7 +826,7 @@ public class MechanicKanbanCard {
         // Details
         String reg = slot.getVehicleReg() != null && !slot.getVehicleReg().isEmpty() ? slot.getVehicleReg() : (b != null ? EntityLookup.vehicleReg(garage, b.getVehicleId()) : "-");
         String cust = slot.getCustomerName() != null && !slot.getCustomerName().isEmpty() ? slot.getCustomerName() : "-";
-        String desc = slot.getDescription() != null && !slot.getDescription().isEmpty() ? slot.getDescription() : (b != null ? b.getDescription() : "-");
+        String desc = slot.getDescription() != null && !slot.getDescription().isEmpty() ? SeedText.resolve(slot.getDescription()) : (b != null ? SeedText.resolve(b.getDescription()) : "-");
 
         Label regBadge = new Label(reg);
         regBadge.getStyleClass().addAll("badge", "info", "small");

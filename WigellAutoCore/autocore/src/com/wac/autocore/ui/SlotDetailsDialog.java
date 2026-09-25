@@ -14,6 +14,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Modala dialoger för att inspektera schemalagda tidsluckor och detaljer kring arbetsordrar.
@@ -101,9 +102,9 @@ public final class SlotDetailsDialog {
         grid.add(new Label(I18n.get("table.col.customer") + ":"), 0, rowIdx);
         grid.add(new Label(cust), 1, rowIdx++);
 
-        String desc = slot.getDescription() != null && !slot.getDescription().isEmpty() ? slot.getDescription() : "-";
+        String desc = slot.getDescription() != null && !slot.getDescription().isEmpty() ? SeedText.resolve(slot.getDescription()) : "-";
         if (b != null && b.getDescription() != null && !b.getDescription().isEmpty()) {
-            desc = b.getDescription();
+            desc = SeedText.resolve(b.getDescription());
         }
         grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
         grid.add(new Label(desc), 1, rowIdx++);
@@ -214,7 +215,7 @@ public final class SlotDetailsDialog {
             grid.add(new Label(b.getDate().toString()), 1, rowIdx++);
 
             grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
-            grid.add(new Label(b.getDescription()), 1, rowIdx++);
+            grid.add(new Label(SeedText.resolve(b.getDescription())), 1, rowIdx++);
         }
 
         grid.add(new Label(I18n.get("table.col.services") + ":"), 0, rowIdx);

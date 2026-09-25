@@ -342,36 +342,36 @@ public class MechanicSchedule {
         LocalDate tomorrow = today.plusDays(1);
 
         // Mekaniker 1 (Johan Karlsson): Idag 08-10 (Service) och 13-14 (Inspektion) -> 3h bokade (Gul)
-        bookSlotInternal(1, today, 8, 1, 1, "Anna Andersson", "ABC123", "Oil change & filter replacement");
-        bookSlotInternal(1, today, 9, 1, 1, "Anna Andersson", "ABC123", "Oil change continued");
-        bookSlotInternal(1, today, 13, 2, 2, "Erik Eriksson", "DEF456", "Front brake inspection");
+        bookSlotInternal(1, today, 8, 1, 1, "Anna Andersson", "ABC123", "seed.booking.oil_change_filter.description");
+        bookSlotInternal(1, today, 9, 1, 1, "Anna Andersson", "ABC123", "seed.schedule.oil_change_continued.description");
+        bookSlotInternal(1, today, 13, 2, 2, "Erik Eriksson", "DEF456", "seed.booking.front_brake_inspection.description");
 
         // Mekaniker 1: Imorgon 08-12 och 13-16 -> 7h bokade (Röd / Full)
         for (int h = 8; h <= 11; h++) {
-            bookSlotInternal(1, tomorrow, h, 3, 5, "Maria Svensson", "GHI789", "Full brake overhaul");
+            bookSlotInternal(1, tomorrow, h, 3, 5, "Maria Svensson", "GHI789", "seed.booking.full_brake_overhaul.description");
         }
         for (int h = 13; h <= 15; h++) {
-            bookSlotInternal(1, tomorrow, h, 3, 5, "Maria Svensson", "GHI789", "Full brake overhaul");
+            bookSlotInternal(1, tomorrow, h, 3, 5, "Maria Svensson", "GHI789", "seed.booking.full_brake_overhaul.description");
         }
 
         // Mekaniker 1: Dagen efter imorgon -> 1h bokad (Grön)
-        bookSlotInternal(1, today.plusDays(2), 10, 1, 1, "Anna Andersson", "ABC123", "Oil follow-up check");
+        bookSlotInternal(1, today.plusDays(2), 10, 1, 1, "Anna Andersson", "ABC123", "seed.schedule.oil_follow_up.description");
 
         // Mekaniker 2 (Sara Nilsson): Idag 09-12 och 14-16 -> 5h bokade (Orange)
-        bookSlotInternal(2, today, 9, 4, 3, "Olof Palme", "XYZ999", "Brake calipers and pads");
-        bookSlotInternal(2, today, 10, 4, 3, "Olof Palme", "XYZ999", "Brake calipers and pads");
-        bookSlotInternal(2, today, 11, 4, 3, "Olof Palme", "XYZ999", "Brake system bleeding");
-        bookSlotInternal(2, today, 14, 4, 3, "Olof Palme", "XYZ999", "Brake hose inspection");
-        bookSlotInternal(2, today, 15, 4, 3, "Olof Palme", "XYZ999", "Final brake inspection");
+        bookSlotInternal(2, today, 9, 4, 3, "Olof Palme", "XYZ999", "seed.booking.brake_calipers_pads.description");
+        bookSlotInternal(2, today, 10, 4, 3, "Olof Palme", "XYZ999", "seed.booking.brake_calipers_pads.description");
+        bookSlotInternal(2, today, 11, 4, 3, "Olof Palme", "XYZ999", "seed.schedule.brake_system_bleeding.description");
+        bookSlotInternal(2, today, 14, 4, 3, "Olof Palme", "XYZ999", "seed.schedule.brake_hose_inspection.description");
+        bookSlotInternal(2, today, 15, 4, 3, "Olof Palme", "XYZ999", "seed.schedule.final_brake_inspection.description");
 
         // Mekaniker 2: Igår 08-09 (Grön)
-        bookSlotInternal(2, today.minusDays(1), 8, 4, 3, "Olof Palme", "XYZ999", "Quick brake check");
+        bookSlotInternal(2, today.minusDays(1), 8, 4, 3, "Olof Palme", "XYZ999", "seed.schedule.quick_brake_check.description");
 
         // Mekaniker 3 (Mikael Berg): Idag 07-08 -> 1h (Grön)
-        bookSlotInternal(3, today, 7, 5, 4, "Sven Melander", "AAA001", "OBD2 fault code reading");
+        bookSlotInternal(3, today, 7, 5, 4, "Sven Melander", "AAA001", "seed.booking.obd2_fault_codes.description");
         // Mekaniker 3: Imorgon 10-15 -> 5h (Orange)
         for (int h = 10; h <= 14; h++) {
-            bookSlotInternal(3, tomorrow, h, 6, 6, "Gustav Vasa", "BBB002", "Electronic fault diagnosis");
+            bookSlotInternal(3, tomorrow, h, 6, 6, "Gustav Vasa", "BBB002", "seed.booking.electronic_fault_diagnosis.description");
         }
     }
 

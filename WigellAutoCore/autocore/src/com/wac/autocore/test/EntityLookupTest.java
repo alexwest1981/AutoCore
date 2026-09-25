@@ -10,6 +10,7 @@ import com.wac.autocore.ui.util.EntityLookup;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import com.wac.autocore.seed.SeedText;
 
 public class EntityLookupTest {
 
@@ -56,8 +57,8 @@ public class EntityLookupTest {
             ServiceItem s1 = services.get(0);
             ServiceItem s2 = services.get(1);
             String joined = EntityLookup.serviceNames(garage, Arrays.asList(s1.getId(), s2.getId()));
-            TestRunner.assertTrue(joined.contains(s1.getName()), "Contains service 1");
-            TestRunner.assertTrue(joined.contains(s2.getName()), "Contains service 2");
+            TestRunner.assertTrue(joined.contains(SeedText.resolve(s1.getName())), "Contains service 1");
+            TestRunner.assertTrue(joined.contains(SeedText.resolve(s2.getName())), "Contains service 2");
         }
         TestRunner.assertEquals("", EntityLookup.serviceNames(garage, Collections.emptyList()), "Empty list returns empty");
         TestRunner.assertEquals("", EntityLookup.serviceNames(garage, null), "Null list returns empty");

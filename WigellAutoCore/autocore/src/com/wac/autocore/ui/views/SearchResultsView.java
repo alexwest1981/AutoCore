@@ -29,6 +29,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Samlad global sökresultatsvy som delar in träffar i tydliga sektioner
@@ -229,7 +230,7 @@ public final class SearchResultsView {
         table.getColumns().add(TableFactory.col(I18n.get("table.col.date"), 120, b -> UiFormatters.formatDate(b.getDate())));
         table.getColumns().add(TableFactory.col(I18n.get("table.col.customer"), 180, b -> EntityLookup.bookingCustomerName(garage, b.getId())));
         table.getColumns().add(TableFactory.col(I18n.get("table.col.vehicle"), 120, b -> EntityLookup.vehicleReg(garage, b.getVehicleId())));
-        table.getColumns().add(TableFactory.col(I18n.get("table.col.description"), 240, Booking::getDescription));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.description"), 240, b -> SeedText.resolve(b.getDescription())));
         table.getColumns().add(TableFactory.badgeCol(I18n.get("table.col.status"), 120, b -> UiFormatters.statusWord(b.getStatus())));
 
         table.setRowFactory(tv -> {
@@ -251,7 +252,7 @@ public final class SearchResultsView {
         table.getColumns().add(TableFactory.col(I18n.get("table.col.id"), 60, m -> String.valueOf(m.getId())));
         table.getColumns().add(TableFactory.col(I18n.get("table.col.name"), 180, Mechanic::getName));
         table.getColumns().add(TableFactory.col(I18n.get("table.col.phone"), 140, Mechanic::getPhone));
-        table.getColumns().add(TableFactory.col(I18n.get("table.col.specialisation"), 220, Mechanic::getSpecialization));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.specialisation"), 220, m -> SeedText.resolve(m.getSpecialization())));
         table.getColumns().add(TableFactory.badgeCol(I18n.get("table.col.available"), 110, m -> m.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));
 
         table.setRowFactory(tv -> {
@@ -294,8 +295,8 @@ public final class SearchResultsView {
     private static Node buildServicesSection(List<ServiceItem> list, PageRouter router) {
         TableView<ServiceItem> table = TableFactory.create(list).getTableView();
         table.getColumns().add(TableFactory.col(I18n.get("table.col.id"), 60, s -> String.valueOf(s.getId())));
-        table.getColumns().add(TableFactory.col(I18n.get("table.col.name"), 200, ServiceItem::getName));
-        table.getColumns().add(TableFactory.col(I18n.get("table.col.description"), 300, ServiceItem::getDescription));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.name"), 200, s -> SeedText.resolve(s.getName())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.description"), 300, s -> SeedText.resolve(s.getDescription())));
         table.getColumns().add(TableFactory.col(I18n.get("table.col.price"), 120, s -> UiFormatters.formatMoney(s.getPrice())));
         table.getColumns().add(TableFactory.col(I18n.get("table.col.time"), 100, s -> s.getEstimatedMinutes() + " min"));
 

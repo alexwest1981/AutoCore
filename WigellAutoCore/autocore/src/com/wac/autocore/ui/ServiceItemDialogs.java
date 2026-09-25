@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
 import java.sql.SQLException;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Modala dialoger för tjänstehantering (skapa, redigera, ta bort).
@@ -90,9 +91,9 @@ public final class ServiceItemDialogs {
 
         GridPane grid = ActionDialogs.createGrid();
 
-        TextField nameField = new TextField(serviceItem.getName() != null ? serviceItem.getName() : "");
+        TextField nameField = new TextField(serviceItem.getName() != null ? SeedText.resolve(serviceItem.getName()) : "");
         nameField.setPromptText(I18n.get("dialog.service.name_prompt"));
-        TextField descField = new TextField(serviceItem.getDescription() != null ? serviceItem.getDescription() : "");
+        TextField descField = new TextField(serviceItem.getDescription() != null ? SeedText.resolve(serviceItem.getDescription()) : "");
         descField.setPromptText(I18n.get("dialog.service.desc_prompt"));
         TextField priceField = new TextField(String.valueOf(serviceItem.getPrice()));
         priceField.setPromptText(I18n.get("dialog.service.price_prompt"));
@@ -180,14 +181,14 @@ public final class ServiceItemDialogs {
 
         if (!garage.canDeleteServiceItem(serviceItem.getId())) {
             ActionDialogs.showError(I18n.get("dialog.service.delete.title"),
-                    I18n.get("dialog.service.delete.has_active_orders", serviceItem.getName()));
+                    I18n.get("dialog.service.delete.has_active_orders", SeedText.resolve(serviceItem.getName())));
             return;
         }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(I18n.get("dialog.service.delete.title"));
         alert.setHeaderText(I18n.get("dialog.service.delete.header"));
-        alert.setContentText(I18n.get("dialog.service.delete.confirm", serviceItem.getName()));
+        alert.setContentText(I18n.get("dialog.service.delete.confirm", SeedText.resolve(serviceItem.getName())));
         ActionDialogs.styleDialog(alert);
 
         alert.showAndWait().ifPresent(response -> {

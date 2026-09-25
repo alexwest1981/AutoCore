@@ -68,49 +68,49 @@ public class SeedData {
             Vehicle mercedes = new Vehicle(0, "BBB002", "Mercedes", "C220", 2022, gustav.getId());
             vehicleRepository.save(mercedes);
 
-            ServiceItem oilChange = new ServiceItem(0, "Oil change",
-                    "Engine oil and oil filter replacement", 1295.0, 45);
+            ServiceItem oilChange = new ServiceItem(0, "seed.service.oil_change.name",
+                    "seed.service.oil_change.desc", 1295.0, 45);
             serviceItemRepository.save(oilChange);
 
-            ServiceItem brakeService = new ServiceItem(0, "Brake service",
-                    "Inspection and replacement of front brake pads", 2495.0, 90);
+            ServiceItem brakeService = new ServiceItem(0, "seed.service.brake_service.name",
+                    "seed.service.brake_service.desc", 2495.0, 90);
             serviceItemRepository.save(brakeService);
 
-            ServiceItem diagnostics = new ServiceItem(0, "Diagnostics",
-                    "Electronic fault code diagnostics", 995.0, 60);
+            ServiceItem diagnostics = new ServiceItem(0, "seed.service.diagnostics.name",
+                    "seed.service.diagnostics.desc", 995.0, 60);
             serviceItemRepository.save(diagnostics);
 
-            ServiceItem annualService = new ServiceItem(0, "Annual service",
-                    "Standard annual vehicle service", 3495.0, 120);
+            ServiceItem annualService = new ServiceItem(0, "seed.service.annual_service.name",
+                    "seed.service.annual_service.desc", 3495.0, 120);
             serviceItemRepository.save(annualService);
 
-            Mechanic johan = new Mechanic(0, "Johan Karlsson", "070-5551111", "General service");
+            Mechanic johan = new Mechanic(0, "Johan Karlsson", "070-5551111", "seed.mechanic.general_service.specialization");
             mechanicRepository.save(johan);
 
-            Mechanic sara = new Mechanic(0, "Sara Nilsson", "070-5552222", "Brakes");
+            Mechanic sara = new Mechanic(0, "Sara Nilsson", "070-5552222", "seed.mechanic.brakes.specialization");
             mechanicRepository.save(sara);
 
-            Mechanic mikael = new Mechanic(0, "Mikael Berg", "070-5553333", "Diagnostics");
+            Mechanic mikael = new Mechanic(0, "Mikael Berg", "070-5553333", "seed.mechanic.diagnostics.specialization");
             mechanicRepository.save(mikael);
 
             LocalDate today = LocalDate.now();
 
-            Booking firstBooking = new Booking(0, volvo.getId(), today, "Oil change & filter replacement");
+            Booking firstBooking = new Booking(0, volvo.getId(), today, "seed.booking.oil_change_filter.description");
             bookingRepository.save(firstBooking);
 
-            Booking secondBooking = new Booking(0, volkswagen.getId(), today, "Front brake inspection");
+            Booking secondBooking = new Booking(0, volkswagen.getId(), today, "seed.booking.front_brake_inspection.description");
             bookingRepository.save(secondBooking);
 
-            Booking thirdBooking = new Booking(0, toyota.getId(), today.plusDays(1), "Full brake overhaul");
+            Booking thirdBooking = new Booking(0, toyota.getId(), today.plusDays(1), "seed.booking.full_brake_overhaul.description");
             bookingRepository.save(thirdBooking);
 
-            Booking fourthBooking = new Booking(0, bmw.getId(), today, "Brake calipers and pads");
+            Booking fourthBooking = new Booking(0, bmw.getId(), today, "seed.booking.brake_calipers_pads.description");
             bookingRepository.save(fourthBooking);
 
-            Booking fifthBooking = new Booking(0, audi.getId(), today, "OBD2 fault code reading");
+            Booking fifthBooking = new Booking(0, audi.getId(), today, "seed.booking.obd2_fault_codes.description");
             bookingRepository.save(fifthBooking);
 
-            Booking sixthBooking = new Booking(0, mercedes.getId(), today.plusDays(1), "Electronic fault diagnosis");
+            Booking sixthBooking = new Booking(0, mercedes.getId(), today.plusDays(1), "seed.booking.electronic_fault_diagnosis.description");
             bookingRepository.save(sixthBooking);
 
             WorkOrder firstOrder = new WorkOrder(0, firstBooking.getId(), johan.getId());

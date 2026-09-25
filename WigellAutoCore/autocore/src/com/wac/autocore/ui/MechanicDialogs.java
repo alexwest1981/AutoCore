@@ -18,6 +18,7 @@ import javafx.scene.layout.GridPane;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Modala dialoger för mekanikerhantering (skapa, redigera, ta bort).
@@ -94,7 +95,7 @@ public final class MechanicDialogs {
         nameField.setPromptText(I18n.get("dialog.mechanic.name_prompt"));
         TextField phoneField = new TextField(mechanic.getPhone() != null ? mechanic.getPhone() : "");
         phoneField.setPromptText(I18n.get("dialog.mechanic.phone_prompt"));
-        ComboBox<String> specBox = createSpecializationBox(garage, mechanic.getSpecialization());
+        ComboBox<String> specBox = createSpecializationBox(garage, SeedText.resolve(mechanic.getSpecialization()));
         CheckBox availBox = new CheckBox(I18n.get("dialog.mechanic.available"));
         availBox.setSelected(mechanic.isAvailable());
 
@@ -156,8 +157,9 @@ public final class MechanicDialogs {
 
         if (garage != null) {
             for (ServiceItem s : garage.getServiceItems()) {
-                if (s.getName() != null && !s.getName().trim().isEmpty() && !suggestions.contains(s.getName().trim())) {
-                    suggestions.add(s.getName().trim());
+                String serviceName = SeedText.resolve(s.getName());
+                if (serviceName != null && !serviceName.trim().isEmpty() && !suggestions.contains(serviceName.trim())) {
+                    suggestions.add(serviceName.trim());
                 }
             }
         }
