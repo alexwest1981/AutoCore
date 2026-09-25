@@ -23,6 +23,7 @@ import javafx.scene.layout.VBox;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Dashboard-vy med KPI-kort, statusfördelning, kommande bokningar och senaste arbetsordrar.
@@ -164,7 +165,7 @@ public final class OverviewView {
             dot.getStyleClass().addAll("sdot", UiFormatters.dotClass(b.getStatus()));
             Label vehicle = new Label(EntityLookup.vehicleReg(garage, b.getVehicleId()) + " \u00b7 " + b.getDate());
             vehicle.getStyleClass().add("srow-title");
-            Label desc = new Label(UiFormatters.truncate(b.getDescription(), 42));
+            Label desc = new Label(UiFormatters.truncate(SeedText.resolve(b.getDescription()), 42));
             desc.getStyleClass().addAll("srow-sub", "small");
             Region spr = new Region();
             HBox.setHgrow(spr, Priority.ALWAYS);

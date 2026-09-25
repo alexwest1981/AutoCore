@@ -34,6 +34,7 @@ public class TestRunner {
             runClass(TableFactoryTest.class);
             runClass(GlobalSearchTest.class);
             runClass(I18nTest.class);
+            runClass(SeedTextTest.class);
             runClass(MechanicScheduleTest.class);
             runClass(PersistenceRestartTest.class);
         }

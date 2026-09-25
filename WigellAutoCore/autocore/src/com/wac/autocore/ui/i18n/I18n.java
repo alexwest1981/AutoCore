@@ -38,6 +38,7 @@ public final class I18n {
         } else {
             fallbackDictionary.putAll(activeDictionary);
         }
+        com.wac.autocore.seed.SeedText.setLanguage(DEFAULT_LANG);
     }
 
     private I18n() {}
@@ -86,6 +87,7 @@ public final class I18n {
 
         currentLanguage = normalized;
         loadLanguage(normalized);
+        com.wac.autocore.seed.SeedText.setLanguage(normalized);
 
         for (Consumer<String> listener : listeners) {
             try {

@@ -21,6 +21,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Fabrik för att bygga enhetliga sidor och tabeller för varje domänentitet med i18n-stöd.
@@ -151,7 +152,7 @@ public final class EntityPages {
                 TableFactory.col(I18n.get("table.col.time"), 120, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
                 TableFactory.col(I18n.get("table.col.service"), 150, c -> EntityLookup.serviceName(garage, c.getServiceItemId())),
                 TableFactory.col(I18n.get("table.col.mechanic"), 140, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
-                TableFactory.col(I18n.get("table.col.description"), 240, Booking::getDescription),
+                TableFactory.col(I18n.get("table.col.description"), 240, c -> SeedText.resolve(c.getDescription())),
                 TableFactory.badgeCol(I18n.get("table.col.status"), 120, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
@@ -261,8 +262,8 @@ public final class EntityPages {
         TableView<ServiceItem> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.name"), 220, ServiceItem::getName),
-                TableFactory.col(I18n.get("table.col.description"), 360, ServiceItem::getDescription),
+                TableFactory.col(I18n.get("table.col.name"), 220, c -> SeedText.resolve(c.getName())),
+                TableFactory.col(I18n.get("table.col.description"), 360, c -> SeedText.resolve(c.getDescription())),
                 TableFactory.col(I18n.get("table.col.price"), 120, c -> UiFormatters.formatMoney(c.getPrice())),
                 TableFactory.col(I18n.get("table.col.time"), 100, c -> c.getEstimatedMinutes() + " min"));
         router.setActiveTable(table);
@@ -318,7 +319,7 @@ public final class EntityPages {
                 TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
                 TableFactory.col(I18n.get("table.col.name"), 220, Mechanic::getName),
                 TableFactory.col(I18n.get("table.col.phone"), 160, Mechanic::getPhone),
-                TableFactory.col(I18n.get("table.col.specialisation"), 260, Mechanic::getSpecialization),
+                TableFactory.col(I18n.get("table.col.specialisation"), 260, c -> SeedText.resolve(c.getSpecialization())),
                 TableFactory.badgeCol(I18n.get("table.col.available"), 130, c -> c.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 

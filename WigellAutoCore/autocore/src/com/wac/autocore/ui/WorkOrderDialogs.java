@@ -19,6 +19,7 @@ import javafx.util.StringConverter;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Modala dialoger för arbetsorderhantering (skapa arbetsorder).
@@ -69,7 +70,7 @@ public final class WorkOrderDialogs {
         bookingBox.setConverter(new StringConverter<Booking>() {
             @Override
             public String toString(Booking b) {
-                return b == null ? "" : I18n.get("table.col.booking") + " #" + b.getId() + " - " + b.getDescription() + " (" + b.getDate() + ")";
+                return b == null ? "" : I18n.get("table.col.booking") + " #" + b.getId() + " - " + SeedText.resolve(b.getDescription()) + " (" + b.getDate() + ")";
             }
             @Override
             public Booking fromString(String string) { return null; }
@@ -80,7 +81,7 @@ public final class WorkOrderDialogs {
         mechanicBox.setConverter(new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
-                return m == null ? "" : m.getName() + " (" + m.getSpecialization() + ") - " + (m.isAvailable() ? I18n.get("table.col.available") : I18n.get("table.col.unavailable"));
+                return m == null ? "" : m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ") - " + (m.isAvailable() ? I18n.get("table.col.available") : I18n.get("table.col.unavailable"));
             }
             @Override
             public Mechanic fromString(String string) { return null; }
@@ -97,7 +98,7 @@ public final class WorkOrderDialogs {
         VBox serviceChecks = new VBox(6);
         List<CheckBox> checkList = new ArrayList<CheckBox>();
         for (ServiceItem s : garage.getServiceItems()) {
-            CheckBox cb = new CheckBox(s.getName() + " (" + s.getPrice() + " " + I18n.get("common.currency") + ", " + s.getEstimatedMinutes() + " min)");
+            CheckBox cb = new CheckBox(SeedText.resolve(s.getName()) + " (" + s.getPrice() + " " + I18n.get("common.currency") + ", " + s.getEstimatedMinutes() + " min)");
             cb.setUserData(s.getId());
             checkList.add(cb);
             serviceChecks.getChildren().add(cb);

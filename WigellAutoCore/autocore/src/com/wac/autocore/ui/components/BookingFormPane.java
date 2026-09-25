@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Återanvändbar formulärpanel för bokningar (används i både skapa- och redigeringsdialoger).
@@ -87,7 +88,7 @@ public class BookingFormPane extends GridPane {
             @Override
             public String toString(ServiceItem s) {
                 if (s == null) return I18n.get("dialog.booking.no_service");
-                return s.getName() + " · " + UiFormatters.formatMoney(s.getPrice()) + " (" + s.getEstimatedMinutes() + " min)";
+                return SeedText.resolve(s.getName()) + " · " + UiFormatters.formatMoney(s.getPrice()) + " (" + s.getEstimatedMinutes() + " min)";
             }
             @Override
             public ServiceItem fromString(String string) { return null; }
@@ -112,7 +113,7 @@ public class BookingFormPane extends GridPane {
             @Override
             public String toString(Mechanic m) {
                 if (m == null) return I18n.get("dialog.booking.no_mechanic");
-                return m.getName() + " (" + m.getSpecialization() + ")";
+                return m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ")";
             }
             @Override
             public Mechanic fromString(String string) { return null; }
@@ -237,14 +238,14 @@ public class BookingFormPane extends GridPane {
 
         // 7. Beskrivning
         String initialDesc = existingBooking != null && existingBooking.getDescription() != null
-                ? existingBooking.getDescription() : "";
+                ? SeedText.resolve(existingBooking.getDescription()) : "";
         this.descField = new TextField(initialDesc);
         this.descField.setPromptText(I18n.get("dialog.booking.desc_prompt"));
 
         if (existingBooking == null) {
             this.serviceBox.valueProperty().addListener((obs, o, n) -> {
                 if (n != null && descField.getText().trim().isEmpty()) {
-                    descField.setText(n.getName() + (n.getDescription() != null && !n.getDescription().isEmpty() ? " - " + n.getDescription() : ""));
+                    descField.setText(SeedText.resolve(n.getName()) + (n.getDescription() != null && !n.getDescription().isEmpty() ? " - " + SeedText.resolve(n.getDescription()) : ""));
                 }
             });
         }
@@ -305,7 +306,7 @@ public class BookingFormPane extends GridPane {
         String desc = getDescription();
         ServiceItem chosenService = getSelectedService();
         if (desc.isEmpty() && chosenService != null) {
-            desc = chosenService.getName();
+            desc = SeedText.resolve(chosenService.getName());
         }
 
         if (v == null || date == null || desc.isEmpty()) {

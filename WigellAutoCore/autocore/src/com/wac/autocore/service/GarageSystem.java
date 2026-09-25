@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import com.wac.autocore.seed.SeedText;
 
 public class GarageSystem {
 
@@ -75,7 +76,8 @@ public class GarageSystem {
         // Fallback: om ingen specifik specialist finns, erbjud allmänt behöriga mekaniker
         if (qualified.isEmpty()) {
             for (Mechanic m : all) {
-                String s = m.getSpecialization() != null ? m.getSpecialization().toLowerCase() : "";
+                String resolvedSpec = SeedText.resolve(m.getSpecialization());
+                String s = resolvedSpec != null ? resolvedSpec.toLowerCase() : "";
                 if (s.contains("general") || s.contains("allmän")) {
                     qualified.add(m);
                 }
@@ -91,7 +93,7 @@ public class GarageSystem {
         if (mechanic == null) {
             return false;
         }
-        String spec = mechanic.getSpecialization();
+        String spec = SeedText.resolve(mechanic.getSpecialization());
         if (spec == null || spec.trim().isEmpty()) {
             return false;
         }
@@ -103,8 +105,10 @@ public class GarageSystem {
             return false;
         }
 
-        String sName = service.getName() != null ? service.getName().toLowerCase() : "";
-        String sDesc = service.getDescription() != null ? service.getDescription().toLowerCase() : "";
+        String resolvedName = SeedText.resolve(service.getName());
+        String resolvedDesc = SeedText.resolve(service.getDescription());
+        String sName = resolvedName != null ? resolvedName.toLowerCase() : "";
+        String sDesc = resolvedDesc != null ? resolvedDesc.toLowerCase() : "";
         String sSpec = spec.toLowerCase();
 
         // 1. Direkt likhet eller substring-matchning
