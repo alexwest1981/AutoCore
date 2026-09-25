@@ -163,12 +163,12 @@ public class Db {
         String insertBooking = "INSERT INTO bookings (id, vehicle_id, date, description, status) VALUES (?, ?, ?, ?, ?)";
         LocalDate today = LocalDate.now();
         try (PreparedStatement ps = conn.prepareStatement(insertBooking)) {
-            addBooking(ps, 1, 1, today.toString(), "Oljeservice & filterbyte", "CREATED");
-            addBooking(ps, 2, 2, today.toString(), "Bromskontroll fram", "CREATED");
-            addBooking(ps, 3, 3, today.plusDays(1).toString(), "Helrenovering bromsar", "CREATED");
-            addBooking(ps, 4, 4, today.toString(), "Bromsok och belägg", "CREATED");
-            addBooking(ps, 5, 5, today.toString(), "Felkodsläsning OBD2", "CREATED");
-            addBooking(ps, 6, 6, today.plusDays(1).toString(), "Elektronikfelsökning", "CREATED");
+            addBooking(ps, 1, 1, today.toString(), "Oil change & filter replacement", "CREATED");
+            addBooking(ps, 2, 2, today.toString(), "Front brake inspection", "CREATED");
+            addBooking(ps, 3, 3, today.plusDays(1).toString(), "Full brake overhaul", "CREATED");
+            addBooking(ps, 4, 4, today.toString(), "Brake calipers and pads", "CREATED");
+            addBooking(ps, 5, 5, today.toString(), "OBD2 fault code reading", "CREATED");
+            addBooking(ps, 6, 6, today.plusDays(1).toString(), "Electronic fault diagnosis", "CREATED");
         }
 
         String insertWorkOrder = "INSERT INTO work_orders (id, booking_id, mechanic_id, status) VALUES (?, ?, ?, ?)";
