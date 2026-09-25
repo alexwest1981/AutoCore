@@ -33,7 +33,7 @@ public class Booking {
         this.vehicleId = vehicleId;
         this.date = date;
         this.description = description;
-        this.status = "BOOKED";
+        this.status = "CREATED";
         this.startTime = startTime;
         this.endTime = endTime;
         this.mechanicId = mechanicId;

@@ -102,7 +102,7 @@ public class BookingService {
 
         bookingRepository.save(booking);
 
-        System.out.println("Created");
+        System.out.println("CREATED");
         System.out.println(booking);
 
         return booking;
