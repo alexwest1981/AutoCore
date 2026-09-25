@@ -47,6 +47,7 @@ public class BookingService {
     }
 
     public Booking createBooking(int vehicleId, LocalDate date, String description) {
+
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
             System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
@@ -75,6 +76,7 @@ public class BookingService {
             System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
             return null;
         }
+
         ServiceItem serviceItem = serviceItemRepository.findAll().stream()
                 .filter(item -> item.getId() == serviceItemId)
                 .findFirst()
@@ -83,17 +85,27 @@ public class BookingService {
             System.out.println("Service item with ID " + serviceItemId + " does not exist ");
         }
         //Beräkna endTime automatiskt utifrån startTime och estimatedMinutes
-        LocalTime endTime = serviceItem != null ? startTime.plusMinutes(serviceItem.getEstimatedMinutes()) : startTime.plusMinutes(60);
+        WorkOrderService workOrderService = new WorkOrderService();
+        int estimatedMinutes = workOrderService.getTotalEstimatedMinutes(serviceItemId);
+
+        LocalTime endTime = (estimatedMinutes > 0) ? startTime.plusMinutes(estimatedMinutes) : startTime.plusMinutes(60);
+        //LocalTime endTime = serviceItem != null ? startTime.plusMinutes(serviceItem.getEstimatedMinutes()) : startTime.plusMinutes(60);
+
+        if (isMechanicOccupied(mechanicId, date, startTime, endTime)) {
+            throw new IllegalArgumentException("Mekanikern är redan bokad under denna tid (" + startTime + " - " + endTime + ")!");
+        }
 
         Booking booking = new Booking(vehicleId, date, description, startTime, endTime, mechanicId, serviceItemId);
 
         bookingRepository.save(booking);
 
-        System.out.println("Booking created successfully.");
+        System.out.println("Created");
         System.out.println(booking);
 
         return booking;
     }
+
+
 
     private Vehicle findVehicle(int id) {
         try {
@@ -106,5 +118,24 @@ public class BookingService {
             }
         }
         return null;
+    }
+    private boolean isMechanicOccupied(int mechanicId, LocalDate date, LocalTime newStart, LocalTime newEnd) throws SQLException {
+        // Om bokningen görs utan mekaniker (id = 0) kan den inte krocka med någon
+        if (mechanicId == 0) {
+            return false;
+        }
+        return bookingRepository.findAll().stream()
+                .filter(b -> b.getMechanicId() == mechanicId && date.equals(b.getDate()))
+                .anyMatch(b -> {
+                    LocalTime existingStart = b.getStartTime();
+                    LocalTime existingEnd = b.getEndTime();
+
+                    if (existingStart == null || existingEnd == null) {
+                        return false;
+                    }
+
+                    // Tidsöverlappningsformel: (NyStart < BefintligSlut) OCH (NySlut > BefintligStart)
+                    return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
+                });
     }
 }
