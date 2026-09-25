@@ -2,6 +2,8 @@ package com.wac.autocore.gui.booking;
 
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.service.GarageSystem;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -11,6 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class BookingController {
+
+    private final ObservableList<Booking> bookingList = FXCollections.observableArrayList();
 
     @FXML
     private TableView<Booking> bookingTable;
@@ -71,7 +75,9 @@ public class BookingController {
         serviceItemIdColumn.setCellValueFactory(new PropertyValueFactory<>("serviceItemId"));
 
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        statusColumn.setCellFactory(column -> new TableCell<Booking, String>() {
+        bookingTable.setItems(bookingList);
+        statusColumn.setCellFactory(column -> new TableCell<Booking, String>()
+        {
             @Override
             protected void updateItem(String status, boolean empty) {
                 super.updateItem(status, empty);
@@ -91,7 +97,8 @@ public class BookingController {
             }
         });
 
-        bookingTable.getItems().addAll(garageSystem.getBookings());
+        bookingList.clear();
+        bookingList.addAll(garageSystem.getBookings());
     }
 
     @FXML
@@ -111,7 +118,6 @@ public class BookingController {
             return;
         }
 
-        // 1. Hämta och validera starttid (HH:mm)
         java.time.LocalTime startTime;
         try {
             startTime = java.time.LocalTime.parse(startTimeField.getText());
@@ -120,7 +126,6 @@ public class BookingController {
             return;
         }
 
-        // 2. Hämta ID för mekaniker och tjänst från textfälten
         int mechanicId;
         int serviceItemId;
         try {
@@ -133,27 +138,14 @@ public class BookingController {
 
         String description = descriptionField.getText();
 
-        // 3. Omslut med try-catch för att fånga krockar och databasfel
         try {
-            // Skicka med alla 6 parametrar till din Facade (GarageSystem)
-            // Ordning: vehicleId, date, description, startTime, mechanicId, serviceItemId
-            Booking booking = garageSystem.createBooking(
-                    vehicleId,
-                    date,
-                    description,
-                    startTime,
-                    mechanicId,
-                    serviceItemId
-            );
+            Booking booking = garageSystem.createBooking(vehicleId, date, description, startTime, mechanicId, serviceItemId);
 
             if (booking == null) {
                 showAlert("Could not create booking. Check that the vehicle exists.");
                 return;
             }
-
-            // Om allt gick bra, lägg till i tabellen och rensa alla fält
-            bookingTable.getItems().add(booking);
-
+                bookingList.add(booking);
             vehicleIdField.clear();
             datePicker.setValue(null);
             descriptionField.clear();
@@ -162,10 +154,8 @@ public class BookingController {
             serviceItemField.clear();
 
         } catch (IllegalArgumentException e) {
-            // 4. Här fångas felmeddelandet om mekanikern är upptagen!
             showAlert(e.getMessage());
         } catch (java.sql.SQLException e) {
-            // Fångar upp eventuella databasfel
             showAlert("Database error: " + e.getMessage());
         }
     }
