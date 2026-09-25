@@ -162,4 +162,25 @@ public class MechanicScheduleTest {
         TestRunner.assertNotNull(next, "Ska hitta nästa bokade dag");
         TestRunner.assertEquals(d2, next, "Nästa bokade dag ska vara 2026-09-25");
     }
+
+    public void testBookingSlotAvailabilityCheck() {
+        MechanicSchedule schedule = MechanicSchedule.getInstance();
+        LocalDate testDate = LocalDate.of(2026, 10, 15);
+        int mechId = 1;
+
+        boolean booked = schedule.bookSlot(mechId, testDate, 10, 888, "Test Kund", "TST999", "Oljebyte");
+        TestRunner.assertTrue(booked, "Bokning av kl 10 ska lyckas");
+
+        com.wac.autocore.model.Mechanic mech = new com.wac.autocore.model.Mechanic(mechId, "Test Mekaniker", "070-0000000", "Allmän");
+        boolean is10Booked = com.wac.autocore.ui.BookingDialogs.isHourBooked(null, mech, testDate, 10, 0);
+        TestRunner.assertTrue(is10Booked, "Kl 10 ska detekteras som upptagen");
+
+        boolean is11Booked = com.wac.autocore.ui.BookingDialogs.isHourBooked(null, mech, testDate, 11, 0);
+        TestRunner.assertFalse(is11Booked, "Kl 11 ska detekteras som ledig");
+
+        boolean is10SelfExcluded = com.wac.autocore.ui.BookingDialogs.isHourBooked(null, mech, testDate, 10, 888);
+        TestRunner.assertFalse(is10SelfExcluded, "Egen bokning ska inte blockera tiden vid redigering");
+
+        schedule.cancelSlot(mechId, testDate, 10);
+    }
 }

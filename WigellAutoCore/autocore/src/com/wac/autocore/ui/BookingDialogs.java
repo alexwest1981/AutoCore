@@ -4,21 +4,26 @@ import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 
+import javafx.collections.FXCollections;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.util.StringConverter;
 
 import java.time.LocalDate;
@@ -122,11 +127,29 @@ public final class BookingDialogs {
             timeOptions.add(LocalTime.of(h, 0));
         }
         ComboBox<LocalTime> startTimeBox = new ComboBox<LocalTime>();
-        startTimeBox.getItems().addAll(timeOptions);
+        startTimeBox.setItems(FXCollections.observableArrayList(timeOptions));
+
+        java.util.function.Function<LocalTime, Boolean> isBusyFunc = time -> {
+            if (time == null) return false;
+            Mechanic m = mechanicBox.getValue();
+            LocalDate d = datePicker.getValue();
+            return isHourBooked(garage, m, d, time.getHour(), 0);
+        };
+
+        startTimeBox.setCellFactory(lv -> new TimeSlotCell(isBusyFunc, true));
+        startTimeBox.setButtonCell(new TimeSlotCell(isBusyFunc, false));
+
         if (defaultHour != null && defaultHour >= 7 && defaultHour <= 16) {
             startTimeBox.getSelectionModel().select(LocalTime.of(defaultHour, 0));
         } else {
-            startTimeBox.getSelectionModel().select(LocalTime.of(8, 0));
+            LocalTime firstFree = null;
+            for (LocalTime t : timeOptions) {
+                if (!Boolean.TRUE.equals(isBusyFunc.apply(t))) {
+                    firstFree = t;
+                    break;
+                }
+            }
+            startTimeBox.getSelectionModel().select(firstFree != null ? firstFree : LocalTime.of(8, 0));
         }
         startTimeBox.setConverter(new StringConverter<LocalTime>() {
             @Override
@@ -155,6 +178,34 @@ public final class BookingDialogs {
                 durationLabel.setText("");
             }
         };
+
+        Runnable refreshTimeBox = () -> {
+            LocalTime currentSel = startTimeBox.getValue();
+            startTimeBox.setItems(FXCollections.observableArrayList(timeOptions));
+            if (currentSel != null && !Boolean.TRUE.equals(isBusyFunc.apply(currentSel))) {
+                startTimeBox.getSelectionModel().select(currentSel);
+            } else {
+                LocalTime firstFree = null;
+                for (LocalTime t : timeOptions) {
+                    if (!Boolean.TRUE.equals(isBusyFunc.apply(t))) {
+                        firstFree = t;
+                        break;
+                    }
+                }
+                if (firstFree != null) {
+                    startTimeBox.getSelectionModel().select(firstFree);
+                } else if (currentSel != null) {
+                    startTimeBox.getSelectionModel().select(currentSel);
+                }
+            }
+            if (startTimeBox.getButtonCell() != null) {
+                startTimeBox.getButtonCell().updateIndex(-1);
+            }
+            updateDuration.run();
+        };
+
+        datePicker.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
+        mechanicBox.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
         startTimeBox.valueProperty().addListener((obs, o, n) -> updateDuration.run());
         serviceBox.valueProperty().addListener((obs, o, n) -> updateDuration.run());
         updateDuration.run();
@@ -212,6 +263,11 @@ public final class BookingDialogs {
                     return;
                 }
 
+                if (chosenMech != null && startTime != null && isHourBooked(garage, chosenMech, date, startTime.getHour(), 0)) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.slot_busy_error"));
+                    return;
+                }
+
                 Booking b = garage.createBooking(v.getId(), date, desc);
                 if (b != null) {
                     if (chosenService != null) {
@@ -226,15 +282,16 @@ public final class BookingDialogs {
                         b.setEndTime(startTime.plusMinutes(estMin));
                     }
 
-                    // Koppla automatisk arbetsorder och kanban-schema om mekaniker valts
+                    try {
+                        garage.updateBooking(b);
+                    } catch (Exception ignored) {}
+
+                    // Koppla kanban-schema om mekaniker valts
                     if (chosenMech != null) {
-                        int sid = chosenService != null ? chosenService.getId() : 1;
-                        WorkOrder wo = garage.createWorkOrder(b.getId(), chosenMech.getId(), sid);
-                        int woId = wo != null ? wo.getId() : 0;
                         int hour = startTime != null ? startTime.getHour() : (defaultHour != null ? defaultHour : 8);
                         String custName = EntityLookup.customerName(garage, v.getCustomerId());
                         MechanicSchedule.getInstance().bookSlot(
-                                chosenMech.getId(), date, hour, b.getId(), woId,
+                                chosenMech.getId(), date, hour, b.getId(), 0,
                                 custName, v.getRegistrationNumber(), desc
                         );
                     }
@@ -334,11 +391,29 @@ public final class BookingDialogs {
             timeOptions.add(LocalTime.of(h, 0));
         }
         ComboBox<LocalTime> startTimeBox = new ComboBox<LocalTime>();
-        startTimeBox.getItems().addAll(timeOptions);
+        startTimeBox.setItems(FXCollections.observableArrayList(timeOptions));
+
+        java.util.function.Function<LocalTime, Boolean> isBusyFunc = time -> {
+            if (time == null) return false;
+            Mechanic m = mechanicBox.getValue();
+            LocalDate d = datePicker.getValue();
+            return isHourBooked(garage, m, d, time.getHour(), booking.getId());
+        };
+
+        startTimeBox.setCellFactory(lv -> new TimeSlotCell(isBusyFunc, true));
+        startTimeBox.setButtonCell(new TimeSlotCell(isBusyFunc, false));
+
         if (booking.getStartTime() != null) {
             startTimeBox.getSelectionModel().select(booking.getStartTime());
         } else {
-            startTimeBox.getSelectionModel().select(LocalTime.of(8, 0));
+            LocalTime firstFree = null;
+            for (LocalTime t : timeOptions) {
+                if (!Boolean.TRUE.equals(isBusyFunc.apply(t))) {
+                    firstFree = t;
+                    break;
+                }
+            }
+            startTimeBox.getSelectionModel().select(firstFree != null ? firstFree : LocalTime.of(8, 0));
         }
         startTimeBox.setConverter(new StringConverter<LocalTime>() {
             @Override
@@ -367,6 +442,34 @@ public final class BookingDialogs {
                 durationLabel.setText("");
             }
         };
+
+        Runnable refreshTimeBox = () -> {
+            LocalTime currentSel = startTimeBox.getValue();
+            startTimeBox.setItems(FXCollections.observableArrayList(timeOptions));
+            if (currentSel != null && !Boolean.TRUE.equals(isBusyFunc.apply(currentSel))) {
+                startTimeBox.getSelectionModel().select(currentSel);
+            } else {
+                LocalTime firstFree = null;
+                for (LocalTime t : timeOptions) {
+                    if (!Boolean.TRUE.equals(isBusyFunc.apply(t))) {
+                        firstFree = t;
+                        break;
+                    }
+                }
+                if (firstFree != null) {
+                    startTimeBox.getSelectionModel().select(firstFree);
+                } else if (currentSel != null) {
+                    startTimeBox.getSelectionModel().select(currentSel);
+                }
+            }
+            if (startTimeBox.getButtonCell() != null) {
+                startTimeBox.getButtonCell().updateIndex(-1);
+            }
+            updateDuration.run();
+        };
+
+        datePicker.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
+        mechanicBox.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
         startTimeBox.valueProperty().addListener((obs, o, n) -> updateDuration.run());
         serviceBox.valueProperty().addListener((obs, o, n) -> updateDuration.run());
         updateDuration.run();
@@ -422,6 +525,11 @@ public final class BookingDialogs {
                     return;
                 }
 
+                if (chosenMech != null && startTime != null && isHourBooked(garage, chosenMech, date, startTime.getHour(), booking.getId())) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.slot_busy_error"));
+                    return;
+                }
+
                 booking.setVehicleId(v.getId());
                 booking.setDate(date);
                 booking.setDescription(desc);
@@ -433,6 +541,10 @@ public final class BookingDialogs {
                     int estMin = chosenService != null ? chosenService.getEstimatedMinutes() : 60;
                     booking.setEndTime(startTime.plusMinutes(estMin));
                 }
+
+                try {
+                    garage.updateBooking(booking);
+                } catch (Exception ignored) {}
 
                 if (onSuccess != null) onSuccess.run();
             }
@@ -493,5 +605,110 @@ public final class BookingDialogs {
                 if (onSuccess != null) onSuccess.run();
             }
         });
+    }
+
+    /**
+     * Kontrollerar om en specifik timme är upptagen för en mekaniker ett visst datum.
+     */
+    public static boolean isHourBooked(GarageSystem garage, Mechanic mechanic, LocalDate date, int hour, int excludeBookingId) {
+        if (mechanic == null || date == null) {
+            return false;
+        }
+
+        LocalTime slotStart = LocalTime.of(hour, 0);
+        LocalTime slotEnd = slotStart.plusHours(1);
+
+        // 1. Kontrollera mot schemat (MechanicSchedule)
+        MechanicSchedule schedule = MechanicSchedule.getInstance();
+        List<MechanicSchedule.TimeSlot> slots = schedule.getSlotsForDay(mechanic.getId(), date);
+        for (MechanicSchedule.TimeSlot s : slots) {
+            if (s.getHour() == hour && s.isBooked()) {
+                if (excludeBookingId > 0 && s.getBookingId() == excludeBookingId) {
+                    continue;
+                }
+                return true;
+            }
+        }
+
+        // 2. Kontrollera mot sparade bokningar i GarageSystem
+        if (garage != null) {
+            for (Booking b : garage.getBookings()) {
+                if (excludeBookingId > 0 && b.getId() == excludeBookingId) {
+                    continue;
+                }
+                if ("CANCELLED".equalsIgnoreCase(b.getStatus())) {
+                    continue;
+                }
+                if (b.getMechanicId() == mechanic.getId() && date.equals(b.getDate())) {
+                    if (b.getStartTime() != null) {
+                        LocalTime bStart = b.getStartTime();
+                        LocalTime bEnd = b.getEndTime() != null ? b.getEndTime() : bStart.plusHours(1);
+                        if (bEnd.isBefore(bStart) || bEnd.equals(bStart)) {
+                            bEnd = bStart.plusHours(1);
+                        }
+                        if (slotStart.isBefore(bEnd) && bStart.isBefore(slotEnd)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Anpassad ListCell för starttider: grön för ledig tid, röd för upptagen tid.
+     * Inaktiverar automatiskt upptagna tider i popup-listan så att dubbelbokning förhindras.
+     */
+    private static class TimeSlotCell extends ListCell<LocalTime> {
+        private final java.util.function.Function<LocalTime, Boolean> isBusyFunc;
+        private final boolean isDropdownItem;
+
+        public TimeSlotCell(java.util.function.Function<LocalTime, Boolean> isBusyFunc, boolean isDropdownItem) {
+            this.isBusyFunc = isBusyFunc;
+            this.isDropdownItem = isDropdownItem;
+        }
+
+        @Override
+        protected void updateItem(LocalTime time, boolean empty) {
+            super.updateItem(time, empty);
+            if (empty || time == null) {
+                setText(null);
+                setGraphic(null);
+                setStyle("");
+                setDisable(false);
+            } else {
+                boolean busy = isBusyFunc != null && Boolean.TRUE.equals(isBusyFunc.apply(time));
+                String timeStr = time.format(TIME_FMT);
+                String statusText = busy ? I18n.get("dialog.booking.time_busy") : I18n.get("dialog.booking.time_available");
+
+                Circle dot = new Circle(4);
+                dot.setFill(Color.web(busy ? "#f87171" : "#22c55e"));
+
+                Label textLabel = new Label(timeStr + "  (" + statusText + ")");
+                textLabel.setStyle(busy
+                        ? "-fx-text-fill: #f87171; -fx-font-weight: bold;"
+                        : "-fx-text-fill: #22c55e; -fx-font-weight: bold;");
+
+                HBox box = new HBox(8, dot, textLabel);
+                box.setAlignment(Pos.CENTER_LEFT);
+
+                setGraphic(box);
+                setText(null);
+
+                if (isDropdownItem) {
+                    setDisable(busy);
+                    if (busy) {
+                        setStyle("-fx-opacity: 0.60; -fx-background-color: rgba(248, 113, 113, 0.12);");
+                    } else {
+                        setStyle("-fx-opacity: 1.0; -fx-background-color: rgba(34, 197, 94, 0.08);");
+                    }
+                } else {
+                    setDisable(false);
+                    setStyle("");
+                }
+            }
+        }
     }
 }

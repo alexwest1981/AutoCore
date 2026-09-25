@@ -273,6 +273,9 @@
       "no_mechanic": "Ingen mekaniker (tilldelas senare)",
       "estimated_end": "Beräknad sluttid: {0} ({1} min)",
       "time_window": "Arbetspass: {0} – {1}",
+      "time_available": "Ledig",
+      "time_busy": "Upptagen",
+      "slot_busy_error": "Den valda tiden är redan upptagen hos denna mekaniker. Vänligen välj en ledig tid.",
       "desc_prompt": "T.ex. Årlig service och bromsbyte"
     },
     "service": {

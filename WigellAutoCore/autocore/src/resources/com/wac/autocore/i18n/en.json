@@ -273,6 +273,9 @@
       "no_mechanic": "No mechanic (assign later)",
       "estimated_end": "Estimated end time: {0} ({1} min)",
       "time_window": "Working slot: {0} – {1}",
+      "time_available": "Available",
+      "time_busy": "Busy",
+      "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
       "desc_prompt": "E.g. Annual service and brake replacement"
     },
     "service": {
