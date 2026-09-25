@@ -136,23 +136,6 @@ public class BookingRepository {
         }
     }
 
-    private void setTimeSlots(PreparedStatement statement, Booking booking) throws SQLException {
-        setTime(statement, 2, booking.getStartTime());
-        setTime(statement, 3, booking.getEndTime());
-        statement.setInt(4, booking.getMechanicId());
-        statement.setInt(5, booking.getServiceItemId());
-
-        if (booking.getMechanicId() == 0) {
-            statement.setNull(4, java.sql.Types.INTEGER);
-        } else {
-            statement.setInt(4, booking.getMechanicId());
-        }
-        if (booking.getServiceItemId() == 0) {
-            statement.setNull(5, java.sql.Types.INTEGER);
-        } else {
-            statement.setInt(5, booking.getServiceItemId());
-        }
-    }
 
     private void setTime(PreparedStatement statement, int position, LocalTime time) throws SQLException {
         if (time == null) {
