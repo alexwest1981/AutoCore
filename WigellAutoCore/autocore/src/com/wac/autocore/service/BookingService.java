@@ -27,6 +27,11 @@ public class BookingService {
     private final BookingRepository bookingRepository = new BookingRepository();
     private final VehicleRepository vehicleRepository = new VehicleRepository();
     private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final WorkOrderService workOrderService;
+
+    public BookingService(WorkOrderService workOrderService) {
+        this.workOrderService = workOrderService;
+    }
 
     public List<Booking> getAll() {
         try {
@@ -84,12 +89,10 @@ public class BookingService {
         if (serviceItem == null) {
             System.out.println("Service item with ID " + serviceItemId + " does not exist ");
         }
-        //Beräkna endTime automatiskt utifrån startTime och estimatedMinutes
-        WorkOrderService workOrderService = new WorkOrderService();
+
         int estimatedMinutes = workOrderService.getTotalEstimatedMinutes(serviceItemId);
 
         LocalTime endTime = (estimatedMinutes > 0) ? startTime.plusMinutes(estimatedMinutes) : startTime.plusMinutes(60);
-        //LocalTime endTime = serviceItem != null ? startTime.plusMinutes(serviceItem.getEstimatedMinutes()) : startTime.plusMinutes(60);
 
         if (isMechanicOccupied(mechanicId, date, startTime, endTime)) {
             throw new IllegalArgumentException("Mekanikern är redan bokad under denna tid (" + startTime + " - " + endTime + ")!");
@@ -105,8 +108,6 @@ public class BookingService {
         return booking;
     }
 
-
-
     private Vehicle findVehicle(int id) {
         try {
             Vehicle v = vehicleRepository.findById(id);
@@ -120,7 +121,7 @@ public class BookingService {
         return null;
     }
     private boolean isMechanicOccupied(int mechanicId, LocalDate date, LocalTime newStart, LocalTime newEnd) throws SQLException {
-        // Om bokningen görs utan mekaniker (id = 0) kan den inte krocka med någon
+
         if (mechanicId == 0) {
             return false;
         }
@@ -133,8 +134,6 @@ public class BookingService {
                     if (existingStart == null || existingEnd == null) {
                         return false;
                     }
-
-                    // Tidsöverlappningsformel: (NyStart < BefintligSlut) OCH (NySlut > BefintligStart)
                     return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
                 });
     }

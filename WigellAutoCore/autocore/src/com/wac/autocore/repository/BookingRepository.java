@@ -84,7 +84,6 @@ public class BookingRepository {
             statement.setString(4, booking.getStatus());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
-            statement.executeUpdate();
 
             if (booking.getMechanicId() == 0) {
                 statement.setNull(7, java.sql.Types.INTEGER);
@@ -96,6 +95,8 @@ public class BookingRepository {
             } else {
                 statement.setInt(8, booking.getServiceItemId());
             }
+
+            statement.executeUpdate();
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -186,24 +187,22 @@ public class BookingRepository {
             booking.setStatus(status);
         }
 
-        // 2. Läs in start_time med den säkra try-catch-hanteringen
         String startText = resultSet.getString("start_time");
         if (startText != null) {
             try {
                 booking.setStartTime(LocalTime.parse(startText));
             } catch (java.time.format.DateTimeParseException e) {
                 System.out.println("Hoppade över trasig tid i databasen: " + startText);
-                booking.setStartTime(LocalTime.of(8, 0)); // Sätt standardtid (08:00) så appen startar
+                booking.setStartTime(LocalTime.of(8, 0));
             }
         }
 
-        // 3. Läs in end_time med samma säkra hantering utifall att även den har felaktig data
         String endText = resultSet.getString("end_time");
         if (endText != null) {
             try {
                 booking.setEndTime(LocalTime.parse(endText));
             } catch (java.time.format.DateTimeParseException e) {
-                booking.setEndTime(LocalTime.of(9, 0)); // Sätt standardtid (09:00) vid fel
+                booking.setEndTime(LocalTime.of(9, 0));
             }
         }
 
