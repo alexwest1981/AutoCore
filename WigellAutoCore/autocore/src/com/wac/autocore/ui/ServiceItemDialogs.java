@@ -153,7 +153,7 @@ public final class ServiceItemDialogs {
         if (clean.isEmpty()) return null;
         try {
             double val = Double.parseDouble(clean);
-            return val >= 0 ? val : null;
+            return val > 0 ? val : null;
         } catch (NumberFormatException e) {
             return null;
         }
