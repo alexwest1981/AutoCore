@@ -173,4 +173,10 @@ find "$SRC_DIR" -name "*.java" > "$SOURCES_FILE"
 "$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" -cp "$JDBC_JAR" @"$SOURCES_FILE"
 rm -f "$SOURCES_FILE"
 
+# På Linux med Wayland kräver JavaFX 8 XWayland (GDK_BACKEND=x11) för att förhindra krasch i GTK
+if [ "$IS_WINDOWS" = false ] && [ "$IS_MACOS" = false ]; then
+    export GDK_BACKEND=x11
+fi
+
 exec "$JAVA_BIN" -cp "$OUT_DIR$CP_SEP$JDBC_JAR" "$MAIN_CLASS" "$@"
+
