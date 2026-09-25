@@ -181,8 +181,8 @@ TableView .column-header-background, .table-view .column-header-background {
     -fx-background-color: #282d2b;
     -fx-background-radius: 4 4 0 0;
 }
-TableView .column-header, TableView .filler,
-.table-view .column-header, .table-view .filler {
+TableView .column-header, TableView .filler, TableView .corner,
+.table-view .column-header, .table-view .filler, .table-view .corner {
     -fx-background-color: #282d2b;
     -fx-border-color: transparent #3d4642 transparent transparent;
     -fx-border-width: 0 1 0 0;
@@ -201,13 +201,22 @@ TableView .column-header .label, .table-view .column-header .label {
 TableView .column-header .arrow, .table-view .column-header .arrow {
     -fx-background-color: #ffffff;
 }
-TableView .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
-TableView .table-row-cell:filled:even { -fx-background-color: transparent; }
-TableView .table-row-cell:filled:odd { -fx-background-color: -wac-row-alt; }
+TableView .table-cell, .table-view .table-cell {
+    -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 8;
+    -fx-alignment: CENTER_LEFT;
+}
+TableView .table-row-cell, .table-view .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
+TableView .table-row-cell:filled:even, .table-view .table-row-cell:filled:even { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:odd, .table-view .table-row-cell:filled:odd { -fx-background-color: -wac-row-alt; }
 TableView .table-row-cell:filled:hover,
 TableView .table-row-cell:filled:odd:hover,
-TableView .table-row-cell:filled:even:hover { -fx-background-color: #e2ede5; }
-TableView .table-view { -fx-padding: 0; }
+TableView .table-row-cell:filled:even:hover,
+.table-view .table-row-cell:filled:hover,
+.table-view .table-row-cell:filled:odd:hover,
+.table-view .table-row-cell:filled:even:hover { -fx-background-color: #e2ede5; }
+TableView .table-view, .table-view { -fx-padding: 0; }
 
 /* ---- App shell (Edge-to-edge layout) ---- */
 .stage {

@@ -32,6 +32,7 @@ public final class TableFactory {
             this.baseList = FXCollections.observableArrayList(data);
             this.filteredList = new FilteredList<S>(this.baseList);
             this.tableView = new TableView<S>(this.filteredList);
+            this.tableView.getStyleClass().add("orders-table");
             this.tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
             Label placeholder = new Label(com.wac.autocore.ui.i18n.I18n.get("table.empty"));
             placeholder.getStyleClass().add("text-muted");
