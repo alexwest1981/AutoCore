@@ -32,6 +32,7 @@ public final class TableFactory {
             this.baseList = FXCollections.observableArrayList(data);
             this.filteredList = new FilteredList<S>(this.baseList);
             this.tableView = new TableView<S>(this.filteredList);
+            this.tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
             Label placeholder = new Label(com.wac.autocore.ui.i18n.I18n.get("table.empty"));
             placeholder.getStyleClass().add("text-muted");
             this.tableView.setPlaceholder(placeholder);
@@ -86,6 +87,10 @@ public final class TableFactory {
                                                 Function<S, String> mapper) {
         TableColumn<S, String> c = new TableColumn<S, String>(title);
         c.setPrefWidth(width);
+        c.setMinWidth(Math.min(width, 40));
+        if (width <= 70) {
+            c.setMaxWidth(100);
+        }
         c.setCellValueFactory(cd -> new ReadOnlyStringWrapper(mapper.apply(cd.getValue())));
         return c;
     }
@@ -97,6 +102,8 @@ public final class TableFactory {
                                                      Function<S, String> mapper) {
         TableColumn<S, String> c = new TableColumn<S, String>(title);
         c.setPrefWidth(width);
+        c.setMinWidth(Math.min(width, 80));
+        c.setMaxWidth(160);
         c.setCellValueFactory(cd -> new ReadOnlyStringWrapper(mapper.apply(cd.getValue())));
         c.setCellFactory(column -> new TableCell<S, String>() {
             @Override
