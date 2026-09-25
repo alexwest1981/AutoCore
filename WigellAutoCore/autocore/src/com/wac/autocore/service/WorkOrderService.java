@@ -85,6 +85,7 @@ public class WorkOrderService {
             return null;
         }
 
+        workOrder.setStatus("CREATED");
         booking.setStatus("WORK_ORDER_CREATED");
         saveBooking(booking);
 

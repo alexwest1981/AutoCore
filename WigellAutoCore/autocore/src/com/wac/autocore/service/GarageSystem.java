@@ -73,7 +73,7 @@ public class GarageSystem {
     private final CustomerService customerService = new CustomerService();
     private final VehicleService vehicleService = new VehicleService(customerService);
     private final WorkOrderService workOrderService = new WorkOrderService();
-    private final BookingService bookingService = new BookingService();
+    private final BookingService bookingService = new BookingService(workOrderService);
     private final BillingService billingService = new BillingService();
     private final PaymentService paymentService = new PaymentService();
     private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
