@@ -72,18 +72,30 @@ public class BookingRepository {
     }
 
     private void insert(Booking booking) throws SQLException {
-        String sql = "INSERT INTO bookings (vehicle_id, start_time, end_time, mechanic_id, service_item_id, "
-                + "date, description, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO bookings (vehicle_id, date, description, status, start_time, " +
+                "end_time, mechanic_id, service_item_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             statement.setInt(1, booking.getVehicleId());
-            setTimeSlots(statement, booking);
-            setDate(statement, 6, booking.getDate());
-            statement.setString(7, booking.getDescription());
-            statement.setString(8, booking.getStatus());
+            setDate(statement, 2, booking.getDate());
+            statement.setString(3, booking.getDescription());
+            statement.setString(4, booking.getStatus());
+            setTime(statement, 5, booking.getStartTime());
+            setTime(statement, 6, booking.getEndTime());
             statement.executeUpdate();
+
+            if (booking.getMechanicId() == 0) {
+                statement.setNull(7, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(7, booking.getMechanicId());
+            }
+            if (booking.getServiceItemId() == 0) {
+                statement.setNull(8, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(8, booking.getServiceItemId());
+            }
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -94,17 +106,30 @@ public class BookingRepository {
     }
 
     private void update(Booking booking) throws SQLException {
-        String sql = "UPDATE bookings SET vehicle_id = ?, start_time = ?, end_time = ?, mechanic_id = ?, "
-                + "service_item_id = ?, date = ?, description = ?, status = ? WHERE id = ?";
+        String sql = "UPDATE bookings SET vehicle_id = ?, date = ?, description = ?, status = ?, " +
+                "start_time = ?, end_time = ?, mechanic_id = ?, service_item_id = ? WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, booking.getVehicleId());
-            setTimeSlots(statement, booking);
-            setDate(statement, 6, booking.getDate());
-            statement.setString(7, booking.getDescription());
-            statement.setString(8, booking.getStatus());
+            setDate(statement, 2, booking.getDate());
+            statement.setString(3, booking.getDescription());
+            statement.setString(4, booking.getStatus());
+            setTime(statement, 5, booking.getStartTime());
+            setTime(statement, 6, booking.getEndTime());
+            if (booking.getMechanicId() == 0) {
+                statement.setNull(7, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(7, booking.getMechanicId());
+            }
+
+            if (booking.getServiceItemId() == 0) {
+                statement.setNull(8, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(8, booking.getServiceItemId());
+            }
+
             statement.setInt(9, booking.getId());
             statement.executeUpdate();
         }
@@ -148,6 +173,7 @@ public class BookingRepository {
     private Booking buildBooking(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("date");
 
+        // 1. Skapa bokningsobjektet först
         Booking booking = new Booking(
                 resultSet.getInt("id"),
                 resultSet.getInt("vehicle_id"),
@@ -160,15 +186,26 @@ public class BookingRepository {
             booking.setStatus(status);
         }
 
+        // 2. Läs in start_time med den säkra try-catch-hanteringen
         String startText = resultSet.getString("start_time");
         if (startText != null) {
-            booking.setStartTime(LocalTime.parse(startText));
-        }
-        String endText = resultSet.getString("end_time");
-        if (endText != null) {
-            booking.setEndTime(LocalTime.parse(endText));
+            try {
+                booking.setStartTime(LocalTime.parse(startText));
+            } catch (java.time.format.DateTimeParseException e) {
+                System.out.println("Hoppade över trasig tid i databasen: " + startText);
+                booking.setStartTime(LocalTime.of(8, 0)); // Sätt standardtid (08:00) så appen startar
+            }
         }
 
+        // 3. Läs in end_time med samma säkra hantering utifall att även den har felaktig data
+        String endText = resultSet.getString("end_time");
+        if (endText != null) {
+            try {
+                booking.setEndTime(LocalTime.parse(endText));
+            } catch (java.time.format.DateTimeParseException e) {
+                booking.setEndTime(LocalTime.of(9, 0)); // Sätt standardtid (09:00) vid fel
+            }
+        }
 
         int mechanicId = resultSet.getInt("mechanic_id");
         if (resultSet.wasNull()) {
