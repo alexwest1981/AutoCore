@@ -1,6 +1,7 @@
 package com.wac.autocore.model;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class Booking {
 
@@ -9,7 +10,17 @@ public class Booking {
     private LocalDate date;
     private String description;
     private String status;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private int mechanicId;
+    private int serviceItemId;
 
+    public Booking(int vehicleId, LocalDate date, String description) {
+        this.vehicleId = vehicleId;
+        this.date = date;
+        this.description = description;
+        this.status = "BOOKED";
+    }
     public Booking(int id, int vehicleId, LocalDate date, String description) {
         this.id = id;
         this.vehicleId = vehicleId;
@@ -17,11 +28,22 @@ public class Booking {
         this.description = description;
         this.status = "BOOKED";
     }
+    public Booking(int vehicleId, LocalDate date, String description,
+                   LocalTime startTime, LocalTime endTime, int mechanicId, int serviceItemId) {
+        this.vehicleId = vehicleId;
+        this.date = date;
+        this.description = description;
+        this.status = "BOOKED";
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.mechanicId = mechanicId;
+        this.serviceItemId = serviceItemId;
+    }
 
     public int getId() {
         return id;
     }
-
+@SuppressWarnings("do not use")
     public void setId(int id) {
         this.id = id;
     }
@@ -57,6 +79,27 @@ public class Booking {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+
+    public int getMechanicId() { return mechanicId; }
+
+    public void setMechanicId(int mechanicId) { this.mechanicId = mechanicId; }
+
+    public int getServiceItemId() { return serviceItemId; }
+    public void setServiceItemId(int serviceItemId) { this.serviceItemId = serviceItemId; }
 
     @Override
     public String toString() {

@@ -9,6 +9,7 @@ import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 
 import java.util.List;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Hjälpmetoder för att slå upp läsbara namn på relaterade entiteter via ID.
@@ -53,6 +54,18 @@ public final class EntityLookup {
         return "Mechanic #" + id;
     }
 
+    public static String serviceName(GarageSystem garage, int id) {
+        if (garage == null || id <= 0) {
+            return "-";
+        }
+        for (ServiceItem s : garage.getServiceItems()) {
+            if (s.getId() == id) {
+                return SeedText.resolve(s.getName());
+            }
+        }
+        return "Service #" + id;
+    }
+
     public static String serviceNames(GarageSystem garage, List<Integer> ids) {
         if (ids == null || ids.isEmpty() || garage == null) {
             return "";
@@ -65,7 +78,7 @@ public final class EntityLookup {
             String found = null;
             for (ServiceItem s : garage.getServiceItems()) {
                 if (s.getId() == sid) {
-                    found = s.getName();
+                    found = SeedText.resolve(s.getName());
                     break;
                 }
             }

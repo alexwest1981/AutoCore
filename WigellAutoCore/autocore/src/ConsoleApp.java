@@ -1,6 +1,8 @@
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.service.GarageSystem;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
@@ -10,7 +12,9 @@ public class ConsoleApp {
     private static final Scanner scanner = new Scanner(System.in);
     private static final GarageSystem garageSystem = new GarageSystem();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
+
+        Db.ensureReady();
 
         boolean running = true;
 

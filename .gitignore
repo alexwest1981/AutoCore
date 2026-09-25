@@ -1,10 +1,22 @@
 # IDE / Editor files
+# .idea-mappar ignoreras, utom i projektroten och där bara modulfilen,
+# projektbiblioteken och modullistan. Det är de filerna som pekar ut
+# databasdrivrutinen, så att Run-knappen i IntelliJ fungerar efter en pull.
+# workspace.xml lämnas utanför, den ändras hela tiden och har maskinlokala sökvägar.
 .idea/
+!/.idea/
+/.idea/*
+!/.idea/libraries/
+!/.idea/modules.xml
 *.iml
+!Projektarbete.iml
 .vscode/
+.agents/
 .project
 .classpath
 run.sh
+.mise.toml
+.mise.*.toml
 
 # Build output
 out/
@@ -12,9 +24,16 @@ bin/
 target/
 *.class
 
+# Lokal databas, skapas av appen och ska inte versionshanteras.
+# Snedstrecket först ankrar regeln till repo-roten, annars träffar den
+# även källkodsmappen com/wac/autocore/data/ och då försvinner nya filer där.
+/data/
+*.db
+
 # Archives & Temporary files
 *.zip
 *.pdf
+RetrospektDagbok.md
 
 # OS files
 .DS_Store

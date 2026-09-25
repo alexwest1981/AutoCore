@@ -16,19 +16,19 @@
     -wac-header: #ffffff;
     -wac-sidebar: #282d2b;
     -wac-side-text: #f3f6f4;
-    -wac-side-muted: #93a099;
+    -wac-side-muted: #bac7bf;
     -wac-side-hover: #373f3b;
     -wac-text: #14221b;
     -wac-ink: #171918;
-    -wac-muted: #4e5f55;
+    -wac-muted: #425248;
     -wac-line: #d2ded5;
-    -wac-accent: #047857;
-    -wac-accent-hover: #065f46;
-    -wac-accent-pressed: #064e3b;
+    -wac-accent: #025941;
+    -wac-accent-hover: #024835;
+    -wac-accent-pressed: #013829;
     -wac-accent-soft: #e1f3eb;
     -wac-on-accent: #ffffff;
     -wac-accent2: #2bb88a;
-    -wac-ring: #059669;
+    -wac-ring: #025941;
     -wac-success: #148a63;
     -wac-success-soft: #e5f3ed;
     -wac-info: #3b9ef5;
@@ -43,7 +43,8 @@
     -wac-drift-track: #48524e;
     -wac-bg: #edf3ef;
     -wac-surface: #edf3ef;
-    -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
+    -wac-row-alt: #f4f8f5;
+    -fx-font-family: "System";
     -fx-font-size: 13px;
 }
 
@@ -60,9 +61,10 @@ Button, .button {
     -fx-background-color: -wac-card;
     -fx-text-fill: -wac-text;
     -fx-border-color: -wac-line;
+    -fx-border-width: 2px;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
-    -fx-padding: 7px 14px;
+    -fx-padding: 6px 13px;
     -fx-cursor: hand;
 }
 Button:hover { -fx-background-color: #edf5f0; }
@@ -72,6 +74,7 @@ Button.primary, .button.primary {
     -fx-background-color: -wac-accent;
     -fx-text-fill: -wac-on-accent;
     -fx-border-color: transparent;
+    -fx-border-width: 2px;
 }
 Button.primary:hover { -fx-background-color: -wac-accent-hover; }
 Button.primary:pressed { -fx-background-color: -wac-accent-pressed; }
@@ -79,8 +82,73 @@ Button.primary:pressed { -fx-background-color: -wac-accent-pressed; }
 Button.ghost, .button.ghost {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
+    -fx-border-width: 2px;
 }
 Button.ghost:hover { -fx-background-color: -wac-side-hover; }
+
+Button.small, .button.small {
+    -fx-padding: 3px 8px;
+    -fx-font-size: 11px;
+}
+
+Button.kanban-toggle-btn-compact, .button.kanban-toggle-btn-compact {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3px 8px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+Button.kanban-toggle-btn-compact:hover, .button.kanban-toggle-btn-compact:hover {
+    -fx-text-fill: -wac-text;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+Button.kanban-toggle-btn-compact.active, .button.kanban-toggle-btn-compact.active {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+Button.kanban-filter-chip, .button.kanban-filter-chip {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-cursor: hand;
+}
+Button.kanban-filter-chip:hover, .button.kanban-filter-chip:hover {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-ring;
+}
+Button.kanban-filter-chip.active, .button.kanban-filter-chip.active {
+    -fx-background-color: -wac-accent;
+    -fx-border-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+Button.kanban-scroll-btn, .button.kanban-scroll-btn {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 3px 8px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-cursor: hand;
+}
+Button.kanban-scroll-btn:hover, .button.kanban-scroll-btn:hover {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-ring;
+}
 
 TextField, PasswordField, TextArea, ComboBox {
     -fx-background-color: -wac-card;
@@ -109,18 +177,46 @@ ListView .list-cell:filled:hover, TableView .table-row-cell:hover { -fx-backgrou
 ListView .list-cell:selected, TableView .table-row-cell:selected {
     -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-accent;
 }
-TableView .column-header, TableView .filler {
-    -fx-background-color: transparent;
+TableView .column-header-background, .table-view .column-header-background {
+    -fx-background-color: #282d2b;
+    -fx-background-radius: 4 4 0 0;
+}
+TableView .column-header, TableView .filler, TableView .corner,
+.table-view .column-header, .table-view .filler, .table-view .corner {
+    -fx-background-color: #282d2b;
+    -fx-border-color: transparent #3d4642 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 8 8;
+    -fx-alignment: CENTER_LEFT;
+}
+TableView .column-header:hover, .table-view .column-header:hover {
+    -fx-background-color: #353c39;
+}
+TableView .column-header .label, .table-view .column-header .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+TableView .column-header .arrow, .table-view .column-header .arrow {
+    -fx-background-color: #ffffff;
+}
+TableView .table-cell, .table-view .table-cell {
     -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 8;
     -fx-alignment: CENTER_LEFT;
 }
-TableView .column-header .label {
-    -fx-text-fill: -wac-muted; -fx-font-size: 11px; -fx-font-weight: bold;
-    -fx-alignment: CENTER_LEFT;
-}
-TableView .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
-TableView .table-row-cell:filled { -fx-background-color: transparent; }
-TableView .table-view { -fx-padding: 0; }
+TableView .table-row-cell, .table-view .table-row-cell { -fx-border-color: transparent transparent -wac-line transparent; }
+TableView .table-row-cell:filled:even, .table-view .table-row-cell:filled:even { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:odd, .table-view .table-row-cell:filled:odd { -fx-background-color: -wac-row-alt; }
+TableView .table-row-cell:filled:hover,
+TableView .table-row-cell:filled:odd:hover,
+TableView .table-row-cell:filled:even:hover,
+.table-view .table-row-cell:filled:hover,
+.table-view .table-row-cell:filled:odd:hover,
+.table-view .table-row-cell:filled:even:hover { -fx-background-color: #e2ede5; }
+TableView .table-view, .table-view { -fx-padding: 0; }
 
 /* ---- App shell (Edge-to-edge layout) ---- */
 .stage {
@@ -140,7 +236,7 @@ TableView .table-view { -fx-padding: 0; }
     -fx-background-radius: 0;
     -fx-border-color: transparent #202523 transparent transparent;
     -fx-border-width: 0 1 0 0;
-    -fx-padding: 24px 16px 18px 18px;
+    -fx-padding: 24px 0 0 0;
 }
 .col {
     -fx-background-color: -wac-shell;
@@ -166,26 +262,26 @@ TableView .table-view { -fx-padding: 0; }
     -fx-alignment: CENTER;
 }
 .brand-mark .letter, .avatar .letter {
-    -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "System";
     -fx-font-weight: 800;
     -fx-font-size: 14px;
     -fx-text-fill: -wac-on-accent;
 }
 .brand-title {
-    -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "System";
     -fx-font-size: 19px;
     -fx-font-weight: 800;
     -fx-text-fill: -wac-side-text;
 }
 .brand-sub {
-    -fx-font-family: "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", Arial, sans-serif;
-    -fx-font-size: 10px;
+    -fx-font-family: "System";
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-side-muted;
     -fx-opacity: 0.85;
 }
 .side-label {
-    -fx-font-size: 10px;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-side-muted;
 }
@@ -193,8 +289,11 @@ TableView .table-view { -fx-padding: 0; }
 .nav-item {
     -fx-background-color: transparent;
     -fx-background-radius: 10;
+    -fx-border-color: transparent;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10;
     -fx-text-fill: -wac-side-text;
-    -fx-padding: 9px 14px;
+    -fx-padding: 7px 12px;
     -fx-font-size: 13px;
     -fx-alignment: CENTER_LEFT;
 }
@@ -319,7 +418,7 @@ TableView .table-view { -fx-padding: 0; }
     -fx-text-fill: -wac-muted;
     -fx-background-radius: 999;
     -fx-padding: 3px 9px;
-    -fx-font-size: 10px;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
 }
 .badge.success, .status.success { -fx-background-color: -wac-success-soft; -fx-text-fill: #14532d; }

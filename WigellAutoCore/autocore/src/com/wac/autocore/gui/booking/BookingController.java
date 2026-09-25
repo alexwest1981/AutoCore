@@ -1,19 +1,19 @@
 package com.wac.autocore.gui.booking;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.service.GarageSystem;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class BookingController {
+
+    private final ObservableList<Booking> bookingList = FXCollections.observableArrayList();
 
     @FXML
     private TableView<Booking> bookingTable;
@@ -34,6 +34,15 @@ public class BookingController {
     private TableColumn<Booking, String> statusColumn;
 
     @FXML
+    private TableColumn<Booking, LocalTime> startTimeColumn;
+
+    @FXML
+    private TableColumn<Booking, Integer> mechanicIdColumn;
+
+    @FXML
+    private TableColumn<Booking, Integer> serviceItemIdColumn;
+
+    @FXML
     private TextField vehicleIdField;
 
     @FXML
@@ -41,6 +50,15 @@ public class BookingController {
 
     @FXML
     private TextField descriptionField;
+
+    @FXML
+    private TextField startTimeField;
+
+    @FXML
+    private TextField mechanicIdField;
+
+    @FXML
+    private TextField serviceItemField;
 
     private final GarageSystem garageSystem = new GarageSystem();
 
@@ -51,8 +69,14 @@ public class BookingController {
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
 
+        startTimeColumn.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+        mechanicIdColumn.setCellValueFactory(new PropertyValueFactory<>("mechanicId"));
+        serviceItemIdColumn.setCellValueFactory(new PropertyValueFactory<>("serviceItemId"));
+
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        statusColumn.setCellFactory(column -> new TableCell<Booking, String>() {
+        bookingTable.setItems(bookingList);
+        statusColumn.setCellFactory(column -> new TableCell<Booking, String>()
+        {
             @Override
             protected void updateItem(String status, boolean empty) {
                 super.updateItem(status, empty);
@@ -72,14 +96,14 @@ public class BookingController {
             }
         });
 
-        bookingTable.getItems().addAll(Database.getBookings());
+        bookingList.clear();
+        bookingList.addAll(garageSystem.getBookings());
     }
 
     @FXML
     private void handleCreateBooking() {
 
         int vehicleId;
-
         try {
             vehicleId = Integer.parseInt(vehicleIdField.getText());
         } catch (NumberFormatException e) {
@@ -88,25 +112,51 @@ public class BookingController {
         }
 
         LocalDate date = datePicker.getValue();
-
         if (date == null) {
             showAlert("Please select a date.");
             return;
         }
 
-        String description = descriptionField.getText();
-
-        Booking booking = garageSystem.createBooking(vehicleId, date, description);
-
-        if (booking == null) {
-            showAlert("Could not create booking. Check that the vehicle exists.");
+        java.time.LocalTime startTime;
+        try {
+            startTime = java.time.LocalTime.parse(startTimeField.getText());
+        } catch (Exception e) {
+            showAlert("Please enter a valid time (format HH:mm, e.g., 08:30).");
             return;
         }
 
-        bookingTable.getItems().add(booking);
-        vehicleIdField.clear();
-        datePicker.setValue(null);
-        descriptionField.clear();
+        int mechanicId;
+        int serviceItemId;
+        try {
+            mechanicId = Integer.parseInt(mechanicIdField.getText());
+            serviceItemId = Integer.parseInt(serviceItemField.getText());
+        } catch (NumberFormatException e) {
+            showAlert("Mechanic ID and Service Item ID must be numbers.");
+            return;
+        }
+
+        String description = descriptionField.getText();
+
+        try {
+            Booking booking = garageSystem.createBooking(vehicleId, date, description, startTime, mechanicId, serviceItemId);
+
+            if (booking == null) {
+                showAlert("Could not create booking. Check that the vehicle exists.");
+                return;
+            }
+                bookingList.add(booking);
+            vehicleIdField.clear();
+            datePicker.setValue(null);
+            descriptionField.clear();
+            startTimeField.clear();
+            mechanicIdField.clear();
+            serviceItemField.clear();
+
+        } catch (IllegalArgumentException e) {
+            showAlert(e.getMessage());
+        } catch (java.sql.SQLException e) {
+            showAlert("Database error: " + e.getMessage());
+        }
     }
 
     private void showAlert(String message) {

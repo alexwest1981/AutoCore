@@ -1,13 +1,15 @@
 package com.wac.autocore.gui.serviceItem;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.ServiceItem;
+import com.wac.autocore.service.GarageSystem;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 public class ServiceItemController {
+
+    private final GarageSystem garageSystem = new GarageSystem();
 
     @FXML
     private TableView<ServiceItem> serviceItemTable;
@@ -40,7 +42,7 @@ public class ServiceItemController {
             }
         });
         estimatedMinutesColumn.setCellValueFactory(new PropertyValueFactory<>("estimatedMinutes"));
-        serviceItemTable.getItems().addAll(Database.getServiceItems());
+        serviceItemTable.getItems().addAll(garageSystem.getServiceItems());
     }
 
     public void refreshTable() {

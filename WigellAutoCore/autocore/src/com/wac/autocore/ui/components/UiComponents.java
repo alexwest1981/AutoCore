@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 /**
@@ -35,12 +36,14 @@ public final class UiComponents {
     public static Button primaryButton(String text) {
         Button b = new Button(text);
         b.getStyleClass().addAll("button", "primary");
+        b.setMinWidth(Region.USE_PREF_SIZE);
         return b;
     }
 
     public static Button secondaryButton(String text) {
         Button b = new Button(text);
         b.getStyleClass().addAll("button", "secondary-button");
+        b.setMinWidth(Region.USE_PREF_SIZE);
         return b;
     }
 
@@ -51,8 +54,10 @@ public final class UiComponents {
         v.getStyleClass().add("kpi-value");
         VBox box = new VBox(6, v, l);
         box.getStyleClass().add("kpi");
-        HBox.setHgrow(box, Priority.ALWAYS);
+        box.setMinWidth(140);
+        box.setPrefWidth(220);
         box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
         return box;
     }
 
@@ -81,12 +86,21 @@ public final class UiComponents {
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         if (actions != null && actions.length > 0) {
+            for (Node act : actions) {
+                if (act instanceof Button) {
+                    Button b = (Button) act;
+                    b.setMinWidth(Region.USE_PREF_SIZE);
+                }
+            }
             HBox actionBox = new HBox(8, actions);
             actionBox.setAlignment(Pos.CENTER_RIGHT);
+            actionBox.setMinWidth(Region.USE_PREF_SIZE);
             topRow.getChildren().add(actionBox);
         }
 
-        table.setPlaceholder(new Label("No rows"));
+        Label placeholder = new Label(com.wac.autocore.ui.i18n.I18n.get("table.empty"));
+        placeholder.getStyleClass().add("text-muted");
+        table.setPlaceholder(placeholder);
         HBox.setHgrow(table, Priority.ALWAYS);
 
         VBox inner = new VBox();

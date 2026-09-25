@@ -1,3 +1,4 @@
+import com.wac.autocore.data.Db;
 import com.wac.autocore.ui.AutoCoreApp;
 
 import javafx.application.Application;
@@ -12,6 +13,7 @@ import javafx.application.Application;
 public class Main {
 
     public static void main(String[] args) {
+        Db.ensureReady();
         Application.launch(AutoCoreApp.class, args);
     }
 }

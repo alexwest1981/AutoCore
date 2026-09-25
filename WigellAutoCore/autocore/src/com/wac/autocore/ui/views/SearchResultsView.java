@@ -10,6 +10,7 @@ import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.UiComponents;
+import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.GlobalSearch;
@@ -28,6 +29,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Samlad global sökresultatsvy som delar in träffar i tydliga sektioner
@@ -45,15 +47,18 @@ public final class SearchResultsView {
 
         // Sidhuvud
         String qDisplay = (query == null || query.trim().isEmpty()) ? "" : query.trim();
-        String title = qDisplay.isEmpty() ? "Global Search" : "Search results for \"" + qDisplay + "\"";
+        String title = qDisplay.isEmpty()
+                ? I18n.get("search.global.title")
+                : I18n.get("search.global.query_title", qDisplay);
         String sub = results.isEmpty()
-                ? (qDisplay.isEmpty() ? "Type in the top search bar to search across all system records"
-                                      : "No matches found across any section")
-                : results.getTotalMatches() + " matches found across "
-                  + results.getSectionsWithMatchesCount() + " "
-                  + (results.getSectionsWithMatchesCount() == 1 ? "section" : "sections");
+                ? (qDisplay.isEmpty() ? I18n.get("search.global.hint")
+                                      : I18n.get("search.global.no_matches"))
+                : I18n.get("search.global.matches_found",
+                        results.getTotalMatches(),
+                        results.getSectionsWithMatchesCount(),
+                        (results.getSectionsWithMatchesCount() == 1 ? I18n.get("search.global.section") : I18n.get("search.global.sections")));
 
-        VBox head = UiComponents.pageHead(title, sub, "GLOBAL SEARCH");
+        VBox head = UiComponents.pageHead(title, sub, I18n.get("search.global.title").toUpperCase());
         content.getChildren().add(head);
 
         if (results.isEmpty() && !qDisplay.isEmpty()) {
@@ -105,13 +110,13 @@ public final class SearchResultsView {
         emptyCard.setPadding(new Insets(28, 24, 28, 24));
         emptyCard.setAlignment(Pos.CENTER_LEFT);
 
-        Label title = new Label("No matches found for \"" + query + "\"");
+        Label title = new Label(I18n.get("search.results.empty_title", query));
         title.getStyleClass().add("panel-title");
 
-        Label sub = new Label("No customers, vehicles, work orders, bookings or mechanics matched your query.");
+        Label sub = new Label(I18n.get("search.results.empty_desc"));
         sub.getStyleClass().add("page-sub");
 
-        Label tip = new Label("Tips: Try searching for a customer name (e.g. Anna), vehicle registration number (e.g. ABC 123), car brand (e.g. Volvo), or mechanic name.");
+        Label tip = new Label(I18n.get("search.results.empty_tips"));
         tip.getStyleClass().addAll("srow-sub", "small");
 
         emptyCard.getChildren().addAll(title, sub, tip);
@@ -153,11 +158,11 @@ public final class SearchResultsView {
 
     private static Node buildCustomersSection(List<Customer> list, PageRouter router) {
         TableView<Customer> table = TableFactory.create(list).getTableView();
-        table.getColumns().add(TableFactory.col("ID", 60, c -> String.valueOf(c.getId())));
-        table.getColumns().add(TableFactory.col("Name", 200, Customer::getName));
-        table.getColumns().add(TableFactory.col("Phone", 150, Customer::getPhone));
-        table.getColumns().add(TableFactory.col("Email", 260, Customer::getEmail));
-        table.getColumns().add(TableFactory.badgeCol("VIP", 80, c -> c.isVip() ? "Yes" : "No"));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.id"), 60, c -> String.valueOf(c.getId())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.name"), 200, Customer::getName));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.phone"), 150, Customer::getPhone));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.email"), 260, Customer::getEmail));
+        table.getColumns().add(TableFactory.badgeCol(I18n.get("table.col.vip"), 80, c -> c.isVip() ? I18n.get("common.yes") : I18n.get("common.no")));
 
         table.setRowFactory(tv -> {
             TableRow<Customer> row = new TableRow<Customer>();
@@ -169,18 +174,18 @@ public final class SearchResultsView {
             return row;
         });
 
-        return createSectionContainer("Customers", list.size(), "Open in Customers →",
+        return createSectionContainer(I18n.get("search.category.customers"), list.size(), I18n.get("entity.customers.title") + " →",
                 () -> router.navigate("customers"), table);
     }
 
     private static Node buildVehiclesSection(List<Vehicle> list, GarageSystem garage, PageRouter router) {
         TableView<Vehicle> table = TableFactory.create(list).getTableView();
-        table.getColumns().add(TableFactory.col("ID", 60, v -> String.valueOf(v.getId())));
-        table.getColumns().add(TableFactory.col("Reg. no.", 120, Vehicle::getRegistrationNumber));
-        table.getColumns().add(TableFactory.col("Make", 140, Vehicle::getBrand));
-        table.getColumns().add(TableFactory.col("Model", 160, Vehicle::getModel));
-        table.getColumns().add(TableFactory.col("Year", 90, v -> String.valueOf(v.getYear())));
-        table.getColumns().add(TableFactory.col("Owner", 200, v -> EntityLookup.customerName(garage, v.getCustomerId())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.id"), 60, v -> String.valueOf(v.getId())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.reg_nr"), 120, Vehicle::getRegistrationNumber));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.brand"), 140, Vehicle::getBrand));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.model"), 160, Vehicle::getModel));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.year"), 90, v -> String.valueOf(v.getYear())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.customer"), 200, v -> EntityLookup.customerName(garage, v.getCustomerId())));
 
         table.setRowFactory(tv -> {
             TableRow<Vehicle> row = new TableRow<Vehicle>();
@@ -192,18 +197,18 @@ public final class SearchResultsView {
             return row;
         });
 
-        return createSectionContainer("Vehicles", list.size(), "Open in Vehicles →",
+        return createSectionContainer(I18n.get("search.category.vehicles"), list.size(), I18n.get("entity.vehicles.title") + " →",
                 () -> router.navigate("vehicles"), table);
     }
 
     private static Node buildWorkOrdersSection(List<WorkOrder> list, GarageSystem garage, PageRouter router) {
         TableView<WorkOrder> table = TableFactory.create(list).getTableView();
-        table.getColumns().add(TableFactory.col("Order ID", 80, wo -> "#" + wo.getId()));
-        table.getColumns().add(TableFactory.col("Vehicle", 120, wo -> EntityLookup.workOrderVehicleReg(garage, wo)));
-        table.getColumns().add(TableFactory.col("Customer", 180, wo -> EntityLookup.workOrderCustomerName(garage, wo)));
-        table.getColumns().add(TableFactory.col("Mechanic", 160, wo -> EntityLookup.mechanicName(garage, wo.getMechanicId())));
-        table.getColumns().add(TableFactory.col("Services", 240, wo -> EntityLookup.serviceNames(garage, wo.getServiceItemIds())));
-        table.getColumns().add(TableFactory.badgeCol("Status", 120, wo -> UiFormatters.statusWord(wo.getStatus())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.workorder"), 80, wo -> "#" + wo.getId()));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.vehicle"), 120, wo -> EntityLookup.workOrderVehicleReg(garage, wo)));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.customer"), 180, wo -> EntityLookup.workOrderCustomerName(garage, wo)));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.mechanic"), 160, wo -> EntityLookup.mechanicName(garage, wo.getMechanicId())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.services"), 240, wo -> EntityLookup.serviceNames(garage, wo.getServiceItemIds())));
+        table.getColumns().add(TableFactory.badgeCol(I18n.get("table.col.status"), 120, wo -> UiFormatters.statusWord(wo.getStatus())));
 
         table.setRowFactory(tv -> {
             TableRow<WorkOrder> row = new TableRow<WorkOrder>();
@@ -215,18 +220,18 @@ public final class SearchResultsView {
             return row;
         });
 
-        return createSectionContainer("Work Orders", list.size(), "Open in Work Orders →",
+        return createSectionContainer(I18n.get("search.category.workorders"), list.size(), I18n.get("entity.workorders.title") + " →",
                 () -> router.navigate("workorders"), table);
     }
 
     private static Node buildBookingsSection(List<Booking> list, GarageSystem garage, PageRouter router) {
         TableView<Booking> table = TableFactory.create(list).getTableView();
-        table.getColumns().add(TableFactory.col("Booking ID", 90, b -> "#" + b.getId()));
-        table.getColumns().add(TableFactory.col("Date", 120, b -> UiFormatters.formatDate(b.getDate())));
-        table.getColumns().add(TableFactory.col("Customer", 180, b -> EntityLookup.bookingCustomerName(garage, b.getId())));
-        table.getColumns().add(TableFactory.col("Vehicle", 120, b -> EntityLookup.vehicleReg(garage, b.getVehicleId())));
-        table.getColumns().add(TableFactory.col("Description", 240, Booking::getDescription));
-        table.getColumns().add(TableFactory.badgeCol("Status", 120, b -> UiFormatters.statusWord(b.getStatus())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.booking"), 90, b -> "#" + b.getId()));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.date"), 120, b -> UiFormatters.formatDate(b.getDate())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.customer"), 180, b -> EntityLookup.bookingCustomerName(garage, b.getId())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.vehicle"), 120, b -> EntityLookup.vehicleReg(garage, b.getVehicleId())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.description"), 240, b -> SeedText.resolve(b.getDescription())));
+        table.getColumns().add(TableFactory.badgeCol(I18n.get("table.col.status"), 120, b -> UiFormatters.statusWord(b.getStatus())));
 
         table.setRowFactory(tv -> {
             TableRow<Booking> row = new TableRow<Booking>();
@@ -238,17 +243,17 @@ public final class SearchResultsView {
             return row;
         });
 
-        return createSectionContainer("Bookings", list.size(), "Open in Bookings →",
+        return createSectionContainer(I18n.get("search.category.bookings"), list.size(), I18n.get("entity.bookings.title") + " →",
                 () -> router.navigate("bookings"), table);
     }
 
     private static Node buildMechanicsSection(List<Mechanic> list, PageRouter router) {
         TableView<Mechanic> table = TableFactory.create(list).getTableView();
-        table.getColumns().add(TableFactory.col("ID", 60, m -> String.valueOf(m.getId())));
-        table.getColumns().add(TableFactory.col("Name", 180, Mechanic::getName));
-        table.getColumns().add(TableFactory.col("Phone", 140, Mechanic::getPhone));
-        table.getColumns().add(TableFactory.col("Specialisation", 220, Mechanic::getSpecialization));
-        table.getColumns().add(TableFactory.badgeCol("Available", 110, m -> m.isAvailable() ? "Yes" : "No"));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.id"), 60, m -> String.valueOf(m.getId())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.name"), 180, Mechanic::getName));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.phone"), 140, Mechanic::getPhone));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.specialisation"), 220, m -> SeedText.resolve(m.getSpecialization())));
+        table.getColumns().add(TableFactory.badgeCol(I18n.get("table.col.available"), 110, m -> m.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));
 
         table.setRowFactory(tv -> {
             TableRow<Mechanic> row = new TableRow<Mechanic>();
@@ -260,18 +265,18 @@ public final class SearchResultsView {
             return row;
         });
 
-        return createSectionContainer("Mechanics", list.size(), "Open in Mechanics →",
+        return createSectionContainer(I18n.get("search.category.mechanics"), list.size(), I18n.get("entity.mechanics.title") + " →",
                 () -> router.navigate("mechanics"), table);
     }
 
     private static Node buildInvoicesSection(List<Invoice> list, GarageSystem garage, PageRouter router) {
         TableView<Invoice> table = TableFactory.create(list).getTableView();
-        table.getColumns().add(TableFactory.col("Invoice ID", 90, inv -> "#" + inv.getId()));
-        table.getColumns().add(TableFactory.col("Customer", 180, inv -> EntityLookup.invoiceCustomerName(garage, inv)));
-        table.getColumns().add(TableFactory.col("Work Order", 100, inv -> "#" + inv.getWorkOrderId()));
-        table.getColumns().add(TableFactory.col("Date", 120, inv -> String.valueOf(inv.getInvoiceDate())));
-        table.getColumns().add(TableFactory.col("Total", 120, inv -> UiFormatters.formatMoney(inv.getTotalAmount())));
-        table.getColumns().add(TableFactory.badgeCol("Paid", 100, inv -> inv.isPaid() ? "Yes" : "No"));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.invoice"), 90, inv -> "#" + inv.getId()));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.customer"), 180, inv -> EntityLookup.invoiceCustomerName(garage, inv)));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.workorder"), 100, inv -> "#" + inv.getWorkOrderId()));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.date"), 120, inv -> String.valueOf(inv.getInvoiceDate())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.total"), 120, inv -> UiFormatters.formatMoney(inv.getTotalAmount())));
+        table.getColumns().add(TableFactory.badgeCol(I18n.get("table.col.paid"), 100, inv -> inv.isPaid() ? I18n.get("common.yes") : I18n.get("common.no")));
 
         table.setRowFactory(tv -> {
             TableRow<Invoice> row = new TableRow<Invoice>();
@@ -283,17 +288,17 @@ public final class SearchResultsView {
             return row;
         });
 
-        return createSectionContainer("Invoices", list.size(), "Open in Invoices →",
+        return createSectionContainer(I18n.get("search.category.invoices"), list.size(), I18n.get("entity.invoices.title") + " →",
                 () -> router.navigate("invoices"), table);
     }
 
     private static Node buildServicesSection(List<ServiceItem> list, PageRouter router) {
         TableView<ServiceItem> table = TableFactory.create(list).getTableView();
-        table.getColumns().add(TableFactory.col("ID", 60, s -> String.valueOf(s.getId())));
-        table.getColumns().add(TableFactory.col("Name", 200, ServiceItem::getName));
-        table.getColumns().add(TableFactory.col("Description", 300, ServiceItem::getDescription));
-        table.getColumns().add(TableFactory.col("Price", 120, s -> UiFormatters.formatMoney(s.getPrice())));
-        table.getColumns().add(TableFactory.col("Time", 100, s -> s.getEstimatedMinutes() + " min"));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.id"), 60, s -> String.valueOf(s.getId())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.name"), 200, s -> SeedText.resolve(s.getName())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.description"), 300, s -> SeedText.resolve(s.getDescription())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.price"), 120, s -> UiFormatters.formatMoney(s.getPrice())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.time"), 100, s -> s.getEstimatedMinutes() + " min"));
 
         table.setRowFactory(tv -> {
             TableRow<ServiceItem> row = new TableRow<ServiceItem>();
@@ -305,7 +310,7 @@ public final class SearchResultsView {
             return row;
         });
 
-        return createSectionContainer("Services", list.size(), "Open in Services →",
+        return createSectionContainer(I18n.get("search.category.services"), list.size(), I18n.get("entity.services.title") + " →",
                 () -> router.navigate("services"), table);
     }
 }

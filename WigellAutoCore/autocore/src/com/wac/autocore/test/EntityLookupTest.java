@@ -10,6 +10,7 @@ import com.wac.autocore.ui.util.EntityLookup;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import com.wac.autocore.seed.SeedText;
 
 public class EntityLookupTest {
 
@@ -56,10 +57,44 @@ public class EntityLookupTest {
             ServiceItem s1 = services.get(0);
             ServiceItem s2 = services.get(1);
             String joined = EntityLookup.serviceNames(garage, Arrays.asList(s1.getId(), s2.getId()));
-            TestRunner.assertTrue(joined.contains(s1.getName()), "Contains service 1");
-            TestRunner.assertTrue(joined.contains(s2.getName()), "Contains service 2");
+            TestRunner.assertTrue(joined.contains(SeedText.resolve(s1.getName())), "Contains service 1");
+            TestRunner.assertTrue(joined.contains(SeedText.resolve(s2.getName())), "Contains service 2");
         }
         TestRunner.assertEquals("", EntityLookup.serviceNames(garage, Collections.emptyList()), "Empty list returns empty");
         TestRunner.assertEquals("", EntityLookup.serviceNames(garage, null), "Null list returns empty");
+    }
+
+    public void testMechanicSpecializationQualification() {
+        GarageSystem garage = new GarageSystem();
+
+        Mechanic sara = new Mechanic(101, "Sara Nilsson", "070-1", "Brakes");
+        Mechanic bjorne = new Mechanic(102, "Björnes Magasin", "070-2", "Granluktare");
+        Mechanic johan = new Mechanic(103, "Johan Karlsson", "070-3", "General service");
+        Mechanic mikael = new Mechanic(104, "Mikael Berg", "070-4", "Diagnostics");
+
+        ServiceItem brakeService = new ServiceItem(201, "Brake service", "Inspection and replacement of front brake pads", 2000, 60);
+        ServiceItem luftaBromsar = new ServiceItem(202, "Lufta bromsar", "Luftning av bromssystemet", 800, 30);
+        ServiceItem granlukt = new ServiceItem(203, "Granlukt i kupén", "Se till att det luktar tallbarr i baksätet", 300, 15);
+        ServiceItem oilChange = new ServiceItem(204, "Oil change", "Motoroljebyte och filter", 1200, 45);
+
+        // Sara (Brakes)
+        TestRunner.assertTrue(garage.isMechanicQualified(sara, brakeService), "Sara qualifies for Brake service");
+        TestRunner.assertTrue(garage.isMechanicQualified(sara, luftaBromsar), "Sara qualifies for Lufta bromsar");
+        TestRunner.assertTrue(!garage.isMechanicQualified(sara, granlukt), "Sara does not qualify for Granlukt");
+
+        // Björne (Granluktare)
+        TestRunner.assertTrue(garage.isMechanicQualified(bjorne, granlukt), "Björne qualifies for Granlukt");
+        TestRunner.assertTrue(!garage.isMechanicQualified(bjorne, brakeService), "Björne does not qualify for Brake service");
+        TestRunner.assertTrue(!garage.isMechanicQualified(bjorne, luftaBromsar), "Björne does not qualify for Lufta bromsar");
+
+        // Johan (General service)
+        TestRunner.assertTrue(garage.isMechanicQualified(johan, oilChange), "Johan qualifies for Oil change");
+        TestRunner.assertTrue(!garage.isMechanicQualified(johan, brakeService), "Johan is not brake specialist");
+
+        // Mikael (Diagnostics)
+        TestRunner.assertTrue(garage.isMechanicQualified(mikael, new ServiceItem(205, "Diagnostics", "Fault codes", 900, 30)), "Mikael qualifies for Diagnostics");
+
+        // Null service allows all
+        TestRunner.assertTrue(garage.isMechanicQualified(bjorne, null), "All qualify when service is null");
     }
 }

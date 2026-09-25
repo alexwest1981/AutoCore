@@ -1,6 +1,5 @@
 package com.wac.autocore.gui.customers;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.service.GarageSystem;
 import javafx.collections.FXCollections;
@@ -73,7 +72,7 @@ public class CustomerController {
         customerNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         customerPhoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
         customerEmailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-        List<Customer> customersList = Database.getCustomers();
+        List<Customer> customersList = garageSystem.getCustomers();
 
         if(customersList.isEmpty()) {
             customerListView.setPlaceholder(new Label("Hittade inga kunder"));

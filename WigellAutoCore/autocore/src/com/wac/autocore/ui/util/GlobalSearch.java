@@ -12,6 +12,7 @@ import com.wac.autocore.service.GarageSystem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Ren söklogik för att söka igenom hela AutoCore-systemet över alla domänentiteter.
@@ -176,7 +177,7 @@ public final class GlobalSearch {
                     || containsIgnoreCase(vehReg, q)
                     || containsIgnoreCase(b.getStatus(), q)
                     || (b.getDate() != null && b.getDate().toString().contains(q))
-                    || containsIgnoreCase(b.getDescription(), q)) {
+                    || containsIgnoreCase(SeedText.resolve(b.getDescription()), q)) {
                 matchingBookings.add(b);
             }
         }
@@ -188,7 +189,7 @@ public final class GlobalSearch {
             if (String.valueOf(m.getId()).equals(q)
                     || containsIgnoreCase(m.getName(), q)
                     || containsIgnoreCase(m.getPhone(), q)
-                    || containsIgnoreCase(m.getSpecialization(), q)) {
+                    || containsIgnoreCase(SeedText.resolve(m.getSpecialization()), q)) {
                 matchingMechanics.add(m);
             }
         }
@@ -211,8 +212,8 @@ public final class GlobalSearch {
         for (ServiceItem si : garage.getServiceItems()) {
             if (si == null) continue;
             if (String.valueOf(si.getId()).equals(q)
-                    || containsIgnoreCase(si.getName(), q)
-                    || containsIgnoreCase(si.getDescription(), q)) {
+                    || containsIgnoreCase(SeedText.resolve(si.getName()), q)
+                    || containsIgnoreCase(SeedText.resolve(si.getDescription()), q)) {
                 matchingServices.add(si);
             }
         }
@@ -220,10 +221,10 @@ public final class GlobalSearch {
         sortPrefixMatches(matchingCustomers, c -> c.getName() + " " + c.getEmail(), q);
         sortPrefixMatches(matchingVehicles, v -> v.getBrand() + " " + v.getModel() + " " + v.getRegistrationNumber(), q);
         sortPrefixMatches(matchingOrders, wo -> EntityLookup.workOrderCustomerName(garage, wo) + " " + EntityLookup.workOrderVehicleReg(garage, wo), q);
-        sortPrefixMatches(matchingBookings, b -> b.getDescription() + " " + EntityLookup.bookingVehicleReg(garage, b.getId()), q);
-        sortPrefixMatches(matchingMechanics, m -> m.getName() + " " + m.getSpecialization(), q);
+        sortPrefixMatches(matchingBookings, b -> SeedText.resolve(b.getDescription()) + " " + EntityLookup.bookingVehicleReg(garage, b.getId()), q);
+        sortPrefixMatches(matchingMechanics, m -> m.getName() + " " + SeedText.resolve(m.getSpecialization()), q);
         sortPrefixMatches(matchingInvoices, inv -> "Invoice #" + inv.getId() + " " + EntityLookup.invoiceCustomerName(garage, inv), q);
-        sortPrefixMatches(matchingServices, ServiceItem::getName, q);
+        sortPrefixMatches(matchingServices, s -> SeedText.resolve(s.getName()), q);
 
         return new SearchResults(query,
                 matchingCustomers,

@@ -3,6 +3,7 @@ package com.wac.autocore.test;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.util.GlobalSearch;
 import com.wac.autocore.ui.util.GlobalSearch.SearchResults;
+import com.wac.autocore.seed.SeedText;
 
 /**
  * Automatiserade enhetstester för GlobalSearch-motorn.
@@ -76,7 +77,7 @@ public class GlobalSearchTest {
         assertCondition(res.getCustomers().get(0).getName().startsWith("Anna"),
                 "First customer for 'A' should be Anna Andersson due to prefix priority");
         assertCondition(!res.getServices().isEmpty(), "Should find services for 'A'");
-        assertCondition(res.getServices().get(0).getName().startsWith("Annual"),
+        assertCondition(SeedText.resolve(res.getServices().get(0).getName()).startsWith("Annual"),
                 "First service for 'A' should be Annual service due to prefix priority");
 
         assertCondition(GlobalSearch.startsWithWordIgnoreCase("Anna Andersson", "a"),

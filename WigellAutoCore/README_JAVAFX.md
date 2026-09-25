@@ -34,11 +34,14 @@ Arkitekturen följer Single Responsibility Principle och är indelad i följande
 
 ### Komponenter (`components/`)
 * **`TopBar` (inbyggd i `AutoCoreApp.java`)**: Toppmeny med varumärke (i toppläge), sökfält, layout-toggle (`Sidebar ◧` / `Top bar ⎕`) och tema-ComboBox. Ligger direkt i applikationskoden så att den enkelt kan anpassas. Stöder sömlös växling mellan fullbreddstoppmeny och sidomeny utan att tappa aktiv sida. Inkluderar dynamisk styling för mörka och ljusa teman samt popup-scensynkronisering via Java-reflektion så att popup-fönstret ärver appens tema och `.root`-klass utan CSS-varningar.
+* **`BookingFormPane.java`**: Komposit JavaFX-formulärpanel för tidsbokning med dynamisk validering, koppling mot verkstadens tjänster, mekanikertilldelning och beräkning av tidsåtgång.
+* **`TimeSlotCell.java`**: Specialiserad ComboBox-cell för tidsval som i realtid visualiserar om mekanikern är ledig (🟢) eller upptagen (🔴).
+* **`MechanicKanbanCard.java`**: Interaktivt Kanban-kort för mekanikerscheman. Implementerar dagsvy (07:00–16:00) med klickbara SVG-plusknappar för direktbokning, utfällbar *inline drawer* för bokningsinformation, veckovy med 4-stegs färgprogression (grön, gul, orange, röd), månadsvy för tillgänglighet, snabbnavigering till nästa bokningsdag (`📅 Nästa bokning: ... →`), samt en kontextuell kebabmeny (`⋮`) för redigering eller säker borttagning av mekaniker.
 * **`TableFactory.java`**: Typad fabrik för att skapa `TableView` kopplad till `FilteredList`. Innehåller hjälpare för standardtextkolumner (`col`), statusbadge-kolumner (`badgeCol`) och flerkolumnssökning (`applySearch`). Sökningen hämtar celldata direkt från radobjektet (`col.getCellData(row)`), vilket förhindrar `IndexOutOfBoundsException` när filtrerade vyer söks.
 * **`UiComponents.java`**: Återanvändbara UI-element: primära och sekundära knappar, KPI-kort, informationspaneler och standardiserade sidhuvuden (`pageHead`, `buildEntityPage`).
 
 ### Vyer (`views/`)
-* **`OverviewView.java`**: Huvuddashboard med 4 KPI-kort (Aktiva arbetsordrar, Total omsättning, Bokningar, Mekaniker i tjänst), snabbknappar för modaler, statusöversikt, kommande bokningar och sökbar tabell för senaste arbetsordrar.
+* **`OverviewView.java`**: Huvuddashboard med 4 KPI-kort (Aktiva arbetsordrar, Total omsättning, Bokningar, Mekaniker i tjänst), snabbknappar för modaler, den interaktiva mekaniker-kanbantavlan med specialiseringsfilter och horisontell rullning, kommande bokningar och sökbar tabell för senaste arbetsordrar.
 * **`EntityPages.java`**: Dedikerade byggare för varje domänentitet:
   - Kunder (med "+ New customer")
   - Fordon (med "+ Register vehicle")
@@ -51,6 +54,7 @@ Arkitekturen följer Single Responsibility Principle och är indelad i följande
 
 ### Ren logik & Presentationshjälpare (`util/`)
 * **`UiFormatters.java`**: Ren formateringslogik frikopplad från JavaFX-fönsterkontexten. Formaterar valuta (`formatMoney`), datum (`todayFormatted`, `formatDate`), trunkerar långa texter och mappar statusord till CSS-badgeklasser.
+* **`BookingAvailability.java`**: Ren beräkningsmodul för tidsslottar och kollisionskontroll för bokningar mot mekanikerns schema.
 * **`EntityLookup.java`**: Slår upp relaterade namn (kund, fordon, mekaniker, tjänster) baserat på ID mot `GarageSystem`.
 
 ---
@@ -88,14 +92,25 @@ Eftersom all presentations-, beräknings-, sök- och uppslagslogik är isolerad 
 * **`EntityLookupTest.java`**:
   - Testar ID-uppslag mot `GarageSystem` för kunder, fordon, mekaniker och tjänster.
   - Verifierar korrekta fallbacks för okända ID:n.
+  - Verifierar mekanikers specialisering och kvalificering för tjänster.
 * **`OverviewMetricsTest.java`**:
   - Verifierar KPI-beräkningar för aktiva arbetsordrar, total omsättning från lyckade betalningar och mekanikertillgänglighet.
+* **`MechanicScheduleTest.java`**:
+  - Verifierar 9 dagslots (07:00–16:00), dubbelbokningsskydd, tidsslotstillgänglighet, avbokningssynkronisering, veckoöversikt, månadstillgänglighet, färgprogression (grön -> gul -> orange -> röd) samt `getNextBookingDate`.
+* **`I18nTest.java`**:
+  - Verifierar språkväxling i realtid, parameteriserade meddelanden, fallback och full paritet mellan `sv.json` och `en.json`.
+* **`CodeQualityTest.java`, `SecurityAuditTest.java`, `WcagAccessibilityTest.java`**:
+  - Verifierar frikoppling av servicelagret, SQL-injektionsskydd, inga hårdkodade hemligheter och WCAG 2.1 AAA-kontrast och fokusringar.
 * **`TestRunner.java`**:
-  - Egenutvecklad, fristående test-runner med färgkodad utskrift och tydliga felrapporter. Totalt 24 automatiserade tester.
+  - Egenutvecklad, fristående test-runner med färgkodad utskrift och tydliga felrapporter. Totalt 57 automatiserade tester.
 
 Kör testerna när som helst med:
 ```bash
 ./test.sh
+```
+eller kör en fullständig kvalitets- och säkerhetsaudit med:
+```bash
+./check.sh
 ```
 
 ---

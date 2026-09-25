@@ -14,7 +14,6 @@ public class PageRouter {
     private final GarageSystem garage;
     private final VBox pageBox;
     private SidebarView sidebar;
-    private TopNavView topNav;
 
     private FilterableTable<?> activeTable;
     private String currentPageKey;
@@ -29,14 +28,15 @@ public class PageRouter {
         this.garage = garage;
         this.pageBox = pageBox;
         this.sidebar = sidebar;
+        com.wac.autocore.ui.i18n.I18n.addListener(lang -> {
+            if (currentPageKey != null) {
+                navigate(currentPageKey);
+            }
+        });
     }
 
     public void setSidebar(SidebarView sidebar) {
         this.sidebar = sidebar;
-    }
-
-    public void setTopNav(TopNavView topNav) {
-        this.topNav = topNav;
     }
 
     public void setActiveTable(FilterableTable<?> table) {
@@ -82,6 +82,22 @@ public class PageRouter {
         return currentPageKey;
     }
 
+    public void navigateToWorkOrder(int workOrderId) {
+        navigate("workorders");
+        if (workOrderId > 0 && activeTable != null) {
+            activeTable.applySearch(String.valueOf(workOrderId));
+            javafx.scene.control.TableView<?> tv = activeTable.getTableView();
+            int idx = 0;
+            for (Object item : tv.getItems()) {
+                if (item instanceof com.wac.autocore.model.WorkOrder && ((com.wac.autocore.model.WorkOrder) item).getId() == workOrderId) {
+                    tv.getSelectionModel().select(idx);
+                    break;
+                }
+                idx++;
+            }
+        }
+    }
+
     public void navigate(String key) {
         this.currentPageKey = key;
         if (!"search".equals(key)) {
@@ -89,9 +105,6 @@ public class PageRouter {
         }
         if (sidebar != null) {
             sidebar.setSelectedPage(key);
-        }
-        if (topNav != null) {
-            topNav.setSelectedPage(key);
         }
         activeTable = null;
         pageBox.getChildren().clear();

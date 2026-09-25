@@ -1,386 +1,299 @@
-# Projektöversikt & Arkitekturansats: Wigell AutoCore
+# Projektöversikt & Systemarkitektur: Wigell AutoCore
 
-Detta dokument ger en fullständig genomgång av projektet **Wigell AutoCore**, alla dess filer och komponenter, vad projektet är avsett att uppnå ur både ett domänmässigt och systemarkitektoniskt perspektiv, samt en konkret guide för hur utvecklingsteamet (**Grupp C: Alex, Lucas, Daniel, Vivianne**) kan påbörja arbetet.
+Detta dokument ger en fullständig, uppdaterad genomgång av projektet **Wigell AutoCore**, dess arkitektur, katalogstruktur, domänmodeller, servicelager, UI-komponenter, internationella flerspråksmotor samt det omfattande test- och auditsystemet. 
+
+Dokumentet fungerar som teknisk referens och arkitekturhandledning för utvecklingsteamet (**Grupp C: Alex, Lucas, Daniel, Vivianne**).
+
+---
 
 ## Innehållsförteckning
 
-* _Övergripande syfte & Domän_
+1. [Övergripande syfte & Domän](#1-övergripande-syfte--domän)
+2. [Aktuell fil- och katalogstruktur](#2-aktuell-fil--och-katalogstruktur)
+3. [Detaljerad komponent- och filgenomgång](#3-detaljerad-komponent--och-filgenomgång)
+   - 3.1 Startpunkter & Presentation (JavaFX & CLI)
+   - 3.2 Fasad & Servicelager (Facade Pattern)
+   - 3.3 Internationell Flerspråksmotor (I18n)
+   - 3.4 Datalager & Databasintegration (SQLite)
+   - 3.5 Domänmodeller
+4. [Arkitektonisk analys: Från monolit till skiktad arkitektur](#4-arkitektonisk-analys-från-monolit-till-skiktad-arkitektur)
+5. [Implementerade Design Patterns (GoF)](#5-implementerade-design-patterns-gof)
+6. [Kvalitetssäkring, Säkerhetsanalys & WCAG 2.1 AAA](#6-kvalitetssäkring-säkerhetsanalys--wcag-21-aaa)
+7. [Färdplan, Arbetsfördelning & Git-rutiner](#7-färdplan-arbetsfördelning--git-rutiner)
 
-* _Fil- och katalogstruktur_
-
-* _Detaljerad filgenomgång_
-
-* _Nulägesanalys & Arkitektoniska brister (Code Smells)_
-
-* _Vad man tänkt uppnå ur arkitektursynpunkt_
-
-* _Föreslagna Design Patterns_
-
-* _Föreslagen Målarkitektur (Layered Architecture)_
-
-* _Hur vi börjar utvecklingen – Steg för steg_
+---
 
 ## 1. Övergripande syfte & Domän
 
-**Wigell AutoCore** är ett kärnsystem (Core ERP/Garage Management System) utvecklat för koncernen *Wigell Group*. Systemet hanterar den dagliga operativa verksamheten på en bilverkstad:
+**Wigell AutoCore** är ett affärs- och verkstadssystem (Core ERP / Garage Management System) utvecklat för koncernen *Wigell Group*. Systemet hanterar den dagliga operativa verksamheten på en bilverkstad med fokus på hög driftsäkerhet, tydlig separation of concerns, modern tillgänglighet (WCAG 2.1 AAA) och realtidsstöd för flera språk.
 
-* **Kunder & Fordon:** Registrering och koppling av ägare till fordon.
+### Kärnfunktioner i domänen:
+* **Kunder & Fordon:** Registrering, uppslagning och koppling av ägare till fordon. Full validering vid inmatning.
+* **Bokningar (Bookings):** Tidsbokning av fordon för service, felsökning eller reparation på angivna datum.
+* **Mekaniker & Schemaläggning:** Register över mekaniker, specialiteter, tillgänglighet samt en timme-för-timme schemaläggningsmotor (`MechanicSchedule`) med visuell belastningsprogression.
+* **Priskatalog & Tjänster (ServiceItems):** Standardiserade verkstadsmoment (oljebyte, bromsbyte, hjulinställning, etc.) med fasta baspriser och estimerad tidsåtgång.
+* **Arbetsordrar (Work Orders):** Konvertering av bokningar till skarpa arbetsordrar med tilldelad mekaniker och valda tjänster. Följer en kontrollerad livscykel: `CREATED` $\rightarrow$ `IN_PROGRESS` $\rightarrow$ `COMPLETED`.
+* **Fakturering & Rabattsystem:** Automatisk generering av fakturor vid avslutad arbetsorder. Beräkning av subtotal, moms, VIP-rabatter (10%) och kampanjkoder (`WELCOME10`, `SERVICE200`).
+* **Betalningar:** Registrering av transaktioner via kort (`CARD`), Swish (`SWISH`) och kontant (`CASH`). Kvittohistorik och markering av betalstatus.
 
-* **Bokningar (Bookings):** Kunder bokar in sitt fordon för service eller felsökning ett givet datum.
+---
 
-* **Mekaniker & Tjänster:** Register över tillgängliga mekaniker (med specialiteter) och en priskatalog över verkstadstjänster (oljebyte, bromsbyte, etc.).
+## 2. Aktuell fil- och katalogstruktur
 
-* **Arbetsordrar (Work Orders):** En bokning omvandlas till en arbetsorder där en ledig mekaniker tilldelas och en eller flera tjänster kopplas på. Arbetsordern genomgår livscykeln: CREATED $\rightarrow$ IN_PROGRESS $\rightarrow$ COMPLETED.
-
-* **Fakturering & Rabattsystem:** När en arbetsorder är slutförd skapas en faktura. Rabatter appliceras baserat på kundstatus (VIP ger 10%) samt eventuella kampanjkoder (WELCOME10, SERVICE200).
-
-* **Betalning:** Betalningar genomförs mot fakturan via olika betalsätt (*CARD*, *SWISH*, *CASH*). Fakturan markeras som betald och kunden aviseras.
-
-## 2. Fil- och katalogstruktur
-
-Projektets källkod finns under WigellAutoCore/autocore/src/:
+Projektet är strukturerat enligt ren skiktad arkitektur (**Layered Architecture**) under `WigellAutoCore/autocore/`:
 
 ```
 Systemarkitektur/
-│
-├── Gruppindelning agil systemutveckling.pdf   # Kursgrupper (Grupp C: Alex, Lucas, Daniel, Vivianne)
-├── Systemarkitektur.iml                       # IntelliJ modulfil för root
-├── WigellAutoCore.zip                         # Originalarkiv med startkoden
+├── check.sh                                  # Automatiserad audit-runner (50 kontroller i färg)
+├── test.sh                                   # Snabbkörningsskript för enhetstester
+├── run.sh                                    # Körskript för GUI och CLI
+├── README.md                                 # Projekt-README med snabbstart och modulöversikt
+├── PROJECT_OVERVIEW.md                       # Detta arkitektur- och översiktsdokument
+├── STYLEGUIDE.html                           # Interaktiv webbstyleguide med live-komponenter
 │
 └── WigellAutoCore/
     └── autocore/
-        ├── autocore.iml
-        └── src/
-            ├── Main.java                      # Startpunkt & textbaserat konsolgränssnitt (CLI)
-            │
+        ├── lib/
+        │   └── sqlite-jdbc-3.53.4.0.jar      # JDBC-drivrutin för lokal SQLite-persistens
+        │
+        ├── src/
+        │   ├── Main.java                     # Startpunkt: AutoCore modernt JavaFX-gränssnitt
+        │   ├── ConsoleApp.java               # Startpunkt: Textbaserat terminalgränssnitt (CLI)
+        │   ├── DesignSelectorApp.java        # Visuell väljare för designprototyper
+        │   │
+        │   └── com/wac/autocore/
+        │       ├── data/
+        │       │   └── Database.java         # Datalager & seed data (förberett för SQLite)
+        │       │
+        │       ├── model/                    # Domänentiteter (POJO / Beans)
+        │       │   ├── Customer.java         # Kunduppgifter & VIP-status
+        │       │   ├── Vehicle.java          # Fordonsdata kopplat till kund
+        │       │   ├── Booking.java          # Tidsbokning och status
+        │       │   ├── Mechanic.java         # Mekaniker, specialisering och tillgänglighet
+        │       │   ├── ServiceItem.java      # Priskatalog/arbetsmoment med tidsestimat
+        │       │   ├── WorkOrder.java        # Arbetsorder med tilldelad mekaniker & tjänster
+        │       │   ├── Invoice.java          # Fakturaunderlag, rabatter och moms
+        │       │   └── Payment.java          # Transaktionslogg och betalmetod
+        │       │
+        │       ├── service/                  # Affärs- och domänservicelager
+        │       │   ├── GarageSystem.java     # Huvudfasad (Facade Pattern) mot alla delsystem
+        │       │   ├── CustomerService.java  # Kundvalidering & sökning
+        │       │   ├── VehicleService.java   # Fordonsregistrering & ägarkoppling
+        │       │   ├── BookingService.java   # Tidsbokning & validering
+        │       │   ├── WorkOrderService.java # Arbetsorderns tillstånd och mekanikerlåsning
+        │       │   ├── BillingService.java   # Fakturaberäkning, rabatter & momshantering
+        │       │   ├── PaymentService.java   # Betalningstransaktioner (Kort, Swish, Kontant)
+        │       │   └── MechanicSchedule.java # Timme-för-timme schema & dubbelbokningsskydd
+        │       │
+        │       ├── theme/                    # Temamotor & stildefinitioner
+        │       │   ├── ThemeManager.java     # Hanterar aktivt tema och CSS-laddning
+        │       │   └── ThemeCatalog.java     # Katalog över appens officiella tema (Emerald)
+        │       │
+        │       ├── ui/                       # Presentationslager (JavaFX GUI & CLI)
+        │       │   ├── AutoCoreApp.java      # Huvudfönster, layout och övergripande ramverk
+        │       │   ├── ActionDialogs.java    # Modala formulär och dialoger för CRUD
+        │       │   ├── ConsolePrinter.java   # Frikopplad formaterad utskriftsmotor för CLI
+        │       │   ├── components/           # Återanvändbara gränssnittskomponenter
+        │       │   │   ├── UiComponents.java # Kort, badges, knappar och varningsrutor
+        │       │   │   ├── TableFactory.java # Tabellbyggare med filter & zebramönster
+        │       │   │   └── MechanicKanbanCard.java # Kanban-kort för mekanikerschema
+        │       │   ├── i18n/                 # Flerspråksstöd
+        │       │   │   └── I18n.java         # Dynamisk realtidsöversättningsmotor
+        │       │   ├── navigation/           # Navigationsstruktur
+        │       │   │   ├── SidebarView.java  # Luftig sidomeny med sektioner och språkknapp
+        │       │   │   └── PageRouter.java   # Sidrouter med händelselyssnare
+        │       │   ├── util/                 # Gränssnittshjälpare
+        │       │   │   ├── UiFormatters.java # Valuta, datum, statusord och badge-mappning
+        │       │   │   ├── EntityLookup.java # Uppslagning av namn mot ID:n via GarageSystem
+        │       │   │   └── GlobalSearch.java # Systemomfattande granulär sökning
+        │       │   └── views/                # Sidspecifika vyer
+        │       │       ├── OverviewView.java # Dashboard med KPI:er och snabböversikt
+        │       │       └── EntityPages.java  # Vyer för Kunder, Fordon, Ordrar, etc.
+        │       │
+        │       └── test/                     # Komplett automatiserad test- och auditsvit
+        │           ├── TestRunner.java       # Fristående testmotor (körs utan externa ramverk)
+        │           ├── EntityLookupTest.java # Tester för relations- och ID-uppslagning
+        │           ├── GlobalSearchTest.java # Tester för granulär sökning och prefix
+        │           ├── I18nTest.java         # Tester för realtidsöversättning och paritet
+        │           ├── MechanicScheduleTest.java # Tester för schemaläggning och kapacitet
+        │           ├── OverviewMetricsTest.java # Tester för KPI-beräkningar och intäkter
+        │           ├── TableFactoryTest.java # Tester för tabellfilter och indexintegritet
+        │           ├── UiFormattersTest.java # Tester för valuta, datum och statusord
+        │           ├── CodeQualityTest.java  # Kodkvalitet, arkitekturgränser & språkparitet
+        │           ├── SecurityAuditTest.java# Sårbarhetsscanning (SQLi, hemligheter, PII)
+        │           └── WcagAccessibilityTest.java # WCAG 2.1 AAA kontrast- och tillgänglighetstest
+        │
+        └── resources/
             └── com/wac/autocore/
-                ├── data/
-                │   └── Database.java          # Statisk in-memory databas med testdata
-                │
-                ├── model/
-                │   ├── Booking.java           # Tidsbokning av fordon
-                │   ├── Customer.java          # Kunddata och VIP-status
-                │   ├── Invoice.java           # Fakturaunderlag och belopp
-                │   ├── Mechanic.java          # Mekaniker, specialitet och tillgänglighet
-                │   ├── Payment.java           # Betalningstransaktion
-                │   ├── ServiceItem.java       # Priskatalog/arbetsmoment med tidsestimat
-                │   ├── Vehicle.java           # Fordonsuppgifter kopplade till kund
-                │   └── WorkOrder.java         # Arbetsorder med tilldelad mekaniker & tjänster
-                │
-                └── service/
-                    └── GarageSystem.java      # Monolitisk serviceklass (all affärslogik)
+                ├── i18n/
+                │   ├── sv.json               # Svensk språkordbok (396 nycklar)
+                │   └── en.json               # Engelsk språkordbok (396 nycklar)
+                └── theme/
+                    ├── components.css        # Återanvändbara komponent- och layoutstilar
+                    └── themes/emerald/
+                        └── emerald.css       # Officiellt tema: modernt mörkgrönt verkstadstema
 ```
 
-## 3. Detaljerad filgenomgång
-
-### 3.1 Startpunkt & UI: Main.java
-
-* **Placering:** src/Main.java (default package)
-
-* **Roll:** Applikationens ingångspunkt via konsolen.
-
-* **Funktionalitet:**
-
-* Innehåller en while(running)-loop med en 17-vals meny (0–16).
-
-* Sköter inmatning från användaren med Scanner.
-
-* Hjälpmetoder för felhantering vid inmatning: readInt(msg) och readDate(msg).
-
-* Anropar instansen GarageSystem garageSystem för alla operationer.
-
-* **Problem:**
-
-* Meny, inmatning och flödesstyrning ligger blandat i samma fil.
-
-* Viss affärsvalidering sker i Main (t.ex. parsning av kommaseparerade tjänste-ID:n input.split(",")), medan annan sker i GarageSystem.
-
-### 3.2 Servicelager: com.wac.autocore.service.GarageSystem.java
-
-* **Roll:** Fungerar just nu som en "God Class" eller ett pseudo-fasadlager.
-
-* **Metoder för visning:**
-
-* showCustomers(), showVehicles(), showBookings(), showServiceItems(), showMechanics(), showWorkOrders(), showInvoices(), showPayments()
-
-* Alla dessa hämtar listor direkt från Database och skriver ut till konsolen med System.out.println.
-
-* **CRUD & Affärsprocesser:**
-
-* createCustomer(...): Skapar och sparar kund.
-
-* createVehicle(...): Verifierar att kunden existerar innan fordonet skapas.
-
-* createBooking(...): Verifierar fordon innan bokning skapas.
-
-* createWorkOrder(...): Validerar bokning, mekaniker (kollar mechanic.isAvailable()) samt tjänste-ID:n. Uppdaterar bokningens status till "WORK_ORDER_CREATED".
-
-* startWorkOrder(workOrderId): Sätter status "IN_PROGRESS", låser mekanikern (setAvailable(false)).
-
-* completeWorkOrder(workOrderId): Sätter status "COMPLETED", frigör mekanikern (setAvailable(true)).
-
-* createInvoice(workOrderId, discountCode): Beräknar totalpris från tjänster, applicerar VIP-rabatt (10%) och hårdkodade rabattkoder (WELCOME10, SERVICE200), mockar en notifiering till kunden.
-
-* processPayment(invoiceId, paymentType): Hårdkodade if/else för CARD, SWISH, CASH. Mockar anslutning till externa betaltjänster, sätter fakturan som betald och skickar bekräftelse.
-
-* **Hjälpmetoder:**
-
-* findCustomer, findVehicle, findBooking, findMechanic, findServiceItem, findWorkOrder, findInvoice (linjära for-loopar över Database.get...()).
-
-### 3.3 Datalager: com.wac.autocore.data.Database.java
-
-* **Roll:** Simulerar en databas med statiska ArrayList-samlingar i minnet.
-
-* **Funktionalitet:**
-
-* Statiska listor: customers, vehicles, bookings, serviceItems, mechanics, workOrders, invoices, payments.
-
-* static { loadSampleData(); }: Laddar in 3 kunder (varav 1 VIP), 3 fordon, 4 tjänster, 3 mekaniker och 2 bokningar vid uppstart.
-
-* Statiska getters som returnerar referenser direkt till de interna listorna.
-
-* **Problem:**
-
-* Global statisk status försvårar isolerade enhetstester.
-
-* Ingen inkapsling: extern kod kan modifiera eller rensa listorna direkt via Database.getCustomers().clear().
-
-* Ingen abstraktion via Repository- eller DAO-interface.
-
-### 3.4 Domänmodeller: com.wac.autocore.model.*
-
-**Klass**
-
-**Attribut**
-
-**Anmärkningar & Utvecklingspotential**
-
-**Customer**
-
-id, name, phone, email, vip
-
-Enkel POJO. Har isVip() / setVip().
-
-**Vehicle**
-
-id, registrationNumber, brand, model, year, customerId
-
-Håller endast customerId som int (främmande nyckel).
-
-**Booking**
-
-id, vehicleId, date, description, status
-
-status är en vanlig String ("BOOKED", "WORK_ORDER_CREATED", etc.). Borde vara en Enum!
-
-**Mechanic**
-
-id, name, phone, specialization, available
-
-Håller reda på om mekanikern är upptagen i en arbetsorder.
-
-**ServiceItem**
-
-id, name, description, price, estimatedMinutes
-
-Fast katalogpris i SEK och tidsåtgång i minuter.
-
-**WorkOrder**
-
-id, bookingId, mechanicId, serviceItemIds (List<Integer>), status
-
-Håller lista av ID:n. Status är String ("CREATED", "IN_PROGRESS", "COMPLETED").
-
-**Invoice**
-
-id, workOrderId, invoiceDate, amount, discount, totalAmount, paid
-
-Innehåller metod calculateTotalAmount() (amount - discount).
-
-**Payment**
-
-id, invoiceId, amount, paymentType, paymentDate, successful
-
-paymentType är en sträng ("CARD", "SWISH", "CASH").
-
-## 4. Nulägesanalys & Arkitektoniska brister (Code Smells)
-
-Koden är medvetet skriven som ett "före-projekt" i kursen Systemarkitektur. Den fungerar rent funktionellt men bryter mot flera grundläggande SOLID-principer och designmönster:
-
-* **Monolitisk "God Class" & SRP-brott i ****GarageSystem****:** - Klassen ansvarar för användargränssnitt (System.out.println), affärsvalidering, tillståndshantering, sökning i listor, prisberäkningar, rabattregler och mockade externa anrop.
-
-* **Hårdkodad betalningslogik (OCP-brott):** - I processPayment() används hårdkodade if (paymentType.equalsIgnoreCase("CARD")) .... Om vi vill lägga till *Klarna* eller *Faktura 30 dagar* måste vi ändra i GarageSystem.
-
-* **Hårdkodade rabatter (OCP-brott):** - VIP och kampanjkoder är sammanflätade med if/else i faktureringsmetoden.
-
-* **Hårdkodade aviseringar (Mock notifications):** - Utskrifter som *"Sending invoice notification to customer..."* och *"Sending payment confirmation to customer..."* ligger inline. Det finns ingen mekanism för att byta mellan SMS, E-post eller Push, eller lyssna på händelser.
-
-* **Globalt statiskt tillstånd (****Database****):** - Gör enhetstestning skör eftersom tester påverkar varandras data.
-
-* **Magiska strängar för status och betalsätt:** - Statusar som "BOOKED", "COMPLETED" etc. och betaltyper "CARD" är vanliga strängar utan typ-säkerhet.
-
-* **Beroendeinversion saknas (DIP-brott):** - Klasser beror på konkreta implementationer och statiska metoder istället för interface.
-
-## 5. Vad man tänkt uppnå ur arkitektursynpunkt
-
-Uppgiften i kursen syftar till att: 1. **Transformera en proceduriell/monolitisk kodbas** till en väldesignad, objektorienterad och underhållbar arkitektur. 2. **Applicera GoF-designmönster (Gang of Four):** - Kursmapparna i närmiljön visar tydligt fokusområdena: *Adapter, Bridge, Facade, Proxy, Singleton, Strategy/State/Observer*. 3. **Införa skiktad arkitektur (Separation of Concerns):** - Skilja UI (konsol/meny) från Affärslogik (Services) och Datalager (Repositories). 4. **Uppnå hög testbarhet och följa SOLID-principerna:** - Varje klass ska ha ett enda ansvar (Single Responsibility). - Nya betalsätt eller rabattregler ska kunna läggas till utan att röra befintlig kod (Open/Closed).
-
-## 6. Föreslagna Design Patterns
-
-Följande mönster passar domänen och löser de identifierade problemen:
-
-### 1. Strategy Pattern (eller Adapter Pattern) för Betalningar
-
-* **Varför:** Skilj på olika betalsätt (*Card*, *Swish*, *Cash*).
-
-* **Struktur:** java public interface PaymentMethod { PaymentResult pay(Invoice invoice); } public class CardPayment implements PaymentMethod { ... } public class SwishPayment implements PaymentMethod { ... } public class CashPayment implements PaymentMethod { ... }
-
-* Kan även kombineras med **Adapter Pattern** om man vill simulera anslutning mot externa SDK:er (t.ex. ett tredjeparts Swish-API eller Bank-API).
-
-### 2. Strategy Pattern för Rabatter (Discounts)
-
-* **Varför:** Rabatter kan kombineras eller variera över tid.
-
-* **Struktur:** java public interface DiscountStrategy { double calculateDiscount(Customer customer, double subtotal, String code); } public class VipDiscountStrategy implements DiscountStrategy { ... } public class PromotionCodeDiscountStrategy implements DiscountStrategy { ... }
-
-### 3. Repository Pattern för Datalagring
-
-* **Varför:** Ersätt statiska Database.get...() med riktiga repositories som implementerar interface.
-
-* **Struktur:**
-
-* CustomerRepository, VehicleRepository, BookingRepository, WorkOrderRepository, InvoiceRepository.
-
-* Gör det enkelt att mocka databasen i enhetstester eller byta till fil- eller SQL-lagring i framtiden.
-
-### 4. Observer Pattern (eller Bridge) för Händelser/Notifieringar
-
-* **Varför:** När en order ändrar status, en faktura skapas eller en betalning sker ska notifieringar skickas automatiskt utan att koppla ihop servicen med notifieringstjänsten.
-
-* **Struktur:**
-
-* EventListener / NotificationService med lyssnare som EmailNotifier, SmsNotifier.
-
-### 5. Facade Pattern för GarageSystem
-
-* **Varför:** GarageSystem bör fungera som en ren **Fasad (Facade)** mot de interna delsystemen (BookingService, WorkOrderService, BillingService, PaymentService), så att Main bara anropar en ren och enkel fasad utan att veta om alla interna mekanismer.
-
-### 6. State Pattern eller Enums för Arbetsorderns livscykel
-
-* **Varför:** Ersätt "CREATED", "IN_PROGRESS", "COMPLETED" med typade tillstånd som skyddar mot otillåtna statusövergångar (t.ex. att inte kunna starta en redan avslutad order).
-
-## 7. Föreslagen Målarkitektur (Layered Architecture)
-
-```
-┌────────────────────────────────────────────────────────┐
-│                   PRESENTATION LAYER                   │
-│         ConsoleUI / Main / Menu / InputReader          │
-└───────────────────────────┬────────────────────────────┘
-                            │
-┌───────────────────────────▼────────────────────────────┐
-│                    APPLICATION / FACADE                │
-│                 GarageFacade / GarageSystem            │
-└─────────────┬────────────────────────────┬─────────────┘
-              │                            │
-┌─────────────▼──────────────┐  ┌──────────▼─────────────┐
-│      DOMAIN SERVICES       │  │   STRATEGIES & OBSERVERS│
-│ - CustomerService          │  │ - PaymentStrategy      │
-│ - BookingService           │  │ - DiscountStrategy     │
-│ - WorkOrderService         │  │ - NotificationListener │
-│ - BillingService           │  │                        │
-└─────────────┬──────────────┘  └────────────────────────┘
-              │
-┌─────────────▼──────────────────────────────────────────┐
-│                   DOMAIN ENTITIES & ENUMS              │
-│ Customer, Vehicle, Booking, WorkOrder, Invoice, etc.   │
-│ Enums: OrderStatus, PaymentType                        │
-└─────────────────────────────┬──────────────────────────┘
-                              │
-┌─────────────────────────────▼──────────────────────────┐
-│                 INFRASTRUCTURE / DATA                  │
-│       Repository Interfaces & In-Memory Impl.          │
-│ (CustomerRepository, WorkOrderRepository, etc.)        │
-└────────────────────────────────────────────────────────┘
+---
+
+## 3. Detaljerad komponent- och filgenomgång
+
+### 3.1 Startpunkter & Presentation (JavaFX & CLI)
+
+1. **`Main.java` (JavaFX GUI):**
+   - Startar det moderna AutoCore-skrivbordsgränssnittet via `AutoCoreApp`.
+   - Initialiserar `ThemeManager` (standard: `emerald`) och `I18n` (standard: svenska, snabbt växlingsbar).
+   - Tillhandahåller responsiv sidonavigation (`SidebarView`), global sökning (`SearchResultsView`) samt modala transaktionsdialoger (`ActionDialogs`).
+2. **`ConsoleApp.java` (Textbaserat CLI):**
+   - Erbjuder full funktionalitet för terminalanvändare och automatiserad drift.
+   - Kör en 17-vals meny för fullständig hantering av verkstadens flöden.
+   - Använder uteslutande `ConsolePrinter` för formatering och delegerar all logik till fasaden `GarageSystem`.
+3. **`ConsolePrinter.java`:**
+   - Separerar all utskriftsformatering (ANSI-boxar, tabeller, statuskoder) från affärslogiken. Servicelagret är helt befriat från `System.out.println`.
+
+### 3.2 Fasad & Servicelager (Facade Pattern)
+
+Systemet tillämpar **Facade Pattern** genom klassen `com.wac.autocore.service.GarageSystem`:
+- **`GarageSystem`** exponerar ett enhetligt och förenklat API för både GUI och CLI.
+- Bakom fasaden delegeras alla anrop till specialiserade domäntjänster med enskilt ansvar (**Single Responsibility Principle**):
+  - **`CustomerService`:** Registrering, sökning och validering av kunduppgifter och VIP-status.
+  - **`VehicleService`:** Koppling av registreringsnummer, bilmodell och ägare. Validerar att kund existerar.
+  - **`BookingService`:** Skapande av tidsbokningar, statusövergångar och fordonsvalidering.
+  - **`WorkOrderService`:** Ansvarar för arbetsorderns tillståndsmaskin (`CREATED` $\rightarrow$ `IN_PROGRESS` $\rightarrow$ `COMPLETED`). Låser mekanikerns tillgänglighet när order påbörjas och frigör mekanikern när ordern avslutas.
+  - **`BillingService`:** Genererar fakturor baserat på utförda tjänster, beräknar 10% VIP-rabatt samt hanterar kampanjkoder (`WELCOME10` ger 10%, `SERVICE200` drar av 200 kr).
+  - **`PaymentService`:** Hanterar betalningstransaktioner med validering av betalmetod (`CARD`, `SWISH`, `CASH`), sätter fakturan som betald och sparar transaktionen.
+  - **`MechanicSchedule`:** Avancerad schemaläggningsmotor som beräknar mekanikers arbetsbelastning timme-för-timme, förhindrar dubbelbokningar och genererar visuell färgprogression för Kanban-korten.
+
+### 3.3 Internationell Flerspråksmotor (I18n)
+
+- **Klass:** `com.wac.autocore.ui.i18n.I18n`
+- **Resursfiler:** `resources/com/wac/autocore/i18n/sv.json` och `en.json`.
+- **Egenskaper:**
+  - **100 % nyckelparitet:** Båda filerna innehåller exakt 396 språknycklar (verifieras automatiskt i `CodeQualityTest` och `I18nTest`).
+  - **Realtidsväxling utan omstart:** Gränssnittet uppdateras dynamiskt i realtid via lyssnare (`I18n.addListener()`) när användaren klickar på språkknappen i sidomenyn.
+  - **Parameterstöd:** Metoden `I18n.t("key", arg1, arg2)` ersätter dynamiska parametrar (`{0}`, `{1}`) direkt.
+  - **Robust felhantering:** Vid saknad nyckel returneras nyckeln själv i fallback utan att applikationen kraschar.
+
+### 3.4 Datalager & Databasintegration (SQLite)
+
+- **Nuläge:** `Database.java` hanterar in-memory-samlingar med standardiserad testdata för kunder, bilar, mekaniker, ordrar och fakturor.
+- **Pågående databasarbete:** 
+  - JDBC-drivrutinen `sqlite-jdbc-3.53.4.0.jar` ligger integrerad under `lib/`.
+  - Daniel i teamet leder implementeringen av SQLite-lagret för att flytta systemet från in-memory-listor till persistent lokal lagring.
+  - Befintliga servicelager och fasaden är konstruerade så att databasskiftet kan ske transparent utan att påverka presentationslagret.
+
+### 3.5 Domänmodeller
+
+Alla modeller är rena, välkapslade klasser under `com.wac.autocore.model`:
+- **`Customer`:** `id`, `name`, `phone`, `email`, `vip`
+- **`Vehicle`:** `id`, `registrationNumber`, `brand`, `model`, `year`, `customerId`
+- **`Booking`:** `id`, `vehicleId`, `date`, `description`, `status`
+- **`Mechanic`:** `id`, `name`, `phone`, `specialization`, `available`
+- **`ServiceItem`:** `id`, `name`, `description`, `price`, `estimatedMinutes`
+- **`WorkOrder`:** `id`, `bookingId`, `mechanicId`, `serviceItemIds` (`List<Integer>`), `status`
+- **`Invoice`:** `id`, `workOrderId`, `invoiceDate`, `amount`, `discount`, `totalAmount`, `paid`
+- **`Payment`:** `id`, `invoiceId`, `amount`, `paymentType`, `paymentDate`, `successful`
+
+---
+
+## 4. Arkitektonisk analys: Från monolit till skiktad arkitektur
+
+Vid projektets start innehöll koden flera typiska "Code Smells" som nu har refaktorerats:
+
+| Ursprunglig brist (Sprint 1) | Genomförd åtgärd & Ny arkitektur |
+| :--- | :--- |
+| **Monolitisk "God Class"** (`GarageSystem` hade 400+ rader och skötte allt från utskrifter till rabattregler). | **Fasadmönstret implementerat:** `GarageSystem` delegerar nu till 7 specialiserade tjänster (`BillingService`, `CustomerService`, etc.). |
+| **UI sammanflätat med affärslogik** (`System.out.println` spridda i domänmetoder). | **Skiktseparation:** All utskriftslogik flyttad till `ConsolePrinter`. Alla servicemetoder returnerar rena domänobjekt eller felkoder. |
+| **Hårdkodad och duplicerad sökning** i linjära for-loopar. | **Granulär sökmotor:** `GlobalSearch` och `EntityLookup` indexerar och söker över alla entiteter med prefixstöd och skiftlägesokänslighet. |
+| **Frånvaro av tester:** Inga automatiserade tester existerade i startpaketet. | **Omfattande test- och audit-svit:** 50 automatiserade tester för enhet, kvalitet, säkerhet och WCAG 2.1 AAA med 100% pass rate. |
+| **Hårdkodat språk och texter:** Svenska texter hårdkodade i Java-strängar. | **Full I18n-motor:** Extern ordbok i JSON med 396 nycklar och momentan språkväxling mellan svenska och engelska. |
+| **Ingen tillgänglighetsstandard:** Konsolfönster utan kontrastkrav. | **WCAG 2.1 AAA certifiering:** Färgkontrast $\ge 7.0:1$ för all löpande text, tangentbordsfokus (`:focused`), zebramönstrade tabeller och dynamisk layout. |
+
+---
+
+## 5. Implementerade Design Patterns (GoF)
+
+1. **Facade Pattern (`GarageSystem`):**
+   - Ger en förenklad och sammanhållen ingång till de underliggande delsystemen: bokning, arbete, fakturering och betalning. Både GUI och CLI anropar fasaden utan kännedom om delsystemens interna beroenden.
+2. **Layered Architecture (Skiktad arkitektur):**
+   - Tydlig separation mellan Presentationslager $\rightarrow$ Fasad $\rightarrow$ Servicelager $\rightarrow$ Domänmodeller $\rightarrow$ Datalager.
+3. **Observer Pattern (Händelselyssnare):**
+   - `I18n.addListener()`: Registrerar vyer och komponenter som automatiskt uppdaterar sina texter när språket växlas i realtid.
+   - `PageRouter`: Notifierar navigationsmenyn vid sidbyten så att rätt sida ritas ut och aktiveras.
+4. **Factory Pattern (`TableFactory`):**
+   - Centraliserar skapandet av JavaFX `TableView` med inbyggd sökfiltrering, sortering, zebramönstrade rader (`.table-row-cell:odd / :even`) och anpassade cellformatters.
+5. **Strategy / Specialiserade Beräkningstjänster:**
+   - Rabattlogik och betalningsvalidering är isolerade i `BillingService` respektive `PaymentService`, vilket gör det enkelt att addera nya kampanjregler eller betalsätt utan att ändra fasad eller GUI.
+
+---
+
+## 6. Kvalitetssäkring, Säkerhetsanalys & WCAG 2.1 AAA
+
+Hela systemet kvalitetssäkras med det automatiska verifieringsskriptet `./check.sh` (eller `./audit.sh`). Skriptet exekverar 50 kontroller fördelade på 4 moduler:
+
+```bash
+./check.sh          # Kör hela audit-sviten (Alla 4 moduler)
+./check.sh --unit   # Endast enhetstester (37 tester)
+./check.sh --wcag   # Endast WCAG 2.1 AAA tillgänglighet (5 tester)
 ```
 
-## 8. Hur vi börjar utvecklingen – Steg för steg
+### De fyra modulerna:
 
-Här är en praktisk färdplan för gruppen (**Alex, Lucas, Daniel, Vivianne**):
+1. **Modul 1: Enhetstester (37 tester – 100% godkända)**
+   - `UiFormattersTest` (8 tester): Valutaformatering, datum, trunkering och CSS-badgeklasser.
+   - `EntityLookupTest` (4 tester): ID-till-namn-uppslagning för kund, fordon, mekaniker och tjänster.
+   - `OverviewMetricsTest` (3 tester): KPI-mätetal (aktiva ordrar, omsättning, lediga mekaniker).
+   - `TableFactoryTest` (2 tester): Filtrering och regressionsskydd mot indexförskjutningar.
+   - `GlobalSearchTest` (8 tester): Granulär sökning, prefix, skiftläge och cross-entity-matchning.
+   - `I18nTest` (7 tester): Växling, engelska/svenska, fallback, parameterersättning och nyckelparitet.
+   - `MechanicScheduleTest` (5 tester): Timme-för-timme slots, färgprogression och skydd mot dubbelbokningar.
+2. **Modul 2: Kodkvalitet & Arkitektur (4 kontroller – 100% godkända)**
+   - Språkordböckernas integritet och 100% nyckelparitet (396 nycklar).
+   - Temaintegritet för det officiella temat i `ThemeCatalog`.
+   - Frikoppling av servicelager från GUI-beroenden.
+   - Maxgränser för källkodsfilers komplexitet samt 0 aktiva TODO/FIXME-noteringar.
+3. **Modul 3: Säkerhetsgranskning (4 kontroller – 100% godkända)**
+   - Scanning mot hårdkodade lösenord, tokens och hemligheter.
+   - SQL-injektionsskydd: Verifierar att framtida SQL-anrop är förberedda för parameterized queries (`PreparedStatement`).
+   - Förbud mot farliga processkörningar (`Runtime.getRuntime().exec`).
+   - Skydd mot loggning av känsliga personuppgifter (PII).
+4. **Modul 4: WCAG 2.1 AAA Tillgänglighet (5 kontroller – 100% godkända)**
+   - Färgkontrast på text och dämpad text mot kort- och sidbakgrunder $\ge 7.0:1$ (WCAG 1.4.6 Contrast Enhanced Level AAA: upp till 16.5:1).
+   - Färgkontrast på accentknappar $\ge 7.0:1$ (8.37:1 i temat Emerald).
+   - Färgkontrast i sidonavigationen $\ge 7.0:1$ (12.86:1 aktiv text, 8.00:1 dämpad text).
+   - Tydliga fokusindikatorer (`:focused`) på alla interaktiva kontroller (WCAG 2.4.7).
+   - Minsta tillåtna teckenstorlek ($\ge 11$ px på all löpande text, WCAG 1.4.4).
 
-### Steg 1: Etablera Git & Samarbetsrutiner
+---
 
-* Initiera ett Git-repository i projektet (om det inte redan är gjort): bash git init git add . git commit -m "feat: initial commit with original WigellAutoCore starter code"
+## 7. Färdplan, Arbetsfördelning & Git-rutiner
 
-* Skapa ett gemensamt GitHub/GitLab-repo och bjud in alla gruppmedlemmar.
+### Status & Ansvarsområden i Grupp C:
 
-* Bestäm en gemensam branch-strategi: - main: Stabil och körbar kod. - develop eller funktionsgrenar: t.ex. feature/refactor-models-enums, feature/payment-strategy, feature/repositories.
+| Gruppmedlem | Huvudfokus & Arbetsområde | Aktuell status |
+| :--- | :--- | :--- |
+| **Alex** | Systemarkitektur, Fasad, I18n flerspråksmotor, Test- & Auditsvit (`check.sh`) | **Klart & Integrerat i develop** |
+| **Daniel** | Databasintegration (SQLite-persistens via `lib/sqlite-jdbc-...`) | **Pågående arbete** |
+| **Lucas** | Domänmodeller, affärsregler för ordrar och bokningsflöden | **Klart & Integrerat i develop** |
+| **Vivianne** | JavaFX GUI-vyer, layout, styling, WCAG-anpassning & teman | **Klart & Integrerat i develop** |
 
-* Skapa en enkel Kanban-tavla (t.ex. GitHub Projects eller Trello) baserad på modulerna nedan.
+### Git-rutiner & Branch-strategi:
 
-### Steg 2: Skriv baslinjetester (Characterization Tests)
+> [!IMPORTANT]
+> **Strikt regel gällande brancher:**  
+> Allt aktivt arbete, integration och feature-merger ska ske uteslutande mot **`develop`**.  
+> **`main` är reserverad för slutlig produktionsrelease och får INTE pushas till under pågående sprint.**
 
-* **Innan ni börjar refaktorera:** Skriv enkla JUnit-tester mot befintliga GarageSystem och modellerna för att bekräfta:
+#### Så synkar du ditt arbete:
+```bash
+# Se till att stå på develop
+git checkout develop
 
-* Att rabattberäkning blir rätt för VIP och koder.
+# Hämta in det senaste från teamet
+git pull origin develop
 
-* Att mekaniker blir upptagen när en arbetsorder startar och ledig när den slutförs.
+# Kör hela audit-kontrollen innan du pushar nya ändringar
+./check.sh
+```
 
-* Att betalning markerar fakturan som paid = true.
-
-* Testerna blir ert skyddsnät som garanterar att refaktoriseringen inte introducerar buggar!
-
-### Steg 3: Typa upp systemet (Enums & Validering)
-
-* Skapa enums:
-
-* OrderStatus (CREATED, IN_PROGRESS, COMPLETED)
-
-* BookingStatus (BOOKED, WORK_ORDER_CREATED, IN_PROGRESS, COMPLETED)
-
-* PaymentType (CARD, SWISH, CASH)
-
-* Uppdatera modellerna så att de använder enums istället för godtyckliga strängar.
-
-### Steg 4: Separera Presentation (UI) från Affärslogik
-
-* Rensa bort System.out.println() från GarageSystem.
-
-* Låt affärsmetoderna returnera objekt, boolean eller kasta egna exceptions vid fel (t.ex. EntityNotFoundException, MechanicUnavailableException).
-
-* Flytta all meny- och utskriftslogik till en dedikerad ConsoleUI- eller ConsolePrinter-klass.
-
-### Steg 5: Dela upp ansvarsområden i gruppen (Parprogrammering / Modulvis)
-
-För att alla i gruppen ska kunna arbeta parallellt utan merge-konflikter:
-
-* **Person 1 (t.ex. Datalager & Repositories):**
-
-* Skapa repository-interface (CustomerRepository, WorkOrderRepository, etc.).
-
-* Flytta datahanteringen från statiska Database till instansierade repositories.
-
-* **Person 2 (t.ex. Betalningsmodul & Strategy/Adapter):**
-
-* Implementera PaymentStrategy-gränssnittet.
-
-* Skapa CardPaymentStrategy, SwishPaymentStrategy, CashPaymentStrategy.
-
-* Integrera med PaymentService.
-
-* **Person 3 (t.ex. Fakturering & Rabattmodul):**
-
-* Skapa DiscountStrategy och bryt ut VIP- och kod-rabatter.
-
-* Hantera beräkningar i en dedikerad BillingService.
-
-* **Person 4 (t.ex. Fasad, Händelser & UI):**
-
-* Bygg GarageFacade som koordinerar tjänsterna mot Main.
-
-* Bygg ett enkelt händelsesystem / Observer för notifieringar (orderstatus och betalningsbekräftelse).
-
-### Steg 6: Slutgranskning och Dokumentation
-
-* Kör alla tester och verifiera att konsolapplikationen fungerar smidigt och felfritt.
-
-* Rita ett uppdaterat UML-klassdiagram över den nya arkitekturen och dokumentera vilka designmönster ni har valt och varför.
+När alla 50 kontroller är gröna kan koden säkert pushas till `origin/develop`.

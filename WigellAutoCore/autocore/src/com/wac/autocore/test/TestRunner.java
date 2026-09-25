@@ -15,15 +15,38 @@ public class TestRunner {
     private static final List<String> failures = new ArrayList<String>();
 
     public static void main(String[] args) {
+        com.wac.autocore.data.Db.initTables();
+
         System.out.println("==================================================");
         System.out.println("    Wigell AutoCore - Automatiserade Enhetstester");
         System.out.println("==================================================");
 
-        runClass(UiFormattersTest.class);
-        runClass(EntityLookupTest.class);
-        runClass(OverviewMetricsTest.class);
-        runClass(TableFactoryTest.class);
-        runClass(GlobalSearchTest.class);
+        boolean runAll = args.length == 0 || "all".equalsIgnoreCase(args[0]);
+        boolean runUnit = runAll || "unit".equalsIgnoreCase(args[0]);
+        boolean runQuality = runAll || "quality".equalsIgnoreCase(args[0]);
+        boolean runSecurity = runAll || "security".equalsIgnoreCase(args[0]);
+        boolean runWcag = runAll || "wcag".equalsIgnoreCase(args[0]);
+
+        if (runUnit) {
+            runClass(UiFormattersTest.class);
+            runClass(EntityLookupTest.class);
+            runClass(OverviewMetricsTest.class);
+            runClass(TableFactoryTest.class);
+            runClass(GlobalSearchTest.class);
+            runClass(I18nTest.class);
+            runClass(SeedTextTest.class);
+            runClass(MechanicScheduleTest.class);
+            runClass(PersistenceRestartTest.class);
+        }
+        if (runQuality) {
+            runClass(CodeQualityTest.class);
+        }
+        if (runSecurity) {
+            runClass(SecurityAuditTest.class);
+        }
+        if (runWcag) {
+            runClass(WcagAccessibilityTest.class);
+        }
 
         System.out.println("--------------------------------------------------");
         System.out.printf("Resultat: %d tester körda. \u001B[32m%d godkända\u001B[0m, \u001B[31m%d misslyckade\u001B[0m.%n",
@@ -92,4 +115,12 @@ public class TestRunner {
             throw new AssertionError(message != null ? message : "Förväntade false men fick true");
         }
     }
+
+    public static void assertNotNull(Object actual, String message) {
+        if (actual == null) {
+            throw new AssertionError(message != null ? message : "Förväntade icke-null men fick null");
+        }
+    }
+
+
 }

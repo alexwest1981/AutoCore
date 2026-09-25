@@ -1,6 +1,6 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
@@ -9,167 +9,251 @@ import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.repository.BookingRepository;
+import com.wac.autocore.repository.CustomerRepository;
+import com.wac.autocore.repository.MechanicRepository;
+import com.wac.autocore.repository.ServiceItemRepository;
+import com.wac.autocore.repository.VehicleRepository;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import com.wac.autocore.seed.SeedText;
 
 public class GarageSystem {
 
+    public GarageSystem() {
+        Db.ensureReady();
+    }
+
     public List<Customer> getCustomers() {
-        return Collections.unmodifiableList(Database.getCustomers());
+        return customerService.getAll();
     }
 
     public List<Vehicle> getVehicles() {
-        return Collections.unmodifiableList(Database.getVehicles());
+        return vehicleService.getAll();
     }
 
     public List<Booking> getBookings() {
-        return Collections.unmodifiableList(Database.getBookings());
+        return bookingService.getAll();
     }
 
     public List<ServiceItem> getServiceItems() {
-        return Collections.unmodifiableList(Database.getServiceItems());
+        try {
+            return serviceItemRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read service items: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public List<Mechanic> getMechanics() {
-        return Collections.unmodifiableList(Database.getMechanics());
+        try {
+            return mechanicRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read mechanics: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Mechanic> getQualifiedMechanics(ServiceItem service) {
+        List<Mechanic> all = getMechanics();
+        if (service == null) {
+            return all;
+        }
+        List<Mechanic> qualified = new ArrayList<Mechanic>();
+        for (Mechanic m : all) {
+            if (isMechanicQualified(m, service)) {
+                qualified.add(m);
+            }
+        }
+        // Fallback: om ingen specifik specialist finns, erbjud allmänt behöriga mekaniker
+        if (qualified.isEmpty()) {
+            for (Mechanic m : all) {
+                String resolvedSpec = SeedText.resolve(m.getSpecialization());
+                String s = resolvedSpec != null ? resolvedSpec.toLowerCase() : "";
+                if (s.contains("general") || s.contains("allmän")) {
+                    qualified.add(m);
+                }
+            }
+        }
+        return qualified;
+    }
+
+    public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {
+        if (service == null) {
+            return true;
+        }
+        if (mechanic == null) {
+            return false;
+        }
+        String spec = SeedText.resolve(mechanic.getSpecialization());
+        if (spec == null || spec.trim().isEmpty()) {
+            return false;
+        }
+        return matchesSpecialization(spec.trim(), service);
+    }
+
+    public static boolean matchesSpecialization(String spec, ServiceItem service) {
+        if (service == null || spec == null || spec.trim().isEmpty()) {
+            return false;
+        }
+
+        String resolvedName = SeedText.resolve(service.getName());
+        String resolvedDesc = SeedText.resolve(service.getDescription());
+        String sName = resolvedName != null ? resolvedName.toLowerCase() : "";
+        String sDesc = resolvedDesc != null ? resolvedDesc.toLowerCase() : "";
+        String sSpec = spec.toLowerCase();
+
+        // 1. Direkt likhet eller substring-matchning
+        if (sName.equals(sSpec) || sName.contains(sSpec) || sSpec.contains(sName)) {
+            return true;
+        }
+
+        // 2. Ämnesspecifika domängrupperingar
+        boolean isBrakesSpec = sSpec.contains("brake") || sSpec.contains("broms");
+        boolean isBrakesService = sName.contains("brake") || sName.contains("broms")
+                || sDesc.contains("brake") || sDesc.contains("broms")
+                || sDesc.contains("belägg") || sDesc.contains("bromsok");
+        if (isBrakesSpec && isBrakesService) {
+            return true;
+        }
+
+        boolean isDiagSpec = sSpec.contains("diagnos") || sSpec.contains("felsök") || sSpec.contains("felkod") || sSpec.contains("obd");
+        boolean isDiagService = sName.contains("diagnos") || sName.contains("felsök")
+                || sDesc.contains("diagnos") || sDesc.contains("felsök")
+                || sDesc.contains("felkod") || sDesc.contains("obd");
+        if (isDiagSpec && isDiagService) {
+            return true;
+        }
+
+        boolean isTyreSpec = sSpec.contains("däck") || sSpec.contains("hjul") || sSpec.contains("tyre") || sSpec.contains("tire") || sSpec.contains("wheel");
+        boolean isTyreService = sName.contains("däck") || sName.contains("hjul") || sName.contains("tyre") || sName.contains("tire")
+                || sDesc.contains("däck") || sDesc.contains("hjul") || sDesc.contains("tyre") || sDesc.contains("tire");
+        if (isTyreSpec && isTyreService) {
+            return true;
+        }
+
+        boolean isGeneralSpec = sSpec.contains("general") || sSpec.contains("allmän") || sSpec.equals("service");
+        boolean isGeneralService = sName.contains("oil") || sName.contains("olja")
+                || sName.contains("annual") || sName.contains("årlig")
+                || sName.contains("service") || sName.contains("underhåll");
+        if (isGeneralSpec && isGeneralService && !isBrakesService && !isDiagService && !isTyreService) {
+            return true;
+        }
+
+        // 3. Ord- och stam-matchning i båda riktningarna
+        String[] specTokens = sSpec.split("[\\s,;&/\\-]+");
+        String[] serviceTokens = (sName + " " + sDesc).split("[\\s,;&/\\-]+");
+
+        Set<String> genericWords = new HashSet<>(Arrays.asList(
+                "service", "system", "arbete", "underhåll", "reparation", "repair",
+                "byte", "kontroll", "check", "inspection", "inspektion",
+                "general", "allmän", "bil", "fordon", "auto", "car", "och", "and", "med", "with", "för", "for"
+        ));
+
+        for (String sToken : specTokens) {
+            String sc = sToken.replaceAll("[^a-zåäö0-9]", "");
+            if (sc.length() < 2 || genericWords.contains(sc)) continue;
+
+            for (String svToken : serviceTokens) {
+                String svc = svToken.replaceAll("[^a-zåäö0-9]", "");
+                if (svc.length() < 2 || genericWords.contains(svc)) continue;
+
+                // Exakt matchning för korta ord (t.ex. "ac", "ev")
+                if (sc.equals(svc)) {
+                    return true;
+                }
+
+                if (sc.length() >= 3 && svc.length() >= 3) {
+                    // Delsträng mellan orden (minst 3 tecken)
+                    if (sc.contains(svc) || svc.contains(sc)) {
+                        return true;
+                    }
+
+                    // Gemensam stam på minst 4 tecken
+                    int minLen = Math.min(sc.length(), svc.length());
+                    if (minLen >= 4) {
+                        int commonPrefix = 0;
+                        while (commonPrefix < minLen && sc.charAt(commonPrefix) == svc.charAt(commonPrefix)) {
+                            commonPrefix++;
+                        }
+                        if (commonPrefix >= 4) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     public List<WorkOrder> getWorkOrders() {
-        return Collections.unmodifiableList(Database.getWorkOrders());
+        return workOrderService.getAll();
     }
 
     public List<Invoice> getInvoices() {
-        return Collections.unmodifiableList(Database.getInvoices());
+        return billingService.getAll();
     }
 
     public List<Payment> getPayments() {
-        return Collections.unmodifiableList(Database.getPayments());
+        return paymentService.getAll();
     }
 
+    private final com.wac.autocore.ui.ConsolePrinter printer = new com.wac.autocore.ui.ConsolePrinter();
+    private final CustomerService customerService = new CustomerService();
+    private final VehicleService vehicleService = new VehicleService(customerService);
+    private final WorkOrderService workOrderService = new WorkOrderService();
+    private final BookingService bookingService = new BookingService(workOrderService);
+    private final BillingService billingService = new BillingService();
+    private final PaymentService paymentService = new PaymentService();
+    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final MechanicRepository mechanicRepository = new MechanicRepository();
+    private final CustomerRepository customerRepository = new CustomerRepository();
+    private final VehicleRepository vehicleRepository = new VehicleRepository();
+    private final BookingRepository bookingRepository = new BookingRepository();
+
     public void showCustomers() {
-        System.out.println();
-        System.out.println("=== CUSTOMERS ===");
-
-        if (Database.getCustomers().isEmpty()) {
-            System.out.println("No customers found.");
-            return;
-        }
-
-        for (Customer customer : Database.getCustomers()) {
-            System.out.println(customer);
-        }
+        printer.printCustomers(customerService.getAll());
     }
 
     public void showVehicles() {
-        System.out.println();
-        System.out.println("=== VEHICLES ===");
-
-        if (Database.getVehicles().isEmpty()) {
-            System.out.println("No vehicles found.");
-            return;
-        }
-
-        for (Vehicle vehicle : Database.getVehicles()) {
-            System.out.println(vehicle);
-        }
+        printer.printVehicles(vehicleService.getAll());
     }
 
     public void showBookings() {
-        System.out.println();
-        System.out.println("=== BOOKINGS ===");
-
-        if (Database.getBookings().isEmpty()) {
-            System.out.println("No bookings found.");
-            return;
-        }
-
-        for (Booking booking : Database.getBookings()) {
-            System.out.println(booking);
-        }
+        printer.printBookings(bookingService.getAll());
     }
 
     public void showServiceItems() {
-        System.out.println();
-        System.out.println("=== SERVICES ===");
-
-        if (Database.getServiceItems().isEmpty()) {
-            System.out.println("No services found.");
-            return;
-        }
-
-        for (ServiceItem serviceItem : Database.getServiceItems()) {
-            System.out.println(serviceItem);
-        }
+        printer.printServiceItems(getServiceItems());
     }
 
     public void showMechanics() {
-        System.out.println();
-        System.out.println("=== MECHANICS ===");
-
-        if (Database.getMechanics().isEmpty()) {
-            System.out.println("No mechanics found.");
-            return;
-        }
-
-        for (Mechanic mechanic : Database.getMechanics()) {
-            System.out.println(mechanic);
-        }
+        printer.printMechanics(getMechanics());
     }
 
     public void showWorkOrders() {
-        System.out.println();
-        System.out.println("=== WORK ORDERS ===");
-
-        if (Database.getWorkOrders().isEmpty()) {
-            System.out.println("No work orders found.");
-            return;
-        }
-
-        for (WorkOrder workOrder : Database.getWorkOrders()) {
-            System.out.println(workOrder);
-        }
+        printer.printWorkOrders(workOrderService.getAll());
     }
 
     public void showInvoices() {
-        System.out.println();
-        System.out.println("=== INVOICES ===");
-
-        if (Database.getInvoices().isEmpty()) {
-            System.out.println("No invoices found.");
-            return;
-        }
-
-        for (Invoice invoice : Database.getInvoices()) {
-            System.out.println(invoice);
-        }
+        printer.printInvoices(billingService.getAll());
     }
 
     public void showPayments() {
-        System.out.println();
-        System.out.println("=== PAYMENTS ===");
-
-        if (Database.getPayments().isEmpty()) {
-            System.out.println("No payments found.");
-            return;
-        }
-
-        for (Payment payment : Database.getPayments()) {
-            System.out.println(payment);
-        }
+        printer.printPayments(paymentService.getAll());
     }
 
     public Customer createCustomer(String name, String phone, String email) {
-        int id = Database.getCustomers().size() + 1;
-
-        Customer customer = new Customer(id, name, phone, email);
-        Database.getCustomers().add(customer);
-
-        System.out.println("Customer created successfully.");
-        System.out.println(customer);
-
-        return customer;
+        return customerService.createCustomer(name, phone, email);
     }
 
     public Vehicle createVehicle(String registrationNumber,
@@ -177,383 +261,177 @@ public class GarageSystem {
                                  String model,
                                  int year,
                                  int customerId) {
-
-        Customer customer = findCustomer(customerId);
-
-        if (customer == null) {
-            System.out.println("Customer with ID " + customerId + " does not exist.");
-            return null;
-        }
-
-        int id = Database.getVehicles().size() + 1;
-
-        Vehicle vehicle = new Vehicle(
-                id,
-                registrationNumber,
-                brand,
-                model,
-                year,
-                customerId
-        );
-
-        Database.getVehicles().add(vehicle);
-
-        System.out.println("Vehicle created successfully.");
-        System.out.println(vehicle);
-
-        return vehicle;
+        return vehicleService.createVehicle(registrationNumber, brand, model, year, customerId);
     }
 
     public Booking createBooking(int vehicleId,
                                  LocalDate date,
                                  String description) {
+        return bookingService.createBooking(vehicleId, date, description);
+    }
 
-        Vehicle vehicle = findVehicle(vehicleId);
-
-        if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
-        }
-
-        int id = Database.getBookings().size() + 1;
-
-        Booking booking = new Booking(
-                id,
-                vehicleId,
-                date,
-                description
-        );
-
-        Database.getBookings().add(booking);
-
-        System.out.println("Booking created successfully.");
-        System.out.println(booking);
-
-        return booking;
+    public Booking createBooking(int vehicleId,
+                                 LocalDate date,
+                                 String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
+        return bookingService.createBooking(vehicleId, date, description,
+                startTime, mechanicId, serviceItemId);
     }
 
     public WorkOrder createWorkOrder(int bookingId,
                                      int mechanicId,
                                      int... serviceItemIds) {
+        return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
+    }
 
-        Booking booking = findBooking(bookingId);
-
-        if (booking == null) {
-            System.out.println("Booking with ID " + bookingId + " does not exist.");
-            return null;
-        }
-
-        Mechanic mechanic = findMechanic(mechanicId);
-
-        if (mechanic == null) {
-            System.out.println("Mechanic with ID " + mechanicId + " does not exist.");
-            return null;
-        }
-
-        if (!mechanic.isAvailable()) {
-            System.out.println("Mechanic " + mechanic.getName() + " is not available.");
-            return null;
-        }
-
-        for (int serviceItemId : serviceItemIds) {
-            if (findServiceItem(serviceItemId) == null) {
-                System.out.println(
-                        "Service item with ID " + serviceItemId + " does not exist."
-                );
-                return null;
-            }
-        }
-
-        int id = Database.getWorkOrders().size() + 1;
-
-        WorkOrder workOrder = new WorkOrder(
-                id,
-                bookingId,
-                mechanicId
-        );
-
-        for (int serviceItemId : serviceItemIds) {
-            workOrder.addServiceItem(serviceItemId);
-        }
-
-        Database.getWorkOrders().add(workOrder);
-
-        booking.setStatus("WORK_ORDER_CREATED");
-
-        System.out.println("Work order created successfully.");
-        System.out.println(workOrder);
-
-        return workOrder;
+    public int getEstimatedDuration(int... serviceItemsIds) {
+        return workOrderService.getTotalEstimatedMinutes(serviceItemsIds);
     }
 
     public void startWorkOrder(int workOrderId) {
-        WorkOrder workOrder = findWorkOrder(workOrderId);
-
-        if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return;
-        }
-
-        if (!workOrder.getStatus().equals("CREATED")) {
-            System.out.println("Work order cannot be started.");
-            return;
-        }
-
-        Mechanic mechanic = findMechanic(workOrder.getMechanicId());
-        Booking booking = findBooking(workOrder.getBookingId());
-
-        if (mechanic != null) {
-            mechanic.setAvailable(false);
-        }
-
-        if (booking != null) {
-            booking.setStatus("IN_PROGRESS");
-        }
-
-        workOrder.setStatus("IN_PROGRESS");
-
-        System.out.println("Work order " + workOrderId + " has been started.");
+        workOrderService.startWorkOrder(workOrderId);
     }
 
     public void completeWorkOrder(int workOrderId) {
-        WorkOrder workOrder = findWorkOrder(workOrderId);
-
-        if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return;
-        }
-
-        if (!workOrder.getStatus().equals("IN_PROGRESS")) {
-            System.out.println("Only work orders in progress can be completed.");
-            return;
-        }
-
-        Mechanic mechanic = findMechanic(workOrder.getMechanicId());
-        Booking booking = findBooking(workOrder.getBookingId());
-
-        workOrder.setStatus("COMPLETED");
-
-        if (mechanic != null) {
-            mechanic.setAvailable(true);
-        }
-
-        if (booking != null) {
-            booking.setStatus("COMPLETED");
-        }
-
-        System.out.println("Work order " + workOrderId + " has been completed.");
+        workOrderService.completeWorkOrder(workOrderId);
     }
 
     public Invoice createInvoice(int workOrderId, String discountCode) {
-        WorkOrder workOrder = findWorkOrder(workOrderId);
-
-        if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return null;
-        }
-
-        if (!workOrder.getStatus().equals("COMPLETED")) {
-            System.out.println("Invoice can only be created for a completed work order.");
-            return null;
-        }
-
-        double amount = 0.0;
-
-        for (Integer serviceItemId : workOrder.getServiceItemIds()) {
-            ServiceItem serviceItem = findServiceItem(serviceItemId);
-
-            if (serviceItem != null) {
-                amount += serviceItem.getPrice();
-            }
-        }
-
-        double discount = 0.0;
-
-        Booking booking = findBooking(workOrder.getBookingId());
-
-        if (booking != null) {
-            Vehicle vehicle = findVehicle(booking.getVehicleId());
-
-            if (vehicle != null) {
-                Customer customer = findCustomer(vehicle.getCustomerId());
-
-                if (customer != null && customer.isVip()) {
-                    discount += amount * 0.10;
-                    System.out.println("VIP discount applied: 10%");
-                }
-            }
-        }
-
-        if (discountCode != null && !discountCode.trim().isEmpty()) {
-
-            if (discountCode.equalsIgnoreCase("WELCOME10")) {
-                discount += amount * 0.10;
-                System.out.println("Discount code WELCOME10 applied.");
-
-            } else if (discountCode.equalsIgnoreCase("SERVICE200")) {
-                discount += 200.0;
-                System.out.println("Discount code SERVICE200 applied.");
-
-            } else {
-                System.out.println("Unknown discount code. No code discount applied.");
-            }
-        }
-
-        if (discount > amount) {
-            discount = amount;
-        }
-
-        int id = Database.getInvoices().size() + 1;
-
-        Invoice invoice = new Invoice(
-                id,
-                workOrderId,
-                LocalDate.now(),
-                amount
-        );
-
-        invoice.setDiscount(discount);
-
-        Database.getInvoices().add(invoice);
-
-        System.out.println("Invoice created successfully.");
-        System.out.println(invoice);
-
-        System.out.println("Sending invoice notification to customer...");
-        System.out.println("Notification sent.");
-
-        return invoice;
+        return billingService.createInvoice(workOrderId, discountCode);
     }
 
     public Payment processPayment(int invoiceId, String paymentType) {
-        Invoice invoice = findInvoice(invoiceId);
-
-        if (invoice == null) {
-            System.out.println("Invoice with ID " + invoiceId + " does not exist.");
-            return null;
-        }
-
-        if (invoice.isPaid()) {
-            System.out.println("Invoice has already been paid.");
-            return null;
-        }
-
-        int id = Database.getPayments().size() + 1;
-
-        Payment payment = new Payment(
-                id,
-                invoiceId,
-                invoice.getTotalAmount(),
-                paymentType
-        );
-
-        boolean successful = false;
-
-        if (paymentType.equalsIgnoreCase("CARD")) {
-
-            System.out.println("Connecting directly to SuperCardPayment...");
-            System.out.println("Card payment approved.");
-            successful = true;
-
-        } else if (paymentType.equalsIgnoreCase("SWISH")) {
-
-            System.out.println("Calling Swish payment service...");
-            System.out.println("Swish payment approved.");
-            successful = true;
-
-        } else if (paymentType.equalsIgnoreCase("CASH")) {
-
-            System.out.println("Registering cash payment...");
-            successful = true;
-
-        } else {
-
-            System.out.println("Unknown payment type.");
-        }
-
-        payment.setSuccessful(successful);
-        Database.getPayments().add(payment);
-
-        if (successful) {
-            invoice.setPaid(true);
-
-            System.out.println("Payment completed successfully.");
-            System.out.println("Sending payment confirmation to customer...");
-            System.out.println("Confirmation sent.");
-        } else {
-            System.out.println("Payment failed.");
-        }
-
-        return payment;
+        return paymentService.processPayment(invoiceId, paymentType);
     }
 
-    private Customer findCustomer(int id) {
-        for (Customer customer : Database.getCustomers()) {
-            if (customer.getId() == id) {
-                return customer;
-            }
-        }
-
-        return null;
+    public void updateMechanic(Mechanic mechanic) throws SQLException {
+        mechanicRepository.save(mechanic);
     }
 
-    private Vehicle findVehicle(int id) {
-        for (Vehicle vehicle : Database.getVehicles()) {
-            if (vehicle.getId() == id) {
-                return vehicle;
+    public boolean canDeleteMechanic(int mechanicId) {
+        List<WorkOrder> orders = getWorkOrders();
+        for (WorkOrder wo : orders) {
+            if (wo.getMechanicId() == mechanicId && !"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+                return false;
             }
         }
-
-        return null;
+        return true;
     }
 
-    private Booking findBooking(int id) {
-        for (Booking booking : Database.getBookings()) {
-            if (booking.getId() == id) {
-                return booking;
-            }
-        }
-
-        return null;
+    public void deleteMechanic(int mechanicId) throws SQLException {
+        mechanicRepository.delete(mechanicId);
+        MechanicSchedule.getInstance().removeSlotsForMechanic(mechanicId);
     }
 
-    private Mechanic findMechanic(int id) {
-        for (Mechanic mechanic : Database.getMechanics()) {
-            if (mechanic.getId() == id) {
-                return mechanic;
-            }
-        }
-
-        return null;
+    public Mechanic createMechanic(String name, String phone, String specialization) throws SQLException {
+        Mechanic mechanic = new Mechanic(0, name, phone, specialization);
+        mechanicRepository.save(mechanic);
+        return mechanic;
     }
 
-    private ServiceItem findServiceItem(int id) {
-        for (ServiceItem serviceItem : Database.getServiceItems()) {
-            if (serviceItem.getId() == id) {
-                return serviceItem;
-            }
-        }
-
-        return null;
+    public void updateCustomer(Customer customer) throws SQLException {
+        customerRepository.save(customer);
     }
 
-    private WorkOrder findWorkOrder(int id) {
-        for (WorkOrder workOrder : Database.getWorkOrders()) {
-            if (workOrder.getId() == id) {
-                return workOrder;
+    public boolean canDeleteCustomer(int customerId) {
+        for (Vehicle v : getVehicles()) {
+            if (v.getCustomerId() == customerId) {
+                if (!canDeleteVehicle(v.getId())) {
+                    return false;
+                }
             }
         }
-
-        return null;
+        return true;
     }
 
-    private Invoice findInvoice(int id) {
-        for (Invoice invoice : Database.getInvoices()) {
-            if (invoice.getId() == id) {
-                return invoice;
+    public void deleteCustomer(int customerId) throws SQLException {
+        for (Vehicle v : getVehicles()) {
+            if (v.getCustomerId() == customerId) {
+                vehicleRepository.delete(v.getId());
             }
         }
+        customerRepository.delete(customerId);
+    }
 
-        return null;
+    public void updateVehicle(Vehicle vehicle) throws SQLException {
+        vehicleRepository.save(vehicle);
+    }
+
+    public boolean canDeleteVehicle(int vehicleId) {
+        for (Booking b : getBookings()) {
+            if (b.getVehicleId() == vehicleId && !"CANCELLED".equalsIgnoreCase(b.getStatus())) {
+                return false;
+            }
+        }
+        for (WorkOrder wo : getWorkOrders()) {
+            if (!"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+                for (Booking b : getBookings()) {
+                    if (b.getId() == wo.getBookingId() && b.getVehicleId() == vehicleId) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public void deleteVehicle(int vehicleId) throws SQLException {
+        vehicleRepository.delete(vehicleId);
+    }
+
+    public void updateBooking(Booking booking) throws SQLException {
+        bookingRepository.save(booking);
+        MechanicSchedule.getInstance().syncFromDatabase();
+    }
+
+    public boolean canCancelOrDeleteBooking(int bookingId) {
+        for (WorkOrder wo : getWorkOrders()) {
+            if (wo.getBookingId() == bookingId && !"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void cancelBooking(int bookingId) throws SQLException {
+        Booking b = bookingService.findById(bookingId);
+        if (b != null) {
+            b.setStatus("CANCELLED");
+            bookingRepository.save(b);
+            MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
+            MechanicSchedule.getInstance().syncFromDatabase();
+        }
+    }
+
+    public void deleteBooking(int bookingId) throws SQLException {
+        bookingRepository.delete(bookingId);
+        MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
+        MechanicSchedule.getInstance().syncFromDatabase();
+    }
+
+    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes) throws SQLException {
+        ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes);
+        serviceItemRepository.save(item);
+        return item;
+    }
+
+    public void updateServiceItem(ServiceItem item) throws SQLException {
+        serviceItemRepository.save(item);
+    }
+
+    public boolean canDeleteServiceItem(int serviceItemId) {
+        for (WorkOrder wo : getWorkOrders()) {
+            if (!"COMPLETED".equalsIgnoreCase(wo.getStatus()) && wo.getServiceItemIds() != null) {
+                for (int id : wo.getServiceItemIds()) {
+                    if (id == serviceItemId) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public void deleteServiceItem(int serviceItemId) throws SQLException {
+        serviceItemRepository.delete(serviceItemId);
     }
 }
