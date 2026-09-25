@@ -95,22 +95,22 @@ public class SeedData {
 
             LocalDate today = LocalDate.now();
 
-            Booking firstBooking = new Booking(0, volvo.getId(), today, "Oljeservice & filterbyte");
+            Booking firstBooking = new Booking(0, volvo.getId(), today, "Oil change & filter replacement");
             bookingRepository.save(firstBooking);
 
-            Booking secondBooking = new Booking(0, volkswagen.getId(), today, "Bromskontroll fram");
+            Booking secondBooking = new Booking(0, volkswagen.getId(), today, "Front brake inspection");
             bookingRepository.save(secondBooking);
 
-            Booking thirdBooking = new Booking(0, toyota.getId(), today.plusDays(1), "Helrenovering bromsar");
+            Booking thirdBooking = new Booking(0, toyota.getId(), today.plusDays(1), "Full brake overhaul");
             bookingRepository.save(thirdBooking);
 
-            Booking fourthBooking = new Booking(0, bmw.getId(), today, "Bromsok och belägg");
+            Booking fourthBooking = new Booking(0, bmw.getId(), today, "Brake calipers and pads");
             bookingRepository.save(fourthBooking);
 
-            Booking fifthBooking = new Booking(0, audi.getId(), today, "Felkodsläsning OBD2");
+            Booking fifthBooking = new Booking(0, audi.getId(), today, "OBD2 fault code reading");
             bookingRepository.save(fifthBooking);
 
-            Booking sixthBooking = new Booking(0, mercedes.getId(), today.plusDays(1), "Elektronikfelsökning");
+            Booking sixthBooking = new Booking(0, mercedes.getId(), today.plusDays(1), "Electronic fault diagnosis");
             bookingRepository.save(sixthBooking);
 
             WorkOrder firstOrder = new WorkOrder(0, firstBooking.getId(), johan.getId());
