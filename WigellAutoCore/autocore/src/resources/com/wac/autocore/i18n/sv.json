@@ -479,10 +479,10 @@
       "create_order": "Skapa arbetsorder ↗"
     },
     "load": {
-      "free": "Låg beläggning",
-      "moderate": "Medelbeläggning",
-      "busy": "Hög beläggning",
-      "full": "Fullbelagd"
+      "free": "Låg arbetsbelastning",
+      "moderate": "Medel arbetsbelastning",
+      "busy": "Hög arbetsbelastning",
+      "full": "Full arbetsbelastning"
     },
     "specialization": {
       "general_service": "Allmän service",
