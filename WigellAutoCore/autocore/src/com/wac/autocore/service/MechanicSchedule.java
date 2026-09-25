@@ -447,6 +447,23 @@ public class MechanicSchedule {
     }
 
     /**
+     * Avboka alla tidsslottar kopplade till ett specifikt boknings-ID.
+     */
+    public synchronized boolean cancelSlotForBooking(int bookingId) {
+        if (bookingId <= 0) return false;
+        boolean removed = false;
+        java.util.Iterator<java.util.Map.Entry<String, TimeSlot>> it = slots.entrySet().iterator();
+        while (it.hasNext()) {
+            java.util.Map.Entry<String, TimeSlot> entry = it.next();
+            if (entry.getValue().getBookingId() == bookingId) {
+                it.remove();
+                removed = true;
+            }
+        }
+        return removed;
+    }
+
+    /**
      * Beräknar belastningsgrad för en dag (0-9 timmar).
      */
     public synchronized DayLoad getDayLoad(int mechanicId, LocalDate date) {

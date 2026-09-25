@@ -61,12 +61,9 @@ public final class ServiceItemDialogs {
                     return;
                 }
 
-                double price;
-                int time;
-                try {
-                    price = Double.parseDouble(priceStr.replace(",", "."));
-                    time = Integer.parseInt(timeStr);
-                } catch (NumberFormatException e) {
+                Double price = parsePrice(priceStr);
+                Integer time = parseMinutes(timeStr);
+                if (price == null || time == null) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
                     return;
                 }
@@ -126,12 +123,9 @@ public final class ServiceItemDialogs {
                     return;
                 }
 
-                double price;
-                int time;
-                try {
-                    price = Double.parseDouble(priceStr.replace(",", "."));
-                    time = Integer.parseInt(timeStr);
-                } catch (NumberFormatException e) {
+                Double price = parsePrice(priceStr);
+                Integer time = parseMinutes(timeStr);
+                if (price == null || time == null) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
                     return;
                 }
@@ -151,6 +145,34 @@ public final class ServiceItemDialogs {
                 if (onSuccess != null) onSuccess.run();
             }
         });
+    }
+
+    static Double parsePrice(String priceStr) {
+        if (priceStr == null) return null;
+        String clean = priceStr.replaceAll("[^0-9,.]", "").replace(",", ".").trim();
+        if (clean.isEmpty()) return null;
+        try {
+            double val = Double.parseDouble(clean);
+            return val >= 0 ? val : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    static Integer parseMinutes(String timeStr) {
+        if (timeStr == null) return null;
+        String clean = timeStr.replaceAll("[^0-9,.]", "").replace(",", ".").trim();
+        if (clean.isEmpty()) return null;
+        try {
+            if (clean.contains(".")) {
+                double val = Double.parseDouble(clean);
+                return val > 0 ? (int) Math.round(val) : null;
+            }
+            int val = Integer.parseInt(clean);
+            return val > 0 ? val : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public static void showDeleteServiceItemConfirmation(GarageSystem garage, ServiceItem serviceItem, Runnable onSuccess) {

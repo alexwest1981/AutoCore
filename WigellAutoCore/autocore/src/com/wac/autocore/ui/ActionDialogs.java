@@ -38,7 +38,7 @@ public final class ActionDialogs {
     // Delade UI-hjälpmetoder för dialoger (används av domändialogerna)
     // =========================================================================
 
-    static void styleDialog(Dialog<?> dialog) {
+    public static void styleDialog(Dialog<?> dialog) {
         DialogPane pane = dialog.getDialogPane();
         if (!pane.getStyleClass().contains("root")) {
             pane.getStyleClass().add("root");
@@ -64,7 +64,7 @@ public final class ActionDialogs {
         });
     }
 
-    static GridPane createGrid() {
+    public static GridPane createGrid() {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -72,7 +72,7 @@ public final class ActionDialogs {
         return grid;
     }
 
-    static void showError(String title, String message) {
+    public static void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
         alert.setHeaderText(null);

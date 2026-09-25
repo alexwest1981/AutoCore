@@ -236,10 +236,10 @@
       "model": "Modell",
       "year": "Årsmodell",
       "customer_select": "Välj ägare (kund)",
-      "reg_prompt": "ABC123",
-      "brand_prompt": "Volvo",
-      "model_prompt": "V60",
-      "year_prompt": "2022"
+      "reg_prompt": "T.ex. ABC123",
+      "brand_prompt": "T.ex. Volvo",
+      "model_prompt": "T.ex. V60",
+      "year_prompt": "T.ex. 2022"
     },
     "booking": {
       "create": {
@@ -271,6 +271,8 @@
       "time_select": "Välj starttid",
       "no_service": "Ingen specifik tjänst",
       "no_mechanic": "Ingen mekaniker (tilldelas senare)",
+      "no_mechanic_for_spec": "Ingen mekaniker matchar specialiseringen för denna tjänst",
+      "mechanics_filtered_for_spec": "{0} kvalificerad(e) mekaniker för denna tjänst",
       "estimated_end": "Beräknad sluttid: {0} ({1} min)",
       "time_window": "Arbetspass: {0} – {1}",
       "time_available": "Ledig",
@@ -368,7 +370,9 @@
     },
     "validation": {
       "required": "Vänligen fyll i alla obligatoriska fält.",
-      "invalid_number": "Vänligen ange ett giltigt numeriskt värde."
+      "invalid_number": "Vänligen ange ett giltigt numeriskt värde.",
+      "missing_fields": "Följande fält saknas: {0}",
+      "invalid_year": "Vänligen ange en giltig årsmodell (t.ex. 2022)."
     },
     "success": {
       "saved": "Sparades framgångsrikt."

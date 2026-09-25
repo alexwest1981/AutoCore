@@ -777,6 +777,10 @@ TableView .table-row-cell:selected:focused .table-cell { -fx-background-color: -
     -fx-border-width: 2px;
 }
 
+.text-field, .text-area {
+    -fx-prompt-text-fill: -wac-muted;
+}
+
 .search {
     -fx-prompt-text-fill: -wac-muted;
 }

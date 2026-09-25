@@ -236,10 +236,10 @@
       "model": "Model",
       "year": "Model year",
       "customer_select": "Select owner (customer)",
-      "reg_prompt": "ABC123",
-      "brand_prompt": "Volvo",
-      "model_prompt": "V60",
-      "year_prompt": "2022"
+      "reg_prompt": "e.g. ABC123",
+      "brand_prompt": "e.g. Volvo",
+      "model_prompt": "e.g. V60",
+      "year_prompt": "e.g. 2022"
     },
     "booking": {
       "create": {
@@ -271,6 +271,8 @@
       "time_select": "Select start time",
       "no_service": "No specific service",
       "no_mechanic": "No mechanic (assign later)",
+      "no_mechanic_for_spec": "No mechanic matches the specialization for this service",
+      "mechanics_filtered_for_spec": "{0} qualified mechanic(s) for this service",
       "estimated_end": "Estimated end time: {0} ({1} min)",
       "time_window": "Working slot: {0} – {1}",
       "time_available": "Available",
@@ -368,7 +370,9 @@
     },
     "validation": {
       "required": "Please fill in all required fields.",
-      "invalid_number": "Please enter a valid numeric value."
+      "invalid_number": "Please enter a valid numeric value.",
+      "missing_fields": "The following fields are missing: {0}",
+      "invalid_year": "Please enter a valid model year (e.g. 2022)."
     },
     "success": {
       "saved": "Saved successfully."

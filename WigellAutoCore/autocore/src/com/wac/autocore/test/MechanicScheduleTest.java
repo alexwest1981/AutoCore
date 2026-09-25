@@ -183,4 +183,24 @@ public class MechanicScheduleTest {
 
         schedule.cancelSlot(mechId, testDate, 10);
     }
+
+    public void testCancelSlotForBooking() {
+        MechanicSchedule schedule = MechanicSchedule.getInstance();
+        LocalDate testDate = LocalDate.now().plusDays(25);
+        int mechId = 1;
+        int testBookingId = 777;
+
+        boolean booked = schedule.bookSlot(mechId, testDate, 14, testBookingId, "Kund Namn", "XYZ123", "Service");
+        TestRunner.assertTrue(booked, "Slot ska bokas för bokningsId 777");
+
+        com.wac.autocore.model.Mechanic mech = new com.wac.autocore.model.Mechanic(mechId, "Test Mekaniker", "070-0000000", "Allmän");
+        TestRunner.assertTrue(com.wac.autocore.ui.BookingDialogs.isHourBooked(null, mech, testDate, 14, 0),
+                "Kl 14 ska vara upptagen före avbokning");
+
+        boolean removed = schedule.cancelSlotForBooking(testBookingId);
+        TestRunner.assertTrue(removed, "cancelSlotForBooking ska returnera true när slot togs bort");
+
+        TestRunner.assertFalse(com.wac.autocore.ui.BookingDialogs.isHourBooked(null, mech, testDate, 14, 0),
+                "Kl 14 ska vara ledig efter att bokningen avbokats");
+    }
 }

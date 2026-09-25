@@ -18,8 +18,12 @@ import com.wac.autocore.repository.VehicleRepository;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GarageSystem {
 
@@ -55,6 +59,136 @@ public class GarageSystem {
             System.out.println("Could not read mechanics: " + e.getMessage());
             return Collections.emptyList();
         }
+    }
+
+    public List<Mechanic> getQualifiedMechanics(ServiceItem service) {
+        List<Mechanic> all = getMechanics();
+        if (service == null) {
+            return all;
+        }
+        List<Mechanic> qualified = new ArrayList<Mechanic>();
+        for (Mechanic m : all) {
+            if (isMechanicQualified(m, service)) {
+                qualified.add(m);
+            }
+        }
+        // Fallback: om ingen specifik specialist finns, erbjud allmänt behöriga mekaniker
+        if (qualified.isEmpty()) {
+            for (Mechanic m : all) {
+                String s = m.getSpecialization() != null ? m.getSpecialization().toLowerCase() : "";
+                if (s.contains("general") || s.contains("allmän")) {
+                    qualified.add(m);
+                }
+            }
+        }
+        return qualified;
+    }
+
+    public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {
+        if (service == null) {
+            return true;
+        }
+        if (mechanic == null) {
+            return false;
+        }
+        String spec = mechanic.getSpecialization();
+        if (spec == null || spec.trim().isEmpty()) {
+            return false;
+        }
+        return matchesSpecialization(spec.trim(), service);
+    }
+
+    public static boolean matchesSpecialization(String spec, ServiceItem service) {
+        if (service == null || spec == null || spec.trim().isEmpty()) {
+            return false;
+        }
+
+        String sName = service.getName() != null ? service.getName().toLowerCase() : "";
+        String sDesc = service.getDescription() != null ? service.getDescription().toLowerCase() : "";
+        String sSpec = spec.toLowerCase();
+
+        // 1. Direkt likhet eller substring-matchning
+        if (sName.equals(sSpec) || sName.contains(sSpec) || sSpec.contains(sName)) {
+            return true;
+        }
+
+        // 2. Ämnesspecifika domängrupperingar
+        boolean isBrakesSpec = sSpec.contains("brake") || sSpec.contains("broms");
+        boolean isBrakesService = sName.contains("brake") || sName.contains("broms")
+                || sDesc.contains("brake") || sDesc.contains("broms")
+                || sDesc.contains("belägg") || sDesc.contains("bromsok");
+        if (isBrakesSpec && isBrakesService) {
+            return true;
+        }
+
+        boolean isDiagSpec = sSpec.contains("diagnos") || sSpec.contains("felsök") || sSpec.contains("felkod") || sSpec.contains("obd");
+        boolean isDiagService = sName.contains("diagnos") || sName.contains("felsök")
+                || sDesc.contains("diagnos") || sDesc.contains("felsök")
+                || sDesc.contains("felkod") || sDesc.contains("obd");
+        if (isDiagSpec && isDiagService) {
+            return true;
+        }
+
+        boolean isTyreSpec = sSpec.contains("däck") || sSpec.contains("hjul") || sSpec.contains("tyre") || sSpec.contains("tire") || sSpec.contains("wheel");
+        boolean isTyreService = sName.contains("däck") || sName.contains("hjul") || sName.contains("tyre") || sName.contains("tire")
+                || sDesc.contains("däck") || sDesc.contains("hjul") || sDesc.contains("tyre") || sDesc.contains("tire");
+        if (isTyreSpec && isTyreService) {
+            return true;
+        }
+
+        boolean isGeneralSpec = sSpec.contains("general") || sSpec.contains("allmän") || sSpec.equals("service");
+        boolean isGeneralService = sName.contains("oil") || sName.contains("olja")
+                || sName.contains("annual") || sName.contains("årlig")
+                || sName.contains("service") || sName.contains("underhåll");
+        if (isGeneralSpec && isGeneralService && !isBrakesService && !isDiagService && !isTyreService) {
+            return true;
+        }
+
+        // 3. Ord- och stam-matchning i båda riktningarna
+        String[] specTokens = sSpec.split("[\\s,;&/\\-]+");
+        String[] serviceTokens = (sName + " " + sDesc).split("[\\s,;&/\\-]+");
+
+        Set<String> genericWords = new HashSet<>(Arrays.asList(
+                "service", "system", "arbete", "underhåll", "reparation", "repair",
+                "byte", "kontroll", "check", "inspection", "inspektion",
+                "general", "allmän", "bil", "fordon", "auto", "car", "och", "and", "med", "with", "för", "for"
+        ));
+
+        for (String sToken : specTokens) {
+            String sc = sToken.replaceAll("[^a-zåäö0-9]", "");
+            if (sc.length() < 2 || genericWords.contains(sc)) continue;
+
+            for (String svToken : serviceTokens) {
+                String svc = svToken.replaceAll("[^a-zåäö0-9]", "");
+                if (svc.length() < 2 || genericWords.contains(svc)) continue;
+
+                // Exakt matchning för korta ord (t.ex. "ac", "ev")
+                if (sc.equals(svc)) {
+                    return true;
+                }
+
+                if (sc.length() >= 3 && svc.length() >= 3) {
+                    // Delsträng mellan orden (minst 3 tecken)
+                    if (sc.contains(svc) || svc.contains(sc)) {
+                        return true;
+                    }
+
+                    // Gemensam stam på minst 4 tecken
+                    int minLen = Math.min(sc.length(), svc.length());
+                    if (minLen >= 4) {
+                        int commonPrefix = 0;
+                        while (commonPrefix < minLen && sc.charAt(commonPrefix) == svc.charAt(commonPrefix)) {
+                            commonPrefix++;
+                        }
+                        if (commonPrefix >= 4) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     public List<WorkOrder> getWorkOrders() {
@@ -259,12 +393,14 @@ public class GarageSystem {
         if (b != null) {
             b.setStatus("CANCELLED");
             bookingRepository.save(b);
+            MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
             MechanicSchedule.getInstance().syncFromDatabase();
         }
     }
 
     public void deleteBooking(int bookingId) throws SQLException {
         bookingRepository.delete(bookingId);
+        MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
         MechanicSchedule.getInstance().syncFromDatabase();
     }
 
