@@ -289,6 +289,10 @@ public class MechanicSchedule {
                     if (ts.getWorkOrderId() == woId) {
                         alreadyBooked = true;
                         break;
+                    } else if (ts.getBookingId() == bId && ts.getWorkOrderId() == 0) {
+                        ts.setWorkOrderId(woId);
+                        alreadyBooked = true;
+                        break;
                     }
                 }
 

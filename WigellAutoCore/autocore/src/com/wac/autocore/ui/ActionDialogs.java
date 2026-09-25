@@ -161,6 +161,10 @@ public final class ActionDialogs {
         WorkOrderDialogs.showCreateWorkOrderDialog(garage, onSuccess);
     }
 
+    public static void showCreateWorkOrderDialog(GarageSystem garage, com.wac.autocore.model.Booking defaultBooking, Runnable onSuccess) {
+        WorkOrderDialogs.showCreateWorkOrderDialog(garage, defaultBooking, onSuccess);
+    }
+
     // =========================================================================
     // 5. Fakturering & Betalning (BillingDialogs)
     // =========================================================================

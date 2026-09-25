@@ -28,11 +28,19 @@ public final class WorkOrderDialogs {
     private WorkOrderDialogs() {}
 
     public static void showCreateWorkOrderDialog(GarageSystem garage, Runnable onSuccess) {
+        showCreateWorkOrderDialog(garage, null, onSuccess);
+    }
+
+    public static void showCreateWorkOrderDialog(GarageSystem garage, Booking defaultBooking, Runnable onSuccess) {
         List<Booking> bookings = new ArrayList<Booking>();
         for (Booking b : garage.getBookings()) {
-            if ("BOOKED".equalsIgnoreCase(b.getStatus())) {
+            if ("BOOKED".equalsIgnoreCase(b.getStatus()) || "CONFIRMED".equalsIgnoreCase(b.getStatus())) {
                 bookings.add(b);
             }
+        }
+
+        if (defaultBooking != null && !bookings.contains(defaultBooking)) {
+            bookings.add(0, defaultBooking);
         }
 
         if (bookings.isEmpty()) {
@@ -58,7 +66,6 @@ public final class WorkOrderDialogs {
 
         ComboBox<Booking> bookingBox = new ComboBox<Booking>();
         bookingBox.getItems().addAll(bookings);
-        bookingBox.getSelectionModel().selectFirst();
         bookingBox.setConverter(new StringConverter<Booking>() {
             @Override
             public String toString(Booking b) {
@@ -70,7 +77,6 @@ public final class WorkOrderDialogs {
 
         ComboBox<Mechanic> mechanicBox = new ComboBox<Mechanic>();
         mechanicBox.getItems().addAll(mechanics);
-        mechanicBox.getSelectionModel().selectFirst();
         mechanicBox.setConverter(new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
@@ -96,9 +102,51 @@ public final class WorkOrderDialogs {
             checkList.add(cb);
             serviceChecks.getChildren().add(cb);
         }
-        if (!checkList.isEmpty()) {
-            checkList.get(0).setSelected(true);
+
+        // Automatisk synkning: när bokning väljs förväljs bokningens mekaniker och tjänst
+        java.util.function.Consumer<Booking> syncFromBooking = b -> {
+            if (b == null) return;
+
+            // 1. Förvälj mekaniker från bokningen
+            if (b.getMechanicId() > 0) {
+                for (Mechanic m : mechanics) {
+                    if (m.getId() == b.getMechanicId()) {
+                        mechanicBox.getSelectionModel().select(m);
+                        break;
+                    }
+                }
+            } else if (mechanicBox.getValue() == null && !mechanics.isEmpty()) {
+                mechanicBox.getSelectionModel().selectFirst();
+            }
+
+            // 2. Förvälj tjänst från bokningen
+            if (b.getServiceItemId() > 0) {
+                boolean matched = false;
+                for (CheckBox cb : checkList) {
+                    Integer sId = (Integer) cb.getUserData();
+                    if (sId != null && sId == b.getServiceItemId()) {
+                        cb.setSelected(true);
+                        matched = true;
+                    } else {
+                        cb.setSelected(false);
+                    }
+                }
+                if (!matched && !checkList.isEmpty()) {
+                    checkList.get(0).setSelected(true);
+                }
+            } else if (!checkList.isEmpty() && checkList.stream().noneMatch(CheckBox::isSelected)) {
+                checkList.get(0).setSelected(true);
+            }
+        };
+
+        bookingBox.valueProperty().addListener((obs, oldB, newB) -> syncFromBooking.accept(newB));
+
+        if (defaultBooking != null && bookings.contains(defaultBooking)) {
+            bookingBox.getSelectionModel().select(defaultBooking);
+        } else {
+            bookingBox.getSelectionModel().selectFirst();
         }
+        syncFromBooking.accept(bookingBox.getValue());
 
         ScrollPane scroll = new ScrollPane(serviceChecks);
         scroll.setFitToWidth(true);

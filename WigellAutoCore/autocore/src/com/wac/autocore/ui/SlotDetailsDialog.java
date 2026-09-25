@@ -150,7 +150,8 @@ public final class SlotDetailsDialog {
                         targetBooking = garage.createBooking(vehicleId, slot.getDate(), slot.getDescription());
                         slot.setBookingId(targetBooking.getId());
                     }
-                    WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId(), 1);
+                    int sId = targetBooking != null && targetBooking.getServiceItemId() > 0 ? targetBooking.getServiceItemId() : 1;
+                    WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId(), sId);
                     if (createdWo != null) {
                         slot.setWorkOrderId(createdWo.getId());
                         if (onRefresh != null) onRefresh.run();
