@@ -583,9 +583,6 @@ public class MechanicKanbanCard {
         } else {
             row.getStyleClass().add("free");
 
-            Label freeLabel = new Label(I18n.get("kanban.day.available"));
-            freeLabel.getStyleClass().add("kanban-slot-free-compact");
-
             Region spr = new Region();
             HBox.setHgrow(spr, Priority.ALWAYS);
 
@@ -609,7 +606,7 @@ public class MechanicKanbanCard {
                 });
             });
 
-            row.getChildren().addAll(timeBadge, freeLabel, spr, bookBtn);
+            row.getChildren().addAll(timeBadge, spr, bookBtn);
         }
 
         VBox slotContainer = new VBox(4);
