@@ -71,6 +71,11 @@ public class Db {
                 + "description TEXT, "
                 + "status TEXT)",
 
+            "CREATE TABLE IF NOT EXISTS booking_service_items ("
+                + "booking_id INTEGER NOT NULL, "
+                + "service_item_id INTEGER NOT NULL, "
+                + "PRIMARY KEY (booking_id, service_item_id))",
+
             "CREATE TABLE IF NOT EXISTS work_orders ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "booking_id INTEGER, "
