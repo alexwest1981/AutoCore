@@ -12,13 +12,18 @@ import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
@@ -39,6 +44,9 @@ public class BookingFormPane extends GridPane {
     private final ComboBox<Vehicle> vehicleBox;
     private final DatePicker datePicker;
     private final ComboBox<ServiceItem> serviceBox;
+    private final ObservableList<ServiceItem> selectedServices = FXCollections.observableArrayList();
+    private final VBox selectedServicesContainer = new VBox(4);
+    private final Label totalSummaryLabel = new Label();
     private final ComboBox<Mechanic> mechanicBox;
     private final Label mechanicFilterHint;
     private final ComboBox<LocalTime> startTimeBox;
@@ -80,10 +88,10 @@ public class BookingFormPane extends GridPane {
         LocalDate dateVal = initialDate != null ? initialDate : LocalDate.now().plusDays(1);
         this.datePicker = new DatePicker(dateVal);
 
-        // 3. Tjänst
+        // 3. Tjänster (stöd för flera val i samma bokning)
         this.serviceBox = new ComboBox<ServiceItem>();
-        this.serviceBox.getItems().add(null);
         this.serviceBox.getItems().addAll(garage.getServiceItems());
+        this.serviceBox.setMaxWidth(Double.MAX_VALUE);
         setupComboBoxDisplay(this.serviceBox, new StringConverter<ServiceItem>() {
             @Override
             public String toString(ServiceItem s) {
@@ -93,16 +101,80 @@ public class BookingFormPane extends GridPane {
             @Override
             public ServiceItem fromString(String string) { return null; }
         });
-        if (existingBooking != null && existingBooking.getServiceItemId() > 0) {
-            for (ServiceItem s : this.serviceBox.getItems()) {
-                if (s != null && s.getId() == existingBooking.getServiceItemId()) {
-                    this.serviceBox.getSelectionModel().select(s);
-                    break;
-                }
-            }
-        } else {
+        if (!this.serviceBox.getItems().isEmpty()) {
             this.serviceBox.getSelectionModel().selectFirst();
         }
+
+        Button addServiceBtn = new Button("+ " + I18n.get("dialog.booking.add_service"));
+        addServiceBtn.setStyle("-fx-cursor: hand; -fx-padding: 4 10; -fx-font-weight: bold;");
+
+        final boolean isServicesLocked = existingBooking != null && existingBooking.isWorkStarted();
+        if (isServicesLocked) {
+            this.serviceBox.setDisable(true);
+            addServiceBtn.setDisable(true);
+        }
+
+        if (existingBooking != null) {
+            if (existingBooking.getServiceItems() != null && !existingBooking.getServiceItems().isEmpty()) {
+                this.selectedServices.addAll(existingBooking.getServiceItems());
+            } else if (existingBooking.getServiceItemId() > 0) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == existingBooking.getServiceItemId()) {
+                        this.selectedServices.add(s);
+                        break;
+                    }
+                }
+            }
+        }
+
+        Runnable renderServices = () -> {
+            selectedServicesContainer.getChildren().clear();
+            if (selectedServices.isEmpty()) {
+                Label emptyLbl = new Label(I18n.get("dialog.booking.no_services_selected"));
+                emptyLbl.setStyle("-fx-text-fill: -wac-muted; -fx-font-size: 11px; -fx-font-style: italic; -fx-padding: 2 0;");
+                selectedServicesContainer.getChildren().add(emptyLbl);
+                totalSummaryLabel.setText("");
+            } else {
+                int totalMin = 0;
+                double totalCost = 0.0;
+                for (ServiceItem item : selectedServices) {
+                    totalMin += item.getEstimatedMinutes();
+                    totalCost += item.getPrice();
+
+                    HBox row = new HBox(8);
+                    row.setStyle("-fx-background-color: -wac-card; -fx-border-color: -wac-line; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 4 8; -fx-alignment: center-left;");
+
+                    Label nameLbl = new Label(SeedText.resolve(item.getName()));
+                    nameLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-text; -fx-font-size: 12px;");
+
+                    Label detailLbl = new Label(UiFormatters.formatMoney(item.getPrice()) + " · " + item.getEstimatedMinutes() + " min");
+                    detailLbl.setStyle("-fx-text-fill: -wac-muted; -fx-font-size: 11px;");
+
+                    Region spacer = new Region();
+                    HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                    if (!isServicesLocked) {
+                        Button removeBtn = new Button("✕");
+                        removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f87171; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4; -fx-font-weight: bold;");
+                        removeBtn.setOnAction(ev -> selectedServices.remove(item));
+                        row.getChildren().addAll(nameLbl, detailLbl, spacer, removeBtn);
+                    } else {
+                        row.getChildren().addAll(nameLbl, detailLbl, spacer);
+                    }
+                    selectedServicesContainer.getChildren().add(row);
+                }
+                totalSummaryLabel.setText(I18n.get("dialog.booking.total_time", totalMin) + "  |  " + I18n.get("dialog.booking.total_price", UiFormatters.formatMoney(totalCost)));
+                totalSummaryLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent; -fx-font-size: 12px; -fx-padding: 2 0 0 2;");
+            }
+        };
+
+        addServiceBtn.setOnAction(e -> {
+            if (isServicesLocked) return;
+            ServiceItem sel = serviceBox.getValue();
+            if (sel != null && !selectedServices.contains(sel)) {
+                selectedServices.add(sel);
+            }
+        });
 
         // 4. Mekaniker med dynamiskt kvalifikationsfilter
         this.mechanicFilterHint = new Label();
@@ -120,14 +192,14 @@ public class BookingFormPane extends GridPane {
         });
 
         Consumer<ServiceItem> updateMechanics = selService -> {
-            List<Mechanic> qualified = garage.getQualifiedMechanics(selService);
+            List<Mechanic> qualified = selService != null ? garage.getQualifiedMechanics(selService) : garage.getMechanics();
             Mechanic currentSel = mechanicBox.getValue();
 
             mechanicBox.getItems().clear();
             mechanicBox.getItems().add(null);
             mechanicBox.getItems().addAll(qualified);
 
-            if (selService == null) {
+            if (selService == null && selectedServices.isEmpty()) {
                 mechanicFilterHint.setText("");
             } else if (qualified.isEmpty()) {
                 mechanicFilterHint.setText(I18n.get("dialog.booking.no_mechanic_for_spec"));
@@ -157,7 +229,7 @@ public class BookingFormPane extends GridPane {
                 mechanicBox.getSelectionModel().selectFirst();
             }
         };
-        updateMechanics.accept(this.serviceBox.getValue());
+        updateMechanics.accept(getSelectedService());
 
         // 5. Starttid med tillgänglighetsindikering (grön/röd)
         List<LocalTime> timeOptions = new ArrayList<LocalTime>();
@@ -200,11 +272,11 @@ public class BookingFormPane extends GridPane {
 
         Runnable updateDuration = () -> {
             LocalTime start = startTimeBox.getValue();
-            ServiceItem selService = serviceBox.getValue();
-            if (start != null && selService != null) {
-                LocalTime end = start.plusMinutes(selService.getEstimatedMinutes());
+            int totalMin = getTotalEstimatedMinutes();
+            if (start != null && totalMin > 0) {
+                LocalTime end = start.plusMinutes(totalMin);
                 durationLabel.setText(I18n.get("dialog.booking.time_window", start.format(TimeSlotCell.TIME_FMT), end.format(TimeSlotCell.TIME_FMT))
-                        + " (" + selService.getEstimatedMinutes() + " min)");
+                        + " (" + totalMin + " min)");
             } else if (start != null) {
                 LocalTime end = start.plusHours(1);
                 durationLabel.setText(I18n.get("dialog.booking.time_window", start.format(TimeSlotCell.TIME_FMT), end.format(TimeSlotCell.TIME_FMT)) + " (60 min)");
@@ -230,11 +302,6 @@ public class BookingFormPane extends GridPane {
         this.datePicker.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
         this.mechanicBox.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
         this.startTimeBox.valueProperty().addListener((obs, o, n) -> updateDuration.run());
-        this.serviceBox.valueProperty().addListener((obs, o, n) -> {
-            updateMechanics.accept(n);
-            updateDuration.run();
-        });
-        updateDuration.run();
 
         // 7. Beskrivning
         String initialDesc = existingBooking != null && existingBooking.getDescription() != null
@@ -242,13 +309,21 @@ public class BookingFormPane extends GridPane {
         this.descField = new TextField(initialDesc);
         this.descField.setPromptText(I18n.get("dialog.booking.desc_prompt"));
 
-        if (existingBooking == null) {
-            this.serviceBox.valueProperty().addListener((obs, o, n) -> {
-                if (n != null && descField.getText().trim().isEmpty()) {
-                    descField.setText(SeedText.resolve(n.getName()) + (n.getDescription() != null && !n.getDescription().isEmpty() ? " - " + SeedText.resolve(n.getDescription()) : ""));
+        selectedServices.addListener((javafx.collections.ListChangeListener<ServiceItem>) c -> {
+            renderServices.run();
+            updateMechanics.accept(getSelectedService());
+            updateDuration.run();
+            if (existingBooking == null) {
+                StringBuilder sb = new StringBuilder();
+                for (ServiceItem s : selectedServices) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(SeedText.resolve(s.getName()));
                 }
-            });
-        }
+                descField.setText(sb.toString());
+            }
+        });
+        renderServices.run();
+        updateDuration.run();
 
         // 8. Status (endast vid redigering)
         if (existingBooking != null) {
@@ -268,7 +343,16 @@ public class BookingFormPane extends GridPane {
         add(this.datePicker, 1, rowIdx++);
 
         add(new Label(I18n.get("dialog.booking.service_select") + ":"), 0, rowIdx);
-        add(this.serviceBox, 1, rowIdx++);
+        HBox servicePickerRow = new HBox(8, this.serviceBox, addServiceBtn);
+        HBox.setHgrow(this.serviceBox, Priority.ALWAYS);
+        VBox serviceCol = new VBox(6);
+        if (isServicesLocked) {
+            Label lockNotice = new Label("🔒 " + I18n.get("dialog.booking.services_locked_work_started"));
+            lockNotice.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171; -fx-font-weight: bold;");
+            serviceCol.getChildren().add(lockNotice);
+        }
+        serviceCol.getChildren().addAll(servicePickerRow, this.selectedServicesContainer, this.totalSummaryLabel);
+        add(serviceCol, 1, rowIdx++);
 
         add(new Label(I18n.get("dialog.booking.mechanic_select") + ":"), 0, rowIdx);
         VBox mechCol = new VBox(4, this.mechanicBox, this.mechanicFilterHint);
@@ -304,9 +388,16 @@ public class BookingFormPane extends GridPane {
         Vehicle v = getSelectedVehicle();
         LocalDate date = getSelectedDate();
         String desc = getDescription();
-        ServiceItem chosenService = getSelectedService();
-        if (desc.isEmpty() && chosenService != null) {
-            desc = SeedText.resolve(chosenService.getName());
+        List<ServiceItem> chosenServices = getSelectedServices();
+        if (desc.isEmpty() && !chosenServices.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (ServiceItem s : chosenServices) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(SeedText.resolve(s.getName()));
+            }
+            desc = sb.toString();
+        } else if (desc.isEmpty() && getSelectedService() != null) {
+            desc = SeedText.resolve(getSelectedService().getName());
         }
 
         if (v == null || date == null || desc.isEmpty()) {
@@ -326,7 +417,22 @@ public class BookingFormPane extends GridPane {
 
     public Vehicle getSelectedVehicle() { return vehicleBox.getValue(); }
     public LocalDate getSelectedDate() { return datePicker.getValue(); }
-    public ServiceItem getSelectedService() { return serviceBox.getValue(); }
+    public List<ServiceItem> getSelectedServices() { return new ArrayList<ServiceItem>(selectedServices); }
+    public ServiceItem getSelectedService() { return selectedServices.isEmpty() ? serviceBox.getValue() : selectedServices.get(0); }
+    public int getTotalEstimatedMinutes() {
+        int total = 0;
+        for (ServiceItem s : selectedServices) {
+            if (s != null) total += s.getEstimatedMinutes();
+        }
+        return total;
+    }
+    public double getTotalEstimatedPrice() {
+        double total = 0.0;
+        for (ServiceItem s : selectedServices) {
+            if (s != null) total += s.getPrice();
+        }
+        return total;
+    }
     public Mechanic getSelectedMechanic() { return mechanicBox.getValue(); }
     public LocalTime getSelectedStartTime() { return startTimeBox.getValue(); }
     public String getDescription() { return descField.getText().trim(); }

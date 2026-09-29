@@ -87,6 +87,27 @@ public final class EntityLookup {
         return sb.toString();
     }
 
+    public static String bookingServices(GarageSystem garage, com.wac.autocore.model.Booking b) {
+        if (b == null) return "-";
+        if (b.getServiceItems() != null && !b.getServiceItems().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (ServiceItem s : b.getServiceItems()) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(SeedText.resolve(s.getName()));
+            }
+            return sb.toString();
+        }
+        if (b.getServiceItemIds() != null && !b.getServiceItemIds().isEmpty()) {
+            return serviceNames(garage, b.getServiceItemIds());
+        }
+        if (b.getServiceItemId() > 0) {
+            return serviceName(garage, b.getServiceItemId());
+        }
+        return "-";
+    }
+
     public static String bookingVehicleReg(GarageSystem garage, int bookingId) {
         if (garage == null) return "Booking #" + bookingId;
         for (com.wac.autocore.model.Booking b : garage.getBookings()) {

@@ -57,19 +57,29 @@ public final class BookingDialogs {
 
                 Vehicle v = form.getSelectedVehicle();
                 LocalDate date = form.getSelectedDate();
+                List<ServiceItem> chosenServices = form.getSelectedServices();
                 ServiceItem chosenService = form.getSelectedService();
                 Mechanic chosenMech = form.getSelectedMechanic();
                 LocalTime startTime = form.getSelectedStartTime();
                 String desc = form.getDescription();
-                if (desc.isEmpty() && chosenService != null) {
-                    desc = chosenService.getName();
+                if (desc.isEmpty() && !chosenServices.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (ServiceItem s : chosenServices) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(com.wac.autocore.seed.SeedText.resolve(s.getName()));
+                    }
+                    desc = sb.toString();
+                } else if (desc.isEmpty() && chosenService != null) {
+                    desc = com.wac.autocore.seed.SeedText.resolve(chosenService.getName());
                 }
 
                 // Skapa ren bokning i systemet (INGEN arbetsorder skapas eller startas automatiskt)
                 Booking b = garage.createBooking(v.getId(), date, desc);
                 if (b != null) {
                     b.setStatus("BOOKED");
-                    if (chosenService != null) {
+                    if (!chosenServices.isEmpty()) {
+                        b.setServiceItems(chosenServices);
+                    } else if (chosenService != null) {
                         b.setServiceItemId(chosenService.getId());
                     }
                     if (chosenMech != null) {
@@ -77,7 +87,7 @@ public final class BookingDialogs {
                     }
                     if (startTime != null) {
                         b.setStartTime(startTime);
-                        int estMin = chosenService != null ? chosenService.getEstimatedMinutes() : 60;
+                        int estMin = b.getTotalEstimatedMinutes() > 0 ? b.getTotalEstimatedMinutes() : (chosenService != null ? chosenService.getEstimatedMinutes() : 60);
                         b.setEndTime(startTime.plusMinutes(estMin));
                     }
 
@@ -120,6 +130,7 @@ public final class BookingDialogs {
 
                 Vehicle v = form.getSelectedVehicle();
                 LocalDate date = form.getSelectedDate();
+                List<ServiceItem> chosenServices = form.getSelectedServices();
                 ServiceItem chosenService = form.getSelectedService();
                 Mechanic chosenMech = form.getSelectedMechanic();
                 LocalTime startTime = form.getSelectedStartTime();
@@ -133,11 +144,17 @@ public final class BookingDialogs {
                 booking.setDate(date);
                 booking.setDescription(desc);
                 booking.setStatus(status);
-                booking.setServiceItemId(chosenService != null ? chosenService.getId() : 0);
+                if (!chosenServices.isEmpty()) {
+                    booking.setServiceItems(chosenServices);
+                } else if (chosenService != null) {
+                    booking.setServiceItemId(chosenService.getId());
+                } else {
+                    booking.setServiceItems(java.util.Collections.emptyList());
+                }
                 booking.setMechanicId(chosenMech != null ? chosenMech.getId() : 0);
                 if (startTime != null) {
                     booking.setStartTime(startTime);
-                    int estMin = chosenService != null ? chosenService.getEstimatedMinutes() : 60;
+                    int estMin = booking.getTotalEstimatedMinutes() > 0 ? booking.getTotalEstimatedMinutes() : (chosenService != null ? chosenService.getEstimatedMinutes() : 60);
                     booking.setEndTime(startTime.plusMinutes(estMin));
                 }
 
