@@ -109,10 +109,13 @@ public final class SlotDetailsDialog {
         grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
         grid.add(new Label(desc), 1, rowIdx++);
 
-        if (hasWorkOrder) {
-            grid.add(new Label(I18n.get("table.col.services") + ":"), 0, rowIdx);
-            grid.add(new Label(EntityLookup.serviceNames(garage, wo.getServiceItemIds())), 1, rowIdx++);
+        grid.add(new Label(I18n.get("table.col.services") + ":"), 0, rowIdx);
+        String sNames = (hasWorkOrder && !wo.getServiceItemIds().isEmpty())
+                ? EntityLookup.serviceNames(garage, wo.getServiceItemIds())
+                : (b != null ? EntityLookup.bookingServices(garage, b) : "-");
+        grid.add(new Label(sNames), 1, rowIdx++);
 
+        if (hasWorkOrder) {
             grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
             Label stLabel = new Label(UiFormatters.statusWord(wo.getStatus()));
             stLabel.getStyleClass().addAll("badge", UiFormatters.badgeClass(stLabel.getText()));
