@@ -14,6 +14,7 @@ import com.wac.autocore.ui.util.UiFormatters;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -351,19 +352,26 @@ public class BookingFormPane extends GridPane {
         add(new Label(I18n.get("dialog.booking.date") + ":"), 0, rowIdx);
         add(this.datePicker, 1, rowIdx++);
 
-        add(new Label(I18n.get("dialog.booking.service_select") + ":"), 0, rowIdx);
+        Label serviceLbl = new Label(I18n.get("dialog.booking.service_select") + ":");
+        GridPane.setValignment(serviceLbl, VPos.TOP);
+        serviceLbl.setPadding(new Insets(6, 0, 0, 0));
+        add(serviceLbl, 0, rowIdx);
         HBox servicePickerRow = new HBox(8, this.serviceBox, addServiceBtn);
         HBox.setHgrow(this.serviceBox, Priority.ALWAYS);
         VBox serviceCol = new VBox(6);
+        serviceCol.getChildren().add(servicePickerRow);
         if (isServicesLocked) {
             Label lockNotice = new Label("🔒 " + I18n.get("dialog.booking.services_locked_work_started"));
             lockNotice.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171; -fx-font-weight: bold;");
             serviceCol.getChildren().add(lockNotice);
         }
-        serviceCol.getChildren().addAll(servicePickerRow, this.selectedServicesContainer, this.totalSummaryLabel);
+        serviceCol.getChildren().addAll(this.selectedServicesContainer, this.totalSummaryLabel);
         add(serviceCol, 1, rowIdx++);
 
-        add(new Label(I18n.get("dialog.booking.mechanic_select") + ":"), 0, rowIdx);
+        Label mechLbl = new Label(I18n.get("dialog.booking.mechanic_select") + ":");
+        GridPane.setValignment(mechLbl, VPos.TOP);
+        mechLbl.setPadding(new Insets(6, 0, 0, 0));
+        add(mechLbl, 0, rowIdx);
         VBox mechCol = new VBox(4, this.mechanicBox, this.mechanicFilterHint);
         add(mechCol, 1, rowIdx++);
 
