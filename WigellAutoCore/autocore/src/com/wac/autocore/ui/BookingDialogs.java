@@ -44,6 +44,7 @@ public final class BookingDialogs {
         dialog.setTitle(I18n.get("dialog.booking.create.title"));
         dialog.setHeaderText(I18n.get("dialog.booking.create.header"));
         ActionDialogs.styleDialog(dialog);
+        dialog.setResizable(true);
 
         BookingFormPane form = new BookingFormPane(garage, null, defaultDate, defaultMechanic, defaultHour);
         dialog.getDialogPane().setContent(form);
@@ -117,6 +118,7 @@ public final class BookingDialogs {
         dialog.setTitle(I18n.get("dialog.booking.edit.title"));
         dialog.setHeaderText(I18n.get("dialog.booking.edit.header"));
         ActionDialogs.styleDialog(dialog);
+        dialog.setResizable(true);
 
         BookingFormPane form = new BookingFormPane(garage, booking, booking.getDate(), null, null);
         dialog.getDialogPane().setContent(form);
