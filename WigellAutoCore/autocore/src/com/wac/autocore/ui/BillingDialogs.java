@@ -1,9 +1,12 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.UiFormatters;
+import com.wac.autocore.seed.SeedText;
 
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -79,7 +82,10 @@ public final class BillingDialogs {
             if (response == ButtonType.OK) {
                 WorkOrder wo = orderBox.getValue();
                 String code = discountField.getText().trim();
-                garage.createInvoice(wo.getId(), code);
+                Invoice invoice = garage.createInvoice(wo.getId(), code);
+                if (invoice != null) {
+                    showInvoiceLinesDialog(invoice);
+                }
                 if (onSuccess != null) onSuccess.run();
             }
         });
@@ -142,5 +148,31 @@ public final class BillingDialogs {
                 if (onSuccess != null) onSuccess.run();
             }
         });
+    }
+
+    private static void showInvoiceLinesDialog(Invoice invoice) {
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("table.col.invoice") + " #" + invoice.getId());
+        dialog.setHeaderText(I18n.get("table.col.invoice") + " #" + invoice.getId());
+        ActionDialogs.styleDialog(dialog);
+
+        GridPane grid = ActionDialogs.createGrid();
+        grid.add(new Label(I18n.get("table.col.service")), 0, 0);
+        grid.add(new Label(I18n.get("table.col.price")), 1, 0);
+        grid.add(new Label(I18n.get("table.col.discount")), 2, 0);
+        grid.add(new Label(I18n.get("table.col.final_price")), 3, 0);
+
+        int row = 1;
+        for (InvoiceLine line : invoice.getLines()) {
+            grid.add(new Label(SeedText.resolve(line.getServiceName())), 0, row);
+            grid.add(new Label(UiFormatters.formatMoney(line.getPrice())), 1, row);
+            grid.add(new Label(UiFormatters.formatMoney(line.getDiscount())), 2, row);
+            grid.add(new Label(UiFormatters.formatMoney(line.getFinalPrice())), 3, row);
+            row++;
+        }
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.showAndWait();
     }
 }
