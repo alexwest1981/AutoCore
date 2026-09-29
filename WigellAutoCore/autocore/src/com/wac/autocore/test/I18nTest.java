@@ -99,4 +99,50 @@ public class I18nTest {
         TestRunner.assertTrue(missingInEn.isEmpty(), "Följande nycklar saknas i en.json: " + missingInEn);
         TestRunner.assertEquals(en.size(), sv.size(), "Båda språkfilerna skall ha exakt samma antal nycklar (" + en.size() + ")");
     }
+
+    /**
+     * Enhetstest för SCRUM-155 (B5): Nya texter på båda språken.
+     * Verifierar att alla nya fält och texter för flerval i bokningsflödet
+     * finns tillgängliga på både svenska och engelska och formateras korrekt.
+     */
+    public static void testBookingMultiServiceTranslations() {
+        // Testa svenska
+        I18n.setLanguage("sv");
+        TestRunner.assertEquals("Lägg till", I18n.get("dialog.booking.add_service"), "Svenska: add_service");
+        TestRunner.assertEquals("Valda tjänster", I18n.get("dialog.booking.selected_services"), "Svenska: selected_services");
+        TestRunner.assertEquals("Inga tjänster valda än", I18n.get("dialog.booking.no_services_selected"), "Svenska: no_services_selected");
+        TestRunner.assertEquals("Ta bort", I18n.get("dialog.booking.remove_service"), "Svenska: remove_service");
+        TestRunner.assertEquals("Tjänster kan inte ändras eftersom arbetet har påbörjats",
+                I18n.get("dialog.booking.services_locked_work_started"), "Svenska: services_locked");
+        TestRunner.assertEquals("Tjänster", I18n.get("table.col.services"), "Svenska: col services");
+        TestRunner.assertEquals("Beräknad tid", I18n.get("table.col.estimated_time"), "Svenska: col estimated_time");
+        TestRunner.assertEquals("Beräknat pris", I18n.get("table.col.estimated_cost"), "Svenska: col estimated_cost");
+        TestRunner.assertEquals("Beräknad arbetstid:", I18n.get("dialog.slot.estimated_time"), "Svenska: slot estimated_time");
+        TestRunner.assertEquals("Beräknat pris:", I18n.get("dialog.slot.estimated_cost"), "Svenska: slot estimated_cost");
+        TestRunner.assertEquals("Beräknad total arbetstid: 165 minuter",
+                I18n.get("dialog.booking.total_time", 165), "Svenska: total_time parameter");
+        TestRunner.assertEquals("Beräknat pris: 2 793,00 kr",
+                I18n.get("dialog.booking.total_price", "2 793,00 kr"), "Svenska: total_price parameter");
+
+        // Testa engelska
+        I18n.setLanguage("en");
+        TestRunner.assertEquals("Add", I18n.get("dialog.booking.add_service"), "Engelska: add_service");
+        TestRunner.assertEquals("Selected services", I18n.get("dialog.booking.selected_services"), "Engelska: selected_services");
+        TestRunner.assertEquals("No services selected yet", I18n.get("dialog.booking.no_services_selected"), "Engelska: no_services_selected");
+        TestRunner.assertEquals("Remove", I18n.get("dialog.booking.remove_service"), "Engelska: remove_service");
+        TestRunner.assertEquals("Services cannot be modified because work has started",
+                I18n.get("dialog.booking.services_locked_work_started"), "Engelska: services_locked");
+        TestRunner.assertEquals("Services", I18n.get("table.col.services"), "Engelska: col services");
+        TestRunner.assertEquals("Est. time", I18n.get("table.col.estimated_time"), "Engelska: col estimated_time");
+        TestRunner.assertEquals("Est. price", I18n.get("table.col.estimated_cost"), "Engelska: col estimated_cost");
+        TestRunner.assertEquals("Estimated time:", I18n.get("dialog.slot.estimated_time"), "Engelska: slot estimated_time");
+        TestRunner.assertEquals("Estimated price:", I18n.get("dialog.slot.estimated_cost"), "Engelska: slot estimated_cost");
+        TestRunner.assertEquals("Estimated total time: 165 minutes",
+                I18n.get("dialog.booking.total_time", 165), "Engelska: total_time parameter");
+        TestRunner.assertEquals("Estimated price: 2 793,00 kr",
+                I18n.get("dialog.booking.total_price", "2 793,00 kr"), "Engelska: total_price parameter");
+
+        // Återställ till standard (sv)
+        I18n.setLanguage("sv");
+    }
 }
