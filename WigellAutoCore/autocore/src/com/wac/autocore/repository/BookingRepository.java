@@ -61,10 +61,15 @@ public class BookingRepository {
     }
 
     public void delete(int id) throws SQLException {
+        String deleteLinks = "DELETE FROM booking_service_items WHERE booking_id = ?";
         String sql = "DELETE FROM bookings WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
+             PreparedStatement links = connection.prepareStatement(deleteLinks);
              PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            links.setInt(1, id);
+            links.executeUpdate();
 
             statement.setInt(1, id);
             statement.executeUpdate();
@@ -204,5 +209,42 @@ public class BookingRepository {
         }
 
         return booking;
+    }
+
+    public void saveServiceItems(int bookingId, List<Integer> serviceItemIds) throws SQLException {
+        String deleteLinks = "DELETE FROM booking_service_items WHERE booking_id = ?";
+        String insertLink = "INSERT INTO booking_service_items (booking_id, service_item_id) VALUES (?, ?)";
+
+        try (Connection connection = Db.getConnection();
+             PreparedStatement delete = connection.prepareStatement(deleteLinks);
+             PreparedStatement insert = connection.prepareStatement(insertLink)) {
+                 delete.setInt(1,bookingId);
+                 delete.executeUpdate();
+
+                 for (Integer serviceItemId : serviceItemIds) {
+                     insert.setInt(1, bookingId);
+                     insert.setInt(2, serviceItemId);
+                     insert.executeUpdate();
+                 }
+        }
+    }
+
+    public List<Integer> findServiceItemIds(int bookingId) throws SQLException {
+        List<Integer> serviceItemIds = new ArrayList<Integer>();
+        String sql = "SELECT service_item_id FROM booking_service_items WHERE booking_id = ?";
+
+        try (Connection connection = Db.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, bookingId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    serviceItemIds.add(resultSet.getInt("service_item_id"));
+                }
+            }
+        }
+
+        return serviceItemIds;
     }
 }
