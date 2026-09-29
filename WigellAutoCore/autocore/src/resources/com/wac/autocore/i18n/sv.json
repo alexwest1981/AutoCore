@@ -137,6 +137,8 @@
       "date": "Datum",
       "service": "Tjänst",
       "services": "Tjänster",
+      "estimated_time": "Beräknad tid",
+      "estimated_cost": "Beräknat pris",
       "mechanic": "Mekaniker",
       "status": "Status",
       "price": "Pris",
@@ -337,7 +339,9 @@
       "time_date": "Tid & datum:",
       "booked_status": "Bokad tid (ej påbörjad)",
       "open_order": "Öppna i arbetsordrar",
-      "create_order": "Skapa & öppna arbetsorder"
+      "create_order": "Skapa & öppna arbetsorder",
+      "estimated_time": "Beräknad arbetstid:",
+      "estimated_cost": "Beräknat pris:"
     },
     "workorder": {
       "create": {

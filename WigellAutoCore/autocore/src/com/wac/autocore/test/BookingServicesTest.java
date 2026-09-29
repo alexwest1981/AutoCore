@@ -221,4 +221,44 @@ public class BookingServicesTest {
             }
         }
     }
+
+    /**
+     * Enhetstest för SCRUM-153 (B3):
+     * Sammanlagd beräknad tid och sammanlagt beräknat pris.
+     * Verifierar specifikationens exempel (Bokning 1042: 165 min, 2793 kr),
+     * att beräkningen hanteras via både Booking och EntityLookup,
+     * samt att dynamiska ändringar i tjänstelistan reflekteras direkt.
+     */
+    public void testEstimatedTimeAndCostCalculationsAndFormatting() {
+        ServiceItem s1 = new ServiceItem(1, "Oljebyte", "Byte av motorolja", 899.0, 45);
+        ServiceItem s2 = new ServiceItem(2, "Bromsservice", "Byte av bromsar", 1495.0, 90);
+        ServiceItem s3 = new ServiceItem(3, "Däckbyte", "Skifte av hjul", 399.0, 30);
+
+        Booking booking = new Booking(1042, 1, LocalDate.of(2026, 10, 15), "Exempel från spec",
+                LocalTime.of(8, 0), LocalTime.of(10, 45), 2, Arrays.asList(s1, s2, s3));
+
+        // 1. Verifiera direkt på modellen
+        TestRunner.assertEquals(165, booking.getTotalEstimatedMinutes(),
+                "SCRUM-153: Sammanlagd arbetstid ska vara 45 + 90 + 30 = 165 minuter");
+        TestRunner.assertEquals(2793.0, booking.getTotalEstimatedCost(),
+                "SCRUM-153: Sammanlagt beräknat pris ska vara 899 + 1495 + 399 = 2793.0 kr");
+
+        // 2. Verifiera via EntityLookup (för gränssnittsvyer)
+        TestRunner.assertEquals(165, com.wac.autocore.ui.util.EntityLookup.bookingTotalMinutes(null, booking),
+                "SCRUM-153: EntityLookup ska returnera 165 minuter för bokningen");
+        TestRunner.assertEquals(2793.0, com.wac.autocore.ui.util.EntityLookup.bookingTotalPrice(null, booking),
+                "SCRUM-153: EntityLookup ska returnera 2793.0 kr för bokningen");
+
+        // 3. Verifiera dynamisk ändring (ta bort däckbyte)
+        booking.removeServiceItem(s3);
+        TestRunner.assertEquals(135, booking.getTotalEstimatedMinutes(),
+                "SCRUM-153: Efter borttag av däckbyte ska tiden minska till 135 minuter");
+        TestRunner.assertEquals(2394.0, booking.getTotalEstimatedCost(),
+                "SCRUM-153: Efter borttag av däckbyte ska priset minska till 2394.0 kr");
+        TestRunner.assertEquals(135, com.wac.autocore.ui.util.EntityLookup.bookingTotalMinutes(null, booking),
+                "SCRUM-153: EntityLookup ska reflektera uppdaterad tid direkt");
+        TestRunner.assertEquals(2394.0, com.wac.autocore.ui.util.EntityLookup.bookingTotalPrice(null, booking),
+                "SCRUM-153: EntityLookup ska reflektera uppdaterat pris direkt");
+    }
 }
+

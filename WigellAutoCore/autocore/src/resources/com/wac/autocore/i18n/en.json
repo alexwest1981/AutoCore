@@ -137,6 +137,8 @@
       "date": "Date",
       "service": "Service",
       "services": "Services",
+      "estimated_time": "Est. time",
+      "estimated_cost": "Est. price",
       "mechanic": "Mechanic",
       "status": "Status",
       "price": "Price",
@@ -337,7 +339,9 @@
       "time_date": "Time & date:",
       "booked_status": "Booked (not started)",
       "open_order": "Open in Work Orders",
-      "create_order": "Create & open work order"
+      "create_order": "Create & open work order",
+      "estimated_time": "Estimated time:",
+      "estimated_cost": "Estimated price:"
     },
     "workorder": {
       "create": {

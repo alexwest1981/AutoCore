@@ -117,6 +117,15 @@ public class BookingFormPane extends GridPane {
         if (existingBooking != null) {
             if (existingBooking.getServiceItems() != null && !existingBooking.getServiceItems().isEmpty()) {
                 this.selectedServices.addAll(existingBooking.getServiceItems());
+            } else if (existingBooking.getServiceItemIds() != null && !existingBooking.getServiceItemIds().isEmpty()) {
+                for (int sid : existingBooking.getServiceItemIds()) {
+                    for (ServiceItem s : garage.getServiceItems()) {
+                        if (s.getId() == sid) {
+                            this.selectedServices.add(s);
+                            break;
+                        }
+                    }
+                }
             } else if (existingBooking.getServiceItemId() > 0) {
                 for (ServiceItem s : garage.getServiceItems()) {
                     if (s.getId() == existingBooking.getServiceItemId()) {

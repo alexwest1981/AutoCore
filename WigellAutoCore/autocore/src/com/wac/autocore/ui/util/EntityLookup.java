@@ -108,6 +108,40 @@ public final class EntityLookup {
         return "-";
     }
 
+    public static int bookingTotalMinutes(GarageSystem garage, com.wac.autocore.model.Booking b) {
+        if (b == null) return 0;
+        int min = b.getTotalEstimatedMinutes();
+        if (min > 0) return min;
+        if (garage != null && b.getServiceItemIds() != null) {
+            for (int sid : b.getServiceItemIds()) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid) {
+                        min += s.getEstimatedMinutes();
+                        break;
+                    }
+                }
+            }
+        }
+        return min;
+    }
+
+    public static double bookingTotalPrice(GarageSystem garage, com.wac.autocore.model.Booking b) {
+        if (b == null) return 0.0;
+        double cost = b.getTotalEstimatedCost();
+        if (cost > 0.0) return cost;
+        if (garage != null && b.getServiceItemIds() != null) {
+            for (int sid : b.getServiceItemIds()) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid) {
+                        cost += s.getPrice();
+                        break;
+                    }
+                }
+            }
+        }
+        return cost;
+    }
+
     public static String bookingVehicleReg(GarageSystem garage, int bookingId) {
         if (garage == null) return "Booking #" + bookingId;
         for (com.wac.autocore.model.Booking b : garage.getBookings()) {
