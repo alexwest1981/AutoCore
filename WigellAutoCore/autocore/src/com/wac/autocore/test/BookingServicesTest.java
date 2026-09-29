@@ -104,4 +104,23 @@ public class BookingServicesTest {
         TestRunner.assertEquals(1, ids.size(), "getServiceItemIds() ska innehålla det gamla ID:t");
         TestRunner.assertEquals(Integer.valueOf(7), ids.get(0), "ID ska matcha gamla serviceItemId");
     }
+
+    public void testEntityLookupBookingServicesFormatting() {
+        ServiceItem s1 = new ServiceItem(1, "Oljebyte", "Byte av olja", 899.0, 45);
+        ServiceItem s2 = new ServiceItem(2, "Bromsservice", "Byte av bromsar", 1495.0, 90);
+        ServiceItem s3 = new ServiceItem(3, "Däckbyte", "Skifte av hjul", 399.0, 30);
+
+        Booking booking = new Booking(1, 1, LocalDate.now(), "Fler tjänster bokning",
+                LocalTime.of(8, 0), LocalTime.of(10, 45), 1, Arrays.asList(s1, s2, s3));
+
+        String formatted = com.wac.autocore.ui.util.EntityLookup.bookingServices(null, booking);
+        TestRunner.assertEquals("Oljebyte, Bromsservice, Däckbyte", formatted,
+                "EntityLookup ska formatera samtliga tjänstenamn kommaseparerade för vyn");
+
+        Booking singleBooking = new Booking(2, 1, LocalDate.now(), "En tjänst",
+                LocalTime.of(8, 0), LocalTime.of(8, 45), 1, s1);
+        String singleFormatted = com.wac.autocore.ui.util.EntityLookup.bookingServices(null, singleBooking);
+        TestRunner.assertEquals("Oljebyte", singleFormatted,
+                "EntityLookup ska visa enskilt tjänstenamn för bokning med en tjänst");
+    }
 }

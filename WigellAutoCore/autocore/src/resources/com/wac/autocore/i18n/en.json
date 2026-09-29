@@ -278,7 +278,13 @@
       "time_available": "Available",
       "time_busy": "Busy",
       "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
-      "desc_prompt": "E.g. Annual service and brake replacement"
+      "desc_prompt": "E.g. Annual service and brake replacement",
+      "add_service": "Add",
+      "selected_services": "Selected services",
+      "no_services_selected": "No services selected yet",
+      "total_time": "Estimated total time: {0} minutes",
+      "total_price": "Estimated price: {0}",
+      "remove_service": "Remove"
     },
     "service": {
       "create": {

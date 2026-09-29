@@ -278,7 +278,13 @@
       "time_available": "Ledig",
       "time_busy": "Upptagen",
       "slot_busy_error": "Den valda tiden är redan upptagen hos denna mekaniker. Vänligen välj en ledig tid.",
-      "desc_prompt": "T.ex. Årlig service och bromsbyte"
+      "desc_prompt": "T.ex. Årlig service och bromsbyte",
+      "add_service": "Lägg till",
+      "selected_services": "Valda tjänster",
+      "no_services_selected": "Inga tjänster valda än",
+      "total_time": "Beräknad total arbetstid: {0} minuter",
+      "total_price": "Beräknat pris: {0}",
+      "remove_service": "Ta bort"
     },
     "service": {
       "create": {

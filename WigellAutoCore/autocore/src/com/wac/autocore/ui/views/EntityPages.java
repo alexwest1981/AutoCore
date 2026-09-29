@@ -150,7 +150,7 @@ public final class EntityPages {
                 TableFactory.col(I18n.get("table.col.vehicle"), 120, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
                 TableFactory.col(I18n.get("table.col.date"), 110, c -> String.valueOf(c.getDate())),
                 TableFactory.col(I18n.get("table.col.time"), 120, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
-                TableFactory.col(I18n.get("table.col.service"), 150, c -> EntityLookup.serviceName(garage, c.getServiceItemId())),
+                TableFactory.col(I18n.get("table.col.services"), 200, c -> EntityLookup.bookingServices(garage, c)),
                 TableFactory.col(I18n.get("table.col.mechanic"), 140, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
                 TableFactory.col(I18n.get("table.col.description"), 240, c -> SeedText.resolve(c.getDescription())),
                 TableFactory.badgeCol(I18n.get("table.col.status"), 120, c -> UiFormatters.statusWord(c.getStatus())));
