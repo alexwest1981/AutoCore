@@ -284,7 +284,8 @@
       "no_services_selected": "Inga tjänster valda än",
       "total_time": "Beräknad total arbetstid: {0} minuter",
       "total_price": "Beräknat pris: {0}",
-      "remove_service": "Ta bort"
+      "remove_service": "Ta bort",
+      "services_locked_work_started": "Tjänster kan inte ändras eftersom arbetet har påbörjats"
     },
     "service": {
       "create": {

@@ -108,6 +108,12 @@ public class BookingFormPane extends GridPane {
         Button addServiceBtn = new Button("+ " + I18n.get("dialog.booking.add_service"));
         addServiceBtn.setStyle("-fx-cursor: hand; -fx-padding: 4 10; -fx-font-weight: bold;");
 
+        final boolean isServicesLocked = existingBooking != null && existingBooking.isWorkStarted();
+        if (isServicesLocked) {
+            this.serviceBox.setDisable(true);
+            addServiceBtn.setDisable(true);
+        }
+
         if (existingBooking != null) {
             if (existingBooking.getServiceItems() != null && !existingBooking.getServiceItems().isEmpty()) {
                 this.selectedServices.addAll(existingBooking.getServiceItems());
@@ -147,11 +153,14 @@ public class BookingFormPane extends GridPane {
                     Region spacer = new Region();
                     HBox.setHgrow(spacer, Priority.ALWAYS);
 
-                    Button removeBtn = new Button("✕");
-                    removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f87171; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4; -fx-font-weight: bold;");
-                    removeBtn.setOnAction(ev -> selectedServices.remove(item));
-
-                    row.getChildren().addAll(nameLbl, detailLbl, spacer, removeBtn);
+                    if (!isServicesLocked) {
+                        Button removeBtn = new Button("✕");
+                        removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f87171; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4; -fx-font-weight: bold;");
+                        removeBtn.setOnAction(ev -> selectedServices.remove(item));
+                        row.getChildren().addAll(nameLbl, detailLbl, spacer, removeBtn);
+                    } else {
+                        row.getChildren().addAll(nameLbl, detailLbl, spacer);
+                    }
                     selectedServicesContainer.getChildren().add(row);
                 }
                 totalSummaryLabel.setText(I18n.get("dialog.booking.total_time", totalMin) + "  |  " + I18n.get("dialog.booking.total_price", UiFormatters.formatMoney(totalCost)));
@@ -160,6 +169,7 @@ public class BookingFormPane extends GridPane {
         };
 
         addServiceBtn.setOnAction(e -> {
+            if (isServicesLocked) return;
             ServiceItem sel = serviceBox.getValue();
             if (sel != null && !selectedServices.contains(sel)) {
                 selectedServices.add(sel);
@@ -335,7 +345,13 @@ public class BookingFormPane extends GridPane {
         add(new Label(I18n.get("dialog.booking.service_select") + ":"), 0, rowIdx);
         HBox servicePickerRow = new HBox(8, this.serviceBox, addServiceBtn);
         HBox.setHgrow(this.serviceBox, Priority.ALWAYS);
-        VBox serviceCol = new VBox(6, servicePickerRow, this.selectedServicesContainer, this.totalSummaryLabel);
+        VBox serviceCol = new VBox(6);
+        if (isServicesLocked) {
+            Label lockNotice = new Label("🔒 " + I18n.get("dialog.booking.services_locked_work_started"));
+            lockNotice.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171; -fx-font-weight: bold;");
+            serviceCol.getChildren().add(lockNotice);
+        }
+        serviceCol.getChildren().addAll(servicePickerRow, this.selectedServicesContainer, this.totalSummaryLabel);
         add(serviceCol, 1, rowIdx++);
 
         add(new Label(I18n.get("dialog.booking.mechanic_select") + ":"), 0, rowIdx);

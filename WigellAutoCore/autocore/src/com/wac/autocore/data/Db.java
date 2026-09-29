@@ -77,6 +77,11 @@ public class Db {
                 + "mechanic_id INTEGER, "
                 + "status TEXT)",
 
+            "CREATE TABLE IF NOT EXISTS booking_service_items ("
+                + "booking_id INTEGER NOT NULL, "
+                + "service_item_id INTEGER NOT NULL, "
+                + "PRIMARY KEY (booking_id, service_item_id))",
+
             "CREATE TABLE IF NOT EXISTS work_order_service_items ("
                 + "work_order_id INTEGER NOT NULL, "
                 + "service_item_id INTEGER NOT NULL, "
@@ -106,6 +111,13 @@ public class Db {
             for (String sql : createStatements) {
                 statement.executeUpdate(sql);
             }
+
+            // SCRUM-149 (A3): Migrera befintliga bokningar från bookings.service_item_id till booking_service_items
+            String migrateSql = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id) "
+                    + "SELECT id, service_item_id FROM bookings "
+                    + "WHERE service_item_id IS NOT NULL AND service_item_id > 0";
+            statement.executeUpdate(migrateSql);
+
             System.out.println("Databas redo: " + DATABASE_PATH);
 
         } catch (SQLException e) {

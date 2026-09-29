@@ -178,11 +178,20 @@ public class Booking {
         this.mechanicId = mechanicId;
     }
 
+    public boolean isWorkStarted() {
+        return "IN_PROGRESS".equalsIgnoreCase(status)
+                || "COMPLETED".equalsIgnoreCase(status);
+    }
+
+    public boolean canModifyServices() {
+        return !isWorkStarted();
+    }
+
     public List<ServiceItem> getServiceItems() {
         return new ArrayList<ServiceItem>(serviceItems);
     }
 
-    public void setServiceItems(List<ServiceItem> items) {
+    public void setLoadedServiceItems(List<ServiceItem> items) {
         this.serviceItems.clear();
         this.serviceItemIds.clear();
         if (items != null) {
@@ -200,8 +209,19 @@ public class Booking {
         }
     }
 
-    public void addServiceItem(ServiceItem item) {
-        if (item == null) return;
+    public boolean setServiceItems(List<ServiceItem> items) {
+        if (!canModifyServices()) {
+            return false;
+        }
+        setLoadedServiceItems(items);
+        return true;
+    }
+
+    public boolean addServiceItem(ServiceItem item) {
+        if (!canModifyServices()) {
+            return false;
+        }
+        if (item == null) return false;
         this.serviceItems.add(item);
         if (!this.serviceItemIds.contains(item.getId())) {
             this.serviceItemIds.add(item.getId());
@@ -209,9 +229,13 @@ public class Booking {
         if (this.serviceItemId <= 0) {
             this.serviceItemId = item.getId();
         }
+        return true;
     }
 
     public boolean removeServiceItem(ServiceItem item) {
+        if (!canModifyServices()) {
+            return false;
+        }
         if (item == null) return false;
         boolean removed = this.serviceItems.remove(item);
         this.serviceItemIds.remove(Integer.valueOf(item.getId()));
@@ -222,6 +246,9 @@ public class Booking {
     }
 
     public boolean removeServiceItemById(int serviceId) {
+        if (!canModifyServices()) {
+            return false;
+        }
         boolean removedId = this.serviceItemIds.remove(Integer.valueOf(serviceId));
         ServiceItem toRemove = null;
         for (ServiceItem s : this.serviceItems) {
