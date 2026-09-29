@@ -37,6 +37,7 @@ public class TestRunner {
             runClass(SeedTextTest.class);
             runClass(MechanicScheduleTest.class);
             runClass(PersistenceRestartTest.class);
+            runClass(BookingServicesTest.class);
         }
         if (runQuality) {
             runClass(CodeQualityTest.class);
