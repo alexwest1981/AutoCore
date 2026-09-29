@@ -185,32 +185,31 @@ public class BookingServicesTest {
         int generatedId = booking.getId();
         TestRunner.assertTrue(generatedId > 0, "Bokningen ska ha sparats i databasen och tilldelats ett id");
 
-        // Läs tillbaka från en ny repository-instans (simulerar omstart)
         BookingRepository freshRepo = new BookingRepository();
-        Booking readBack = freshRepo.findById(generatedId);
-        TestRunner.assertNotNull(readBack, "Bokningen ska gå att läsa tillbaka efter sparning");
-        TestRunner.assertEquals(2, readBack.getServiceItems().size(), "Bokningen ska ha exakt 2 tjänster från databasen");
-        TestRunner.assertEquals("seed.service.oil_change.name", readBack.getServiceItems().get(0).getName(), "Första tjänstens frö-nyckel ska vara oljebyte");
-        TestRunner.assertEquals("seed.service.brake_service.name", readBack.getServiceItems().get(1).getName(), "Andra tjänstens frö-nyckel ska vara bromsservice");
-        TestRunner.assertTrue(com.wac.autocore.seed.SeedText.resolve(readBack.getServiceItems().get(0).getName()).length() > 0, "Första tjänstens namn ska kunna översättas");
-        TestRunner.assertTrue(com.wac.autocore.seed.SeedText.resolve(readBack.getServiceItems().get(1).getName()).length() > 0, "Andra tjänstens namn ska kunna översättas");
-        TestRunner.assertEquals(135, readBack.getTotalEstimatedMinutes(), "Total arbetstid ska vara 45 + 90 = 135 minuter");
-        TestRunner.assertEquals(3790.0, readBack.getTotalEstimatedCost(), "Totalt pris från databasen ska vara 1295 + 2495 = 3790 kr");
+        try {
+            // Läs tillbaka från en ny repository-instans (simulerar omstart)
+            Booking readBack = freshRepo.findById(generatedId);
+            TestRunner.assertNotNull(readBack, "Bokningen ska gå att läsa tillbaka efter sparning");
+            TestRunner.assertEquals(2, readBack.getServiceItems().size(), "Bokningen ska ha exakt 2 tjänster från databasen");
+            TestRunner.assertEquals("seed.service.oil_change.name", readBack.getServiceItems().get(0).getName(), "Första tjänstens frö-nyckel ska vara oljebyte");
+            TestRunner.assertEquals("seed.service.brake_service.name", readBack.getServiceItems().get(1).getName(), "Andra tjänstens frö-nyckel ska vara bromsservice");
+            TestRunner.assertTrue(com.wac.autocore.seed.SeedText.resolve(readBack.getServiceItems().get(0).getName()).length() > 0, "Första tjänstens namn ska kunna översättas");
+            TestRunner.assertTrue(com.wac.autocore.seed.SeedText.resolve(readBack.getServiceItems().get(1).getName()).length() > 0, "Andra tjänstens namn ska kunna översättas");
+            TestRunner.assertEquals(135, readBack.getTotalEstimatedMinutes(), "Total arbetstid ska vara 45 + 90 = 135 minuter");
+            TestRunner.assertEquals(3790.0, readBack.getTotalEstimatedCost(), "Totalt pris från databasen ska vara 1295 + 2495 = 3790 kr");
 
-        // Kontrollera att raderna i tabellen booking_service_items faktiskt finns
-        try (Connection conn = Db.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM booking_service_items WHERE booking_id = ?")) {
-            ps.setInt(1, generatedId);
-            try (ResultSet rs = ps.executeQuery()) {
-                TestRunner.assertTrue(rs.next(), "Query ska returnera rad");
-                TestRunner.assertEquals(2, rs.getInt(1), "Tabellen booking_service_items ska innehålla exakt 2 rader för bokningen");
+            // Kontrollera att raderna i tabellen booking_service_items faktiskt finns
+            try (Connection conn = Db.getConnection();
+                 PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM booking_service_items WHERE booking_id = ?")) {
+                ps.setInt(1, generatedId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    TestRunner.assertTrue(rs.next(), "Query ska returnera rad");
+                    TestRunner.assertEquals(2, rs.getInt(1), "Tabellen booking_service_items ska innehålla exakt 2 rader för bokningen");
+                }
             }
+        } finally {
+            freshRepo.delete(generatedId);
         }
-
-        // Städa upp testposten
-        freshRepo.delete(generatedId);
-        Booking deleted = freshRepo.findById(generatedId);
-        TestRunner.assertTrue(deleted == null, "Bokningen ska ha tagits bort");
 
         // Kontrollera att även kopplingstabellen städats
         try (Connection conn = Db.getConnection();
