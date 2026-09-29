@@ -20,6 +20,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -47,6 +48,7 @@ public class BookingFormPane extends GridPane {
     private final ComboBox<ServiceItem> serviceBox;
     private final ObservableList<ServiceItem> selectedServices = FXCollections.observableArrayList();
     private final VBox selectedServicesContainer = new VBox(4);
+    private final ScrollPane servicesScroll;
     private final Label totalSummaryLabel = new Label();
     private final ComboBox<Mechanic> mechanicBox;
     private final Label mechanicFilterHint;
@@ -60,6 +62,17 @@ public class BookingFormPane extends GridPane {
         setHgap(10);
         setVgap(10);
         setPadding(new Insets(14, 14, 14, 14));
+        setPrefWidth(460);
+
+        this.totalSummaryLabel.setWrapText(true);
+        this.totalSummaryLabel.setMaxWidth(Double.MAX_VALUE);
+
+        this.servicesScroll = new ScrollPane(this.selectedServicesContainer);
+        this.servicesScroll.setFitToWidth(true);
+        this.servicesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        this.servicesScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        this.servicesScroll.setMaxHeight(105);
+        this.servicesScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
 
         // 1. Fordon
         this.vehicleBox = new ComboBox<Vehicle>();
@@ -175,6 +188,16 @@ public class BookingFormPane extends GridPane {
                 }
                 totalSummaryLabel.setText(I18n.get("dialog.booking.total_time", totalMin) + "  |  " + I18n.get("dialog.booking.total_price", UiFormatters.formatMoney(totalCost)));
                 totalSummaryLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent; -fx-font-size: 12px; -fx-padding: 2 0 0 2;");
+            }
+            int count = selectedServices.size();
+            if (count == 0) {
+                servicesScroll.setPrefHeight(26);
+            } else if (count == 1) {
+                servicesScroll.setPrefHeight(34);
+            } else if (count == 2) {
+                servicesScroll.setPrefHeight(68);
+            } else {
+                servicesScroll.setPrefHeight(105);
             }
         };
 
@@ -365,7 +388,7 @@ public class BookingFormPane extends GridPane {
             lockNotice.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171; -fx-font-weight: bold;");
             serviceCol.getChildren().add(lockNotice);
         }
-        serviceCol.getChildren().addAll(this.selectedServicesContainer, this.totalSummaryLabel);
+        serviceCol.getChildren().addAll(this.servicesScroll, this.totalSummaryLabel);
         add(serviceCol, 1, rowIdx++);
 
         Label mechLbl = new Label(I18n.get("dialog.booking.mechanic_select") + ":");
