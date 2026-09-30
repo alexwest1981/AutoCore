@@ -7,6 +7,7 @@ public class ServiceItem {
     private String description;
     private double price;
     private int estimatedMinutes;
+    private Boolean completed;
 
     public ServiceItem(int id, String name, String description,
                        double price, int estimatedMinutes) {
@@ -56,6 +57,10 @@ public class ServiceItem {
     public void setEstimatedMinutes(int estimatedMinutes) {
         this.estimatedMinutes = estimatedMinutes;
     }
+
+    public Boolean isCompleted() {return completed; }
+
+    public void setCompleted(Boolean completed) { this.completed = completed; }
 
     @Override
     public String toString() {

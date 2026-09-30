@@ -49,10 +49,20 @@ public class WorkOrderService {
 
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, int... serviceItemIds) {
         Booking booking = findBooking(bookingId);
+
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
             return null;
         }
+        List<Integer> bookingItems;
+        try {
+            bookingItems = workOrderRepository.findServiceItemIds(bookingId);
+
+        } catch (SQLException e) {
+            System.out.println("Could not read booking " + bookingId + ": " + e.getMessage());
+            throw new RuntimeException();
+        }
+
 
         Mechanic mechanic = findMechanic(mechanicId);
         if (mechanic == null) {
@@ -69,6 +79,12 @@ public class WorkOrderService {
             if (findServiceItem(serviceItemId) == null) {
                 System.out.println("Service item with ID " + serviceItemId + " does not exist.");
                 return null;
+            }
+        }
+
+        for(int id: serviceItemIds) {
+            if(!bookingItems.contains(id)) {
+                throw new IllegalArgumentException("Service item with ID " + id + " does not exist.");
             }
         }
 
@@ -220,5 +236,22 @@ public class WorkOrderService {
         } catch (SQLException e) {
             System.out.println("Could not update work order " + workOrder.getId() + ": " + e.getMessage());
         }
+    }
+
+    public void markServicesAsCompleted(int workOrderId, int[] serviceItemsIds) {
+        WorkOrder workOrder = findById(workOrderId);
+        if(workOrder == null) {
+            throw new IllegalArgumentException("Work order with ID " + workOrderId + " does not exist");
+        }
+
+        for(int serviceItemId : serviceItemsIds) {
+            workOrder.markServiceAsCompleted(serviceItemId);
+        }
+        try {
+            workOrderRepository.save(workOrder);
+        } catch (SQLException e) {
+            System.out.println("Could not update work order " + workOrder.getId());
+        }
+
     }
 }

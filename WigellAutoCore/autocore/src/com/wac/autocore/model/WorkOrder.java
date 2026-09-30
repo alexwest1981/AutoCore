@@ -10,6 +10,7 @@ public class WorkOrder {
     private int mechanicId;
     private List<Integer> serviceItemIds;
     private String status;
+    private final List<Integer> completedServiceItems = new ArrayList<>();
 
     public WorkOrder(int id, int bookingId, int mechanicId) {
         this.id = id;
@@ -65,6 +66,23 @@ public class WorkOrder {
 
     public void removeServiceItem(int serviceItemId) {
         serviceItemIds.remove(Integer.valueOf(serviceItemId));
+    }
+
+    public List<Integer> getCompletedServiceItems() {return completedServiceItems; }
+
+    public void markServiceAsCompleted(int serviceItemId) {
+        if (!this.serviceItemIds.contains(serviceItemId)) {
+            throw new IllegalArgumentException("Service item " + serviceItemId + " does not belong to this work order.");
+        }
+        if (!this.completedServiceItems.contains(serviceItemId)) {
+            this.completedServiceItems.add(serviceItemId);
+        }
+    }
+
+    public void addServiceItemId(int serviceItemId) {
+        if (!this.serviceItemIds.contains(serviceItemId)) {
+            this.serviceItemIds.add(serviceItemId);
+        }
     }
 
     @Override

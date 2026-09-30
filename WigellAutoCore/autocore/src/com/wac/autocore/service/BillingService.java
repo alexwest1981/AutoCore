@@ -62,14 +62,15 @@ public class BillingService {
             return null;
         }
 
-        if (!"COMPLETED".equals(workOrder.getStatus())) {
-            System.out.println("Invoice can only be created for a completed work order.");
+        //Kontroll utförda tjänster
+        if (workOrder.getCompletedServiceItems().isEmpty()) {
+            System.out.println("Invoice cannot be created: No service items are marked as completed.");
             return null;
         }
 
         double amount = 0.0;
         List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
-        for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+        for (Integer serviceItemId : workOrder.getCompletedServiceItems()) {
             ServiceItem serviceItem = findServiceItem(serviceItemId);
             if (serviceItem != null) {
                 amount += serviceItem.getPrice();

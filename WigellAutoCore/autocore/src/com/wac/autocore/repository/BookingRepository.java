@@ -278,7 +278,7 @@ public class BookingRepository {
         }
     }
 
-    private ServiceItem findServiceItemById(int id) throws SQLException {
+    public ServiceItem findServiceItemById(int id) throws SQLException {
         String sql = "SELECT id, name, description, price, estimated_minutes FROM service_items WHERE id = ?";
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {

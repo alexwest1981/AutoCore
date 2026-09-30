@@ -52,6 +52,7 @@ public class WorkOrderRepository {
                 if (resultSet.next()) {
                     WorkOrder workOrder = buildWorkOrder(resultSet);
                     workOrder.setServiceItemIds(findServiceItemIds(workOrder.getId()));
+                    loadServiceItems(workOrder);
                     return workOrder;
                 }
             }
@@ -111,7 +112,7 @@ public class WorkOrderRepository {
 
     private void saveServiceItems(WorkOrder workOrder) throws SQLException {
         String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
-        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id) VALUES (?, ?)";
+        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed) VALUES (?, ?)";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement delete = connection.prepareStatement(deleteLinks);
@@ -123,12 +124,14 @@ public class WorkOrderRepository {
             for (Integer serviceItemId : workOrder.getServiceItemIds()) {
                 insert.setInt(1, workOrder.getId());
                 insert.setInt(2, serviceItemId);
+                int isCompleted = workOrder.getCompletedServiceItems().contains(serviceItemId) ? 1 : 0;
+                insert.setInt(3, isCompleted);
                 insert.executeUpdate();
             }
         }
     }
 
-    private List<Integer> findServiceItemIds(int workOrderId) throws SQLException {
+    public List<Integer> findServiceItemIds(int workOrderId) throws SQLException {
         List<Integer> serviceItemIds = new ArrayList<Integer>();
         String sql = "SELECT service_item_id FROM work_order_service_items WHERE work_order_id = ?";
 
@@ -160,5 +163,26 @@ public class WorkOrderRepository {
         }
 
         return workOrder;
+    }
+
+    private void loadServiceItems(WorkOrder workOrder) throws SQLException {
+        String sql = "SELECT service_item_id, completed FROM work_order_service_items WHERE work_order_id = ?";
+
+        try (Connection connection = Db.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, workOrder.getId());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int serviceItemId = resultSet.getInt("service_item_id");
+                    int completed = resultSet.getInt("completed");
+
+                    workOrder.addServiceItemId(serviceItemId);
+
+                    if(completed == 1) {
+                        workOrder.getCompletedServiceItems().add(serviceItemId);
+                    }
+                }
+            }
+        }
     }
 }
