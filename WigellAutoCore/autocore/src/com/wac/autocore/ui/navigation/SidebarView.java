@@ -7,11 +7,16 @@ import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -99,28 +104,61 @@ public class SidebarView {
         }
     }
 
+    private Image loadLogoImage() {
+        try {
+            InputStream in = SidebarView.class.getResourceAsStream("/com/wac/autocore/images/Logo.png");
+            if (in != null) {
+                return new Image(in);
+            }
+            File f = new File("Logo/Logo.png");
+            if (f.exists()) {
+                return new Image(f.toURI().toString());
+            }
+            File fRes = new File("WigellAutoCore/autocore/src/resources/com/wac/autocore/images/Logo.png");
+            if (fRes.exists()) {
+                return new Image(fRes.toURI().toString());
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
     private VBox buildSidebar() {
-        StackPane mark = new StackPane();
-        mark.getStyleClass().add("brand-mark");
-        mark.setPrefSize(38, 38);
-        Label letter = new Label("AC");
-        letter.getStyleClass().add("letter");
-        mark.getChildren().add(letter);
+        Node brandNode;
+        Image logoImg = loadLogoImage();
+        if (logoImg != null && !logoImg.isError()) {
+            ImageView logoView = new ImageView(logoImg);
+            logoView.setPreserveRatio(true);
+            logoView.setFitWidth(200);
+            logoView.setSmooth(true);
 
-        VBox brandTitles = new VBox(2);
-        Label brand = new Label(I18n.get("nav.brand.title"));
-        brand.getStyleClass().add("brand-title");
-        brandSub = new Label(I18n.get("nav.brand.subtitle"));
-        brandSub.getStyleClass().add("brand-sub");
-        brandTitles.getChildren().addAll(brand, brandSub);
+            StackPane logoContainer = new StackPane(logoView);
+            logoContainer.setAlignment(Pos.CENTER);
+            logoContainer.setPadding(new Insets(20, 20, 40, 20));
+            brandNode = logoContainer;
+        } else {
+            StackPane mark = new StackPane();
+            mark.getStyleClass().add("brand-mark");
+            mark.setPrefSize(38, 38);
+            Label letter = new Label("AC");
+            letter.getStyleClass().add("letter");
+            mark.getChildren().add(letter);
 
-        HBox brandRow = new HBox(12, mark, brandTitles);
-        brandRow.getStyleClass().add("brand-row");
-        brandRow.setAlignment(Pos.CENTER_LEFT);
-        brandRow.setPadding(new Insets(0, 16, 0, 16));
+            VBox brandTitles = new VBox(2);
+            Label brand = new Label(I18n.get("nav.brand.title"));
+            brand.getStyleClass().add("brand-title");
+            brandSub = new Label(I18n.get("nav.brand.subtitle"));
+            brandSub.getStyleClass().add("brand-sub");
+            brandTitles.getChildren().addAll(brand, brandSub);
+
+            HBox brandRow = new HBox(12, mark, brandTitles);
+            brandRow.getStyleClass().add("brand-row");
+            brandRow.setAlignment(Pos.CENTER_LEFT);
+            brandRow.setPadding(new Insets(10, 16, 16, 16));
+            brandNode = brandRow;
+        }
 
         VBox nav = new VBox(0);
-        nav.setPadding(new Insets(14, 16, 0, 16));
+        nav.setPadding(new Insets(0, 16, 0, 16));
         overviewBtn = addNav(nav, "overview", I18n.get("nav.section.overview"));
 
         VBox groups = new VBox(22);
@@ -148,10 +186,11 @@ public class SidebarView {
 
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
+        sidebar.setStyle("-fx-padding: 0;");
         sidebar.setMinWidth(240);
         sidebar.setPrefWidth(240);
         sidebar.setMaxWidth(240);
-        sidebar.getChildren().addAll(brandRow, navScroll, langToggle);
+        sidebar.getChildren().addAll(brandNode, navScroll, langToggle);
         return sidebar;
     }
 
