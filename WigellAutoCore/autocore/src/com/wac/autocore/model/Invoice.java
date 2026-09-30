@@ -91,6 +91,14 @@ public class Invoice {
         lines.add(line);
     }
 
+    public double getLinesTotal() {
+        double sum = 0.0;
+        for (InvoiceLine line : lines) {
+            sum += line.getFinalPrice();
+        }
+        return sum;
+    }
+
     @Override
     public String toString() {
         return id +
