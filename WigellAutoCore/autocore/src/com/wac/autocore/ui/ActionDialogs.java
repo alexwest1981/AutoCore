@@ -177,6 +177,11 @@ public final class ActionDialogs {
         BillingDialogs.showProcessPaymentDialog(garage, preselected, onSuccess);
     }
 
+    public static void showInvoiceLinesDialog(Invoice invoice) {
+        BillingDialogs.showInvoiceLinesDialog(invoice);
+    }
+
+
     // =========================================================================
     // 6. Mekaniker (MechanicDialogs)
     // =========================================================================

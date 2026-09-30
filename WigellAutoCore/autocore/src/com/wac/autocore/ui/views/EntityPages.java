@@ -394,8 +394,18 @@ public final class EntityPages {
         Button payBtn = UiComponents.secondaryButton(I18n.get("entity.invoices.action_pay"));
         payBtn.setDisable(true);
 
+        Button linesBtn = UiComponents.secondaryButton(I18n.get("entity.invoices.action_lines"));
+        linesBtn.setDisable(true);
+        linesBtn.setOnAction(e -> {
+            Invoice sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showInvoiceLinesDialog(sel);
+            }
+        });
+
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             payBtn.setDisable(sel == null || sel.isPaid());
+            linesBtn.setDisable(sel == null);
         });
 
         payBtn.setOnAction(e -> {
@@ -409,7 +419,7 @@ public final class EntityPages {
                 I18n.get("entity.invoices.title"),
                 I18n.get("entity.invoices.meta", garage.getInvoices().size()),
                 I18n.get("entity.invoices.subtitle"),
-                t, payBtn, addBtn);
+                t, linesBtn, payBtn, addBtn);
     }
 
     public static VBox buildPaymentsPage(GarageSystem garage, PageRouter router) {
