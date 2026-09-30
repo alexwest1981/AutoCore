@@ -96,6 +96,14 @@ public class Db {
                 + "total_amount REAL, "
                 + "paid INTEGER DEFAULT 0)",
 
+            "CREATE TABLE IF NOT EXISTS invoice_lines ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "invoice_id INTEGER NOT NULL, "
+                + "service_item_id INTEGER, "
+                + "service_name TEXT NOT NULL, "
+                + "price REAL NOT NULL, "
+                + "discount REAL DEFAULT 0)",
+
             "CREATE TABLE IF NOT EXISTS payments ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "invoice_id INTEGER, "
@@ -117,6 +125,17 @@ public class Db {
                     + "SELECT id, service_item_id FROM bookings "
                     + "WHERE service_item_id IS NOT NULL AND service_item_id > 0";
             statement.executeUpdate(migrateSql);
+
+
+            // SCRUM-163 (E2): Skapa fakturarader för fakturor som fanns innan tabellen
+            String migrateInvoiceLinesSql = "INSERT INTO invoice_lines "
+                    + "(invoice_id, service_item_id, service_name, price, discount) "
+                    + "SELECT i.id, s.id, s.name, s.price, 0 "
+                    + "FROM invoices i "
+                    + "JOIN work_order_service_items w ON w.work_order_id = i.work_order_id "
+                    + "JOIN service_items s ON s.id = w.service_item_id "
+                    + "WHERE NOT EXISTS (SELECT 1 FROM invoice_lines l WHERE l.invoice_id = i.id)";
+            statement.executeUpdate(migrateInvoiceLinesSql);
 
             System.out.println("Databas redo: " + DATABASE_PATH);
 

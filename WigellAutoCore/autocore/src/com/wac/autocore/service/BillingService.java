@@ -68,15 +68,18 @@ public class BillingService {
             return null;
         }
 
-        double amount = 0.0;
         List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
         for (Integer serviceItemId : workOrder.getCompletedServiceItems()) {
             ServiceItem serviceItem = findServiceItem(serviceItemId);
             if (serviceItem != null) {
-                amount += serviceItem.getPrice();
                 lines.add(new InvoiceLine(0, 0, serviceItem.getId(),
                         serviceItem.getName(), serviceItem.getPrice(), 0.0));
             }
+        }
+
+        double amount = 0.0;
+        for (InvoiceLine line : lines) {
+            amount += line.getPrice();
         }
 
         double discount = 0.0;

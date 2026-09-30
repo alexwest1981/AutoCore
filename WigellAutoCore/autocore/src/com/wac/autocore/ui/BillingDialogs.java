@@ -150,7 +150,7 @@ public final class BillingDialogs {
         });
     }
 
-    private static void showInvoiceLinesDialog(Invoice invoice) {
+    static void showInvoiceLinesDialog(Invoice invoice) {
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
         dialog.setTitle(I18n.get("table.col.invoice") + " #" + invoice.getId());
         dialog.setHeaderText(I18n.get("table.col.invoice") + " #" + invoice.getId());
