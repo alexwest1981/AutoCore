@@ -146,6 +146,7 @@
       "due_date": "Förfallodatum",
       "discount": "Rabatt",
       "total": "Totalt",
+      "final_price": "Slutpris",
       "method": "Betalsätt",
       "specialty": "Specialitet",
       "specialisation": "Specialisering",

@@ -3,6 +3,7 @@ package com.wac.autocore.service;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
+import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
@@ -15,6 +16,7 @@ import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -66,10 +68,13 @@ public class BillingService {
         }
 
         double amount = 0.0;
+        List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
             ServiceItem serviceItem = findServiceItem(serviceItemId);
             if (serviceItem != null) {
                 amount += serviceItem.getPrice();
+                lines.add(new InvoiceLine(0, 0, serviceItem.getId(),
+                        serviceItem.getName(), serviceItem.getPrice(), 0.0));
             }
         }
 
@@ -105,11 +110,19 @@ public class BillingService {
         Invoice invoice = new Invoice(0, workOrderId, LocalDate.now(), amount);
         invoice.setDiscount(discount);
 
+        for (InvoiceLine line : lines) {
+            invoice.addLine(line);
+        }
+
         try {
             invoiceRepository.save(invoice);
         } catch (SQLException e) {
             System.out.println("Could not save invoice: " + e.getMessage());
             return null;
+        }
+
+        for (InvoiceLine line : invoice.getLines()) {
+            line.setInvoiceId(invoice.getId());
         }
 
         System.out.println("Invoice created successfully.");

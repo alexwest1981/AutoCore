@@ -1,5 +1,7 @@
 package com.wac.autocore.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDate;
 
 public class Invoice {
@@ -11,6 +13,7 @@ public class Invoice {
     private double discount;
     private double totalAmount;
     private boolean paid;
+    private List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
 
     public Invoice(int id, int workOrderId, LocalDate invoiceDate, double amount) {
         this.id = id;
@@ -78,6 +81,14 @@ public class Invoice {
 
     private void calculateTotalAmount() {
         this.totalAmount = amount - discount;
+    }
+
+    public List<InvoiceLine> getLines() {
+        return lines;
+    }
+
+    public void addLine(InvoiceLine line) {
+        lines.add(line);
     }
 
     @Override
