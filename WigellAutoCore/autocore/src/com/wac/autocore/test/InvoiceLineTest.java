@@ -74,4 +74,42 @@ public class InvoiceLineTest {
             new BookingRepository().delete(booking.getId());
         }
     }
+    /**
+     * BEVIS för SCRUM-163 (E2): en prisändring på tjänsten ändrar inte en sparad fakturas rader.
+     */
+    public void testPriceChangeDoesNotChangeSavedLines() throws SQLException {
+        ServiceItem service = garage.getServiceItems().get(0);
+        double originalPrice = service.getPrice();
+
+        Booking booking = garage.createBooking(garage.getVehicles().get(0).getId(), LocalDate.now(), "Frozen price check");
+        WorkOrder workOrder = new WorkOrder(0, booking.getId(), garage.getMechanics().get(0).getId());
+        workOrder.addServiceItem(service.getId());
+        workOrder.setStatus("COMPLETED");
+        WorkOrderRepository workOrderRepository = new WorkOrderRepository();
+        workOrderRepository.save(workOrder);
+
+        Invoice invoice = garage.createInvoice(workOrder.getId(), null);
+
+        try {
+            service.setPrice(originalPrice + 500);
+            garage.updateServiceItem(service);
+
+            // Nytt repository = läser från databasen, som efter en omstart
+            Invoice readBack = new InvoiceRepository().findById(invoice.getId());
+            InvoiceLine line = readBack.getLines().get(0);
+
+            System.out.println("    Service price now: " + (originalPrice + 500)
+                    + " | line price on invoice " + readBack.getId() + ": " + line.getPrice());
+
+            TestRunner.assertEquals(1, readBack.getLines().size(), "the saved invoice should still have its line");
+            TestRunner.assertEquals(originalPrice, line.getPrice(), "the line price should be frozen");
+            TestRunner.assertEquals(service.getName(), line.getServiceName(), "the line name should be stored");
+        } finally {
+            service.setPrice(originalPrice);
+            garage.updateServiceItem(service);
+            new InvoiceRepository().delete(invoice.getId());
+            workOrderRepository.delete(workOrder.getId());
+            new BookingRepository().delete(booking.getId());
+        }
+    }
 }
