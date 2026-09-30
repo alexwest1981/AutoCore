@@ -112,7 +112,8 @@
       "subtitle": "Issued invoices and payment status",
       "meta": "{0} invoices",
       "action_create": "+ Create Invoice",
-      "action_pay": "Pay selected invoice"
+      "action_pay": "Pay selected invoice",
+      "action_lines": "Show lines"
     },
     "payments": {
       "title": "Payments",

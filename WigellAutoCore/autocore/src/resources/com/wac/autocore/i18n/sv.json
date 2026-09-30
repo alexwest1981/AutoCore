@@ -112,7 +112,8 @@
       "subtitle": "Utfärdade kundfakturor och betalningsstatus",
       "meta": "{0} fakturor",
       "action_create": "+ Skapa faktura",
-      "action_pay": "Betala vald faktura"
+      "action_pay": "Betala vald faktura",
+      "action_lines": "Visa rader"
     },
     "payments": {
       "title": "Betalningar",
