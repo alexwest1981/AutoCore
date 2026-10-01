@@ -85,6 +85,7 @@ public class Db {
             "CREATE TABLE IF NOT EXISTS work_order_service_items ("
                 + "work_order_id INTEGER NOT NULL, "
                 + "service_item_id INTEGER NOT NULL, "
+                + "completed INTEGER NOT NULL DEFAULT 0, "
                 + "PRIMARY KEY (work_order_id, service_item_id))",
 
             "CREATE TABLE IF NOT EXISTS invoices ("
@@ -118,6 +119,13 @@ public class Db {
 
             for (String sql : createStatements) {
                 statement.executeUpdate(sql);
+            }
+
+            // SCRUM-158 (C3): Säkerställ att kolumnen completed finns i work_order_service_items vid migrering
+            try {
+                statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN completed INTEGER NOT NULL DEFAULT 0");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
             }
 
             // SCRUM-149 (A3): Migrera befintliga bokningar från bookings.service_item_id till booking_service_items
