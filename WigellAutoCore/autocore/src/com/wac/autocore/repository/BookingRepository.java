@@ -17,13 +17,15 @@ import java.util.List;
 
 public class BookingRepository {
 
+    private final BookingServiceItemRepository bookingServiceItemRepository = new BookingServiceItemRepository();
+
     public void save(Booking booking) throws SQLException {
         if (booking.getId() == 0 || findById(booking.getId()) == null) {
             insert(booking);
         } else {
             update(booking);
         }
-        saveServiceItems(booking);
+        bookingServiceItemRepository.save(booking);
     }
 
     public List<Booking> findAll() throws SQLException {
@@ -67,15 +69,12 @@ public class BookingRepository {
     }
 
     public void delete(int id) throws SQLException {
-        String deleteLinks = "DELETE FROM booking_service_items WHERE booking_id = ?";
         String sql = "DELETE FROM bookings WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
-             PreparedStatement links = connection.prepareStatement(deleteLinks);
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            links.setInt(1, id);
-            links.executeUpdate();
+            bookingServiceItemRepository.deleteByBookingId(connection, id);
 
             statement.setInt(1, id);
             statement.executeUpdate();
@@ -217,54 +216,8 @@ public class BookingRepository {
         return booking;
     }
 
-    private void saveServiceItems(Booking booking) throws SQLException {
-        String deleteLinks = "DELETE FROM booking_service_items WHERE booking_id = ?";
-        String insertLink = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id) VALUES (?, ?)";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement delete = connection.prepareStatement(deleteLinks);
-             PreparedStatement insert = connection.prepareStatement(insertLink)) {
-
-            delete.setInt(1, booking.getId());
-            delete.executeUpdate();
-
-            List<Integer> ids = booking.getServiceItemIds();
-            for (Integer serviceItemId : ids) {
-                if (serviceItemId != null && serviceItemId > 0) {
-                    insert.setInt(1, booking.getId());
-                    insert.setInt(2, serviceItemId);
-                    insert.executeUpdate();
-                }
-            }
-        }
-    }
-
     private void loadServiceItems(Booking booking) throws SQLException {
-        String sql = "SELECT s.id, s.name, s.description, s.price, s.estimated_minutes " +
-                "FROM booking_service_items bsi " +
-                "JOIN service_items s ON bsi.service_item_id = s.id " +
-                "WHERE bsi.booking_id = ? " +
-                "ORDER BY s.id ASC";
-
-        List<ServiceItem> items = new ArrayList<ServiceItem>();
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, booking.getId());
-
-            try (ResultSet rs = statement.executeQuery()) {
-                while (rs.next()) {
-                    items.add(new ServiceItem(
-                            rs.getInt("id"),
-                            rs.getString("name"),
-                            rs.getString("description"),
-                            rs.getDouble("price"),
-                            rs.getInt("estimated_minutes")
-                    ));
-                }
-            }
-        }
+        List<ServiceItem> items = bookingServiceItemRepository.findByBookingId(booking.getId());
 
         if (!items.isEmpty()) {
             booking.setLoadedServiceItems(items);
