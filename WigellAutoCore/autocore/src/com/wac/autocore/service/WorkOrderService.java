@@ -160,6 +160,41 @@ public class WorkOrderService {
         return true;
     }
 
+    /**
+     * SCRUM-160 (D2): markerar tjänster som utförda och fryser priset som gäller i det ögonblicket.
+     * Priset läses ur tjänstekatalogen här, så att en senare prisändring inte rör den här arbetsordern.
+     */
+    public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
+        WorkOrder workOrder = findById(workOrderId);
+        if (workOrder == null) {
+            System.out.println("Work order with ID " + workOrderId + " does not exist.");
+            return false;
+        }
+
+        if (serviceItemIds == null || serviceItemIds.length == 0) {
+            System.out.println("No services given for work order " + workOrderId + ".");
+            return false;
+        }
+
+        for (int serviceItemId : serviceItemIds) {
+            ServiceItem serviceItem = findServiceItem(serviceItemId);
+            if (serviceItem == null) {
+                System.out.println("Service item with ID " + serviceItemId + " does not exist.");
+                return false;
+            }
+            // Priset frysas en gång. Är tjänsten redan markerad behåller den sitt gamla pris.
+            Double alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
+            double frozenPrice = alreadyFrozen != null ? alreadyFrozen.doubleValue() : serviceItem.getPrice();
+            workOrder.markServiceAsCompleted(serviceItemId, frozenPrice);
+        }
+
+        saveWorkOrder(workOrder);
+
+        System.out.println("Services marked as performed on work order " + workOrderId
+                + ", with the price that applied now.");
+        return true;
+    }
+
     public int getTotalEstimatedMinutes(int... serviceItemsIDs) {
         int totalMinutes = 0;
 

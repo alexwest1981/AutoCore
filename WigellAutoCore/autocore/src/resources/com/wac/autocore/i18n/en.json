@@ -105,6 +105,7 @@
       "meta": "{0} work orders",
       "action_create": "+ Create Work Order",
       "action_start": "▶ Start order",
+      "action_mark_performed": "Mark performed work",
       "action_complete": "✔ Complete order",
       "action_details": "View details"
     },
@@ -357,6 +358,9 @@
       "services_select": "Select services included",
       "services_from_booking": "Services on the booking",
       "no_services": "The booking has no services",
+      "mark_performed_title": "Mark performed work",
+      "mark_performed_header": "Which work is performed?",
+      "mark_performed_desc": "The price that applies when you mark it is stored on the line, so a later price change does not touch this work order.",
       "status_change": "Update Work Order Status",
       "details_header": "Details for work order #{0}",
       "details_title": "Work Order Details",

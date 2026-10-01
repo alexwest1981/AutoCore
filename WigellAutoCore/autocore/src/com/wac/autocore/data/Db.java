@@ -86,6 +86,7 @@ public class Db {
                 + "work_order_id INTEGER NOT NULL, "
                 + "service_item_id INTEGER NOT NULL, "
                 + "completed INTEGER NOT NULL DEFAULT 0, "
+                + "price REAL, "
                 + "PRIMARY KEY (work_order_id, service_item_id))",
 
             "CREATE TABLE IF NOT EXISTS invoices ("
@@ -124,6 +125,13 @@ public class Db {
             // SCRUM-158 (C3): Säkerställ att kolumnen completed finns i work_order_service_items vid migrering
             try {
                 statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN completed INTEGER NOT NULL DEFAULT 0");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // SCRUM-160 (D2): Säkerställ att kolumnen price finns, så ett utfört arbete behåller sitt pris
+            try {
+                statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN price REAL");
             } catch (SQLException ignored) {
                 // Kolumnen existerar redan
             }

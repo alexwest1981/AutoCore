@@ -289,6 +289,11 @@ public class GarageSystem {
         workOrderService.startWorkOrder(workOrderId);
     }
 
+    /** SCRUM-160 (D2): markerar tjänster utförda och fryser priset som gäller då. */
+    public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
+        return workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
+    }
+
     public void completeWorkOrder(int workOrderId) {
         workOrderService.completeWorkOrder(workOrderId);
     }
