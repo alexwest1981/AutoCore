@@ -113,7 +113,7 @@ if (Test-Path $resDir) {
 $sourcesFile = "$outDir\sources.txt"
 Get-ChildItem -Path $srcDir -Filter "*.java" -Recurse | ForEach-Object { $_.FullName } | Set-Content -Path $sourcesFile
 
-& $javacBin -d $outDir -sourcepath "$srcDir;$resDir" -cp $jdbcJar "@$sourcesFile"
+& $javacBin -encoding UTF-8 -d $outDir -sourcepath "$srcDir;$resDir" -cp $jdbcJar "@$sourcesFile"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Kompileringsfel!" -ForegroundColor Red
     Remove-Item $sourcesFile -Force -ErrorAction SilentlyContinue
