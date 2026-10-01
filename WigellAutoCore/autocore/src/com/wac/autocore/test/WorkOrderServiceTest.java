@@ -13,6 +13,10 @@ import com.wac.autocore.repository.InvoiceRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.service.GarageSystem;
 
+import com.wac.autocore.seed.SeedText;
+import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.EntityLookup;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Bevisen för SCRUM-156 (C1) och SCRUM-158 (C3), körda mot en riktig databas.
+ * Bevisen för SCRUM-156 (C1), SCRUM-157 (C2) och SCRUM-158 (C3), körda mot en riktig databas.
  */
 public class WorkOrderServiceTest {
 
@@ -51,6 +55,60 @@ public class WorkOrderServiceTest {
 
             System.out.println("    [SCRUM-156 BEVIS] Arbetsorder " + orderId
                     + " fick " + countLinks(orderId) + " rader, en per tjänst i bokningen.");
+        } finally {
+            deleteQuietly(garage, orderId, booking.getId(), mechanic.getId());
+        }
+    }
+
+    /** C2 (SCRUM-157): Arbetsordern visar vilka arbeten som ska utföras för mekanikern och användaren. */
+    public void testWorkOrderDisplaysServicesToBePerformed() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        List<ServiceItem> services = garage.getServiceItems();
+        TestRunner.assertTrue(services.size() >= 3, "Katalogen måste innehålla minst tre tjänster");
+        Mechanic mechanic = temporaryMechanic(garage, "C2-mekaniker");
+        Booking booking = bookingWithServices(garage, 3, "C2-prov");
+        int orderId = 0;
+
+        try {
+            WorkOrder order = garage.createWorkOrder(booking.getId(), mechanic.getId());
+            TestRunner.assertNotNull(order, "Arbetsordern ska skapas");
+            orderId = order.getId();
+
+            // 1. Verifiera att arbetsordern listar samtliga beställda tjänster
+            String uiServices = EntityLookup.workOrderServicesWithPrices(garage, order);
+            int expectedMinutes = 0;
+            for (int i = 0; i < 3; i++) {
+                ServiceItem s = services.get(i);
+                expectedMinutes += s.getEstimatedMinutes();
+                TestRunner.assertTrue(uiServices.contains(SeedText.resolve(s.getName())),
+                        "Arbetsorderns tjänstelista i UI ska innehålla tjänsten " + s.getName());
+            }
+
+            // 2. Verifiera beräkning av total tid för alla arbeten som ska utföras
+            int actualMinutes = EntityLookup.workOrderTotalMinutes(garage, order);
+            TestRunner.assertEquals(expectedMinutes, actualMinutes,
+                    "Total beräknad tid för arbetsordern ska matcha summan av dess tjänster");
+
+            // 3. Verifiera att status per arbete visas: före start är alla 'Att utföra'
+            String statusBefore = EntityLookup.workOrderServicesWithStatus(garage, order);
+            TestRunner.assertTrue(statusBefore.contains(I18n.get("status.to_be_performed")),
+                    "Före start ska tjänsterna markeras som 'Att utföra'");
+
+            // 4. Markera första tjänsten som utförd och verifiera att statusen skiljer utfört från ej utfört
+            garage.startWorkOrder(orderId);
+            WorkOrder loaded = new WorkOrderRepository().findById(orderId);
+            loaded.markServiceAsCompleted(services.get(0).getId());
+            new WorkOrderRepository().save(loaded);
+
+            WorkOrder reloaded = new WorkOrderRepository().findById(orderId);
+            String statusAfter = EntityLookup.workOrderServicesWithStatus(garage, reloaded);
+            TestRunner.assertTrue(statusAfter.contains(I18n.get("status.completed")),
+                    "Den utförda tjänsten ska markeras som utförd");
+            TestRunner.assertTrue(statusAfter.contains(I18n.get("status.to_be_performed")),
+                    "Återstående tjänster ska fortfarande markeras som 'Att utföra'");
+
+            System.out.println("    [SCRUM-157 BEVIS] Arbetsorder " + orderId
+                    + " visar samtliga 3 arbeten som ska utföras, total beräknad tid (" + actualMinutes + " min) och status per moment.");
         } finally {
             deleteQuietly(garage, orderId, booking.getId(), mechanic.getId());
         }

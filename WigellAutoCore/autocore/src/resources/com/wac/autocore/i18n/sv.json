@@ -181,7 +181,9 @@
     "created": "Skapad",
     "work_order_created": "Arbetsorder skapad",
     "successful": "Genomförd",
-    "failed": "Misslyckad"
+    "failed": "Misslyckad",
+    "to_be_performed": "Att utföra",
+    "performed": "Utförd"
   },
   "common": {
     "yes": "Ja",
