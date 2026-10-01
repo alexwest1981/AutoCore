@@ -29,19 +29,33 @@ Set-Location $scriptDir
 # 1. Hitta Java 8 JDK
 $foundJdk = $null
 
-if ($customJdk -and (Test-Path "$customJdk\bin\javac.exe")) {
+# Letar upp javac/java i en JDK-katalog och klarar både Windows (.exe) och POSIX.
+function Get-JdkTool($jdkHome, $name) {
+    if (-not $jdkHome) { return $null }
+    foreach ($cand in @((Join-Path $jdkHome "bin/$name.exe"), (Join-Path $jdkHome "bin/$name"))) {
+        if (Test-Path $cand) { return $cand }
+    }
+    return $null
+}
+
+function Test-Jdk8($jdkHome) {
+    $javac = Get-JdkTool $jdkHome "javac"
+    $java = Get-JdkTool $jdkHome "java"
+    if (-not $javac -or -not $java) { return $false }
+    $ver = & $java -version 2>&1 | Select-Object -First 1
+    return ($ver -match '1\.8|"8\.')
+}
+
+if ((Get-JdkTool $customJdk "javac") -and (Test-Jdk8 $customJdk)) {
     $foundJdk = $customJdk
 }
 
-if (-not $foundJdk -and $env:JDK8_HOME -and (Test-Path "$env:JDK8_HOME\bin\javac.exe")) {
+if (-not $foundJdk -and (Get-JdkTool $env:JDK8_HOME "javac") -and (Test-Jdk8 $env:JDK8_HOME)) {
     $foundJdk = $env:JDK8_HOME
 }
 
-if (-not $foundJdk -and $env:JAVA_HOME -and (Test-Path "$env:JAVA_HOME\bin\javac.exe")) {
-    $ver = & "$env:JAVA_HOME\bin\java.exe" -version 2>&1 | Select-Object -First 1
-    if ($ver -match '1\.8|"8\.') {
-        $foundJdk = $env:JAVA_HOME
-    }
+if (-not $foundJdk -and (Get-JdkTool $env:JAVA_HOME "javac") -and (Test-Jdk8 $env:JAVA_HOME)) {
+    $foundJdk = $env:JAVA_HOME
 }
 
 if (-not $foundJdk) {
@@ -56,30 +70,29 @@ if (-not $foundJdk) {
 
 if (-not $foundJdk) {
     $candidates = @(
-        "C:\Program Files\BellSoft\LibericaJDK-8-Full",
-        "C:\Program Files\BellSoft\LibericaJDK-8",
-        "C:\Program Files\Eclipse Adoptium\jdk-8*",
-        "C:\Program Files\Zulu\zulu-8*",
-        "C:\Program Files\Java\jdk1.8*",
-        "C:\Program Files\Amazon Corretto\jdk1.8*",
-        "C:\Program Files (x86)\BellSoft\LibericaJDK-8-Full",
-        "C:\Program Files (x86)\Java\jdk1.8*",
-        "$HOME\.jdks\liberica-full-1.8*",
-        "$HOME\.jdks\jdk1.8*",
-        "$HOME\jdks\jdk8*",
-        "$env:LOCALAPPDATA\Programs\Eclipse Adoptium\jdk-8*"
+        "C:/Program Files/BellSoft/LibericaJDK-8-Full",
+        "C:/Program Files/BellSoft/LibericaJDK-8",
+        "C:/Program Files/Eclipse Adoptium/jdk-8*",
+        "C:/Program Files/Zulu/zulu-8*",
+        "C:/Program Files/Java/jdk1.8*",
+        "C:/Program Files/Amazon Corretto/jdk1.8*",
+        "C:/Program Files (x86)/BellSoft/LibericaJDK-8-Full",
+        "C:/Program Files (x86)/Java/jdk1.8*",
+        "$HOME/.jdks/liberica-full-1.8*",
+        "$HOME/.jdks/jdk1.8*",
+        "$HOME/jdks/jdk8*",
+        "/usr/lib/jvm/*1.8*",
+        "/usr/lib/jvm/java-8*",
+        "$env:LOCALAPPDATA/Programs/Eclipse Adoptium/jdk-8*"
     )
 
     foreach ($c in $candidates) {
         $matched = Resolve-Path $c -ErrorAction SilentlyContinue
         if ($matched) {
             foreach ($m in $matched) {
-                if (Test-Path "$m\bin\javac.exe") {
-                    $ver = & "$m\bin\java.exe" -version 2>&1 | Select-Object -First 1
-                    if ($ver -match '1\.8|"8\.') {
-                        $foundJdk = $m.Path
-                        break
-                    }
+                if (Test-Jdk8 $m.Path) {
+                    $foundJdk = $m.Path
+                    break
                 }
             }
         }
@@ -94,22 +107,48 @@ if (-not $foundJdk) {
     exit 1
 }
 
-$javaBin = "$foundJdk\bin\java.exe"
-$javacBin = "$foundJdk\bin\javac.exe"
-$javaVer = & "$javaBin" -version 2>&1 | Select-Object -First 1
-
-$srcDir = "WigellAutoCore\autocore\src"
-$resDir = "WigellAutoCore\autocore\src\resources"
-$outDir = "out\production\Systemarkitektur"
-$jdbcJar = "WigellAutoCore\autocore\lib\sqlite-jdbc-3.53.4.0.jar"
-$rapportFile = "rapport.md"
-
-if (-not (Test-Path $outDir)) {
-    New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+# Projektet importerar javafx.* i 40 filer: en JDK 8 utan JavaFX ger 40 kompileringsfel.
+$jfxOk = $false
+foreach ($jfx in @("$foundJdk/jre/lib/ext/jfxrt.jar", "$foundJdk/jre/lib/jfxrt.jar", "$foundJdk/lib/jfxrt.jar")) {
+    if (Test-Path $jfx) { $jfxOk = $true }
+}
+if (-not $jfxOk) {
+    Write-Host "Fel: JDK 8 hittades ($foundJdk), men den innehåller inte JavaFX." -ForegroundColor Red
+    Write-Host "Projektet kompilerar inte utan JavaFX (javafx.* används i 40 filer)."
+    Write-Host "Installera en JDK 8 med JavaFX, t.ex. BellSoft Liberica JDK 8 Full."
+    exit 1
 }
 
+$javaBin = Get-JdkTool $foundJdk "java"
+$javacBin = Get-JdkTool $foundJdk "javac"
+$javaVer = & "$javaBin" -version 2>&1 | Select-Object -First 1
+
+# PowerShell accepterar "/" även på Windows.
+$srcDir = "WigellAutoCore/autocore/src"
+$resDir = "WigellAutoCore/autocore/src/resources"
+$outDir = "out/production/Systemarkitektur"
+$jdbcJar = "WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
+$rapportFile = "rapport.md"
+$cpSep = [IO.Path]::PathSeparator
+$esc = [char]27
+
+# Förutsättningarna måste finnas, annars blir körningen tyst fel.
+$missing = @()
+if (-not (Test-Path $srcDir))  { $missing += "källkoden ($srcDir)" }
+if (-not (Test-Path $resDir))  { $missing += "resurserna ($resDir)" }
+if (-not (Test-Path $jdbcJar)) { $missing += "SQLite-drivrutinen ($jdbcJar)" }
+if ($missing.Count -gt 0) {
+    Write-Host "Fel: saknas - $($missing -join ', ')" -ForegroundColor Red
+    exit 1
+}
+
+# Smutsiga klassfiler måste bort: TestRunner hittar testerna i den här katalogen,
+# så en borttagen testklass skulle annars fortsätta köras.
+if (Test-Path $outDir) { Remove-Item -Path $outDir -Recurse -Force }
+New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+
 if (Test-Path $resDir) {
-    Copy-Item -Path "$resDir\*" -Destination $outDir -Recurse -Force -ErrorAction SilentlyContinue
+    Copy-Item -Path "$resDir/*" -Destination $outDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host ""
@@ -121,10 +160,10 @@ Write-Host " Aktiv JDK: $foundJdk ($javaVer)"
 Write-Host ""
 
 Write-Host -NoNewline "[0/6] Kompilerar källkod och resurser med javac... "
-$sourcesFile = "$outDir\sources.txt"
+$sourcesFile = "$outDir/sources.txt"
 Get-ChildItem -Path $srcDir -Filter "*.java" -Recurse | ForEach-Object { $_.FullName } | Set-Content -Path $sourcesFile
 
-& $javacBin -encoding UTF-8 -d $outDir -sourcepath "$srcDir;$resDir" -cp $jdbcJar "@$sourcesFile"
+& $javacBin -encoding UTF-8 -d $outDir -sourcepath "$srcDir$cpSep$resDir" -cp $jdbcJar "@$sourcesFile"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "MISSLYCKADES" -ForegroundColor Red
     Remove-Item $sourcesFile -Force -ErrorAction SilentlyContinue
@@ -141,7 +180,12 @@ if ($args.Count -gt 0) {
 $script:accumTests = 0
 $script:accumPassed = 0
 $script:accumFailed = 0
+$script:allGreen = $true
 $script:moduleErrors = @()
+$script:modRows = @()
+$script:failText = ""
+$script:modSmoke = ""; $script:modUnit = ""; $script:modBevis = ""
+$script:modQuality = ""; $script:modSecurity = ""; $script:modWcag = ""
 
 function Run-AuditModule($code, $title, $num) {
     Write-Host ""
@@ -149,7 +193,9 @@ function Run-AuditModule($code, $title, $num) {
     Write-Host "$num $title" -ForegroundColor White
     Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Blue
 
-    $output = & $javaBin -cp "$outDir;$jdbcJar" com.wac.autocore.test.TestRunner $code 2>&1
+    # Färgkoderna bort före all tolkning, annars blir sifferutdragen fel.
+    $output = & $javaBin -cp "$outDir$cpSep$jdbcJar" com.wac.autocore.test.TestRunner $code 2>&1 |
+        ForEach-Object { $_ -replace "$esc\[[0-9;]*[A-Za-z]", "" }
     $exitCode = $LASTEXITCODE
 
     foreach ($line in $output) {
@@ -167,17 +213,35 @@ function Run-AuditModule($code, $title, $num) {
     }
 
     $resLine = ($output | Where-Object { $_ -match "Resultat: \d+ tester körda" } | Select-Object -First 1)
+    $mTests = 0; $mPassed = 0; $mFailed = 0
     if ($resLine -match "Resultat: (\d+) tester körda\. (\d+) godkända, (\d+) misslyckade") {
-        $script:accumTests += [int]$matches[1]
-        $script:accumPassed += [int]$matches[2]
-        $script:accumFailed += [int]$matches[3]
+        $mTests = [int]$matches[1]; $mPassed = [int]$matches[2]; $mFailed = [int]$matches[3]
+        $script:accumTests += $mTests
+        $script:accumPassed += $mPassed
+        $script:accumFailed += $mFailed
     }
+    $script:failText += (($output | Where-Object { $_ -match "❌" }) -join "`n") + "`n"
 
-    if ($exitCode -eq 0) {
-        Write-Host "Status: GODKÄND ($resLine)" -ForegroundColor Green
+    $row = [pscustomobject]@{ Omrade = ($title -split ' \(')[0]; Status = ""; Tester = "$mPassed/$mTests" }
+    $script:modRows += $row
+
+    # Utan resultatrad går modulen inte att verifiera - det är ett fel, inte ett godkännande.
+    if ($exitCode -eq 0 -and $mTests -gt 0) {
+        Write-Host "Status: GODKÄND ($mPassed/$mTests tester)" -ForegroundColor Green
+        $row.Status = "GODKÄND"
+        switch ($code) {
+            "smoke"    { $script:modSmoke = "$mPassed/$mTests" }
+            "unit"     { $script:modUnit = "$mPassed/$mTests" }
+            "bevis"    { $script:modBevis = "$mPassed/$mTests" }
+            "quality"  { $script:modQuality = "$mPassed/$mTests" }
+            "security" { $script:modSecurity = "$mPassed/$mTests" }
+            "wcag"     { $script:modWcag = "$mPassed/$mTests" }
+        }
     } else {
-        Write-Host "Status: MISSLYCKAD ($resLine)" -ForegroundColor Red
+        Write-Host "Status: MISSLYCKAD ($mPassed/$mTests tester, $mFailed fel)" -ForegroundColor Red
+        $row.Status = "MISSLYCKAD"
         $script:moduleErrors += $title
+        $script:allGreen = $false
     }
 }
 
@@ -192,31 +256,101 @@ if ($mode -eq "all" -or $mode -eq "bevis" -or $mode -eq "evidence") {
 }
 if ($mode -eq "all" -or $mode -eq "quality") {
     Run-AuditModule "quality" "KVALITETSKONTROLL (Språkparitet, Temaintegritet & Arkitektur)" "[4/6]"
+
+    # Samma statiska kontroller som test.sh - annars får rapporten inte påstå dem.
+    $i18n = @(Get-ChildItem -Path "$resDir/com/wac/autocore/i18n/*.json" -ErrorAction SilentlyContinue)
+    $row = [pscustomobject]@{ Omrade = "SPRÅKFILER"; Status = "GODKÄND"; Tester = "$($i18n.Count) filer" }
+    if ($i18n.Count -eq 0) {
+        Write-Host "  ❌ Språkfilerna hittades inte ($resDir/com/wac/autocore/i18n/*.json)" -ForegroundColor Red
+        $row.Status = "MISSLYCKAD"; $row.Tester = "-"
+        $script:moduleErrors += "SPRÅKFILER (hittades inte)"; $script:allGreen = $false
+    } else {
+        $mojibake = @(Select-String -Path $i18n.FullName -Pattern 'Ã¥|Ã¤|Ã¶|Ã…|Ã„|Ã–|Ã©|Ã¨' -ErrorAction SilentlyContinue)
+        $empty    = @(Select-String -Path $i18n.FullName -Pattern ':\s*""' -ErrorAction SilentlyContinue)
+        if ($mojibake.Count -gt 0) {
+            Write-Host "  ❌ Mojibake i språkfilerna: $($mojibake.Count) träffar" -ForegroundColor Red
+            $row.Status = "MISSLYCKAD"
+            $script:moduleErrors += "TECKENKODNING (Mojibake i språkfiler)"; $script:allGreen = $false
+        } elseif ($empty.Count -gt 0) {
+            Write-Host "  ❌ Tomma översättningssträngar: $($empty.Count) träffar" -ForegroundColor Red
+            $row.Status = "MISSLYCKAD"
+            $script:moduleErrors += "SPRÅKFILER (Tomma översättningar)"; $script:allGreen = $false
+        } else {
+            Write-Host "  ✔ Teckenkodning och UTF-8-integritet verifierad i $($i18n.Count) språkfiler (0 mojibake, 0 tomma strängar)" -ForegroundColor Green
+        }
+    }
+    $script:modRows += $row
+
+    # Acceptanskravens hänvisningar måste peka på tester som faktiskt finns.
+    $krvRefs = @()
+    if (Test-Path "$scriptDir/ACCEPTANSKRAV.md") {
+        $krvRefs = @(Select-String -Path "$scriptDir/ACCEPTANSKRAV.md" -Pattern '`([A-Z][A-Za-z0-9]*Test)\.([A-Za-z0-9_]+)`' -AllMatches |
+            ForEach-Object { $_.Matches } |
+            ForEach-Object { "$($_.Groups[1].Value).$($_.Groups[2].Value)" } |
+            Sort-Object -Unique)
+    }
+    $krvRow = [pscustomobject]@{ Omrade = "BEVISKOPPLING"; Status = "GODKÄND"; Tester = "$($krvRefs.Count) hänvisningar" }
+    if ($krvRefs.Count -eq 0) {
+        Write-Host "  ❌ ACCEPTANSKRAV.md saknas eller innehåller inga bevis-hänvisningar" -ForegroundColor Red
+        $krvRow.Status = "MISSLYCKAD"; $krvRow.Tester = "-"
+        $script:moduleErrors += "ACCEPTANSKRAV (inga bevis att kontrollera)"; $script:allGreen = $false
+    } else {
+        $krvMiss = @()
+        foreach ($ref in $krvRefs) {
+            $parts = $ref -split '\.'
+            $file = "$srcDir/com/wac/autocore/test/$($parts[0]).java"
+            $found = (Test-Path $file) -and (Select-String -Path $file -Pattern "void\s+$($parts[1])\s*\(" -Quiet)
+            if (-not $found) { $krvMiss += $ref }
+        }
+        if ($krvMiss.Count -gt 0) {
+            Write-Host "  ❌ Acceptanskraven hänvisar till tester som inte finns:" -ForegroundColor Red
+            $krvMiss | ForEach-Object { Write-Host "     $_" -ForegroundColor Red }
+            $krvRow.Status = "MISSLYCKAD"; $krvRow.Tester = "-"
+            $script:moduleErrors += "ACCEPTANSKRAV (bevis som inte finns)"; $script:allGreen = $false
+        } else {
+            Write-Host "  ✔ Alla $($krvRefs.Count) bevis-hänvisningar i ACCEPTANSKRAV.md pekar på testmetoder som finns" -ForegroundColor Green
+        }
+    }
+    $script:modRows += $krvRow
 }
 if ($mode -eq "all" -or $mode -eq "security") {
     Run-AuditModule "security" "SÄKERHETSKONTROLL (SQL-injektion, Hemligheter & Exekveringsskydd)" "[5/6]"
     if (Test-Path ".gitignore") {
         Write-Host "  ✔ .gitignore finns och skyddar hemligheter och byggartefakter" -ForegroundColor Green
+    } else {
+        Write-Host "  ❌ .gitignore saknas" -ForegroundColor Red
+        $script:moduleErrors += ".gitignore saknas"; $script:allGreen = $false
+        $script:modRows += [pscustomobject]@{ Omrade = "GITIGNORE"; Status = "MISSLYCKAD"; Tester = "-" }
     }
 }
 if ($mode -eq "all" -or $mode -eq "wcag") {
     Run-AuditModule "wcag" "WCAG 2.1 AAA KONTROLL (Kontrast >= 7.0:1, Fokus & Textstorlek)" "[6/6]"
 }
 
+if ($script:accumTests -eq 0) {
+    Write-Host "Ingen modul rapporterade något testresultat." -ForegroundColor Red
+    $script:moduleErrors += "INGEN MÄTDATA"
+    $script:allGreen = $false
+}
+
+$verdict = "MISSLYCKAD"
+if ($script:allGreen) { $verdict = "GODKÄND" }
+
+# Kravtabellen hämtas ur ACCEPTANSKRAV.md, så ett nytt krav följer med automatiskt.
+$krvRows = @()
+if (Test-Path "$scriptDir/ACCEPTANSKRAV.md") {
+    $krvRows = @(Select-String -Path "$scriptDir/ACCEPTANSKRAV.md" -Pattern '^\| \*\*AK-' |
+        ForEach-Object { $f = $_.Line -split '\|'; "|$($f[1])|$($f[2])|$($f[3])|$($f[4])|$($f[5])| **UPPFYLLT** |" })
+}
+$krvTable = $krvRows -join "`n"
+
 Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║                         AUDIT & TEST SAMMANFATTNING                        ║" -ForegroundColor Cyan
-Write-Host "╠════════════════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-Write-Host "║  ✔ Smoketest:            4/4 kontroller godkända (JVM, schema, i18n, css)    ║" -ForegroundColor Cyan
-Write-Host "║  ✔ Enhetstester:         56/56 tester godkända (Bokning, schema, i18n, mät)  ║" -ForegroundColor Cyan
-Write-Host "║  ✔ JIRA Beviskort:       9/9 beviskort godkända (D1, D3, E4, F2-F4, G1-G3)    ║" -ForegroundColor Cyan
-Write-Host "║  ✔ Kodkvalitet:          4/4 kontroller godkända (Paritet, arkitektur, teman) ║" -ForegroundColor Cyan
-Write-Host "║  ✔ Säkerhet:             4/4 kontroller godkända (0 sårbarheter, 0 hemligheter)║" -ForegroundColor Cyan
-Write-Host "║  ✔ WCAG 2.1 AAA:         5/5 kontroller godkända (Kontrast >=7:1, fokus, text) ║" -ForegroundColor Cyan
-Write-Host "╠════════════════════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-Write-Host "║  TOTALRESULTAT: $script:accumTests/$script:accumTests TESTER GODKÄNDA (100% PASS RATE)                 ║" -ForegroundColor Green
-Write-Host "║  Systemet uppfyller samtliga 12 acceptanskriterier för leverans.           ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "AUDIT & TEST SAMMANFATTNING" -ForegroundColor Cyan
+Write-Host ("  {0,-22} {1,-11} {2}" -f "OMRÅDE", "STATUS", "TESTER")
+foreach ($r in $script:modRows) {
+    Write-Host ("  {0,-22} {1,-11} {2}" -f $r.Omrade, $r.Status, $r.Tester)
+}
+Write-Host ("  {0,-22} {1,-11} {2}" -f "TOTALT", $verdict, "$($script:accumPassed)/$($script:accumTests)")
 Write-Host ""
 
 # Generera rapport.md
@@ -227,13 +361,14 @@ if ($mode -eq "all") {
     $gitCommit = git rev-parse --short HEAD 2>$null
     if (-not $gitCommit) { $gitCommit = "unknown" }
 
+    if ($script:allGreen) {
     $rapportContent = @"
 # Test- och Verifieringsrapport: Wigell AutoCore 2.5
 **Genererad:** $dateIso  
 **Git Gren:** `$gitBranch` (`$gitCommit`)  
 **Miljö:** $javaVer  
 **JDK Hemkatalog:** `$foundJdk`  
-**Operativsystem:** Windows (PowerShell)  
+**Operativsystem:** $($PSVersionTable.OS) (PowerShell $($PSVersionTable.PSVersion))  
 
 ---
 
@@ -244,33 +379,22 @@ Alla automatiserade tester, auditkontroller, säkerhetsanalyser och beviskort ha
 | Område | Utfall | Detaljer |
 |---|---|---|
 | **Smoketest** | **GODKÄND (100%)** | Alla 11 tabeller verifierade i SQLite, alla kärnklasser laddade, språkfiler & teman intakta, startup < 2s. |
-| **Enhetstester** | **GODKÄND (100%)** | 56/56 enhetstester för affärslogik, flertjänstbokning, I18n, scheman, mätetal och persistens. |
+| **Enhetstester** | **GODKÄND (100%)** | $($script:modUnit) enhetstester för affärslogik, flertjänstbokning, I18n, scheman, mätetal och persistens. |
 | **JIRA Beviskort** | **GODKÄND (100%)** | Full verifiering av D1, D3, E4, F2, F3, F4, G1, G2, G3 mot beställningens siffror. |
 | **Kodkvalitet** | **GODKÄND (100%)** | 100% språklig paritet (sv/en), 0 mojibake, 0 tomma strängar, servicelager frikopplat från GUI. |
 | **Säkerhetsgranskning** | **GODKÄND (100%)** | 0 SQL-injektionsrisker, 0 hårdkodade hemligheter, 0 farliga Runtime.exec, .gitignore aktiv. |
 | **WCAG 2.1 AAA** | **GODKÄND (100%)** | Färgkontrast >= 7.0:1 (Emerald-tema), fokusindikatorer validerade, minsta textstorlek säkrad. |
-| **Totalt antal tester** | **$($script:accumTests)/$($script:accumTests) GODKÄNDA** | **100% Pass Rate (0 misslyckade)** |
+| **Totalt antal tester** | **$($script:accumPassed)/$($script:accumTests) GODKÄNDA** | **100% Pass Rate (0 misslyckade)** |
 
 ---
 
-## 2. Granskning mot Beställningens Acceptanskrav (Kriterium 1–12)
+## 2. Granskning mot Beställningens Acceptanskrav (AK-01–AK-16)
 
-Varje acceptanskriterium från beställaren är specificerat med mätbara gränsvärden i [ACCEPTANSKRAV.md](ACCEPTANSKRAV.md), direkt kopplat till JIRA-ärenden och bevisat i källkoden:
+Kraven nedan är hämtade direkt ur [ACCEPTANSKRAV.md](ACCEPTANSKRAV.md) ($($krvRows.Count) krav, avsnitt 4). Varje hänvisad testmetod kördes och kontrollerades av sviten ovan.
 
-| Kriterium | Beskrivning | JIRA-ärenden | Status | Bevis i testsviten / koden |
-|---|---|---|---|---|
-| **1** | **Bokning med flera tjänster** | SCRUM-147, SCRUM-148, SCRUM-151 | **UPPFYLLT** | `BookingServicesTest.testBookingWithMultipleServices` skapar bokning med 3 tjänster (Oljebyte, Bromsservice, Däckbyte) och läser tillbaka exakt samma lista. Tabell `booking_service_items` persisterar kopplingen. |
-| **2** | **Tjänster kan ändras innan arbetet börjat** | SCRUM-150, SCRUM-154 | **UPPFYLLT** | `BookingServicesTest.testCannotModifyServicesWhenWorkStarted` bevisar att ändringar tillåts i status `BOOKED`, men nekas omedelbart vid `IN_PROGRESS` eller `COMPLETED`. UI inaktiverar ändringsknappar. |
-| **3** | **Total beräknad arbetstid visas** | SCRUM-153 | **UPPFYLLT** | `Booking.getTotalEstimatedMinutes` summerar tidsåtgången: 45 + 90 + 30 = **165 minuter**. Visas i bokningsdialog, schemavy och bokningsöversikt. |
-| **4** | **Total beräknad kostnad visas** | SCRUM-153 | **UPPFYLLT** | `Booking.getTotalEstimatedCost` summerar baspriserna: 899 + 1495 + 399 = **2 793 kr**. Beräknas i realtid i formuläret vid tillägg/borttag. |
-| **5** | **Arbetsordern innehåller arbeten som ska utföras** | SCRUM-156, SCRUM-157, SCRUM-158 | **UPPFYLLT** | `WorkOrder` bär tjänsterna via `work_order_service_items` och kopplas till mekaniker och bokning. |
-| **6** | **Fakturan har flera fakturarader** | SCRUM-162, SCRUM-163 | **UPPFYLLT** | `InvoiceLineTest.testOneLinePerPerformedService` bevisar att en faktura för flera tjänster får en separat rad per tjänst med namn, baspris, rabatt och slutpris. |
-| **7** | **Pris på en tjänst kan ändras** | SCRUM-159 | **UPPFYLLT** | `GarageSystem.updateServiceItem` och `EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay` bevisar att administratören kan uppdatera katalogpriser och att nya bokningar slår igenom med det nya priset. |
-| **8** | **Prisändring påverkar inte gamla arbeten/fakturor** | SCRUM-160, SCRUM-161 | **UPPFYLLT** | `InvoiceLineTest.testPriceChangeDoesNotChangeSavedLines`, `EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay` och `EvidenceVerificationTest.testScrum161HistoricalPricesVisibleInUi` visar att priser fryses i `invoice_lines` och visas med frysta belopp på arbetsordrar och fakturor i UI. Äldre arbeten/fakturor förblir 100% oförändrade efter prishöjning. |
-| **9** | **Rabattfunktioner fungerar med nya fakturamodellen** | SCRUM-165, SCRUM-166 | **UPPFYLLT** | `EvidenceVerificationTest.testScrum165VipAndDiscountCodesWorkAsBefore` verifierar VIP 10%, WELCOME10 (10%), SERVICE200 (200 kr) och skydd mot negativ total. |
-| **10** | **Ny information sparas permanent** | SCRUM-167, SCRUM-168 | **UPPFYLLT** | `booking_service_items` och `invoice_lines` sparas i SQLite via JDBC. `EvidenceVerificationTest.testScrum168RoundtripForNewEntities` visar full CRUD-rundtur. |
-| **11** | **Informationen finns kvar efter omstart** | SCRUM-169, SCRUM-170 | **UPPFYLLT** | `EvidenceVerificationTest.testScrum169RestartEvidence` bevisar äkta tvåprocessomstart via `RestartProofRunner` med skilda OS-PID:er (Process 1 skriver canary-data och terminerar, Process 2 startar ny JVM och verifierar dataintegritet). `testScrum170ExistingDataRetained` bevisar noll dataförlust mot legacy AutoCore 2.0-databas. |
-| **12** | **Befintlig funktionalitet fungerar intakt** | SCRUM-171, SCRUM-172 | **UPPFYLLT** | `EvidenceVerificationTest.testScrum172NineCoreAreasVerified` bekräftar alla nio kärnområden med konkreta operationer och assertions: Kunder, Fordon, Bokningar, Mekaniker, Arbetsordrar, Fakturering, Betalningar, Rabatter samt Svenska/Engelska. |
+| Krav | Beskrivning | Mätvärde / bevis | Testklass & metod | Jira-kort | Status |
+|---|---|---|---|---|---|
+$krvTable
 
 ---
 
@@ -366,8 +490,46 @@ Samtliga 8 legacy-tabeller behöll exakt samma radantal (0 dataförlust), och de
 
 Alla tekniska och funktionella krav enligt beställarens specifikation för **Wigell AutoCore 2.5** är uppfyllda, testade och verifierade. Källkoden är stabil, fullt bakåtkompatibel med Java 8 och redo för redovisning och leverans.
 "@
+    } else {
+    $rapportContent = @"
+# Test- och Verifieringsrapport: Wigell AutoCore 2.5
+**Genererad:** $dateIso  
+**Git Gren:** ``$gitBranch`` (``$gitCommit``)  
+**Miljö:** $javaVer  
+**JDK Hemkatalog:** ``$foundJdk``  
+**Operativsystem:** $($PSVersionTable.OS) (PowerShell $($PSVersionTable.PSVersion))  
+
+---
+
+## 1. Utfall: MISSLYCKAD
+
+Körningen rapporterade fel i $($script:moduleErrors.Count) modul(er)/kontroll(er). Detta är inte en godkänd leverans.
+
+| Område | Status | Tester |
+|---|---|---|
+$($script:modRows | ForEach-Object { "| $($_.Omrade) | $($_.Status) | $($_.Tester) |" } | Out-String)
+| **Totalt** | **$($script:accumFailed) misslyckade av $($script:accumTests)** | **$($script:accumPassed)/$($script:accumTests) godkända** |
+
+### Felrapporterade kontroller
+
+$($script:moduleErrors | ForEach-Object { "* $_" } | Out-String)
+
+### Misslyckade tester
+
+``````
+$($script:failText)``````
+
+## 2. Slutsats
+
+Systemet uppfyller INTE samtliga acceptanskriterier (AK-01-AK-16). Åtgärda felen ovan och kör ``.\test.ps1`` igen.
+"@
+    }
     Set-Content -Path $rapportFile -Value $rapportContent -Encoding UTF8
-    Write-Host "✔ Fullständig rapport genererad: $rapportFile" -ForegroundColor Green
+    if ($script:allGreen) {
+        Write-Host "✔ Fullständig rapport genererad: $rapportFile" -ForegroundColor Green
+    } else {
+        Write-Host "✘ Rapport genererad med utfall MISSLYCKAD: $rapportFile" -ForegroundColor Red
+    }
 }
 
 if ($script:moduleErrors.Count -gt 0) {

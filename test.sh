@@ -261,6 +261,20 @@ fi
 export JDK8_HOME="$FOUND_JDK"
 export JAVA_HOME="$FOUND_JDK"
 
+# Koden importerar javafx.* i 40 filer: en JDK 8 utan JavaFX ger 40 kompileringsfel,
+# så kontrollera det här i stället för att låta javac förklara saken.
+JFX_OK=0
+for jfx in "$FOUND_JDK/jre/lib/ext/jfxrt.jar" "$FOUND_JDK/jre/lib/jfxrt.jar" "$FOUND_JDK/lib/jfxrt.jar"; do
+    [ -f "$jfx" ] && JFX_OK=1
+done
+if [ "$JFX_OK" -eq 0 ]; then
+    echo -e "${RED}${BOLD}Fel: JDK 8 hittades ($FOUND_JDK), men den innehåller inte JavaFX.${RESET}"
+    echo "Projektet kompilerar inte utan JavaFX (javafx.* används i 40 filer)."
+    echo "Installera en JDK 8 med JavaFX, t.ex. BellSoft Liberica JDK 8 Full, och kör:"
+    echo "  ./test.sh --jdk \"/sökväg/till/LibericaJDK-8-Full\""
+    exit 1
+fi
+
 EXE=""
 if [ -x "$FOUND_JDK/bin/javac.exe" ]; then
     EXE=".exe"
@@ -275,6 +289,14 @@ RES_DIR="WigellAutoCore/autocore/src/resources"
 OUT_DIR="out/production/Systemarkitektur"
 JDBC_JAR="WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 RAPPORT_FILE="rapport.md"
+ESC=$(printf '\033')
+
+# Kontrollera förutsättningarna innan något byggs: utan dessa blir körningen tyst fel.
+MISSING=0
+[ -d "$SRC_DIR" ]  || { echo -e "${RED}Fel: källkoden saknas: $SRC_DIR${RESET}"; MISSING=1; }
+[ -d "$RES_DIR" ]  || { echo -e "${RED}Fel: resursmappen saknas: $RES_DIR${RESET}"; MISSING=1; }
+[ -f "$JDBC_JAR" ] || { echo -e "${RED}Fel: SQLite-drivrutinen saknas: $JDBC_JAR${RESET}"; MISSING=1; }
+[ "$MISSING" -eq 0 ] || exit 1
 
 if [ -f "$JDBC_JAR" ]; then
     CP_RUN="$OUT_DIR$CP_SEP$JDBC_JAR"
@@ -284,6 +306,9 @@ else
     CP_ARG=()
 fi
 
+# Smutsiga klassfiler måste bort: TestRunner hittar testerna i den här katalogen,
+# så en borttagen testklass skulle annars fortsätta köras.
+rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 if [ -d "$RES_DIR" ]; then
     cp -R "$RES_DIR/." "$OUT_DIR/" 2>/dev/null || cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
@@ -292,7 +317,7 @@ fi
 echo ""
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${RESET}"
 echo -e "${CYAN}║${RESET} ${BOLD}WIGELL AUTOCORE  •  SYSTEMAUDIT, SMOKETEST & JIRA-BEVISVERIFIERING${RESET}       ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET} ${DIM}Kvalitetskontroll  •  Säkerhetsanalys  •  WCAG 2.1 AAA  •  Acceptanskrav 1-12${RESET} ${CYAN}║${RESET}"
+echo -e "${CYAN}║${RESET} ${DIM}Kvalitetskontroll  •  Säkerhetsanalys  •  WCAG 2.1 AAA  •  Acceptanskrav AK-01-AK-16${RESET} ${CYAN}║${RESET}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${RESET}"
 echo -e " ${DIM}Aktiv JDK:${RESET} $FOUND_JDK ($JAVA_VER_STR)"
 echo ""
@@ -310,12 +335,16 @@ BUILD_OUT=$("$JAVAC_BIN" -encoding UTF-8 -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_
 rm -f "$SOURCES_FILE"
 echo -e "${GREEN}${BOLD}✔ OK${RESET}"
 
-TOTAL_PASSED=0
 TOTAL_FAILED=0
 ACCUM_TESTS=0
 ACCUM_PASSED=0
 ACCUM_FAILED=0
-MODULE_RESULTS=()
+ALL_GREEN=true
+MOD_TITLE=()
+MOD_STATUS=()
+MOD_COUNT=()
+MOD_SMOKE=""; MOD_UNIT=""; MOD_BEVIS=""; MOD_QUALITY=""; MOD_SECURITY=""; MOD_WCAG=""
+FAIL_TEXT=""
 ERRORS=()
 
 run_runner_module() {
@@ -328,7 +357,9 @@ run_runner_module() {
     echo -e "${BOLD}${num} ${title}${RESET}"
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 
-    OUTPUT=$("$JAVA_BIN" -cp "$CP_RUN" com.wac.autocore.test.TestRunner "$code" 2>&1)
+    # Färgkoderna måste bort före all tolkning, annars blir sifferutdragen fel.
+    OUTPUT=$("$JAVA_BIN" -cp "$CP_RUN" com.wac.autocore.test.TestRunner "$code" 2>&1 \
+        | sed "s/${ESC}\[[0-9;]*[A-Za-z]//g")
     EXIT_CODE=$?
 
     # Skriv ut relevanta rader
@@ -346,25 +377,41 @@ run_runner_module() {
         fi
     done
 
-    RES_LINE=$(echo "$OUTPUT" | grep -E "Resultat: [0-9]+ tester körda" | head -n 1)
-    M_TESTS=$(echo "$RES_LINE" | grep -oE "[0-9]+" | head -n 1)
-    M_PASSED=$(echo "$RES_LINE" | grep -oE "[0-9]+" | sed -n '2p')
-    M_FAILED=$(echo "$RES_LINE" | grep -oE "[0-9]+" | sed -n '3p')
-    if [ -n "$M_TESTS" ] && [ "$M_TESTS" -gt 0 ] 2>/dev/null; then
+    RES_LINE=$(printf '%s\n' "$OUTPUT" | grep -E "Resultat: [0-9]+ tester körda" | head -n 1)
+    M_TESTS=$(printf '%s\n' "$RES_LINE"  | grep -oE "[0-9]+" | sed -n '1p'); M_TESTS=${M_TESTS:-0}
+    M_PASSED=$(printf '%s\n' "$RES_LINE" | grep -oE "[0-9]+" | sed -n '2p'); M_PASSED=${M_PASSED:-0}
+    M_FAILED=$(printf '%s\n' "$RES_LINE" | grep -oE "[0-9]+" | sed -n '3p'); M_FAILED=${M_FAILED:-0}
+    if [ "$M_TESTS" -gt 0 ]; then
         ACCUM_TESTS=$((ACCUM_TESTS + M_TESTS))
         ACCUM_PASSED=$((ACCUM_PASSED + M_PASSED))
         ACCUM_FAILED=$((ACCUM_FAILED + M_FAILED))
     fi
+    FAIL_TEXT="$FAIL_TEXT$(printf '%s\n' "$OUTPUT" | grep -F '❌' || true)
+"
 
-    if [ $EXIT_CODE -eq 0 ]; then
-        echo -e "${GREEN}${BOLD}Status: GODKÄND ($RES_LINE)${RESET}"
-        MODULE_RESULTS+=("$title: GODKÄND")
+    MOD_TITLE+=("${title%% (*}")
+    MOD_COUNT+=("$M_PASSED/$M_TESTS")
+
+    # Utan resultatrad går modulen inte att verifiera - det är ett fel, inte ett godkännande.
+    if [ $EXIT_CODE -eq 0 ] && [ "$M_TESTS" -gt 0 ]; then
+        echo -e "${GREEN}${BOLD}Status: GODKÄND ($M_PASSED/$M_TESTS tester)${RESET}"
+        MOD_STATUS+=("GODKÄND")
     else
-        echo -e "${RED}${BOLD}Status: MISSLYCKAD ($RES_LINE)${RESET}"
-        MODULE_RESULTS+=("$title: MISSLYCKAD")
+        echo -e "${RED}${BOLD}Status: MISSLYCKAD ($M_PASSED/$M_TESTS tester, $M_FAILED fel)${RESET}"
+        MOD_STATUS+=("MISSLYCKAD")
         TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ALL_GREEN=false
         ERRORS+=("$title")
     fi
+
+    case "$code" in
+        smoke)    MOD_SMOKE="$M_PASSED/$M_TESTS" ;;
+        unit)     MOD_UNIT="$M_PASSED/$M_TESTS" ;;
+        bevis)    MOD_BEVIS="$M_PASSED/$M_TESTS" ;;
+        quality)  MOD_QUALITY="$M_PASSED/$M_TESTS" ;;
+        security) MOD_SECURITY="$M_PASSED/$M_TESTS" ;;
+        wcag)     MOD_WCAG="$M_PASSED/$M_TESTS" ;;
+    esac
 }
 
 # 1. Smoketest
@@ -392,21 +439,67 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--quality" ] || [ "$MODE" = "quality" ]; 
     TODO_COUNT=$(grep -rnE "(TODO|FIXME)" "$SRC_DIR" 2>/dev/null | grep -v "Test.java" | wc -l || true)
     echo -e "  ${CYAN}ℹ Statisk analys:${RESET} ${DIM}Totalt ${TODO_COUNT} aktiva TODO/FIXME-noteringar i källkoden.${RESET}"
 
-    MOJIBAKE_HITS=$(grep -rnE "(Ã¥|Ã¤|Ã¶|Ã…|Ã„|Ã–|Ã©|Ã¨)" "$RES_DIR"/com/wac/autocore/i18n/*.json 2>/dev/null || true)
-    EMPTY_STR_HITS=$(grep -rnE ':[[:space:]]*""' "$RES_DIR"/com/wac/autocore/i18n/*.json 2>/dev/null || true)
-
-    if [ -n "$MOJIBAKE_HITS" ]; then
-        echo -e "  ${RED}❌ Teckenkodningsfel (mojibake) upptäcktes i språkfilerna:${RESET}"
-        echo "$MOJIBAKE_HITS" | head -n 5
+    # Acceptanskravens hänvisningar måste peka på tester som faktiskt finns,
+    # annars är spårbarhetsmatrisen bara påståenden.
+    KRV_REFS=$(grep -oE '`[A-Z][A-Za-z0-9]*Test\.[A-Za-z0-9_]+`' "$DIR/ACCEPTANSKRAV.md" 2>/dev/null | tr -d '`' | sort -u)
+    if [ -z "$KRV_REFS" ]; then
+        echo -e "  ${RED}❌ ACCEPTANSKRAV.md saknas eller innehåller inga bevis-hänvisningar${RESET}"
         TOTAL_FAILED=$((TOTAL_FAILED + 1))
-        ERRORS+=("TECKENKODNING (Mojibake i språkfiler)")
-    elif [ -n "$EMPTY_STR_HITS" ]; then
-        echo -e "  ${RED}❌ Tomma översättningssträngar upptäcktes i språkfilerna:${RESET}"
-        echo "$EMPTY_STR_HITS" | head -n 5
-        TOTAL_FAILED=$((TOTAL_FAILED + 1))
-        ERRORS+=("SPRÅKFILER (Tomma översättningar)")
+        ALL_GREEN=false
+        ERRORS+=("ACCEPTANSKRAV (inga bevis att kontrollera)")
+        MOD_TITLE+=("BEVISKOPPLING"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
     else
-        echo -e "  ${GREEN}✔${RESET} Teckenkodning och UTF-8-integritet verifierad i språkfiler (0 mojibake, 0 tomma strängar)"
+        KRV_MISS=""
+        while IFS= read -r ref; do
+            [ -n "$ref" ] || continue
+            cls="${ref%%.*}"; met="${ref##*.}"
+            grep -qE "void[[:space:]]+${met}[[:space:]]*\\(" "$SRC_DIR/com/wac/autocore/test/${cls}.java" 2>/dev/null \
+                || KRV_MISS="${KRV_MISS} ${ref}"
+        done <<< "$KRV_REFS"
+        if [ -n "$KRV_MISS" ]; then
+            echo -e "  ${RED}❌ Acceptanskraven hänvisar till tester som inte finns:${RESET}"
+            for ref in $KRV_MISS; do echo -e "     ${RED}$ref${RESET}"; done
+            TOTAL_FAILED=$((TOTAL_FAILED + 1))
+            ALL_GREEN=false
+            ERRORS+=("ACCEPTANSKRAV (bevis som inte finns)")
+            MOD_TITLE+=("BEVISKOPPLING"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
+        else
+            echo -e "  ${GREEN}✔${RESET} Alla $(printf '%s\n' "$KRV_REFS" | grep -c .) bevis-hänvisningar i ACCEPTANSKRAV.md pekar på testmetoder som finns"
+        fi
+    fi
+
+    I18N_FILES=("$RES_DIR"/com/wac/autocore/i18n/*.json)
+    MOJIBAKE_HITS=""
+    EMPTY_STR_HITS=""
+
+    # Hittas inga språkfiler är kontrollen inte gjord - då får den inte bli grön.
+    if [ ! -f "${I18N_FILES[0]}" ]; then
+        echo -e "  ${RED}❌ Språkfilerna hittades inte ($RES_DIR/com/wac/autocore/i18n/*.json)${RESET}"
+        TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ALL_GREEN=false
+        ERRORS+=("SPRÅKFILER (hittades inte)")
+        MOD_TITLE+=("SPRÅKFILER"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
+    else
+        MOJIBAKE_HITS=$(grep -rnE "(Ã¥|Ã¤|Ã¶|Ã…|Ã„|Ã–|Ã©|Ã¨)" "${I18N_FILES[@]}" 2>/dev/null || true)
+        EMPTY_STR_HITS=$(grep -rnE ':[[:space:]]*""' "${I18N_FILES[@]}" 2>/dev/null || true)
+
+        if [ -n "$MOJIBAKE_HITS" ]; then
+            echo -e "  ${RED}❌ Teckenkodningsfel (mojibake) upptäcktes i språkfilerna:${RESET}"
+            printf '%s\n' "$MOJIBAKE_HITS" | head -n 5
+            TOTAL_FAILED=$((TOTAL_FAILED + 1))
+            ALL_GREEN=false
+            ERRORS+=("TECKENKODNING (Mojibake i språkfiler)")
+            MOD_TITLE+=("SPRÅKFILER"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
+        elif [ -n "$EMPTY_STR_HITS" ]; then
+            echo -e "  ${RED}❌ Tomma översättningssträngar upptäcktes i språkfilerna:${RESET}"
+            printf '%s\n' "$EMPTY_STR_HITS" | head -n 5
+            TOTAL_FAILED=$((TOTAL_FAILED + 1))
+            ALL_GREEN=false
+            ERRORS+=("SPRÅKFILER (Tomma översättningar)")
+            MOD_TITLE+=("SPRÅKFILER"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
+        else
+            echo -e "  ${GREEN}✔${RESET} Teckenkodning och UTF-8-integritet verifierad i $((${#I18N_FILES[@]})) språkfiler (0 mojibake, 0 tomma strängar)"
+        fi
     fi
 fi
 
@@ -415,6 +508,12 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--security" ] || [ "$MODE" = "security" ]
     run_runner_module "security" "SÄKERHETSKONTROLL (SQL-injektion, Hemligheter & Exekveringsskydd)" "[5/6]"
     if [ -f "$DIR/.gitignore" ]; then
         echo -e "  ${GREEN}✔${RESET} .gitignore finns och skyddar hemligheter och byggartefakter"
+    else
+        echo -e "  ${RED}❌ .gitignore saknas i $DIR${RESET}"
+        TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ALL_GREEN=false
+        ERRORS+=(".gitignore saknas")
+        MOD_TITLE+=("GITIGNORE"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
     fi
 fi
 
@@ -423,38 +522,43 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--wcag" ] || [ "$MODE" = "wcag" ]; then
     run_runner_module "wcag" "WCAG 2.1 AAA KONTROLL (Kontrast >= 7.0:1, Fokus & Textstorlek)" "[6/6]"
 fi
 
-# Slutsummering (beräknad direkt från genomförda moduler utan redundant omkörning)
+# Slutsummering - siffrorna kommer från de moduler som faktiskt kördes.
 TESTS_COUNT=$ACCUM_TESTS
 PASSED_COUNT=$ACCUM_PASSED
 FAILED_COUNT=$ACCUM_FAILED
 
 if [ "$TESTS_COUNT" -eq 0 ]; then
-    TESTS_COUNT=88
-    PASSED_COUNT=88
-    FAILED_COUNT=0
+    echo -e "${RED}${BOLD}Ingen modul rapporterade något testresultat.${RESET}"
+    TOTAL_FAILED=$((TOTAL_FAILED + 1))
+    ALL_GREEN=false
+    ERRORS+=("INGEN MÄTDATA")
 fi
 
 DATE_ISO="$(date '+%Y-%m-%d %H:%M:%S')"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "develop")"
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+git diff --quiet 2>/dev/null || GIT_COMMIT="${GIT_COMMIT}+ostagat"
+
+# Kravtabellen i rapporten hämtas ur ACCEPTANSKRAV.md, så ett nytt krav följer med automatiskt.
+KRV_ROWS=$(awk -F'|' '/^\| \*\*AK-/ { printf "|%s|%s|%s|%s|%s| **UPPFYLLT** |\n", $2,$3,$4,$5,$6 }' "$DIR/ACCEPTANSKRAV.md" 2>/dev/null)
+KRV_COUNT=$(printf '%s\n' "$KRV_ROWS" | grep -c . || true)
+
+if [ "$ALL_GREEN" = true ]; then VERDICT="GODKÄND"; else VERDICT="MISSLYCKAD"; fi
 
 echo ""
-echo -e "${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${CYAN}║${RESET}                         ${BOLD}AUDIT & TEST SAMMANFATTNING${RESET}                        ${CYAN}║${RESET}"
-echo -e "${CYAN}╠════════════════════════════════════════════════════════════════════════════╣${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Smoketest:${RESET}            4/4 kontroller godkända (JVM, schema, i18n, css)    ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Enhetstester:${RESET}         56/56 tester godkända (Bokning, schema, i18n, mät)  ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}JIRA Beviskort:${RESET}       9/9 beviskort godkända (D1, D3, E4, F2-F4, G1-G3)    ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Kodkvalitet:${RESET}          4/4 kontroller godkända (Paritet, arkitektur, teman) ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Säkerhet:${RESET}             4/4 kontroller godkända (0 sårbarheter, 0 hemligheter)${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}WCAG 2.1 AAA:${RESET}         5/5 kontroller godkända (Kontrast >=7:1, fokus, text) ${CYAN}║${RESET}"
-echo -e "${CYAN}╠════════════════════════════════════════════════════════════════════════════╣${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}${BOLD}TOTALRESULTAT:${RESET} ${TESTS_COUNT}/${TESTS_COUNT} TESTER GODKÄNDA (100% PASS RATE)                 ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${DIM}Systemet uppfyller samtliga 12 acceptanskriterier för leverans.${RESET}           ${CYAN}║${RESET}"
-echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${RESET}"
+echo -e "${BOLD}AUDIT & TEST SAMMANFATTNING${RESET}"
+printf '  %-22s %-11s %s\n' "OMRÅDE" "STATUS" "TESTER"
+for i in "${!MOD_TITLE[@]}"; do
+    printf '  %-22s %-11s %s\n' "${MOD_TITLE[$i]}" "${MOD_STATUS[$i]}" "${MOD_COUNT[$i]}"
+done
+printf '  %-22s %-11s %s\n' "TOTALT" "$VERDICT" "$PASSED_COUNT/$TESTS_COUNT"
 echo ""
 
-# Generera rapport.md
+# Generera rapport.md - bara efter en full körning, och bara med det utfall som mättes.
+if [ "$MODE" != "all" ]; then
+    echo -e "${DIM}Rapport hoppas över: endast en delmängd av modulerna kördes (MODE=$MODE). Kör ./test.sh utan argument för full rapport.${RESET}"
+    echo ""
+elif [ "$ALL_GREEN" = true ]; then
 cat <<EOF > "$RAPPORT_FILE"
 # Test- och Verifieringsrapport: Wigell AutoCore 2.5
 **Genererad:** ${DATE_ISO}  
@@ -472,33 +576,22 @@ Alla automatiserade tester, auditkontroller, säkerhetsanalyser och beviskort ha
 | Område | Utfall | Detaljer |
 |---|---|---|
 | **Smoketest** | **GODKÄND (100%)** | Alla 11 tabeller verifierade i SQLite, alla kärnklasser laddade, språkfiler & teman intakta, startup < 2s. |
-| **Enhetstester** | **GODKÄND (100%)** | 56/56 enhetstester för affärslogik, flertjänstbokning, I18n, scheman, mätetal och persistens. |
+| **Enhetstester** | **GODKÄND (100%)** | ${MOD_UNIT} enhetstester för affärslogik, flertjänstbokning, I18n, scheman, mätetal och persistens. |
 | **JIRA Beviskort** | **GODKÄND (100%)** | Full verifiering av D1, D3, E4, F2, F3, F4, G1, G2, G3 mot beställningens siffror. |
 | **Kodkvalitet** | **GODKÄND (100%)** | 100% språklig paritet (sv/en), 0 mojibake, 0 tomma strängar, servicelager frikopplat från GUI. |
 | **Säkerhetsgranskning** | **GODKÄND (100%)** | 0 SQL-injektionsrisker, 0 hårdkodade hemligheter, 0 farliga Runtime.exec, .gitignore aktiv. |
 | **WCAG 2.1 AAA** | **GODKÄND (100%)** | Färgkontrast >= 7.0:1 (Emerald-tema), fokusindikatorer validerade, minsta textstorlek säkrad. |
-| **Totalt antal tester** | **${TESTS_COUNT}/${TESTS_COUNT} GODKÄNDA** | **100% Pass Rate (0 misslyckade)** |
+| **Totalt antal tester** | **${PASSED_COUNT}/${TESTS_COUNT} GODKÄNDA** | **100% Pass Rate (0 misslyckade)** |
 
 ---
 
-## 2. Granskning mot Beställningens Acceptanskrav (Kriterium 1–12)
+## 2. Granskning mot Beställningens Acceptanskrav (AK-01–AK-16)
 
-Varje acceptanskriterium från beställaren är specificerat med mätbara gränsvärden i [ACCEPTANSKRAV.md](ACCEPTANSKRAV.md), direkt kopplat till JIRA-ärenden och bevisat i källkoden:
+Kraven nedan är hämtade direkt ur [ACCEPTANSKRAV.md](ACCEPTANSKRAV.md) (${KRV_COUNT} krav, avsnitt 4). Varje hänvisad testmetod kördes och kontrollerades av sviten ovan.
 
-| Kriterium | Beskrivning | JIRA-ärenden | Status | Bevis i testsviten / koden |
-|---|---|---|---|---|
-| **1** | **Bokning med flera tjänster** | SCRUM-147, SCRUM-148, SCRUM-151 | **UPPFYLLT** | \`BookingServicesTest.testBookingWithMultipleServices\` skapar bokning med 3 tjänster (Oljebyte, Bromsservice, Däckbyte) och läser tillbaka exakt samma lista. Tabell \`booking_service_items\` persisterar kopplingen. |
-| **2** | **Tjänster kan ändras innan arbetet börjat** | SCRUM-150, SCRUM-154 | **UPPFYLLT** | \`BookingServicesTest.testCannotModifyServicesWhenWorkStarted\` bevisar att ändringar tillåts i status \`BOOKED\`, men nekas omedelbart vid \`IN_PROGRESS\` eller \`COMPLETED\`. UI inaktiverar ändringsknappar. |
-| **3** | **Total beräknad arbetstid visas** | SCRUM-153 | **UPPFYLLT** | \`Booking.getTotalEstimatedMinutes\` summerar tidsåtgången: 45 + 90 + 30 = **165 minuter**. Visas i bokningsdialog, schemavy och bokningsöversikt. |
-| **4** | **Total beräknad kostnad visas** | SCRUM-153 | **UPPFYLLT** | \`Booking.getTotalEstimatedCost\` summerar baspriserna: 899 + 1495 + 399 = **2 793 kr**. Beräknas i realtid i formuläret vid tillägg/borttag. |
-| **5** | **Arbetsordern innehåller arbeten som ska utföras** | SCRUM-156, SCRUM-157, SCRUM-158 | **UPPFYLLT** | \`WorkOrder\` bär tjänsterna via \`work_order_service_items\` och kopplas till mekaniker och bokning. |
-| **6** | **Fakturan har flera fakturarader** | SCRUM-162, SCRUM-163 | **UPPFYLLT** | \`InvoiceLineTest.testOneLinePerPerformedService\` bevisar att en faktura för flera tjänster får en separat rad per tjänst med namn, baspris, rabatt och slutpris. |
-| **7** | **Pris på en tjänst kan ändras** | SCRUM-159 | **UPPFYLLT** | \`GarageSystem.updateServiceItem\` och \`EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay\` bevisar att administratören kan uppdatera katalogpriser och att nya bokningar slår igenom med det nya priset. |
-| **8** | **Prisändring påverkar inte gamla arbeten/fakturor** | SCRUM-160, SCRUM-161 | **UPPFYLLT** | \`InvoiceLineTest.testPriceChangeDoesNotChangeSavedLines\`, \`EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay\` och \`EvidenceVerificationTest.testScrum161HistoricalPricesVisibleInUi\` visar att priser fryses i \`invoice_lines\` och visas med frysta belopp på arbetsordrar och fakturor i UI. Äldre arbeten/fakturor förblir 100% oförändrade efter prishöjning. |
-| **9** | **Rabattfunktioner fungerar med nya fakturamodellen** | SCRUM-165, SCRUM-166 | **UPPFYLLT** | \`EvidenceVerificationTest.testScrum165VipAndDiscountCodesWorkAsBefore\` verifierar VIP 10%, WELCOME10 (10%), SERVICE200 (200 kr) och skydd mot negativ total. |
-| **10** | **Ny information sparas permanent** | SCRUM-167, SCRUM-168 | **UPPFYLLT** | \`booking_service_items\` och \`invoice_lines\` sparas i SQLite via JDBC. \`EvidenceVerificationTest.testScrum168RoundtripForNewEntities\` visar full CRUD-rundtur. |
-| **11** | **Informationen finns kvar efter omstart** | SCRUM-169, SCRUM-170 | **UPPFYLLT** | \`EvidenceVerificationTest.testScrum169RestartEvidence\` bevisar äkta tvåprocessomstart via \`RestartProofRunner\` med skilda OS-PID:er (Process 1 skriver canary-data och terminerar, Process 2 startar ny JVM och verifierar dataintegritet). \`testScrum170ExistingDataRetained\` bevisar noll dataförlust mot legacy AutoCore 2.0-databas. |
-| **12** | **Befintlig funktionalitet fungerar intakt** | SCRUM-171, SCRUM-172 | **UPPFYLLT** | \`EvidenceVerificationTest.testScrum172NineCoreAreasVerified\` bekräftar alla nio kärnområden med konkreta operationer och assertions: Kunder, Fordon, Bokningar, Mekaniker, Arbetsordrar, Fakturering, Betalningar, Rabatter samt Svenska/Engelska. |
+| Krav | Beskrivning | Mätvärde / bevis | Testklass & metod | Jira-kort | Status |
+|---|---|---|---|---|---|
+${KRV_ROWS}
 
 ---
 
@@ -597,6 +690,43 @@ EOF
 
 echo -e "${GREEN}${BOLD}✔ Fullständig rapport genererad: ${RESET}${BOLD}${RAPPORT_FILE}${RESET}"
 echo ""
+else
+cat <<EOF > "$RAPPORT_FILE"
+# Test- och Verifieringsrapport: Wigell AutoCore 2.5
+**Genererad:** ${DATE_ISO}
+**Git Gren:** \`${GIT_BRANCH}\` (\`${GIT_COMMIT}\`)
+**Miljö:** ${JAVA_VER_STR}
+**JDK Hemkatalog:** \`${FOUND_JDK}\`
+**Operativsystem:** $(uname -s) $(uname -m)
+
+---
+
+## 1. Utfall: MISSLYCKAD
+
+Körningen rapporterade fel i ${TOTAL_FAILED} modul(er)/kontroll(er). Detta är inte en godkänd leverans.
+
+| Område | Status | Tester |
+|---|---|---|
+$(for i in "${!MOD_TITLE[@]}"; do printf '| %s | %s | %s |\n' "${MOD_TITLE[$i]}" "${MOD_STATUS[$i]}" "${MOD_COUNT[$i]}"; done)
+| **Totalt** | **${FAILED_COUNT} misslyckade av ${TESTS_COUNT}** | **${PASSED_COUNT}/${TESTS_COUNT} godkända** |
+
+### Felrapporterade kontroller
+
+$(printf '%s\n' "${ERRORS[@]}" | sed 's/^/* /')
+
+### Misslyckade tester
+
+\`\`\`
+${FAIL_TEXT}\`\`\`
+
+## 2. Slutsats
+
+Systemet uppfyller INTE samtliga acceptanskriterier (AK-01-AK-16). Åtgärda felen ovan och kör \`./test.sh\` igen.
+EOF
+
+echo -e "${RED}${BOLD}✘ Rapport genererad med utfall MISSLYCKAD: ${RESET}${BOLD}${RAPPORT_FILE}${RESET}"
+echo ""
+fi
 
 if [ $TOTAL_FAILED -gt 0 ]; then
     echo -e "${RED}${BOLD}Audit misslyckades med fel i: ${ERRORS[*]}${RESET}"
