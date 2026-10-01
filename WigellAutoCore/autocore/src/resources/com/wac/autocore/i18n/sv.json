@@ -355,6 +355,8 @@
       "booking_select": "Välj bokning",
       "mechanic_select": "Välj mekaniker",
       "services_select": "Välj ingående tjänster",
+      "services_from_booking": "Bokningens tjänster",
+      "no_services": "Bokningen har inga tjänster",
       "status_change": "Uppdatera status på arbetsorder",
       "details_header": "Detaljer för arbetsorder #{0}",
       "details_title": "Arbetsorderdetaljer",
