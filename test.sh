@@ -275,6 +275,14 @@ RES_DIR="WigellAutoCore/autocore/src/resources"
 OUT_DIR="out/production/Systemarkitektur"
 JDBC_JAR="WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 RAPPORT_FILE="rapport.md"
+ESC=$(printf '\033')
+
+# Kontrollera förutsättningarna innan något byggs: utan dessa blir körningen tyst fel.
+MISSING=0
+[ -d "$SRC_DIR" ]  || { echo -e "${RED}Fel: källkoden saknas: $SRC_DIR${RESET}"; MISSING=1; }
+[ -d "$RES_DIR" ]  || { echo -e "${RED}Fel: resursmappen saknas: $RES_DIR${RESET}"; MISSING=1; }
+[ -f "$JDBC_JAR" ] || { echo -e "${RED}Fel: SQLite-drivrutinen saknas: $JDBC_JAR${RESET}"; MISSING=1; }
+[ "$MISSING" -eq 0 ] || exit 1
 
 if [ -f "$JDBC_JAR" ]; then
     CP_RUN="$OUT_DIR$CP_SEP$JDBC_JAR"
@@ -292,7 +300,7 @@ fi
 echo ""
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${RESET}"
 echo -e "${CYAN}║${RESET} ${BOLD}WIGELL AUTOCORE  •  SYSTEMAUDIT, SMOKETEST & JIRA-BEVISVERIFIERING${RESET}       ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET} ${DIM}Kvalitetskontroll  •  Säkerhetsanalys  •  WCAG 2.1 AAA  •  Acceptanskrav 1-12${RESET} ${CYAN}║${RESET}"
+echo -e "${CYAN}║${RESET} ${DIM}Kvalitetskontroll  •  Säkerhetsanalys  •  WCAG 2.1 AAA  •  Acceptanskrav AK-01-AK-16${RESET} ${CYAN}║${RESET}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${RESET}"
 echo -e " ${DIM}Aktiv JDK:${RESET} $FOUND_JDK ($JAVA_VER_STR)"
 echo ""
@@ -310,12 +318,16 @@ BUILD_OUT=$("$JAVAC_BIN" -encoding UTF-8 -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_
 rm -f "$SOURCES_FILE"
 echo -e "${GREEN}${BOLD}✔ OK${RESET}"
 
-TOTAL_PASSED=0
 TOTAL_FAILED=0
 ACCUM_TESTS=0
 ACCUM_PASSED=0
 ACCUM_FAILED=0
-MODULE_RESULTS=()
+ALL_GREEN=true
+MOD_TITLE=()
+MOD_STATUS=()
+MOD_COUNT=()
+MOD_SMOKE=""; MOD_UNIT=""; MOD_BEVIS=""; MOD_QUALITY=""; MOD_SECURITY=""; MOD_WCAG=""
+FAIL_TEXT=""
 ERRORS=()
 
 run_runner_module() {
@@ -328,7 +340,9 @@ run_runner_module() {
     echo -e "${BOLD}${num} ${title}${RESET}"
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 
-    OUTPUT=$("$JAVA_BIN" -cp "$CP_RUN" com.wac.autocore.test.TestRunner "$code" 2>&1)
+    # Färgkoderna måste bort före all tolkning, annars blir sifferutdragen fel.
+    OUTPUT=$("$JAVA_BIN" -cp "$CP_RUN" com.wac.autocore.test.TestRunner "$code" 2>&1 \
+        | sed "s/${ESC}\[[0-9;]*[A-Za-z]//g")
     EXIT_CODE=$?
 
     # Skriv ut relevanta rader
@@ -346,25 +360,41 @@ run_runner_module() {
         fi
     done
 
-    RES_LINE=$(echo "$OUTPUT" | grep -E "Resultat: [0-9]+ tester körda" | head -n 1)
-    M_TESTS=$(echo "$RES_LINE" | grep -oE "[0-9]+" | head -n 1)
-    M_PASSED=$(echo "$RES_LINE" | grep -oE "[0-9]+" | sed -n '2p')
-    M_FAILED=$(echo "$RES_LINE" | grep -oE "[0-9]+" | sed -n '3p')
-    if [ -n "$M_TESTS" ] && [ "$M_TESTS" -gt 0 ] 2>/dev/null; then
+    RES_LINE=$(printf '%s\n' "$OUTPUT" | grep -E "Resultat: [0-9]+ tester körda" | head -n 1)
+    M_TESTS=$(printf '%s\n' "$RES_LINE"  | grep -oE "[0-9]+" | sed -n '1p'); M_TESTS=${M_TESTS:-0}
+    M_PASSED=$(printf '%s\n' "$RES_LINE" | grep -oE "[0-9]+" | sed -n '2p'); M_PASSED=${M_PASSED:-0}
+    M_FAILED=$(printf '%s\n' "$RES_LINE" | grep -oE "[0-9]+" | sed -n '3p'); M_FAILED=${M_FAILED:-0}
+    if [ "$M_TESTS" -gt 0 ]; then
         ACCUM_TESTS=$((ACCUM_TESTS + M_TESTS))
         ACCUM_PASSED=$((ACCUM_PASSED + M_PASSED))
         ACCUM_FAILED=$((ACCUM_FAILED + M_FAILED))
     fi
+    FAIL_TEXT="$FAIL_TEXT$(printf '%s\n' "$OUTPUT" | grep -F '❌' || true)
+"
 
-    if [ $EXIT_CODE -eq 0 ]; then
-        echo -e "${GREEN}${BOLD}Status: GODKÄND ($RES_LINE)${RESET}"
-        MODULE_RESULTS+=("$title: GODKÄND")
+    MOD_TITLE+=("${title%% (*}")
+    MOD_COUNT+=("$M_PASSED/$M_TESTS")
+
+    # Utan resultatrad går modulen inte att verifiera - det är ett fel, inte ett godkännande.
+    if [ $EXIT_CODE -eq 0 ] && [ "$M_TESTS" -gt 0 ]; then
+        echo -e "${GREEN}${BOLD}Status: GODKÄND ($M_PASSED/$M_TESTS tester)${RESET}"
+        MOD_STATUS+=("GODKÄND")
     else
-        echo -e "${RED}${BOLD}Status: MISSLYCKAD ($RES_LINE)${RESET}"
-        MODULE_RESULTS+=("$title: MISSLYCKAD")
+        echo -e "${RED}${BOLD}Status: MISSLYCKAD ($M_PASSED/$M_TESTS tester, $M_FAILED fel)${RESET}"
+        MOD_STATUS+=("MISSLYCKAD")
         TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ALL_GREEN=false
         ERRORS+=("$title")
     fi
+
+    case "$code" in
+        smoke)    MOD_SMOKE="$M_PASSED/$M_TESTS" ;;
+        unit)     MOD_UNIT="$M_PASSED/$M_TESTS" ;;
+        bevis)    MOD_BEVIS="$M_PASSED/$M_TESTS" ;;
+        quality)  MOD_QUALITY="$M_PASSED/$M_TESTS" ;;
+        security) MOD_SECURITY="$M_PASSED/$M_TESTS" ;;
+        wcag)     MOD_WCAG="$M_PASSED/$M_TESTS" ;;
+    esac
 }
 
 # 1. Smoketest
@@ -392,21 +422,38 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--quality" ] || [ "$MODE" = "quality" ]; 
     TODO_COUNT=$(grep -rnE "(TODO|FIXME)" "$SRC_DIR" 2>/dev/null | grep -v "Test.java" | wc -l || true)
     echo -e "  ${CYAN}ℹ Statisk analys:${RESET} ${DIM}Totalt ${TODO_COUNT} aktiva TODO/FIXME-noteringar i källkoden.${RESET}"
 
-    MOJIBAKE_HITS=$(grep -rnE "(Ã¥|Ã¤|Ã¶|Ã…|Ã„|Ã–|Ã©|Ã¨)" "$RES_DIR"/com/wac/autocore/i18n/*.json 2>/dev/null || true)
-    EMPTY_STR_HITS=$(grep -rnE ':[[:space:]]*""' "$RES_DIR"/com/wac/autocore/i18n/*.json 2>/dev/null || true)
+    I18N_FILES=("$RES_DIR"/com/wac/autocore/i18n/*.json)
+    MOJIBAKE_HITS=""
+    EMPTY_STR_HITS=""
 
-    if [ -n "$MOJIBAKE_HITS" ]; then
-        echo -e "  ${RED}❌ Teckenkodningsfel (mojibake) upptäcktes i språkfilerna:${RESET}"
-        echo "$MOJIBAKE_HITS" | head -n 5
+    # Hittas inga språkfiler är kontrollen inte gjord - då får den inte bli grön.
+    if [ ! -f "${I18N_FILES[0]}" ]; then
+        echo -e "  ${RED}❌ Språkfilerna hittades inte ($RES_DIR/com/wac/autocore/i18n/*.json)${RESET}"
         TOTAL_FAILED=$((TOTAL_FAILED + 1))
-        ERRORS+=("TECKENKODNING (Mojibake i språkfiler)")
-    elif [ -n "$EMPTY_STR_HITS" ]; then
-        echo -e "  ${RED}❌ Tomma översättningssträngar upptäcktes i språkfilerna:${RESET}"
-        echo "$EMPTY_STR_HITS" | head -n 5
-        TOTAL_FAILED=$((TOTAL_FAILED + 1))
-        ERRORS+=("SPRÅKFILER (Tomma översättningar)")
+        ALL_GREEN=false
+        ERRORS+=("SPRÅKFILER (hittades inte)")
+        MOD_TITLE+=("SPRÅKFILER"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
     else
-        echo -e "  ${GREEN}✔${RESET} Teckenkodning och UTF-8-integritet verifierad i språkfiler (0 mojibake, 0 tomma strängar)"
+        MOJIBAKE_HITS=$(grep -rnE "(Ã¥|Ã¤|Ã¶|Ã…|Ã„|Ã–|Ã©|Ã¨)" "${I18N_FILES[@]}" 2>/dev/null || true)
+        EMPTY_STR_HITS=$(grep -rnE ':[[:space:]]*""' "${I18N_FILES[@]}" 2>/dev/null || true)
+
+        if [ -n "$MOJIBAKE_HITS" ]; then
+            echo -e "  ${RED}❌ Teckenkodningsfel (mojibake) upptäcktes i språkfilerna:${RESET}"
+            printf '%s\n' "$MOJIBAKE_HITS" | head -n 5
+            TOTAL_FAILED=$((TOTAL_FAILED + 1))
+            ALL_GREEN=false
+            ERRORS+=("TECKENKODNING (Mojibake i språkfiler)")
+            MOD_TITLE+=("SPRÅKFILER"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
+        elif [ -n "$EMPTY_STR_HITS" ]; then
+            echo -e "  ${RED}❌ Tomma översättningssträngar upptäcktes i språkfilerna:${RESET}"
+            printf '%s\n' "$EMPTY_STR_HITS" | head -n 5
+            TOTAL_FAILED=$((TOTAL_FAILED + 1))
+            ALL_GREEN=false
+            ERRORS+=("SPRÅKFILER (Tomma översättningar)")
+            MOD_TITLE+=("SPRÅKFILER"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
+        else
+            echo -e "  ${GREEN}✔${RESET} Teckenkodning och UTF-8-integritet verifierad i $((${#I18N_FILES[@]})) språkfiler (0 mojibake, 0 tomma strängar)"
+        fi
     fi
 fi
 
@@ -415,6 +462,12 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--security" ] || [ "$MODE" = "security" ]
     run_runner_module "security" "SÄKERHETSKONTROLL (SQL-injektion, Hemligheter & Exekveringsskydd)" "[5/6]"
     if [ -f "$DIR/.gitignore" ]; then
         echo -e "  ${GREEN}✔${RESET} .gitignore finns och skyddar hemligheter och byggartefakter"
+    else
+        echo -e "  ${RED}❌ .gitignore saknas i $DIR${RESET}"
+        TOTAL_FAILED=$((TOTAL_FAILED + 1))
+        ALL_GREEN=false
+        ERRORS+=(".gitignore saknas")
+        MOD_TITLE+=("GITIGNORE"); MOD_STATUS+=("MISSLYCKAD"); MOD_COUNT+=("-")
     fi
 fi
 
@@ -423,38 +476,39 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--wcag" ] || [ "$MODE" = "wcag" ]; then
     run_runner_module "wcag" "WCAG 2.1 AAA KONTROLL (Kontrast >= 7.0:1, Fokus & Textstorlek)" "[6/6]"
 fi
 
-# Slutsummering (beräknad direkt från genomförda moduler utan redundant omkörning)
+# Slutsummering - siffrorna kommer från de moduler som faktiskt kördes.
 TESTS_COUNT=$ACCUM_TESTS
 PASSED_COUNT=$ACCUM_PASSED
 FAILED_COUNT=$ACCUM_FAILED
 
 if [ "$TESTS_COUNT" -eq 0 ]; then
-    TESTS_COUNT=88
-    PASSED_COUNT=88
-    FAILED_COUNT=0
+    echo -e "${RED}${BOLD}Ingen modul rapporterade något testresultat.${RESET}"
+    TOTAL_FAILED=$((TOTAL_FAILED + 1))
+    ALL_GREEN=false
+    ERRORS+=("INGEN MÄTDATA")
 fi
 
 DATE_ISO="$(date '+%Y-%m-%d %H:%M:%S')"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "develop")"
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+git diff --quiet 2>/dev/null || GIT_COMMIT="${GIT_COMMIT}+ostagat"
+
+if [ "$ALL_GREEN" = true ]; then VERDICT="GODKÄND"; else VERDICT="MISSLYCKAD"; fi
 
 echo ""
-echo -e "${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${CYAN}║${RESET}                         ${BOLD}AUDIT & TEST SAMMANFATTNING${RESET}                        ${CYAN}║${RESET}"
-echo -e "${CYAN}╠════════════════════════════════════════════════════════════════════════════╣${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Smoketest:${RESET}            4/4 kontroller godkända (JVM, schema, i18n, css)    ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Enhetstester:${RESET}         56/56 tester godkända (Bokning, schema, i18n, mät)  ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}JIRA Beviskort:${RESET}       9/9 beviskort godkända (D1, D3, E4, F2-F4, G1-G3)    ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Kodkvalitet:${RESET}          4/4 kontroller godkända (Paritet, arkitektur, teman) ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Säkerhet:${RESET}             4/4 kontroller godkända (0 sårbarheter, 0 hemligheter)${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}WCAG 2.1 AAA:${RESET}         5/5 kontroller godkända (Kontrast >=7:1, fokus, text) ${CYAN}║${RESET}"
-echo -e "${CYAN}╠════════════════════════════════════════════════════════════════════════════╣${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}${BOLD}TOTALRESULTAT:${RESET} ${TESTS_COUNT}/${TESTS_COUNT} TESTER GODKÄNDA (100% PASS RATE)                 ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${DIM}Systemet uppfyller samtliga 12 acceptanskriterier för leverans.${RESET}           ${CYAN}║${RESET}"
-echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${RESET}"
+echo -e "${BOLD}AUDIT & TEST SAMMANFATTNING${RESET}"
+printf '  %-22s %-11s %s\n' "OMRÅDE" "STATUS" "TESTER"
+for i in "${!MOD_TITLE[@]}"; do
+    printf '  %-22s %-11s %s\n' "${MOD_TITLE[$i]}" "${MOD_STATUS[$i]}" "${MOD_COUNT[$i]}"
+done
+printf '  %-22s %-11s %s\n' "TOTALT" "$VERDICT" "$PASSED_COUNT/$TESTS_COUNT"
 echo ""
 
-# Generera rapport.md
+# Generera rapport.md - bara efter en full körning, och bara med det utfall som mättes.
+if [ "$MODE" != "all" ]; then
+    echo -e "${DIM}Rapport hoppas över: endast en delmängd av modulerna kördes (MODE=$MODE). Kör ./test.sh utan argument för full rapport.${RESET}"
+    echo ""
+elif [ "$ALL_GREEN" = true ]; then
 cat <<EOF > "$RAPPORT_FILE"
 # Test- och Verifieringsrapport: Wigell AutoCore 2.5
 **Genererad:** ${DATE_ISO}  
@@ -472,12 +526,12 @@ Alla automatiserade tester, auditkontroller, säkerhetsanalyser och beviskort ha
 | Område | Utfall | Detaljer |
 |---|---|---|
 | **Smoketest** | **GODKÄND (100%)** | Alla 11 tabeller verifierade i SQLite, alla kärnklasser laddade, språkfiler & teman intakta, startup < 2s. |
-| **Enhetstester** | **GODKÄND (100%)** | 56/56 enhetstester för affärslogik, flertjänstbokning, I18n, scheman, mätetal och persistens. |
+| **Enhetstester** | **GODKÄND (100%)** | ${MOD_UNIT} enhetstester för affärslogik, flertjänstbokning, I18n, scheman, mätetal och persistens. |
 | **JIRA Beviskort** | **GODKÄND (100%)** | Full verifiering av D1, D3, E4, F2, F3, F4, G1, G2, G3 mot beställningens siffror. |
 | **Kodkvalitet** | **GODKÄND (100%)** | 100% språklig paritet (sv/en), 0 mojibake, 0 tomma strängar, servicelager frikopplat från GUI. |
 | **Säkerhetsgranskning** | **GODKÄND (100%)** | 0 SQL-injektionsrisker, 0 hårdkodade hemligheter, 0 farliga Runtime.exec, .gitignore aktiv. |
 | **WCAG 2.1 AAA** | **GODKÄND (100%)** | Färgkontrast >= 7.0:1 (Emerald-tema), fokusindikatorer validerade, minsta textstorlek säkrad. |
-| **Totalt antal tester** | **${TESTS_COUNT}/${TESTS_COUNT} GODKÄNDA** | **100% Pass Rate (0 misslyckade)** |
+| **Totalt antal tester** | **${PASSED_COUNT}/${TESTS_COUNT} GODKÄNDA** | **100% Pass Rate (0 misslyckade)** |
 
 ---
 
@@ -597,6 +651,43 @@ EOF
 
 echo -e "${GREEN}${BOLD}✔ Fullständig rapport genererad: ${RESET}${BOLD}${RAPPORT_FILE}${RESET}"
 echo ""
+else
+cat <<EOF > "$RAPPORT_FILE"
+# Test- och Verifieringsrapport: Wigell AutoCore 2.5
+**Genererad:** ${DATE_ISO}
+**Git Gren:** \`${GIT_BRANCH}\` (\`${GIT_COMMIT}\`)
+**Miljö:** ${JAVA_VER_STR}
+**JDK Hemkatalog:** \`${FOUND_JDK}\`
+**Operativsystem:** $(uname -s) $(uname -m)
+
+---
+
+## 1. Utfall: MISSLYCKAD
+
+Körningen rapporterade fel i ${TOTAL_FAILED} modul(er)/kontroll(er). Detta är inte en godkänd leverans.
+
+| Område | Status | Tester |
+|---|---|---|
+$(for i in "${!MOD_TITLE[@]}"; do printf '| %s | %s | %s |\n' "${MOD_TITLE[$i]}" "${MOD_STATUS[$i]}" "${MOD_COUNT[$i]}"; done)
+| **Totalt** | **${FAILED_COUNT} misslyckade av ${TESTS_COUNT}** | **${PASSED_COUNT}/${TESTS_COUNT} godkända** |
+
+### Felrapporterade kontroller
+
+$(printf '%s\n' "${ERRORS[@]}" | sed 's/^/* /')
+
+### Misslyckade tester
+
+\`\`\`
+${FAIL_TEXT}\`\`\`
+
+## 2. Slutsats
+
+Systemet uppfyller INTE samtliga acceptanskriterier (AK-01-AK-16). Åtgärda felen ovan och kör \`./test.sh\` igen.
+EOF
+
+echo -e "${RED}${BOLD}✘ Rapport genererad med utfall MISSLYCKAD: ${RESET}${BOLD}${RAPPORT_FILE}${RESET}"
+echo ""
+fi
 
 if [ $TOTAL_FAILED -gt 0 ]; then
     echo -e "${RED}${BOLD}Audit misslyckades med fel i: ${ERRORS[*]}${RESET}"
