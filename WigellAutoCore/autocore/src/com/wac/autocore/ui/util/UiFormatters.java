@@ -1,7 +1,9 @@
 package com.wac.autocore.ui.util;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * Hjälpmetoder för ren dataformatering och presentationslogik i gränssnittet.
@@ -9,7 +11,8 @@ import java.time.LocalDate;
  */
 public final class UiFormatters {
 
-    private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0");
+    private static final DecimalFormat MONEY_FORMAT =
+            new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.US));
 
     private UiFormatters() {}
 
