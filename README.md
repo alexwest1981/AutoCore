@@ -43,8 +43,14 @@ git pull origin develop
 ### Köra och testa applikationen
 
 * **Huvudapplikationen (AutoCore GUI):** Kör `./start.sh` i terminalen, eller `Main.java` i IntelliJ
-* **Total systemaudit (50 kontroller):** Kör `./check.sh` (eller `./audit.sh`) för en komplett rapport över enhetstester, kodkvalitet, säkerhet och WCAG 2.1 AAA.
-* **Snabba enhetstester (57 tester):** Kör `./test.sh` (eller `com.wac.autocore.test.TestRunner`)
+* **Mätbara Acceptanskrav (AK-01 till AK-16):** Se [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md) för fullständig specifikation av alla 16 mätbara krav, tröskelvärden och testmetoder.
+* **Testskriptets Arkitektur & Dokumentation:** Läs [`Audit_Readme.md`](Audit_Readme.md) för en djupgående genomgång av hur testskriptet fungerar, dess sex granskningssteg, automatisk JDK-detektering och felsökning.
+* **Fullständig test- och auditsvit (88 tester över 6 moduler):**
+  - **Linux / macOS:** Kör `./test.sh` (eller `./check.sh`)
+  - **Windows (PowerShell):** Kör `.\test.ps1`
+  - **Windows (CMD):** Kör `test.bat`
+  - Kör enbart acceptanskrav och beviskort: `./test.sh bevis`
+  - Genererar automatiskt en detaljerad granskningsrapport i `rapport.md`.
 * **Konsolversionen (CLI):** Kör `./start.sh ConsoleApp` i terminalen, eller `ConsoleApp.java` i IntelliJ
 * **Modulvisa testappar:**
   - **Kunder:** `com.wac.autocore.gui.customers.TestCustomer`

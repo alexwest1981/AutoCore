@@ -207,7 +207,7 @@ public final class SearchResultsView {
         table.getColumns().add(TableFactory.col(I18n.get("table.col.vehicle"), 120, wo -> EntityLookup.workOrderVehicleReg(garage, wo)));
         table.getColumns().add(TableFactory.col(I18n.get("table.col.customer"), 180, wo -> EntityLookup.workOrderCustomerName(garage, wo)));
         table.getColumns().add(TableFactory.col(I18n.get("table.col.mechanic"), 160, wo -> EntityLookup.mechanicName(garage, wo.getMechanicId())));
-        table.getColumns().add(TableFactory.col(I18n.get("table.col.services"), 240, wo -> EntityLookup.serviceNames(garage, wo.getServiceItemIds())));
+        table.getColumns().add(TableFactory.col(I18n.get("table.col.services"), 240, wo -> EntityLookup.workOrderServicesWithPrices(garage, wo)));
         table.getColumns().add(TableFactory.badgeCol(I18n.get("table.col.status"), 120, wo -> UiFormatters.statusWord(wo.getStatus())));
 
         table.setRowFactory(tv -> {

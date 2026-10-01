@@ -9,6 +9,7 @@ public class WorkOrder {
     private int bookingId;
     private int mechanicId;
     private List<Integer> serviceItemIds;
+    private final List<Integer> completedServiceItems = new ArrayList<Integer>();
     private String status;
 
     public WorkOrder(int id, int bookingId, int mechanicId) {
@@ -65,6 +66,35 @@ public class WorkOrder {
 
     public void removeServiceItem(int serviceItemId) {
         serviceItemIds.remove(Integer.valueOf(serviceItemId));
+        completedServiceItems.remove(Integer.valueOf(serviceItemId));
+    }
+
+    public List<Integer> getCompletedServiceItems() {
+        return completedServiceItems;
+    }
+
+    public void setCompletedServiceItems(List<Integer> completed) {
+        this.completedServiceItems.clear();
+        if (completed != null) {
+            this.completedServiceItems.addAll(completed);
+        }
+    }
+
+    public void markServiceAsCompleted(int serviceItemId) {
+        if (!this.serviceItemIds.contains(serviceItemId)) {
+            throw new IllegalArgumentException("Tjänsten med ID " + serviceItemId + " tillhör inte denna arbetsorder.");
+        }
+        if (!this.completedServiceItems.contains(serviceItemId)) {
+            this.completedServiceItems.add(serviceItemId);
+        }
+    }
+
+    public void markAllServicesCompleted() {
+        for (Integer id : serviceItemIds) {
+            if (!completedServiceItems.contains(id)) {
+                completedServiceItems.add(id);
+            }
+        }
     }
 
     @Override

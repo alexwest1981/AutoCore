@@ -105,7 +105,8 @@
       "meta": "{0} arbetsordrar",
       "action_create": "+ Ny arbetsorder",
       "action_start": "▶ Starta order",
-      "action_complete": "✔ Slutför order"
+      "action_complete": "✔ Slutför order",
+      "action_details": "Visa detaljer"
     },
     "invoices": {
       "title": "Fakturor",
@@ -356,6 +357,8 @@
       "services_select": "Välj ingående tjänster",
       "status_change": "Uppdatera status på arbetsorder",
       "details_header": "Detaljer för arbetsorder #{0}",
+      "details_title": "Arbetsorderdetaljer",
+      "historical_notice": "Visar debiterade priser som gällde när arbetet utfördes.",
       "open_in_orders": "Öppna i arbetsordrar"
     },
     "invoice": {

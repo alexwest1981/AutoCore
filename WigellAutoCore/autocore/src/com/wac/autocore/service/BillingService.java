@@ -68,7 +68,20 @@ public class BillingService {
         }
 
         List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
-        for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+        List<Integer> targetServiceIds = workOrder.getCompletedServiceItems();
+        // SCRUM-158 (C3): Utförda arbeten ligger till grund för fakturan.
+        // Om inga enskilda tjänster explicit markerats som utförda men arbetsordern är slutförd (bakåtkompatibilitet),
+        // betraktas samtliga tjänster på arbetsordern som utförda.
+        if (targetServiceIds.isEmpty() && "COMPLETED".equals(workOrder.getStatus())) {
+            targetServiceIds = workOrder.getServiceItemIds();
+        }
+
+        if (targetServiceIds.isEmpty()) {
+            System.out.println("Invoice cannot be created: No performed services found on work order " + workOrderId);
+            return null;
+        }
+
+        for (Integer serviceItemId : targetServiceIds) {
             ServiceItem serviceItem = findServiceItem(serviceItemId);
             if (serviceItem != null) {
                 lines.add(new InvoiceLine(0, 0, serviceItem.getId(),
