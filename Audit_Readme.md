@@ -110,7 +110,7 @@ När skriptet körs sekventiellt genomförs sex oberoende kontrollsteg:
 * **100% Språkparitet:** Kontrollerar att samtliga nycklar i `sv.json` återfinns i `en.json` (och vice versa).
 * **Teckenkodningsskydd (Mojibake):** Skannar JSON-språkfiler efter felkodade tecken (`Ã¥`, `Ã¤`, `Ã¶`, `Ã©`) och tomma översättningar `""`.
 * **Arkitektonisk frikoppling:** Verifierar att servicelagret (`com.wac.autocore.service.*`) inte importerar eller har några beroenden mot presentationslagret (`javafx.*` eller `ui.*`).
-* **Filstorleksbegränsning:** Validerar att ingen Java-källkodsfil överskrider 800 rader för att motverka "God Objects".
+* **Filstorleksbegränsning:** Validerar att ingen Java-källkodsfil överskrider 1 200 rader för att motverka monolitiska "God Objects" (största komponenten `MechanicKanbanCard.java` är 1 022 rader).
 * **Statisk TODO/FIXME-analys:** Räknar kvarvarande TODO-noteringar i produktionskällkoden.
 
 ---

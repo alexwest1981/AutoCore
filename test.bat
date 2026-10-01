@@ -4,6 +4,13 @@ setlocal enabledelayedexpansion
 set "DIR=%~dp0"
 cd /d "%DIR%"
 
+:: Om PowerShell finns på Windows, kör test.ps1 för fullständig 6-stegs audit och rapport.md
+where powershell >nul 2>&1
+if %ERRORLEVEL% equ 0 (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%DIR%test.ps1" %*
+    exit /b %ERRORLEVEL%
+)
+
 :: ==============================================================================
 :: VARFOR JAVA 8 (JDK 8)?
 :: Projektets arkitektur- och kurskriterier kraver att den befintliga Java-
