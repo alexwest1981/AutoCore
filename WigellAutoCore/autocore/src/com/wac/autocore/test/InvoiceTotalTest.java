@@ -23,6 +23,7 @@ public class InvoiceTotalTest {
 
     private final GarageSystem garage = new GarageSystem();
 
+    // SCRUM-159: Verifiera att fakturatotalsumman matchar de utförda tjänsterna på arbetsordern
     public void testTotalEqualsSumOfLinesOnThreeInvoices() throws SQLException {
         List<ServiceItem> services = garage.getServiceItems();
         TestRunner.assertTrue(services.size() >= 3, "sample data should contain at least three services");
@@ -36,6 +37,7 @@ public class InvoiceTotalTest {
             WorkOrder workOrder = new WorkOrder(0, booking.getId(), mechanicId);
             for (int i = 0; i < serviceCount; i++) {
                 workOrder.addServiceItem(services.get(i).getId());
+                workOrder.markServiceAsCompleted(booking.getId());
             }
             workOrder.setStatus("COMPLETED");
             WorkOrderRepository workOrderRepository = new WorkOrderRepository();

@@ -41,6 +41,7 @@ public class InvoiceLineTest {
         WorkOrder workOrder = new WorkOrder(0, booking.getId(), mechanics.get(0).getId());
         workOrder.addServiceItem(s1.getId());
         workOrder.addServiceItem(s2.getId());
+        workOrder.markServiceAsCompleted(booking.getId());
         workOrder.setStatus("COMPLETED");
         WorkOrderRepository workOrderRepository = new WorkOrderRepository();
         workOrderRepository.save(workOrder);
@@ -85,6 +86,7 @@ public class InvoiceLineTest {
         WorkOrder workOrder = new WorkOrder(0, booking.getId(), garage.getMechanics().get(0).getId());
         workOrder.addServiceItem(service.getId());
         workOrder.setStatus("COMPLETED");
+        workOrder.markServiceAsCompleted(service.getId());
         WorkOrderRepository workOrderRepository = new WorkOrderRepository();
         workOrderRepository.save(workOrder);
 
