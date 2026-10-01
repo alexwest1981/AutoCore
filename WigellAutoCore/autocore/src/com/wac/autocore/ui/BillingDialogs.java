@@ -8,12 +8,14 @@ import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.UiFormatters;
 import com.wac.autocore.seed.SeedText;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
 import java.util.ArrayList;
@@ -151,27 +153,56 @@ public final class BillingDialogs {
     }
 
     static void showInvoiceLinesDialog(Invoice invoice) {
+        if (invoice == null) return;
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
         dialog.setTitle(I18n.get("table.col.invoice") + " #" + invoice.getId());
-        dialog.setHeaderText(I18n.get("table.col.invoice") + " #" + invoice.getId());
+        dialog.setHeaderText(I18n.get("table.col.invoice") + " #" + invoice.getId()
+                + " (" + I18n.get("table.col.workorder") + " #" + invoice.getWorkOrderId()
+                + ", " + invoice.getInvoiceDate() + ")");
         ActionDialogs.styleDialog(dialog);
 
+        VBox content = new VBox(12);
+        content.setPadding(new Insets(14));
+
+        Label notice = new Label(I18n.get("dialog.workorder.historical_notice"));
+        notice.getStyleClass().addAll("srow-sub", "small");
+
         GridPane grid = ActionDialogs.createGrid();
-        grid.add(new Label(I18n.get("table.col.service")), 0, 0);
-        grid.add(new Label(I18n.get("table.col.price")), 1, 0);
-        grid.add(new Label(I18n.get("table.col.discount")), 2, 0);
-        grid.add(new Label(I18n.get("table.col.final_price")), 3, 0);
+        Label h1 = new Label(I18n.get("table.col.service"));
+        h1.setStyle("-fx-font-weight: bold;");
+        Label h2 = new Label(I18n.get("table.col.price"));
+        h2.setStyle("-fx-font-weight: bold;");
+        Label h3 = new Label(I18n.get("table.col.discount"));
+        h3.setStyle("-fx-font-weight: bold;");
+        Label h4 = new Label(I18n.get("table.col.final_price"));
+        h4.setStyle("-fx-font-weight: bold;");
+
+        grid.add(h1, 0, 0);
+        grid.add(h2, 1, 0);
+        grid.add(h3, 2, 0);
+        grid.add(h4, 3, 0);
 
         int row = 1;
-        for (InvoiceLine line : invoice.getLines()) {
-            grid.add(new Label(SeedText.resolve(line.getServiceName())), 0, row);
-            grid.add(new Label(UiFormatters.formatMoney(line.getPrice())), 1, row);
-            grid.add(new Label(UiFormatters.formatMoney(line.getDiscount())), 2, row);
-            grid.add(new Label(UiFormatters.formatMoney(line.getFinalPrice())), 3, row);
-            row++;
+        if (invoice.getLines() != null) {
+            for (InvoiceLine line : invoice.getLines()) {
+                grid.add(new Label(SeedText.resolve(line.getServiceName())), 0, row);
+                grid.add(new Label(UiFormatters.formatMoney(line.getPrice())), 1, row);
+                grid.add(new Label(UiFormatters.formatMoney(line.getDiscount())), 2, row);
+                grid.add(new Label(UiFormatters.formatMoney(line.getFinalPrice())), 3, row);
+                row++;
+            }
         }
 
-        dialog.getDialogPane().setContent(grid);
+        // Summary row
+        Label totalLabel = new Label(I18n.get("table.col.total") + ":");
+        totalLabel.setStyle("-fx-font-weight: bold;");
+        Label totalVal = new Label(UiFormatters.formatMoney(invoice.getTotalAmount()));
+        totalVal.setStyle("-fx-font-weight: bold;");
+        grid.add(totalLabel, 2, row);
+        grid.add(totalVal, 3, row);
+
+        content.getChildren().addAll(notice, grid);
+        dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.showAndWait();
     }

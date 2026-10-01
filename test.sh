@@ -426,7 +426,7 @@ echo -e "${CYAN}║${RESET}                         ${BOLD}AUDIT & TEST SAMMANFA
 echo -e "${CYAN}╠════════════════════════════════════════════════════════════════════════════╣${RESET}"
 echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Smoketest:${RESET}            4/4 kontroller godkända (JVM, schema, i18n, css)    ${CYAN}║${RESET}"
 echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Enhetstester:${RESET}         56/56 tester godkända (Bokning, schema, i18n, mät)  ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}JIRA Beviskort:${RESET}       8/8 beviskort godkända (D1, E4, F2-F4, G1-G3)       ${CYAN}║${RESET}"
+echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}JIRA Beviskort:${RESET}       9/9 beviskort godkända (D1, D3, E4, F2-F4, G1-G3)    ${CYAN}║${RESET}"
 echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Kodkvalitet:${RESET}          4/4 kontroller godkända (Paritet, arkitektur, teman) ${CYAN}║${RESET}"
 echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}Säkerhet:${RESET}             4/4 kontroller godkända (0 sårbarheter, 0 hemligheter)${CYAN}║${RESET}"
 echo -e "${CYAN}║${RESET}  ${GREEN}✔${RESET} ${BOLD}WCAG 2.1 AAA:${RESET}         5/5 kontroller godkända (Kontrast >=7:1, fokus, text) ${CYAN}║${RESET}"
@@ -455,7 +455,7 @@ Alla automatiserade tester, auditkontroller, säkerhetsanalyser och beviskort ha
 |---|---|---|
 | **Smoketest** | **GODKÄND (100%)** | Alla 10 tabeller verifierade i SQLite, alla kärnklasser laddade, språkfiler & teman intakta, startup < 2s. |
 | **Enhetstester** | **GODKÄND (100%)** | 56/56 enhetstester för affärslogik, flertjänstbokning, I18n, scheman, mätetal och persistens. |
-| **JIRA Beviskort** | **GODKÄND (100%)** | Full verifiering av D1, E4, F2, F3, F4, G1, G2, G3 mot beställningens siffror. |
+| **JIRA Beviskort** | **GODKÄND (100%)** | Full verifiering av D1, D3, E4, F2, F3, F4, G1, G2, G3 mot beställningens siffror. |
 | **Kodkvalitet** | **GODKÄND (100%)** | 100% språklig paritet (sv/en), 0 mojibake, 0 tomma strängar, servicelager frikopplat från GUI. |
 | **Säkerhetsgranskning** | **GODKÄND (100%)** | 0 SQL-injektionsrisker, 0 hårdkodade hemligheter, 0 farliga Runtime.exec, .gitignore aktiv. |
 | **WCAG 2.1 AAA** | **GODKÄND (100%)** | Färgkontrast >= 7.0:1 (Emerald-tema), fokusindikatorer validerade, minsta textstorlek säkrad. |
@@ -476,7 +476,7 @@ Varje acceptanskriterium från beställaren är direkt kopplat till JIRA-ärende
 | **5** | **Arbetsordern innehåller arbeten som ska utföras** | SCRUM-156, SCRUM-157, SCRUM-158 | **UPPFYLLT** | \`WorkOrder\` bär tjänsterna via \`work_order_service_items\` och kopplas till mekaniker och bokning. |
 | **6** | **Fakturan har flera fakturarader** | SCRUM-162, SCRUM-163 | **UPPFYLLT** | \`InvoiceLineTest.testOneLinePerPerformedService\` bevisar att en faktura för flera tjänster får en separat rad per tjänst med namn, baspris, rabatt och slutpris. |
 | **7** | **Pris på en tjänst kan ändras** | SCRUM-159 | **UPPFYLLT** | \`GarageSystem.updateServiceItem\` och \`EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay\` bevisar att administratören kan uppdatera katalogpriser och att nya bokningar slår igenom med det nya priset. |
-| **8** | **Prisändring påverkar inte gamla arbeten/fakturor** | SCRUM-160, SCRUM-161 | **UPPFYLLT** | \`InvoiceLineTest.testPriceChangeDoesNotChangeSavedLines\` och \`EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay\` visar att priser fryses i tabellen \`invoice_lines\`. Äldre fakturor förblir 100% oförändrade efter prishöjning. |
+| **8** | **Prisändring påverkar inte gamla arbeten/fakturor** | SCRUM-160, SCRUM-161 | **UPPFYLLT** | \`InvoiceLineTest.testPriceChangeDoesNotChangeSavedLines\`, \`EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay\` och \`EvidenceVerificationTest.testScrum161HistoricalPricesVisibleInUi\` visar att priser fryses i \`invoice_lines\` och visas med frysta belopp på arbetsordrar och fakturor i UI. Äldre arbeten/fakturor förblir 100% oförändrade efter prishöjning. |
 | **9** | **Rabattfunktioner fungerar med nya fakturamodellen** | SCRUM-165, SCRUM-166 | **UPPFYLLT** | \`EvidenceVerificationTest.testScrum165VipAndDiscountCodesWorkAsBefore\` verifierar VIP 10%, WELCOME10 (10%), SERVICE200 (200 kr) och skydd mot negativ total. |
 | **10** | **Ny information sparas permanent** | SCRUM-167, SCRUM-168 | **UPPFYLLT** | \`booking_service_items\` och \`invoice_lines\` sparas i SQLite via JDBC. \`EvidenceVerificationTest.testScrum168RoundtripForNewEntities\` visar full CRUD-rundtur. |
 | **11** | **Informationen finns kvar efter omstart** | SCRUM-169, SCRUM-170 | **UPPFYLLT** | \`PersistenceRestartTest\` och \`EvidenceVerificationTest.testScrum169RestartEvidence\` bevisar att bokningar, tjänstelänkar, arbetsorder och fakturarader överlever omstart med intakta relationer. |
@@ -487,6 +487,7 @@ Varje acceptanskriterium från beställaren är direkt kopplat till JIRA-ärende
 ## 3. Detaljerat Utfall för JIRA Beviskorten
 
 * **SCRUM-159 (D1 Beviskort: Prisändring):** Verifierad. Prishöjning applicerad på Oljebyte; ny faktura fick nya priset medan tidigare skapad faktura bibehöll sitt ursprungliga frysta belopp.
+* **SCRUM-161 (D3 Beviskort: Historik på arbetsorder och faktura):** Verifierad. \`EntityLookup.workOrderServicesWithPrices\` och fakturavyer visar frysta historiska priser för slutförda/fakturerade arbetsordrar och äldre fakturor. Samma tjänst visas med två olika priser på två olika arbetsordrar och fakturor efter prishöjning.
 * **SCRUM-165 (E4 Beviskort: VIP & Rabatter):** Verifierad. Alla 3 rabattregler testade med faktiska belopp och utskrifter (VIP 10%, WELCOME10, SERVICE200, spärr vid 0 kr).
 * **SCRUM-168 (F2 Beviskort: Rundtur för nya klasser):** Verifierad. \`booking_service_items\` och \`invoice_lines\` genomgick Skapa -> Läs -> Ändra -> Läs -> Radera utan anomalier.
 * **SCRUM-169 (F3 Beviskort: Omstartsbeviset):** Verifierad. Nya repository-instanser återskapade relationerna Bokning <-> Tjänster <-> Arbetsorder <-> Faktura med 100% dataintegritet.

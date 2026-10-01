@@ -5,6 +5,8 @@ import com.wac.autocore.model.*;
 import com.wac.autocore.repository.*;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.util.EntityLookup;
+import com.wac.autocore.ui.util.UiFormatters;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -99,6 +101,108 @@ public class EvidenceVerificationTest {
             if (oldInvoice != null) new InvoiceRepository().delete(oldInvoice.getId());
             woRepo.delete(oldWorkOrder.getId());
             new BookingRepository().delete(oldBooking.getId());
+        }
+    }
+
+    /**
+     * BEVISKORT SCRUM-161 (D3) & Kriterium 8:
+     * Historiken syns på arbetsordern och på fakturan i gränssnittet.
+     * Priserna som gällde när arbetet utfördes måste synas på avslutade arbetsordrar
+     * och äldre fakturor i gränssnittet (inte bara i databasen).
+     *
+     * Klart-kriterium: Samma tjänst visas med två olika priser på två olika arbetsordrar,
+     * och en äldre faktura skapad före prishöjning visar sitt ursprungliga frysta pris.
+     */
+    public void testScrum161HistoricalPricesVisibleInUi() throws SQLException {
+        List<ServiceItem> services = garage.getServiceItems();
+        TestRunner.assertTrue(!services.isEmpty(), "Databasen ska innehålla tjänster");
+        ServiceItem target = services.get(0);
+        double originalPrice = target.getPrice();
+        double updatedPrice = originalPrice + 400.0;
+
+        int vehicleId = garage.getVehicles().get(0).getId();
+        int mechanicId = garage.getMechanics().get(0).getId();
+
+        WorkOrderRepository woRepo = new WorkOrderRepository();
+        BookingRepository bRepo = new BookingRepository();
+        InvoiceRepository invRepo = new InvoiceRepository();
+
+        // 1. Skapa första bokning, arbetsorder och faktura till ursprungligt pris
+        Booking b1 = garage.createBooking(vehicleId, LocalDate.now().minusDays(5), "Bokning 1 - Ursprungligt pris");
+        WorkOrder wo1 = new WorkOrder(0, b1.getId(), mechanicId);
+        wo1.addServiceItem(target.getId());
+        wo1.setStatus("COMPLETED");
+        woRepo.save(wo1);
+
+        Invoice inv1 = garage.createInvoice(wo1.getId(), null);
+        TestRunner.assertNotNull(inv1, "Faktura 1 ska ha skapats");
+
+        Booking b2 = null;
+        WorkOrder wo2 = null;
+        Invoice inv2 = null;
+
+        try {
+            // 2. Höj katalogpriset på tjänsten
+            target.setPrice(updatedPrice);
+            garage.updateServiceItem(target);
+
+            // 3. Skapa andra bokning, arbetsorder och faktura efter prishöjning
+            b2 = garage.createBooking(vehicleId, LocalDate.now(), "Bokning 2 - Nytt högre pris");
+            wo2 = new WorkOrder(0, b2.getId(), mechanicId);
+            wo2.addServiceItem(target.getId());
+            wo2.setStatus("COMPLETED");
+            woRepo.save(wo2);
+
+            inv2 = garage.createInvoice(wo2.getId(), null);
+            TestRunner.assertNotNull(inv2, "Faktura 2 ska ha skapats");
+
+            // 4. Verifiera i UI-lookup: Arbetsorder 1 visar det ursprungliga priset (fryst historik)
+            String uiServicesWo1 = EntityLookup.workOrderServicesWithPrices(garage, wo1);
+            double uiTotalWo1 = EntityLookup.workOrderTotal(garage, wo1);
+            double wo1ServicePrice = EntityLookup.workOrderServicePrice(garage, wo1, target.getId());
+
+            TestRunner.assertEquals(originalPrice, wo1ServicePrice, "WO 1 tjänstepris ska vara ursprungligt fryst pris");
+            TestRunner.assertEquals(originalPrice, uiTotalWo1, "WO 1 totalpris i UI ska vara fryst ursprungspris");
+            TestRunner.assertTrue(uiServicesWo1.contains(UiFormatters.formatMoney(originalPrice)),
+                    "UI-tjänstvisning för WO 1 måste innehålla det ursprungliga frysta priset (" + originalPrice + " kr)");
+
+            // 5. Verifiera i UI-lookup: Arbetsorder 2 visar det nya högre priset
+            String uiServicesWo2 = EntityLookup.workOrderServicesWithPrices(garage, wo2);
+            double uiTotalWo2 = EntityLookup.workOrderTotal(garage, wo2);
+            double wo2ServicePrice = EntityLookup.workOrderServicePrice(garage, wo2, target.getId());
+
+            TestRunner.assertEquals(updatedPrice, wo2ServicePrice, "WO 2 tjänstepris ska vara det nya priset");
+            TestRunner.assertEquals(updatedPrice, uiTotalWo2, "WO 2 totalpris i UI ska visa det nya priset");
+            TestRunner.assertTrue(uiServicesWo2.contains(UiFormatters.formatMoney(updatedPrice)),
+                    "UI-tjänstvisning för WO 2 måste innehålla det uppdaterade priset (" + updatedPrice + " kr)");
+
+            // 6. Verifiera klart-kriteriet: Samma tjänst visas med två OLIKA priser på två arbetsordrar
+            TestRunner.assertTrue(!uiServicesWo1.equals(uiServicesWo2),
+                    "Klart-kriterium SCRUM-161: Samma tjänst ska visas med två olika priser på WO 1 och WO 2");
+
+            // 7. Verifiera äldre faktura och ny faktura i UI
+            TestRunner.assertEquals(originalPrice, inv1.getLines().get(0).getPrice(), "Äldre faktura visar ursprungligt fryst pris");
+            TestRunner.assertEquals(updatedPrice, inv2.getLines().get(0).getPrice(), "Ny faktura visar det nya priset");
+
+            System.out.println("    [SCRUM-161 BEVIS] Klart-kriterium uppfyllt:");
+            System.out.println("      Arbetsorder #" + wo1.getId() + " (äldre fryst): " + uiServicesWo1 + " | Total: " + uiTotalWo1 + " kr");
+            System.out.println("      Arbetsorder #" + wo2.getId() + " (nyare): " + uiServicesWo2 + " | Total: " + uiTotalWo2 + " kr");
+            System.out.println("      Faktura #" + inv1.getId() + " (äldre fryst): " + inv1.getTotalAmount() + " kr");
+            System.out.println("      Faktura #" + inv2.getId() + " (nyare): " + inv2.getTotalAmount() + " kr");
+
+        } finally {
+            // Återställ katalogpris
+            target.setPrice(originalPrice);
+            garage.updateServiceItem(target);
+
+            // Städa testdata
+            if (inv2 != null) invRepo.delete(inv2.getId());
+            if (wo2 != null) woRepo.delete(wo2.getId());
+            if (b2 != null) bRepo.delete(b2.getId());
+
+            if (inv1 != null) invRepo.delete(inv1.getId());
+            woRepo.delete(wo1.getId());
+            bRepo.delete(b1.getId());
         }
     }
 

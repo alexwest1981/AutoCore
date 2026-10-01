@@ -2,6 +2,7 @@ package com.wac.autocore.ui.util;
 
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
+import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
@@ -176,8 +177,86 @@ public final class EntityLookup {
         return bookingCustomerName(garage, wo.getBookingId());
     }
 
+    public static Invoice invoiceForWorkOrder(GarageSystem garage, int workOrderId) {
+        if (garage == null || workOrderId <= 0) return null;
+        for (Invoice inv : garage.getInvoices()) {
+            if (inv.getWorkOrderId() == workOrderId) {
+                return inv;
+            }
+        }
+        return null;
+    }
+
+    public static double workOrderServicePrice(GarageSystem garage, WorkOrder wo, int serviceItemId) {
+        if (garage == null) return 0.0;
+        if (wo != null) {
+            Invoice inv = invoiceForWorkOrder(garage, wo.getId());
+            if (inv != null && inv.getLines() != null) {
+                for (InvoiceLine line : inv.getLines()) {
+                    if (line.getServiceItemId() == serviceItemId) {
+                        return line.getPrice();
+                    }
+                }
+            }
+        }
+        for (ServiceItem s : garage.getServiceItems()) {
+            if (s.getId() == serviceItemId) {
+                return s.getPrice();
+            }
+        }
+        return 0.0;
+    }
+
+    public static String workOrderServicesWithPrices(GarageSystem garage, WorkOrder wo) {
+        if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
+            return "-";
+        }
+        Invoice invoice = invoiceForWorkOrder(garage, wo.getId());
+        StringBuilder sb = new StringBuilder();
+        for (Integer sid : wo.getServiceItemIds()) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            String name = null;
+            Double price = null;
+            if (invoice != null && invoice.getLines() != null) {
+                for (InvoiceLine line : invoice.getLines()) {
+                    if (line.getServiceItemId() == sid) {
+                        name = line.getServiceName();
+                        price = line.getPrice();
+                        break;
+                    }
+                }
+            }
+            if (name == null) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid) {
+                        name = s.getName();
+                        if (price == null) {
+                            price = s.getPrice();
+                        }
+                        break;
+                    }
+                }
+            }
+            if (name == null) {
+                name = "Service #" + sid;
+            }
+            sb.append(SeedText.resolve(name));
+            if (price != null) {
+                sb.append(" (").append(UiFormatters.formatMoney(price)).append(")");
+            }
+        }
+        return sb.toString();
+    }
+
     public static double workOrderTotal(GarageSystem garage, WorkOrder wo) {
-        if (garage == null || wo == null || wo.getServiceItemIds() == null) return 0.0;
+        if (garage == null || wo == null) return 0.0;
+        Invoice inv = invoiceForWorkOrder(garage, wo.getId());
+        if (inv != null) {
+            return inv.getAmount();
+        }
+        if (wo.getServiceItemIds() == null) return 0.0;
         double total = 0.0;
         for (Integer sid : wo.getServiceItemIds()) {
             for (ServiceItem s : garage.getServiceItems()) {
