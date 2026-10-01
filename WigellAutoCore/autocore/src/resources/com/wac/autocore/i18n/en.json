@@ -105,7 +105,8 @@
       "meta": "{0} work orders",
       "action_create": "+ Create Work Order",
       "action_start": "▶ Start order",
-      "action_complete": "✔ Complete order"
+      "action_complete": "✔ Complete order",
+      "action_details": "View details"
     },
     "invoices": {
       "title": "Invoices",
@@ -356,6 +357,8 @@
       "services_select": "Select services included",
       "status_change": "Update Work Order Status",
       "details_header": "Details for work order #{0}",
+      "details_title": "Work Order Details",
+      "historical_notice": "Showing charged prices in effect when work was performed.",
       "open_in_orders": "Open in Work Orders"
     },
     "invoice": {

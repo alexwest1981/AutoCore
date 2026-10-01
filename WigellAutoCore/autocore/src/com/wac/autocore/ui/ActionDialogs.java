@@ -6,6 +6,7 @@ import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.navigation.PageRouter;
@@ -163,6 +164,10 @@ public final class ActionDialogs {
 
     public static void showCreateWorkOrderDialog(GarageSystem garage, com.wac.autocore.model.Booking defaultBooking, Runnable onSuccess) {
         WorkOrderDialogs.showCreateWorkOrderDialog(garage, defaultBooking, onSuccess);
+    }
+
+    public static void showWorkOrderDetailsDialog(GarageSystem garage, WorkOrder workOrder) {
+        WorkOrderDialogs.showWorkOrderDetailsDialog(garage, workOrder);
     }
 
     // =========================================================================

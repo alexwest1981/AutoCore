@@ -224,13 +224,23 @@ public final class EntityPages {
         t.getColumns().addAll(
                 TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
                 TableFactory.col(I18n.get("table.col.booking"), 90, c -> String.valueOf(c.getBookingId())),
-                TableFactory.col(I18n.get("table.col.mechanic"), 180, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
-                TableFactory.col(I18n.get("table.col.services"), 300, c -> EntityLookup.serviceNames(garage, c.getServiceItemIds())),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 140, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.col(I18n.get("table.col.mechanic"), 170, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
+                TableFactory.col(I18n.get("table.col.services"), 270, c -> EntityLookup.workOrderServicesWithPrices(garage, c)),
+                TableFactory.col(I18n.get("table.col.total"), 110, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
+                TableFactory.badgeCol(I18n.get("table.col.status"), 130, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.workorders.action_create"));
         addBtn.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, () -> router.navigate("workorders")));
+
+        Button detailsBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_details"));
+        detailsBtn.setDisable(true);
+        detailsBtn.setOnAction(e -> {
+            WorkOrder sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showWorkOrderDetailsDialog(garage, sel);
+            }
+        });
 
         Button startBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_start"));
         Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
@@ -238,6 +248,7 @@ public final class EntityPages {
         completeBtn.setDisable(true);
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
+            detailsBtn.setDisable(sel == null);
             startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
             completeBtn.setDisable(sel == null || !"IN_PROGRESS".equals(sel.getStatus()));
         });
@@ -258,11 +269,21 @@ public final class EntityPages {
             }
         });
 
+        t.setRowFactory(tv -> {
+            TableRow<WorkOrder> row = new TableRow<WorkOrder>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem());
+                }
+            });
+            return row;
+        });
+
         return UiComponents.buildEntityPage(
                 I18n.get("entity.workorders.title"),
                 I18n.get("entity.workorders.meta", garage.getWorkOrders().size()),
                 I18n.get("entity.workorders.subtitle"),
-                t, startBtn, completeBtn, addBtn);
+                t, detailsBtn, startBtn, completeBtn, addBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
@@ -413,6 +434,16 @@ public final class EntityPages {
             if (sel != null && !sel.isPaid()) {
                 ActionDialogs.showProcessPaymentDialog(garage, sel, () -> router.navigate("invoices"));
             }
+        });
+
+        t.setRowFactory(tv -> {
+            TableRow<Invoice> row = new TableRow<Invoice>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showInvoiceLinesDialog(row.getItem());
+                }
+            });
+            return row;
         });
 
         return UiComponents.buildEntityPage(

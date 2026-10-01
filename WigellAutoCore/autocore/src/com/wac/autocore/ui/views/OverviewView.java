@@ -197,9 +197,19 @@ public final class OverviewView {
         t.getColumns().addAll(
                 TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
                 TableFactory.col(I18n.get("table.col.booking"), 90, c -> String.valueOf(c.getBookingId())),
-                TableFactory.col(I18n.get("table.col.mechanic"), 180, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
-                TableFactory.col(I18n.get("table.col.services"), 300, c -> EntityLookup.serviceNames(garage, c.getServiceItemIds())),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 140, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.col(I18n.get("table.col.mechanic"), 160, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
+                TableFactory.col(I18n.get("table.col.services"), 260, c -> EntityLookup.workOrderServicesWithPrices(garage, c)),
+                TableFactory.col(I18n.get("table.col.total"), 110, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
+                TableFactory.badgeCol(I18n.get("table.col.status"), 130, c -> UiFormatters.statusWord(c.getStatus())));
+        t.setRowFactory(tv -> {
+            javafx.scene.control.TableRow<WorkOrder> row = new javafx.scene.control.TableRow<WorkOrder>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem());
+                }
+            });
+            return row;
+        });
         if (router != null) {
             router.setActiveTable(table);
         }
