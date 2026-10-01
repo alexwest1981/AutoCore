@@ -12,10 +12,29 @@ cd /d "%DIR%"
 :: med inbyggd JavaFX-runtime).
 :: ==============================================================================
 
+:: ==============================================================================
+:: 0. KONFIGURATION AV JAVA 8 JDK (VIKTIGT FÖR WINDOWS)
+:: ==============================================================================
+:: Om skriptet inte hittar din Java 8 automatiskt, avkommentera och ange din sökväg:
+::
+:: set "CUSTOM_JDK=C:\Program Files\BellSoft\LibericaJDK-8-Full"
+::
+:: Du hittar troligen din JDK i mappen:
+::   C:\Program Files\BellSoft\LibericaJDK-8-Full
+::   C:\Program Files\BellSoft\LibericaJDK-8
+::   C:\Program Files\Java\jdk1.8.0_xxx
+::   C:\Program Files\Eclipse Adoptium\jdk-8.x.x
+:: ==============================================================================
+
 :: 1. Hitta Java 8 JDK på Windows
 set "FOUND_JDK="
 set "JAVA_BIN="
 set "JAVAC_BIN="
+
+if defined CUSTOM_JDK if exist "%CUSTOM_JDK%\bin\javac.exe" (
+    set "FOUND_JDK=%CUSTOM_JDK%"
+    goto :jdk_found
+)
 
 :: Kontrollera explicit miljövariabel JDK8_HOME
 if defined JDK8_HOME if exist "%JDK8_HOME%\bin\javac.exe" (

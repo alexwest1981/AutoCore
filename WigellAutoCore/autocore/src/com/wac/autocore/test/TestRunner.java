@@ -22,11 +22,16 @@ public class TestRunner {
         System.out.println("==================================================");
 
         boolean runAll = args.length == 0 || "all".equalsIgnoreCase(args[0]);
+        boolean runSmoke = runAll || "smoke".equalsIgnoreCase(args[0]);
         boolean runUnit = runAll || "unit".equalsIgnoreCase(args[0]);
+        boolean runEvidence = runAll || "bevis".equalsIgnoreCase(args[0]) || "evidence".equalsIgnoreCase(args[0]);
         boolean runQuality = runAll || "quality".equalsIgnoreCase(args[0]);
         boolean runSecurity = runAll || "security".equalsIgnoreCase(args[0]);
         boolean runWcag = runAll || "wcag".equalsIgnoreCase(args[0]);
 
+        if (runSmoke) {
+            runClass(SmokeTest.class);
+        }
         if (runUnit) {
             runClass(UiFormattersTest.class);
             runClass(EntityLookupTest.class);
@@ -40,6 +45,9 @@ public class TestRunner {
             runClass(BookingServicesTest.class);
             runClass(InvoiceLineTest.class);
             runClass(InvoiceTotalTest.class);
+        }
+        if (runEvidence) {
+            runClass(EvidenceVerificationTest.class);
         }
         if (runQuality) {
             runClass(CodeQualityTest.class);
