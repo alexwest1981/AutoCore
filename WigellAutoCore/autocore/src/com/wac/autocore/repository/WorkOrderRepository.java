@@ -112,22 +112,20 @@ public class WorkOrderRepository {
 
     private void saveServiceItems(WorkOrder workOrder) throws SQLException {
         String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
-        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed) VALUES (?, ?)";
+        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed) VALUES (?, ?, ?)";
 
-        try (Connection connection = Db.getConnection();
-             PreparedStatement delete = connection.prepareStatement(deleteLinks);
-             PreparedStatement insert = connection.prepareStatement(insertLink)) {
-
-            delete.setInt(1, workOrder.getId());
-            delete.executeUpdate();
-
-            for (Integer serviceItemId : workOrder.getServiceItemIds()) {
-                insert.setInt(1, workOrder.getId());
-                insert.setInt(2, serviceItemId);
+        try (Connection connection = Db.getConnection()) {
+            try (PreparedStatement delete = connection.prepareStatement(deleteLinks);
+                 PreparedStatement insert = connection.prepareStatement(insertLink)) {
+                for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+                    insert.setInt(1, workOrder.getId());
+                    insert.setInt(2, serviceItemId);
+                    insert.addBatch();
                 int isCompleted = workOrder.getCompletedServiceItems().contains(serviceItemId) ? 1 : 0;
                 insert.setInt(3, isCompleted);
-                insert.executeUpdate();
+                    insert.executeUpdate();
             }
+        }
         }
     }
 
@@ -184,5 +182,24 @@ public class WorkOrderRepository {
                 }
             }
         }
+    }
+
+    public List<Integer> findServiceItemIdsFromBooking(int bookingId) throws SQLException {
+        List<Integer> serviceItemIds = new ArrayList<>();
+        String sql = "SELECT service_item_id FROM booking_service_items WHERE booking_id = ?";
+
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, bookingId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    serviceItemIds.add(resultSet.getInt("service_item_id"));
+                }
+            }
+        }
+
+        return serviceItemIds;
     }
 }

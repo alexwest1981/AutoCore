@@ -48,20 +48,19 @@ public class WorkOrderService {
     }
 
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, int... serviceItemIds) {
-        Booking booking = findBooking(bookingId);
+        Booking booking = null;
+        try {
+            booking = bookingRepository.findById(bookingId);
+        } catch (SQLException e) {
+            System.out.println("Could not read booking " + bookingId + ": " + e.getMessage());
+        }
 
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
             return null;
         }
-        List<Integer> bookingItems;
-        try {
-            bookingItems = workOrderRepository.findServiceItemIds(bookingId);
-
-        } catch (SQLException e) {
-            System.out.println("Could not read booking " + bookingId + ": " + e.getMessage());
-            throw new RuntimeException();
-        }
+        List<ServiceItem> bookingItems;
+            bookingItems = booking.getServiceItems();
 
 
         Mechanic mechanic = findMechanic(mechanicId);
@@ -83,8 +82,11 @@ public class WorkOrderService {
         }
 
         for(int id: serviceItemIds) {
-            if(!bookingItems.contains(id)) {
-                throw new IllegalArgumentException("Service item with ID " + id + " does not exist.");
+            boolean existsInBooking = bookingItems.stream()
+                    .anyMatch(item -> item.getId() == id);
+
+            if (!existsInBooking) {
+                throw new IllegalArgumentException("Service item with ID " + id + " does not belong to this booking.");
             }
         }
 
@@ -132,16 +134,26 @@ public class WorkOrderService {
         }
 
         if (booking != null) {
-            booking.setStatus("IN_PROGRESS");
-            saveBooking(booking);
-        }
+            try {
+                List<Integer> bookingServiceIds = workOrderRepository.findServiceItemIdsFromBooking(booking.getId());
 
+                for (Integer serviceItemId : bookingServiceIds) {
+                    workOrder.addServiceItem(serviceItemId);
+                }
+                booking.setStatus("IN_PROGRESS");
+                saveBooking(booking);
+            } catch (SQLException e) {
+                System.out.println("Kunde inte hämta tjänster från bokningen: " + e.getMessage());
+                return false;
+            }
+        }
         workOrder.setStatus("IN_PROGRESS");
         saveWorkOrder(workOrder);
 
         System.out.println("Work order " + workOrderId + " has been started.");
         return true;
     }
+
 
     public boolean completeWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);

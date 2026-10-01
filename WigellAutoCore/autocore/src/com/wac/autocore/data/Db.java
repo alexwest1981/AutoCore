@@ -82,12 +82,13 @@ public class Db {
                 + "service_item_id INTEGER NOT NULL, "
                 + "PRIMARY KEY (booking_id, service_item_id))",
 
-            "CREATE TABLE IF NOT EXISTS work_order_service_items ("
-                + "work_order_id INTEGER NOT NULL, "
-                + "service_item_id INTEGER NOT NULL, "
-                + "PRIMARY KEY (work_order_id, service_item_id))",
+                "CREATE TABLE IF NOT EXISTS work_order_service_items ("
+                        + "work_order_id INTEGER NOT NULL, "
+                        + "service_item_id INTEGER NOT NULL, "
+                        + "completed INTEGER NOT NULL DEFAULT 0,"
+                        + "PRIMARY KEY (work_order_id, service_item_id))",
 
-            "CREATE TABLE IF NOT EXISTS invoices ("
+                "CREATE TABLE IF NOT EXISTS invoices ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "work_order_id INTEGER, "
                 + "invoice_date TEXT, "

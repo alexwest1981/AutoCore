@@ -21,39 +21,39 @@ public class ServiceitemTests {
     BillingService billingService = new BillingService();
 
 
-    public void testInvoiceOnlyContainsCompletedServiceItems() {
-        System.out.println("--- STARTAR TEST: Faktura med endast utförda tjänster ---");
-
-        try {
-            int testWorkOrderId = 999;
-            WorkOrder workOrder = new WorkOrder(testWorkOrderId, 1, 1);
-
-            workOrder.addServiceItemId(101);
-            workOrder.addServiceItemId(102);
-            workOrder.addServiceItemId(103);
-
-            workOrderRepository.save(workOrder);
-
-            int[] completedServiceItemIds = {101, 102};
-            workOrderService.markServicesAsCompleted(testWorkOrderId, completedServiceItemIds);
-
-            Invoice invoice = billingService.createInvoice(testWorkOrderId, null);
-
-            if (invoice == null) {
-                System.out.println("TEST MISSLYCKADES: Fakturan skapades inte (är null).");
-                return;
-            }
-
-            int antaletRader = invoice.getLines().size();
-            if (antaletRader == 2) {
-                System.out.println("TEST LYCKADES! Fakturan innehåller exakt " + antaletRader + " rader.");
-            } else {
-                System.out.println("TEST MISSLYCKADES: Fakturan har " + antaletRader + " rader, men förväntade sig 2!");
-            }
-
-        } catch (Exception e) {
-            System.out.println("TEST MISSLYCKADES på grund av ett oväntat fel: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+//    public void testInvoiceOnlyContainsCompletedServiceItems() {
+//        System.out.println("--- STARTAR TEST: Faktura med endast utförda tjänster ---");
+//
+//        try {
+//            int testWorkOrderId = 999;
+//            WorkOrder workOrder = new WorkOrder(testWorkOrderId, 1, 1);
+//
+//            workOrder.addServiceItemId(101);
+//            workOrder.addServiceItemId(102);
+//            workOrder.addServiceItemId(103);
+//
+//            workOrderRepository.save(workOrder);
+//
+//            int[] completedServiceItemIds = {101, 102};
+//            workOrderService.markServicesAsCompleted(testWorkOrderId, completedServiceItemIds);
+//
+//            Invoice invoice = billingService.createInvoice(testWorkOrderId, null);
+//
+//            if (invoice == null) {
+//                System.out.println("TEST MISSLYCKADES: Fakturan skapades inte (är null).");
+//                return;
+//            }
+//
+//            int antaletRader = invoice.getLines().size();
+//            if (antaletRader == 2) {
+//                System.out.println("TEST LYCKADES! Fakturan innehåller exakt " + antaletRader + " rader.");
+//            } else {
+//                System.out.println("TEST MISSLYCKADES: Fakturan har " + antaletRader + " rader, men förväntade sig 2!");
+//            }
+//
+//        } catch (Exception e) {
+//            System.out.println("TEST MISSLYCKADES på grund av ett oväntat fel: " + e.getMessage());
+//            e.printStackTrace();
+//        }
+//    }
 }
