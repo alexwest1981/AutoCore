@@ -1,8 +1,26 @@
-# PowerShell test runner för Windows
+﻿# PowerShell test runner för Windows
 $ErrorActionPreference = "Stop"
+
+# Windows PowerShell 5.1: läs Javas utdata som UTF-8 så att å, ä, ö, ✔ och ❌ blir rätt.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptDir
+
+# Windows PowerShell 5.1 gör allt som ett externt program skriver på stderr till ett fel
+# när $ErrorActionPreference = "Stop". Java skriver versionen på stderr, så anropet körs
+# med "Continue" och felhanteringen återställs direkt efteråt.
+function Get-JavaVersion($javaExe) {
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        # Första raden som innehåller "version" (hoppar över t.ex. "Picked up JAVA_TOOL_OPTIONS").
+        return (& $javaExe -version 2>&1 | ForEach-Object { "$_" } |
+            Where-Object { $_ -match "version" } | Select-Object -First 1)
+    } finally {
+        $ErrorActionPreference = $previous
+    }
+}
 
 # ==============================================================================
 # VARFÖR JAVA 8 (JDK 8)?
@@ -42,7 +60,7 @@ function Test-Jdk8($jdkHome) {
     $javac = Get-JdkTool $jdkHome "javac"
     $java = Get-JdkTool $jdkHome "java"
     if (-not $javac -or -not $java) { return $false }
-    $ver = & $java -version 2>&1 | Select-Object -First 1
+    $ver = Get-JavaVersion $java
     return ($ver -match '1\.8|"8\.')
 }
 
@@ -61,7 +79,7 @@ if (-not $foundJdk -and (Get-JdkTool $env:JAVA_HOME "javac") -and (Test-Jdk8 $en
 if (-not $foundJdk) {
     $whereJavac = Get-Command javac -ErrorAction SilentlyContinue
     if ($whereJavac) {
-        $ver = & java -version 2>&1 | Select-Object -First 1
+        $ver = Get-JavaVersion "java"
         if ($ver -match '1\.8|"8\.') {
             $foundJdk = Split-Path -Parent (Split-Path -Parent $whereJavac.Source)
         }
@@ -121,7 +139,7 @@ if (-not $jfxOk) {
 
 $javaBin = Get-JdkTool $foundJdk "java"
 $javacBin = Get-JdkTool $foundJdk "javac"
-$javaVer = & "$javaBin" -version 2>&1 | Select-Object -First 1
+$javaVer = Get-JavaVersion $javaBin
 
 # PowerShell accepterar "/" även på Windows.
 $srcDir = "WigellAutoCore/autocore/src"
@@ -194,9 +212,13 @@ function Run-AuditModule($code, $title, $num) {
     Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Blue
 
     # Färgkoderna bort före all tolkning, annars blir sifferutdragen fel.
-    $output = & $javaBin -cp "$outDir$cpSep$jdbcJar" com.wac.autocore.test.TestRunner $code 2>&1 |
-        ForEach-Object { $_ -replace "$esc\[[0-9;]*[A-Za-z]", "" }
+    # Samma stderr-problem som ovan: kör testerna med "Continue" och återställ sedan.
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    $output = & $javaBin "-Dfile.encoding=UTF-8" -cp "$outDir$cpSep$jdbcJar" com.wac.autocore.test.TestRunner $code 2>&1 |
+        ForEach-Object { "$_" -replace "$esc\[[0-9;]*[A-Za-z]", "" }
     $exitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previous
 
     foreach ($line in $output) {
         if ($line -match "Kör:") {
