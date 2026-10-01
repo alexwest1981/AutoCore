@@ -355,6 +355,8 @@
       "booking_select": "Select booking",
       "mechanic_select": "Select mechanic",
       "services_select": "Select services included",
+      "services_from_booking": "Services on the booking",
+      "no_services": "The booking has no services",
       "status_change": "Update Work Order Status",
       "details_header": "Details for work order #{0}",
       "details_title": "Work Order Details",

@@ -218,33 +218,8 @@ public class ConsoleApp {
         garageSystem.showMechanics();
         int mechanicId = readInt("Mechanic ID: ");
 
-        garageSystem.showServiceItems();
-
-        System.out.println();
-        System.out.println("Enter service IDs separated by comma.");
-        System.out.println("Example: 1,3,4");
-        System.out.print("Services: ");
-
-        String input = scanner.nextLine();
-
-        String[] parts = input.split(",");
-        int[] serviceItemIds = new int[parts.length];
-
-        try {
-
-            for (int i = 0; i < parts.length; i++) {
-                serviceItemIds[i] = Integer.parseInt(parts[i].trim());
-            }
-
-            garageSystem.createWorkOrder(
-                    bookingId,
-                    mechanicId,
-                    serviceItemIds
-            );
-
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid service ID.");
-        }
+        // Arbetsordern får bokningens tjänster (SCRUM-156).
+        garageSystem.createWorkOrder(bookingId, mechanicId);
     }
 
     private static void startWorkOrder() {

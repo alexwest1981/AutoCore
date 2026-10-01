@@ -47,10 +47,16 @@ public class WorkOrderService {
         }
     }
 
-    public WorkOrder createWorkOrder(int bookingId, int mechanicId, int... serviceItemIds) {
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
+            return null;
+        }
+
+        List<Integer> bookingServiceIds = booking.getServiceItemIds();
+        if (bookingServiceIds.isEmpty()) {
+            System.out.println("Booking with ID " + bookingId + " has no services to perform.");
             return null;
         }
 
@@ -65,16 +71,11 @@ public class WorkOrderService {
             return null;
         }
 
-        for (int serviceItemId : serviceItemIds) {
-            if (findServiceItem(serviceItemId) == null) {
-                System.out.println("Service item with ID " + serviceItemId + " does not exist.");
-                return null;
-            }
-        }
-
         WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
 
-        for (int serviceItemId : serviceItemIds) {
+        // SCRUM-156 (C1): arbetsordern får de tjänster som bokningen innehåller,
+        // inte ett urval som görs i stunden.
+        for (Integer serviceItemId : bookingServiceIds) {
             workOrder.addServiceItem(serviceItemId);
         }
 

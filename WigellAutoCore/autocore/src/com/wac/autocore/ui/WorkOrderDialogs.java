@@ -13,7 +13,6 @@ import com.wac.autocore.ui.util.UiFormatters;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -97,17 +96,10 @@ public final class WorkOrderDialogs {
         grid.add(new Label(I18n.get("dialog.workorder.mechanic_select") + ":"), 0, 1);
         grid.add(mechanicBox, 1, 1);
 
-        Label servicesTitle = new Label(I18n.get("dialog.workorder.services_select"));
+        Label servicesTitle = new Label(I18n.get("dialog.workorder.services_from_booking"));
         servicesTitle.setStyle("-fx-font-weight: bold;");
 
-        VBox serviceChecks = new VBox(6);
-        List<CheckBox> checkList = new ArrayList<CheckBox>();
-        for (ServiceItem s : garage.getServiceItems()) {
-            CheckBox cb = new CheckBox(SeedText.resolve(s.getName()) + " (" + s.getPrice() + " " + I18n.get("common.currency") + ", " + s.getEstimatedMinutes() + " min)");
-            cb.setUserData(s.getId());
-            checkList.add(cb);
-            serviceChecks.getChildren().add(cb);
-        }
+        VBox serviceList = new VBox(6);
 
         // Automatisk synkning: när bokning väljs förväljs bokningens mekaniker och tjänst
         java.util.function.Consumer<Booking> syncFromBooking = b -> {
@@ -125,23 +117,16 @@ public final class WorkOrderDialogs {
                 mechanicBox.getSelectionModel().selectFirst();
             }
 
-            // 2. Förvälj tjänst från bokningen
-            if (b.getServiceItemId() > 0) {
-                boolean matched = false;
-                for (CheckBox cb : checkList) {
-                    Integer sId = (Integer) cb.getUserData();
-                    if (sId != null && sId == b.getServiceItemId()) {
-                        cb.setSelected(true);
-                        matched = true;
-                    } else {
-                        cb.setSelected(false);
-                    }
-                }
-                if (!matched && !checkList.isEmpty()) {
-                    checkList.get(0).setSelected(true);
-                }
-            } else if (!checkList.isEmpty() && checkList.stream().noneMatch(CheckBox::isSelected)) {
-                checkList.get(0).setSelected(true);
+            // 2. Visa bokningens tjänster. Arbetsordern får dem, inget val görs här.
+            serviceList.getChildren().clear();
+            for (ServiceItem s : b.getServiceItems()) {
+                Label row = new Label(SeedText.resolve(s.getName()) + " ("
+                        + UiFormatters.formatMoney(s.getPrice()) + ", "
+                        + s.getEstimatedMinutes() + " min)");
+                serviceList.getChildren().add(row);
+            }
+            if (serviceList.getChildren().isEmpty()) {
+                serviceList.getChildren().add(new Label(I18n.get("dialog.workorder.no_services")));
             }
         };
 
@@ -154,7 +139,7 @@ public final class WorkOrderDialogs {
         }
         syncFromBooking.accept(bookingBox.getValue());
 
-        ScrollPane scroll = new ScrollPane(serviceChecks);
+        ScrollPane scroll = new ScrollPane(serviceList);
         scroll.setFitToWidth(true);
         scroll.setPrefHeight(130);
 
@@ -167,22 +152,18 @@ public final class WorkOrderDialogs {
                 Booking b = bookingBox.getValue();
                 Mechanic m = mechanicBox.getValue();
 
-                List<Integer> selectedServiceIds = new ArrayList<Integer>();
-                for (CheckBox cb : checkList) {
-                    if (cb.isSelected()) {
-                        selectedServiceIds.add((Integer) cb.getUserData());
-                    }
-                }
-
-                if (selectedServiceIds.isEmpty()) {
+                if (b == null || m == null) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
                     return;
                 }
 
-                int[] ids = new int[selectedServiceIds.size()];
-                for (int i = 0; i < ids.length; i++) ids[i] = selectedServiceIds.get(i);
+                if (b.getServiceItemIds().isEmpty()) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                            I18n.get("dialog.workorder.no_services"));
+                    return;
+                }
 
-                garage.createWorkOrder(b.getId(), m.getId(), ids);
+                garage.createWorkOrder(b.getId(), m.getId());
                 com.wac.autocore.service.MechanicSchedule.getInstance().syncFromDatabase();
                 if (onSuccess != null) onSuccess.run();
             }
