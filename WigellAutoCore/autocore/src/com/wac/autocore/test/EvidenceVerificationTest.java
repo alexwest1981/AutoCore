@@ -614,7 +614,8 @@ public class EvidenceVerificationTest {
         Invoice inv = garage.createInvoice(wo.getId(), null);
         TestRunner.assertNotNull(inv, "Faktura ska skapas från slutförd arbetsorder");
         TestRunner.assertEquals(2, inv.getLines().size(), "Fakturan ska innehålla 2 specificerade rader");
-        TestRunner.assertEquals(inv.getLinesTotal() * 0.90, inv.getTotalAmount(), "Fakturatotal ska matcha radsumma minus VIP-rabatt (10%)");
+        TestRunner.assertEquals(Math.round(inv.getAmount() * 0.90 * 100.0) / 100.0, inv.getTotalAmount(), "Fakturatotal ska vara beloppet minus VIP-rabatt (10%)");
+        TestRunner.assertEquals(inv.getTotalAmount(), inv.getLinesTotal(), "Radsumman ska matcha fakturans total (rabatten ligger på raderna)");
         System.out.println("      [6/9] Fakturering & Rader: OK | Raduppdelning, historisk prisfrysning och beloppssummering verifierade");
 
         // 7. Betalningshantering (Registrering och slutförd transaktion)
