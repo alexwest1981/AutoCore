@@ -301,7 +301,7 @@ echo ""
 echo -ne "${BOLD}[0/6] Kompilerar källkod och resurser med javac...${RESET} "
 SOURCES_FILE="$OUT_DIR/sources.txt"
 find "$SRC_DIR" -name "*.java" > "$SOURCES_FILE"
-BUILD_OUT=$("$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" "${CP_ARG[@]}" @"$SOURCES_FILE" 2>&1) || {
+BUILD_OUT=$("$JAVAC_BIN" -encoding UTF-8 -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" "${CP_ARG[@]}" @"$SOURCES_FILE" 2>&1) || {
     echo -e "${RED}MISSLYCKADES${RESET}"
     echo -e "${RED}$BUILD_OUT${RESET}"
     rm -f "$SOURCES_FILE"
