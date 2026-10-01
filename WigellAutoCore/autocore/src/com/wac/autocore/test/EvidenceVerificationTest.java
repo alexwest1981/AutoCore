@@ -239,59 +239,73 @@ public class EvidenceVerificationTest {
         Vehicle vipVeh = garage.createVehicle("VIP999", "Volvo", "V90", 2023, vipCust.getId());
         Vehicle normalVeh = garage.createVehicle("NRM111", "Saab", "9-3", 2008, normalCust.getId());
 
+        Booking b1 = null, b2 = null, b3 = null, b4 = null;
+        WorkOrder wo1 = null, wo2 = null, wo3 = null, wo4 = null;
+        Invoice inv1 = null, inv2 = null, inv3 = null, inv4 = null;
+
         try {
             // Test 1: VIP 10% rabatt
-            Booking b1 = garage.createBooking(vipVeh.getId(), LocalDate.now(), "VIP rabattprov");
-            WorkOrder wo1 = new WorkOrder(0, b1.getId(), mechanicId);
+            b1 = garage.createBooking(vipVeh.getId(), LocalDate.now(), "VIP rabattprov");
+            wo1 = new WorkOrder(0, b1.getId(), mechanicId);
             wo1.addServiceItem(s1.getId());
             wo1.setStatus("COMPLETED");
             woRepo.save(wo1);
-            Invoice inv1 = garage.createInvoice(wo1.getId(), null);
+            inv1 = garage.createInvoice(wo1.getId(), null);
             TestRunner.assertNotNull(inv1, "Faktura för VIP ska skapas");
             double expectedVipTotal = basePrice * 0.90;
             TestRunner.assertEquals(expectedVipTotal, inv1.getTotalAmount(), "VIP ska ge exakt 10% rabatt");
             System.out.println("    [SCRUM-165 Regel 1] VIP 10%: Basbelopp " + basePrice + " kr -> Totalt med rabatt: " + inv1.getTotalAmount() + " kr");
 
             // Test 2: Rabattkod WELCOME10 (10%)
-            Booking b2 = garage.createBooking(normalVeh.getId(), LocalDate.now(), "WELCOME10 rabattprov");
-            WorkOrder wo2 = new WorkOrder(0, b2.getId(), mechanicId);
+            b2 = garage.createBooking(normalVeh.getId(), LocalDate.now(), "WELCOME10 rabattprov");
+            wo2 = new WorkOrder(0, b2.getId(), mechanicId);
             wo2.addServiceItem(s1.getId());
             wo2.setStatus("COMPLETED");
             woRepo.save(wo2);
-            Invoice inv2 = garage.createInvoice(wo2.getId(), "WELCOME10");
+            inv2 = garage.createInvoice(wo2.getId(), "WELCOME10");
             TestRunner.assertNotNull(inv2, "Faktura med WELCOME10 ska skapas");
             double expectedWelcomeTotal = basePrice * 0.90;
             TestRunner.assertEquals(expectedWelcomeTotal, inv2.getTotalAmount(), "WELCOME10 ska ge 10% rabatt");
             System.out.println("    [SCRUM-165 Regel 2] Kod WELCOME10 (10%): Basbelopp " + basePrice + " kr -> Totalt: " + inv2.getTotalAmount() + " kr");
 
             // Test 3: Rabattkod SERVICE200 (200 kr)
-            Booking b3 = garage.createBooking(normalVeh.getId(), LocalDate.now(), "SERVICE200 rabattprov");
-            WorkOrder wo3 = new WorkOrder(0, b3.getId(), mechanicId);
+            b3 = garage.createBooking(normalVeh.getId(), LocalDate.now(), "SERVICE200 rabattprov");
+            wo3 = new WorkOrder(0, b3.getId(), mechanicId);
             wo3.addServiceItem(s1.getId());
             wo3.setStatus("COMPLETED");
             woRepo.save(wo3);
-            Invoice inv3 = garage.createInvoice(wo3.getId(), "SERVICE200");
+            inv3 = garage.createInvoice(wo3.getId(), "SERVICE200");
             TestRunner.assertNotNull(inv3, "Faktura med SERVICE200 ska skapas");
             double expectedService200Total = Math.max(0.0, basePrice - 200.0);
             TestRunner.assertEquals(expectedService200Total, inv3.getTotalAmount(), "SERVICE200 ska dra av 200 kr");
             System.out.println("    [SCRUM-165 Regel 3] Kod SERVICE200 (-200 kr): Basbelopp " + basePrice + " kr -> Totalt: " + inv3.getTotalAmount() + " kr");
 
             // Test 4: Skydd mot negativt belopp
-            Booking b4 = garage.createBooking(vipVeh.getId(), LocalDate.now(), "Max rabattprov");
-            WorkOrder wo4 = new WorkOrder(0, b4.getId(), mechanicId);
+            b4 = garage.createBooking(vipVeh.getId(), LocalDate.now(), "Max rabattprov");
+            wo4 = new WorkOrder(0, b4.getId(), mechanicId);
             wo4.addServiceItem(s1.getId());
             wo4.setStatus("COMPLETED");
             woRepo.save(wo4);
-            Invoice inv4 = garage.createInvoice(wo4.getId(), "SERVICE200");
+            inv4 = garage.createInvoice(wo4.getId(), "SERVICE200");
             TestRunner.assertTrue(inv4.getTotalAmount() >= 0.0, "Fakturabelopp får aldrig bli negativt");
 
-            // Städa skapade fakturor och ordrar
-            invRepo.delete(inv1.getId()); woRepo.delete(wo1.getId()); bookRepo.delete(b1.getId());
-            invRepo.delete(inv2.getId()); woRepo.delete(wo2.getId()); bookRepo.delete(b2.getId());
-            invRepo.delete(inv3.getId()); woRepo.delete(wo3.getId()); bookRepo.delete(b3.getId());
-            invRepo.delete(inv4.getId()); woRepo.delete(wo4.getId()); bookRepo.delete(b4.getId());
-
         } finally {
+            if (inv1 != null) invRepo.delete(inv1.getId());
+            if (wo1 != null) woRepo.delete(wo1.getId());
+            if (b1 != null) bookRepo.delete(b1.getId());
+
+            if (inv2 != null) invRepo.delete(inv2.getId());
+            if (wo2 != null) woRepo.delete(wo2.getId());
+            if (b2 != null) bookRepo.delete(b2.getId());
+
+            if (inv3 != null) invRepo.delete(inv3.getId());
+            if (wo3 != null) woRepo.delete(wo3.getId());
+            if (b3 != null) bookRepo.delete(b3.getId());
+
+            if (inv4 != null) invRepo.delete(inv4.getId());
+            if (wo4 != null) woRepo.delete(wo4.getId());
+            if (b4 != null) bookRepo.delete(b4.getId());
+
             vehRepo.delete(vipVeh.getId());
             vehRepo.delete(normalVeh.getId());
             custRepo.delete(vipCust.getId());
@@ -557,106 +571,114 @@ public class EvidenceVerificationTest {
 
         System.out.println("    [SCRUM-172 BEVIS: DE NIO BEFINTLIGA OMRÅDENA KONTROLLERAS]");
 
-        // 1. Kundhantering (CRUD & VIP-flaggshantering)
-        Customer c = garage.createCustomer("G2 Kund", "070-123456", "g2@wigell.se");
-        TestRunner.assertNotNull(c, "Kund ska skapas");
-        c.setVip(true);
-        custRepo.save(c);
-        Customer readC = custRepo.findById(c.getId());
-        TestRunner.assertTrue(readC.isVip(), "VIP-status ska persisteras korrekt");
-        System.out.println("      [1/9] Kundhantering:      OK | CRUD, kontaktuppgifter & VIP-status verifierade (ID: " + c.getId() + ")");
+        Customer c = null;
+        Vehicle v = null;
+        Booking b = null;
+        WorkOrder wo = null;
+        Invoice inv = null;
+        Payment p = null;
 
-        // 2. Fordonshantering (Registrering, ägarkoppling och sökbarhet)
-        Vehicle v = garage.createVehicle("G2V001", "Volvo", "XC90", 2023, c.getId());
-        TestRunner.assertNotNull(v, "Fordon ska skapas");
-        Vehicle readV = vehRepo.findById(v.getId());
-        TestRunner.assertEquals("G2V001", readV.getRegistrationNumber(), "Regnummer ska matcha");
-        TestRunner.assertEquals(c.getId(), readV.getCustomerId(), "Fordon ska vara bundet till rätt kund");
-        System.out.println("      [2/9] Fordonshantering:    OK | Registreringsnummer, modell & ägarkoppling verifierade");
+        try {
+            // 1. Kundhantering (CRUD & VIP-flaggshantering)
+            c = garage.createCustomer("G2 Kund", "070-123456", "g2@wigell.se");
+            TestRunner.assertNotNull(c, "Kund ska skapas");
+            c.setVip(true);
+            custRepo.save(c);
+            Customer readC = custRepo.findById(c.getId());
+            TestRunner.assertTrue(readC.isVip(), "VIP-status ska persisteras korrekt");
+            System.out.println("      [1/9] Kundhantering:      OK | CRUD, kontaktuppgifter & VIP-status verifierade (ID: " + c.getId() + ")");
 
-        // 3. Bokningshantering (Multitjänster, tidsberäkning och schemavalidering)
-        ServiceItem s1 = garage.getServiceItems().get(0);
-        ServiceItem s2 = garage.getServiceItems().get(1);
-        Booking b = new Booking(v.getId(), LocalDate.now().plusDays(3), "G2 Bokning");
-        b.addServiceItem(s1);
-        b.addServiceItem(s2);
-        bookRepo.save(b);
-        TestRunner.assertEquals(s1.getEstimatedMinutes() + s2.getEstimatedMinutes(), b.getTotalEstimatedMinutes(), "Total tid ska summeras ur tjänster");
-        TestRunner.assertEquals(s1.getPrice() + s2.getPrice(), b.getTotalEstimatedCost(), "Total kostnad ska summeras ur tjänster");
-        System.out.println("      [3/9] Bokningshantering:   OK | Flertjänstbokning, tidsåtgång (" + b.getTotalEstimatedMinutes() + "m) & kostnad verifierade");
+            // 2. Fordonshantering (Registrering, ägarkoppling och sökbarhet)
+            v = garage.createVehicle("G2V001", "Volvo", "XC90", 2023, c.getId());
+            TestRunner.assertNotNull(v, "Fordon ska skapas");
+            Vehicle readV = vehRepo.findById(v.getId());
+            TestRunner.assertEquals("G2V001", readV.getRegistrationNumber(), "Regnummer ska matcha");
+            TestRunner.assertEquals(c.getId(), readV.getCustomerId(), "Fordon ska vara bundet till rätt kund");
+            System.out.println("      [2/9] Fordonshantering:    OK | Registreringsnummer, modell & ägarkoppling verifierade");
 
-        // 4. Mekanikerhantering (Tillgänglighetsväxling och schemaläggning)
-        Mechanic m = garage.getMechanics().get(0);
-        boolean origAvail = m.isAvailable();
-        m.setAvailable(false);
-        new MechanicRepository().save(m);
-        TestRunner.assertFalse(new MechanicRepository().findById(m.getId()).isAvailable(), "Mekanikers tillgänglighet ska kunna växlas");
-        m.setAvailable(origAvail);
-        new MechanicRepository().save(m);
-        System.out.println("      [4/9] Mekanikerhantering:  OK | Schemastatus, kompetens och tillgänglighetslåsning verifierade");
+            // 3. Bokningshantering (Multitjänster, tidsberäkning och schemavalidering)
+            ServiceItem s1 = garage.getServiceItems().get(0);
+            ServiceItem s2 = garage.getServiceItems().get(1);
+            b = new Booking(v.getId(), LocalDate.now().plusDays(3), "G2 Bokning");
+            b.addServiceItem(s1);
+            b.addServiceItem(s2);
+            bookRepo.save(b);
+            TestRunner.assertEquals(s1.getEstimatedMinutes() + s2.getEstimatedMinutes(), b.getTotalEstimatedMinutes(), "Total tid ska summeras ur tjänster");
+            TestRunner.assertEquals(s1.getPrice() + s2.getPrice(), b.getTotalEstimatedCost(), "Total kostnad ska summeras ur tjänster");
+            System.out.println("      [3/9] Bokningshantering:   OK | Flertjänstbokning, tidsåtgång (" + b.getTotalEstimatedMinutes() + "m) & kostnad verifierade");
 
-        // 5. Arbetsorderhantering (Livscykelhantering CREATED -> IN_PROGRESS -> COMPLETED)
-        WorkOrder wo = new WorkOrder(0, b.getId(), m.getId());
-        wo.addServiceItem(s1.getId());
-        wo.addServiceItem(s2.getId());
-        woRepo.save(wo);
-        TestRunner.assertEquals("CREATED", wo.getStatus(), "Ny arbetsorder ska ha status CREATED");
-        wo.setStatus("IN_PROGRESS");
-        woRepo.save(wo);
-        TestRunner.assertEquals("IN_PROGRESS", woRepo.findById(wo.getId()).getStatus(), "Status IN_PROGRESS ska sparas");
-        wo.setStatus("COMPLETED");
-        wo.markAllServicesCompleted();
-        woRepo.save(wo);
-        TestRunner.assertEquals("COMPLETED", woRepo.findById(wo.getId()).getStatus(), "Status COMPLETED ska sparas");
-        System.out.println("      [5/9] Arbetsorderhantering:OK | Fullständig livscykel CREATED -> IN_PROGRESS -> COMPLETED verifierad");
+            // 4. Mekanikerhantering (Tillgänglighetsväxling och schemaläggning)
+            Mechanic m = garage.getMechanics().get(0);
+            boolean origAvail = m.isAvailable();
+            m.setAvailable(false);
+            new MechanicRepository().save(m);
+            TestRunner.assertFalse(new MechanicRepository().findById(m.getId()).isAvailable(), "Mekanikers tillgänglighet ska kunna växlas");
+            m.setAvailable(origAvail);
+            new MechanicRepository().save(m);
+            System.out.println("      [4/9] Mekanikerhantering:  OK | Schemastatus, kompetens och tillgänglighetslåsning verifierade");
 
-        // 6. Fakturering (Fakturarader, frysta belopp och totalsummering)
-        Invoice inv = garage.createInvoice(wo.getId(), null);
-        TestRunner.assertNotNull(inv, "Faktura ska skapas från slutförd arbetsorder");
-        TestRunner.assertEquals(2, inv.getLines().size(), "Fakturan ska innehålla 2 specificerade rader");
-        TestRunner.assertEquals(Math.round(inv.getAmount() * 0.90 * 100.0) / 100.0, inv.getTotalAmount(), "Fakturatotal ska vara beloppet minus VIP-rabatt (10%)");
-        TestRunner.assertEquals(inv.getTotalAmount(), inv.getLinesTotal(), "Radsumman ska matcha fakturans total (rabatten ligger på raderna)");
-        System.out.println("      [6/9] Fakturering & Rader: OK | Raduppdelning, historisk prisfrysning och beloppssummering verifierade");
+            // 5. Arbetsorderhantering (Livscykelhantering CREATED -> IN_PROGRESS -> COMPLETED)
+            wo = new WorkOrder(0, b.getId(), m.getId());
+            wo.addServiceItem(s1.getId());
+            wo.addServiceItem(s2.getId());
+            woRepo.save(wo);
+            TestRunner.assertEquals("CREATED", wo.getStatus(), "Ny arbetsorder ska ha status CREATED");
+            wo.setStatus("IN_PROGRESS");
+            woRepo.save(wo);
+            TestRunner.assertEquals("IN_PROGRESS", woRepo.findById(wo.getId()).getStatus(), "Status IN_PROGRESS ska sparas");
+            wo.setStatus("COMPLETED");
+            wo.markAllServicesCompleted();
+            woRepo.save(wo);
+            TestRunner.assertEquals("COMPLETED", woRepo.findById(wo.getId()).getStatus(), "Status COMPLETED ska sparas");
+            System.out.println("      [5/9] Arbetsorderhantering:OK | Fullständig livscykel CREATED -> IN_PROGRESS -> COMPLETED verifierad");
 
-        // 7. Betalningshantering (Registrering och slutförd transaktion)
-        Payment p = new Payment(0, inv.getId(), inv.getTotalAmount(), "Kort");
-        p.setSuccessful(true);
-        payRepo.save(p);
-        TestRunner.assertTrue(p.getId() > 0, "Betalning ska sparas med genererat ID");
-        Payment readP = payRepo.findById(p.getId());
-        TestRunner.assertNotNull(readP, "Betalning ska gå att läsa tillbaka");
-        TestRunner.assertTrue(readP.isSuccessful(), "Betalning ska vara markerad som lyckad");
-        System.out.println("      [7/9] Betalningsflöde:     OK | Transaktionsregistrering, beloppsavstämning och kvitto verifierade");
+            // 6. Fakturering (Fakturarader, frysta belopp och totalsummering)
+            inv = garage.createInvoice(wo.getId(), null);
+            TestRunner.assertNotNull(inv, "Faktura ska skapas från slutförd arbetsorder");
+            TestRunner.assertEquals(2, inv.getLines().size(), "Fakturan ska innehålla 2 specificerade rader");
+            TestRunner.assertEquals(Math.round(inv.getAmount() * 0.90 * 100.0) / 100.0, inv.getTotalAmount(), "Fakturatotal ska vara beloppet minus VIP-rabatt (10%)");
+            TestRunner.assertEquals(inv.getTotalAmount(), inv.getLinesTotal(), "Radsumman ska matcha fakturans total (rabatten ligger på raderna)");
+            System.out.println("      [6/9] Fakturering & Rader: OK | Raduppdelning, historisk prisfrysning och beloppssummering verifierade");
 
-        // 8. Rabattfunktioner (VIP 10%, koder WELCOME10/SERVICE200 & golvskydd)
-        double base = 1000.0;
-        double vipDisc = base * 0.10;
-        double codeDisc = 200.0;
-        TestRunner.assertEquals(900.0, base - vipDisc, "VIP ska ge 10% rabatt");
-        TestRunner.assertEquals(800.0, base - codeDisc, "SERVICE200 ska ge 200 kr avdrag");
-        TestRunner.assertTrue(Math.max(0.0, 100.0 - 500.0) == 0.0, "Belopp får aldrig bli negativt");
-        System.out.println("      [8/9] Rabattfunktioner:    OK | VIP 10%, WELCOME10, SERVICE200 och skydd mot negativ total verifierade");
+            // 7. Betalningshantering (Registrering och slutförd transaktion)
+            p = new Payment(0, inv.getId(), inv.getTotalAmount(), "Kort");
+            p.setSuccessful(true);
+            payRepo.save(p);
+            TestRunner.assertTrue(p.getId() > 0, "Betalning ska sparas med genererat ID");
+            Payment readP = payRepo.findById(p.getId());
+            TestRunner.assertNotNull(readP, "Betalning ska gå att läsa tillbaka");
+            TestRunner.assertTrue(readP.isSuccessful(), "Betalning ska vara markerad som lyckad");
+            System.out.println("      [7/9] Betalningsflöde:     OK | Transaktionsregistrering, beloppsavstämning och kvitto verifierade");
 
-        // 9. Flerspråkighet (Svenska och engelska med 100% språkparitet)
-        com.wac.autocore.ui.i18n.I18n.setLanguage("sv");
-        String svBokad = com.wac.autocore.ui.i18n.I18n.get("status.booked");
-        String svKlar = com.wac.autocore.ui.i18n.I18n.get("status.completed");
-        com.wac.autocore.ui.i18n.I18n.setLanguage("en");
-        String enBokad = com.wac.autocore.ui.i18n.I18n.get("status.booked");
-        String enKlar = com.wac.autocore.ui.i18n.I18n.get("status.completed");
-        TestRunner.assertEquals("Bokad", svBokad, "Svensk översättning ska stämma");
-        TestRunner.assertEquals("Booked", enBokad, "Engelsk översättning ska stämma");
-        TestRunner.assertEquals("Slutförd", svKlar, "Svensk översättning ska stämma");
-        TestRunner.assertEquals("Completed", enKlar, "Engelsk översättning ska stämma");
-        System.out.println("      [9/9] Flerspråkighet (I18n):OK | Full paritet mellan svenska och engelska termer verifierad");
+            // 8. Rabattfunktioner (VIP 10%, koder WELCOME10/SERVICE200 & golvskydd)
+            double base = 1000.0;
+            double vipDisc = base * 0.10;
+            double codeDisc = 200.0;
+            TestRunner.assertEquals(900.0, base - vipDisc, "VIP ska ge 10% rabatt");
+            TestRunner.assertEquals(800.0, base - codeDisc, "SERVICE200 ska ge 200 kr avdrag");
+            TestRunner.assertTrue(Math.max(0.0, 100.0 - 500.0) == 0.0, "Belopp får aldrig bli negativt");
+            System.out.println("      [8/9] Rabattfunktioner:    OK | VIP 10%, WELCOME10, SERVICE200 och skydd mot negativ total verifierade");
 
-        // Städa testposter
-        payRepo.delete(p.getId());
-        invRepo.delete(inv.getId());
-        woRepo.delete(wo.getId());
-        bookRepo.delete(b.getId());
-        vehRepo.delete(v.getId());
-        custRepo.delete(c.getId());
+            // 9. Flerspråkighet (Svenska och engelska med 100% språkparitet)
+            com.wac.autocore.ui.i18n.I18n.setLanguage("sv");
+            String svBokad = com.wac.autocore.ui.i18n.I18n.get("status.booked");
+            String svKlar = com.wac.autocore.ui.i18n.I18n.get("status.completed");
+            com.wac.autocore.ui.i18n.I18n.setLanguage("en");
+            String enBokad = com.wac.autocore.ui.i18n.I18n.get("status.booked");
+            String enKlar = com.wac.autocore.ui.i18n.I18n.get("status.completed");
+            TestRunner.assertEquals("Bokad", svBokad, "Svensk översättning ska stämma");
+            TestRunner.assertEquals("Booked", enBokad, "Engelsk översättning ska stämma");
+            TestRunner.assertEquals("Slutförd", svKlar, "Svensk översättning ska stämma");
+            TestRunner.assertEquals("Completed", enKlar, "Engelsk översättning ska stämma");
+            System.out.println("      [9/9] Flerspråkighet (I18n):OK | Full paritet mellan svenska och engelska termer verifierad");
+        } finally {
+            if (p != null) { try { payRepo.delete(p.getId()); } catch (Exception ignored) {} }
+            if (inv != null) { try { invRepo.delete(inv.getId()); } catch (Exception ignored) {} }
+            if (wo != null) { try { woRepo.delete(wo.getId()); } catch (Exception ignored) {} }
+            if (b != null) { try { bookRepo.delete(b.getId()); } catch (Exception ignored) {} }
+            if (v != null) { try { vehRepo.delete(v.getId()); } catch (Exception ignored) {} }
+            if (c != null) { try { custRepo.delete(c.getId()); } catch (Exception ignored) {} }
+        }
     }
 
     /**
