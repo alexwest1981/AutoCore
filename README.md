@@ -44,6 +44,7 @@ git pull origin develop
 
 * **Huvudapplikationen (AutoCore GUI):** Kör `./start.sh` i terminalen, eller `Main.java` i IntelliJ
 * **Mätbara Acceptanskrav (AK-01 till AK-16):** Se [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md) för fullständig specifikation av alla 16 mätbara krav, tröskelvärden och testmetoder.
+* **Testskriptets Arkitektur & Dokumentation:** Läs [`Audit_Readme.md`](Audit_Readme.md) för en djupgående genomgång av hur testskriptet fungerar, dess sex granskningssteg, automatisk JDK-detektering och felsökning.
 * **Fullständig test- och auditsvit (88 tester över 6 moduler):**
   - **Linux / macOS:** Kör `./test.sh` (eller `./check.sh`)
   - **Windows (PowerShell):** Kör `.\test.ps1`
