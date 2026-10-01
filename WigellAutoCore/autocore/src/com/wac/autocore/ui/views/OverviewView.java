@@ -47,7 +47,7 @@ public final class OverviewView {
                 active++;
             }
         }
-        long revenue = 0;
+        double revenue = 0.0;
         for (Payment p : payments) {
             if (p.isSuccessful()) {
                 revenue += p.getAmount();

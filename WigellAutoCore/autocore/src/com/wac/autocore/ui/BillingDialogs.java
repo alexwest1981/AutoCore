@@ -56,9 +56,11 @@ public final class BillingDialogs {
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
+        grid.setPrefWidth(500);
 
         ComboBox<WorkOrder> orderBox = new ComboBox<WorkOrder>();
         orderBox.getItems().addAll(completedOrders);
+        orderBox.setMaxWidth(Double.MAX_VALUE);
         orderBox.getSelectionModel().selectFirst();
         orderBox.setConverter(new StringConverter<WorkOrder>() {
             @Override
@@ -102,7 +104,7 @@ public final class BillingDialogs {
         }
 
         if (unpaid.isEmpty()) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("common.close"));
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.payment.no_unpaid_invoices"));
             return;
         }
 
@@ -112,9 +114,11 @@ public final class BillingDialogs {
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
+        grid.setPrefWidth(540);
 
         ComboBox<Invoice> invoiceBox = new ComboBox<Invoice>();
         invoiceBox.getItems().addAll(unpaid);
+        invoiceBox.setMaxWidth(Double.MAX_VALUE);
         if (preselected != null && unpaid.contains(preselected)) {
             invoiceBox.getSelectionModel().select(preselected);
         } else {
@@ -123,7 +127,7 @@ public final class BillingDialogs {
         invoiceBox.setConverter(new StringConverter<Invoice>() {
             @Override
             public String toString(Invoice inv) {
-                return inv == null ? "" : I18n.get("table.col.invoice") + " #" + inv.getId() + " - " + inv.getTotalAmount() + " " + I18n.get("common.currency") + " (" + I18n.get("table.col.workorder") + " #" + inv.getWorkOrderId() + ")";
+                return inv == null ? "" : I18n.get("table.col.invoice") + " #" + inv.getId() + " - " + UiFormatters.formatMoney(inv.getTotalAmount()) + " (" + I18n.get("table.col.workorder") + " #" + inv.getWorkOrderId() + ")";
             }
             @Override
             public Invoice fromString(String string) { return null; }
@@ -131,6 +135,7 @@ public final class BillingDialogs {
 
         ComboBox<String> typeBox = new ComboBox<String>();
         typeBox.getItems().addAll("SWISH", "CARD", "CASH");
+        typeBox.setMaxWidth(Double.MAX_VALUE);
         typeBox.getSelectionModel().select("SWISH");
 
         grid.add(new Label(I18n.get("dialog.payment.invoice_select") + ":"), 0, 0);

@@ -19,6 +19,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
@@ -67,11 +68,14 @@ public final class WorkOrderDialogs {
 
         VBox content = new VBox(12);
         content.setPadding(new Insets(10));
+        content.setPrefWidth(540);
 
         GridPane grid = ActionDialogs.createGrid();
 
         ComboBox<Booking> bookingBox = new ComboBox<Booking>();
         bookingBox.getItems().addAll(bookings);
+        bookingBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(bookingBox, Priority.ALWAYS);
         bookingBox.setConverter(new StringConverter<Booking>() {
             @Override
             public String toString(Booking b) {
@@ -83,6 +87,8 @@ public final class WorkOrderDialogs {
 
         ComboBox<Mechanic> mechanicBox = new ComboBox<Mechanic>();
         mechanicBox.getItems().addAll(mechanics);
+        mechanicBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(mechanicBox, Priority.ALWAYS);
         mechanicBox.setConverter(new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {

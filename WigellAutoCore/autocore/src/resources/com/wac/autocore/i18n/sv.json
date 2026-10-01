@@ -390,7 +390,8 @@
       "method_card": "Kort",
       "method_swish": "Swish",
       "method_cash": "Kontant",
-      "amount": "Belopp att betala"
+      "amount": "Belopp att betala",
+      "no_unpaid_invoices": "Det finns inga obetalda fakturor att registrera betalning för."
     },
     "validation": {
       "required": "Vänligen fyll i alla obligatoriska fält.",

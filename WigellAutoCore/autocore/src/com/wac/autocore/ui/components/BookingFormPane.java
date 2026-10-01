@@ -63,7 +63,7 @@ public class BookingFormPane extends GridPane {
         setHgap(10);
         setVgap(10);
         setPadding(new Insets(14, 14, 14, 14));
-        setPrefWidth(460);
+        setPrefWidth(540);
 
         this.totalSummaryLabel.setWrapText(true);
         this.totalSummaryLabel.setMaxWidth(Double.MAX_VALUE);
@@ -78,6 +78,7 @@ public class BookingFormPane extends GridPane {
         // 1. Fordon
         this.vehicleBox = new ComboBox<Vehicle>();
         this.vehicleBox.getItems().addAll(garage.getVehicles());
+        this.vehicleBox.setMaxWidth(Double.MAX_VALUE);
         setupComboBoxDisplay(this.vehicleBox, new StringConverter<Vehicle>() {
             @Override
             public String toString(Vehicle v) {
@@ -229,6 +230,7 @@ public class BookingFormPane extends GridPane {
         this.mechanicFilterHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
 
         this.mechanicBox = new ComboBox<Mechanic>();
+        this.mechanicBox.setMaxWidth(Double.MAX_VALUE);
         setupComboBoxDisplay(this.mechanicBox, new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
@@ -377,6 +379,15 @@ public class BookingFormPane extends GridPane {
         if (existingBooking != null) {
             this.statusBox = new ComboBox<String>();
             this.statusBox.getItems().addAll("BOOKED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED");
+            this.statusBox.setMaxWidth(Double.MAX_VALUE);
+            setupComboBoxDisplay(this.statusBox, new StringConverter<String>() {
+                @Override
+                public String toString(String st) {
+                    return st != null ? UiFormatters.statusWord(st) : "";
+                }
+                @Override
+                public String fromString(String string) { return null; }
+            });
             this.statusBox.getSelectionModel().select(existingBooking.getStatus() != null ? existingBooking.getStatus() : "BOOKED");
         } else {
             this.statusBox = null;
