@@ -277,10 +277,8 @@ public class GarageSystem {
                 startTime, mechanicId, serviceItemId);
     }
 
-    public WorkOrder createWorkOrder(int bookingId,
-                                     int mechanicId,
-                                     int... serviceItemIds) {
-        return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
+        return workOrderService.createWorkOrder(bookingId, mechanicId);
     }
 
     public int getEstimatedDuration(int... serviceItemsIds) {
@@ -289,6 +287,11 @@ public class GarageSystem {
 
     public void startWorkOrder(int workOrderId) {
         workOrderService.startWorkOrder(workOrderId);
+    }
+
+    /** SCRUM-160 (D2): markerar tjänster utförda och fryser priset som gäller då. */
+    public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
+        return workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
     }
 
     public void completeWorkOrder(int workOrderId) {

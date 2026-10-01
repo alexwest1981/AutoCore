@@ -115,8 +115,12 @@ public final class SlotDetailsDialog {
                 : (b != null ? EntityLookup.bookingServices(garage, b) : "-");
         grid.add(new Label(sNames), 1, rowIdx++);
 
-        int estMin = (b != null) ? EntityLookup.bookingTotalMinutes(garage, b) : 0;
-        double estCost = (b != null) ? EntityLookup.bookingTotalPrice(garage, b) : 0.0;
+        int estMin = (hasWorkOrder && wo != null)
+                ? EntityLookup.workOrderTotalMinutes(garage, wo)
+                : ((b != null) ? EntityLookup.bookingTotalMinutes(garage, b) : 0);
+        double estCost = (hasWorkOrder && wo != null)
+                ? EntityLookup.workOrderTotal(garage, wo)
+                : ((b != null) ? EntityLookup.bookingTotalPrice(garage, b) : 0.0);
         if (estMin > 0) {
             grid.add(new Label(I18n.get("dialog.slot.estimated_time")), 0, rowIdx);
             grid.add(new Label(estMin + " min"), 1, rowIdx++);
@@ -165,8 +169,16 @@ public final class SlotDetailsDialog {
                         targetBooking = garage.createBooking(vehicleId, slot.getDate(), slot.getDescription());
                         slot.setBookingId(targetBooking.getId());
                     }
-                    int sId = targetBooking != null && targetBooking.getServiceItemId() > 0 ? targetBooking.getServiceItemId() : 1;
-                    WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId(), sId);
+                    if (targetBooking != null && targetBooking.getServiceItemIds().isEmpty()) {
+                        // Bokningen saknar tjänster. Ge den en, så arbetsordern har något att utföra (SCRUM-156).
+                        try {
+                            targetBooking.addServiceItem(garage.getServiceItems().get(0));
+                            garage.updateBooking(targetBooking);
+                        } catch (Exception ex) {
+                            System.out.println("Could not give the booking a service: " + ex.getMessage());
+                        }
+                    }
+                    WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId());
                     if (createdWo != null) {
                         slot.setWorkOrderId(createdWo.getId());
                         if (onRefresh != null) onRefresh.run();

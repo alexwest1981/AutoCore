@@ -243,13 +243,16 @@ public final class EntityPages {
         });
 
         Button startBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_start"));
+        Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
         Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
         startBtn.setDisable(true);
+        markBtn.setDisable(true);
         completeBtn.setDisable(true);
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
             startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
+            markBtn.setDisable(sel == null || !"IN_PROGRESS".equals(sel.getStatus()));
             completeBtn.setDisable(sel == null || !"IN_PROGRESS".equals(sel.getStatus()));
         });
 
@@ -258,6 +261,13 @@ public final class EntityPages {
             if (sel != null && "CREATED".equals(sel.getStatus())) {
                 garage.startWorkOrder(sel.getId());
                 router.navigate("workorders");
+            }
+        });
+
+        markBtn.setOnAction(e -> {
+            WorkOrder sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null && "IN_PROGRESS".equals(sel.getStatus())) {
+                ActionDialogs.showMarkPerformedDialog(garage, sel, () -> router.navigate("workorders"));
             }
         });
 
@@ -283,7 +293,7 @@ public final class EntityPages {
                 I18n.get("entity.workorders.title"),
                 I18n.get("entity.workorders.meta", garage.getWorkOrders().size()),
                 I18n.get("entity.workorders.subtitle"),
-                t, detailsBtn, startBtn, completeBtn, addBtn);
+                t, detailsBtn, startBtn, markBtn, completeBtn, addBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {

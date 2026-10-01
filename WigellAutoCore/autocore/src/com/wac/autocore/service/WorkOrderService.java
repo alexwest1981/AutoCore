@@ -47,10 +47,16 @@ public class WorkOrderService {
         }
     }
 
-    public WorkOrder createWorkOrder(int bookingId, int mechanicId, int... serviceItemIds) {
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
+            return null;
+        }
+
+        List<Integer> bookingServiceIds = booking.getServiceItemIds();
+        if (bookingServiceIds.isEmpty()) {
+            System.out.println("Booking with ID " + bookingId + " has no services to perform.");
             return null;
         }
 
@@ -65,16 +71,11 @@ public class WorkOrderService {
             return null;
         }
 
-        for (int serviceItemId : serviceItemIds) {
-            if (findServiceItem(serviceItemId) == null) {
-                System.out.println("Service item with ID " + serviceItemId + " does not exist.");
-                return null;
-            }
-        }
-
         WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
 
-        for (int serviceItemId : serviceItemIds) {
+        // SCRUM-156 (C1): arbetsordern får de tjänster som bokningen innehåller,
+        // inte ett urval som görs i stunden.
+        for (Integer serviceItemId : bookingServiceIds) {
             workOrder.addServiceItem(serviceItemId);
         }
 
@@ -156,6 +157,41 @@ public class WorkOrderService {
         }
 
         System.out.println("Work order " + workOrderId + " has been completed.");
+        return true;
+    }
+
+    /**
+     * SCRUM-160 (D2): markerar tjänster som utförda och fryser priset som gäller i det ögonblicket.
+     * Priset läses ur tjänstekatalogen här, så att en senare prisändring inte rör den här arbetsordern.
+     */
+    public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
+        WorkOrder workOrder = findById(workOrderId);
+        if (workOrder == null) {
+            System.out.println("Work order with ID " + workOrderId + " does not exist.");
+            return false;
+        }
+
+        if (serviceItemIds == null || serviceItemIds.length == 0) {
+            System.out.println("No services given for work order " + workOrderId + ".");
+            return false;
+        }
+
+        for (int serviceItemId : serviceItemIds) {
+            ServiceItem serviceItem = findServiceItem(serviceItemId);
+            if (serviceItem == null) {
+                System.out.println("Service item with ID " + serviceItemId + " does not exist.");
+                return false;
+            }
+            // Priset frysas en gång. Är tjänsten redan markerad behåller den sitt gamla pris.
+            Double alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
+            double frozenPrice = alreadyFrozen != null ? alreadyFrozen.doubleValue() : serviceItem.getPrice();
+            workOrder.markServiceAsCompleted(serviceItemId, frozenPrice);
+        }
+
+        saveWorkOrder(workOrder);
+
+        System.out.println("Services marked as performed on work order " + workOrderId
+                + ", with the price that applied now.");
         return true;
     }
 

@@ -84,8 +84,12 @@ public class BillingService {
         for (Integer serviceItemId : targetServiceIds) {
             ServiceItem serviceItem = findServiceItem(serviceItemId);
             if (serviceItem != null) {
+                // SCRUM-160 (D2): priset som gällde när arbetet utfördes används när det finns sparat.
+                // Äldre arbetsordrar saknar det och får katalogens pris, som före D2.
+                Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
+                double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
                 lines.add(new InvoiceLine(0, 0, serviceItem.getId(),
-                        serviceItem.getName(), serviceItem.getPrice(), 0.0));
+                        serviceItem.getName(), linePrice, 0.0));
             }
         }
 
