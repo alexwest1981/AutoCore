@@ -80,7 +80,7 @@ public class Invoice {
     }
 
     private void calculateTotalAmount() {
-        this.totalAmount = amount - discount;
+        this.totalAmount = Math.round((amount - discount) * 100.0) / 100.0;
     }
 
     public List<InvoiceLine> getLines() {
@@ -96,7 +96,7 @@ public class Invoice {
         for (InvoiceLine line : lines) {
             sum += line.getFinalPrice();
         }
-        return sum;
+        return Math.round(sum * 100.0) / 100.0;
     }
 
     @Override

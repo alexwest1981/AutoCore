@@ -122,6 +122,9 @@ public class BillingService {
         if (discount > amount) {
             discount = amount;
         }
+        discount = roundToOre(discount);
+
+        distributeDiscount(lines, amount, discount);
 
         Invoice invoice = new Invoice(0, workOrderId, LocalDate.now(), amount);
         invoice.setDiscount(discount);
@@ -147,6 +150,34 @@ public class BillingService {
         System.out.println("Notification sent.");
 
         return invoice;
+    }
+    /**
+     * SCRUM-166 (E5): fördelar fakturans rabatt på raderna i proportion till radens pris.
+     * Varje del avrundas till hela ören. Avrundningsresten läggs på den dyraste raden,
+     * så att radernas rabatter alltid summerar exakt till fakturans rabatt.
+     */
+    private void distributeDiscount(List<InvoiceLine> lines, double amount, double discount) {
+        if (lines.isEmpty() || amount <= 0 || discount <= 0) {
+            return;
+        }
+
+        double distributed = 0.0;
+        InvoiceLine mostExpensive = lines.get(0);
+        for (InvoiceLine line : lines) {
+            double share = roundToOre(discount * line.getPrice() / amount);
+            line.setDiscount(share);
+            distributed += share;
+            if (line.getPrice() > mostExpensive.getPrice()) {
+                mostExpensive = line;
+            }
+        }
+
+        double rest = discount - distributed;
+        mostExpensive.setDiscount(roundToOre(mostExpensive.getDiscount() + rest));
+    }
+
+    private double roundToOre(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 
     private WorkOrder findWorkOrder(int id) {

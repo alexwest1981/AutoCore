@@ -45,6 +45,7 @@ public class TestRunner {
             runClass(BookingServicesTest.class);
             runClass(InvoiceLineTest.class);
             runClass(InvoiceTotalTest.class);
+            runClass(InvoiceLineDiscountTest.class);
         }
         if (runEvidence) {
             runClass(EvidenceVerificationTest.class);
