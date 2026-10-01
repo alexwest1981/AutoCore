@@ -118,7 +118,7 @@ if exist "%RES_DIR%" xcopy /E /I /Y "%RES_DIR%\*" "%OUT_DIR%\" >nul 2>&1
 set "SOURCES_FILE=%OUT_DIR%\sources.txt"
 dir /s /b "%SRC_DIR%\*.java" > "%SOURCES_FILE%"
 
-"%JAVAC_BIN%" -d "%OUT_DIR%" -sourcepath "%SRC_DIR%;%RES_DIR%" -cp "%JDBC_JAR%" @"%SOURCES_FILE%"
+"%JAVAC_BIN%" -encoding UTF-8 -d "%OUT_DIR%" -sourcepath "%SRC_DIR%;%RES_DIR%" -cp "%JDBC_JAR%" @"%SOURCES_FILE%"
 if %ERRORLEVEL% neq 0 (
     echo Kompileringsfel!
     del "%SOURCES_FILE%" >nul 2>&1
