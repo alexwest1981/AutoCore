@@ -32,6 +32,7 @@ public class SmokeTest {
         expectedTables.add("invoices");
         expectedTables.add("payments");
         expectedTables.add("booking_service_items");
+        expectedTables.add("work_order_service_items");
         expectedTables.add("invoice_lines");
 
         Set<String> actualTables = new HashSet<String>();
@@ -48,7 +49,7 @@ public class SmokeTest {
             TestRunner.assertTrue(actualTables.contains(exp),
                     "Smoketest: Tabellen '" + exp + "' måste finnas i databasschemat");
         }
-        System.out.println("    [SmokeTest] Databasschema: Alla 10 tabeller verifierade i SQLite.");
+        System.out.println("    [SmokeTest] Databasschema: Alla 11 tabeller verifierade i SQLite.");
     }
 
     public void testCoreApplicationClassesLoadable() throws ClassNotFoundException {

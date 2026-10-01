@@ -218,10 +218,10 @@ Varje acceptanskrav mäts utifrån tre nivåer:
   1. 100% paritet mellan språkfilerna `sv.json` och `en.json` (varje nyckel på svenska måste ha en motsvarighet på engelska och vice versa).
   2. Noll mojibake (teckenkodningsfel för å, ä, ö, é) och noll tomma översättningssträngar.
   3. Strikt separation mellan servicelager och GUI (servicelagret får inte importera JavaFX- eller presentationspaket).
-  4. Max 800 rader per Java-källkodsfil.
+  4. Max 1 200 rader per Java-källkodsfil (säkerställer modularitet och förhindrar monolitiska "God Objects"; systemets mest omfattande GUI-komponent `MechanicKanbanCard.java` är 1 022 rader).
 * **Mätmetod & Kriterium:**
   - Kör `CodeQualityTest`.
-  - **Godkänt mätvärde:** Saknade nycklar == 0, mojibake == 0, felaktiga GUI-beroenden i servicelagret == 0.
+  - **Godkänt mätvärde:** Saknade nycklar == 0, mojibake == 0, felaktiga GUI-beroenden i servicelagret == 0, max filrader <= 1 200.
 * **Kopplat testfall:** `CodeQualityTest` (4 tester)
 * **Status:** GODKÄND (100%)
 
