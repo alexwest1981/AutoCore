@@ -467,7 +467,7 @@ Alla automatiserade tester, auditkontroller, säkerhetsanalyser och beviskort ha
 
 ## 2. Granskning mot Beställningens Acceptanskrav (Kriterium 1–12)
 
-Varje acceptanskriterium från beställaren är direkt kopplat till JIRA-ärenden och bevisat i källkoden:
+Varje acceptanskriterium från beställaren är specificerat med mätbara gränsvärden i [ACCEPTANSKRAV.md](ACCEPTANSKRAV.md), direkt kopplat till JIRA-ärenden och bevisat i källkoden:
 
 | Kriterium | Beskrivning | JIRA-ärenden | Status | Bevis i testsviten / koden |
 |---|---|---|---|---|
