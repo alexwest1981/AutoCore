@@ -130,9 +130,10 @@ if ($missing.Count -gt 0) {
     exit 1
 }
 
-if (-not (Test-Path $outDir)) {
-    New-Item -ItemType Directory -Path $outDir -Force | Out-Null
-}
+# Smutsiga klassfiler måste bort: TestRunner hittar testerna i den här katalogen,
+# så en borttagen testklass skulle annars fortsätta köras.
+if (Test-Path $outDir) { Remove-Item -Path $outDir -Recurse -Force }
+New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
 if (Test-Path $resDir) {
     Copy-Item -Path "$resDir/*" -Destination $outDir -Recurse -Force -ErrorAction SilentlyContinue
@@ -267,6 +268,38 @@ if ($mode -eq "all" -or $mode -eq "quality") {
         }
     }
     $script:modRows += $row
+
+    # Acceptanskravens hänvisningar måste peka på tester som faktiskt finns.
+    $krvRefs = @()
+    if (Test-Path "$scriptDir/ACCEPTANSKRAV.md") {
+        $krvRefs = @(Select-String -Path "$scriptDir/ACCEPTANSKRAV.md" -Pattern '`([A-Z][A-Za-z0-9]*Test)\.([A-Za-z0-9_]+)`' -AllMatches |
+            ForEach-Object { $_.Matches } |
+            ForEach-Object { "$($_.Groups[1].Value).$($_.Groups[2].Value)" } |
+            Sort-Object -Unique)
+    }
+    $krvRow = [pscustomobject]@{ Omrade = "BEVISKOPPLING"; Status = "GODKÄND"; Tester = "$($krvRefs.Count) hänvisningar" }
+    if ($krvRefs.Count -eq 0) {
+        Write-Host "  ❌ ACCEPTANSKRAV.md saknas eller innehåller inga bevis-hänvisningar" -ForegroundColor Red
+        $krvRow.Status = "MISSLYCKAD"; $krvRow.Tester = "-"
+        $script:moduleErrors += "ACCEPTANSKRAV (inga bevis att kontrollera)"; $script:allGreen = $false
+    } else {
+        $krvMiss = @()
+        foreach ($ref in $krvRefs) {
+            $parts = $ref -split '\.'
+            $file = "$srcDir/com/wac/autocore/test/$($parts[0]).java"
+            $found = (Test-Path $file) -and (Select-String -Path $file -Pattern "void\s+$($parts[1])\s*\(" -Quiet)
+            if (-not $found) { $krvMiss += $ref }
+        }
+        if ($krvMiss.Count -gt 0) {
+            Write-Host "  ❌ Acceptanskraven hänvisar till tester som inte finns:" -ForegroundColor Red
+            $krvMiss | ForEach-Object { Write-Host "     $_" -ForegroundColor Red }
+            $krvRow.Status = "MISSLYCKAD"; $krvRow.Tester = "-"
+            $script:moduleErrors += "ACCEPTANSKRAV (bevis som inte finns)"; $script:allGreen = $false
+        } else {
+            Write-Host "  ✔ Alla $($krvRefs.Count) bevis-hänvisningar i ACCEPTANSKRAV.md pekar på testmetoder som finns" -ForegroundColor Green
+        }
+    }
+    $script:modRows += $krvRow
 }
 if ($mode -eq "all" -or $mode -eq "security") {
     Run-AuditModule "security" "SÄKERHETSKONTROLL (SQL-injektion, Hemligheter & Exekveringsskydd)" "[5/6]"
@@ -290,6 +323,14 @@ if ($script:accumTests -eq 0) {
 
 $verdict = "MISSLYCKAD"
 if ($script:allGreen) { $verdict = "GODKÄND" }
+
+# Kravtabellen hämtas ur ACCEPTANSKRAV.md, så ett nytt krav följer med automatiskt.
+$krvRows = @()
+if (Test-Path "$scriptDir/ACCEPTANSKRAV.md") {
+    $krvRows = @(Select-String -Path "$scriptDir/ACCEPTANSKRAV.md" -Pattern '^\| \*\*AK-' |
+        ForEach-Object { $f = $_.Line -split '\|'; "|$($f[1])|$($f[2])|$($f[3])|$($f[4])|$($f[5])| **UPPFYLLT** |" })
+}
+$krvTable = $krvRows -join "`n"
 
 Write-Host ""
 Write-Host "AUDIT & TEST SAMMANFATTNING" -ForegroundColor Cyan
@@ -335,24 +376,13 @@ Alla automatiserade tester, auditkontroller, säkerhetsanalyser och beviskort ha
 
 ---
 
-## 2. Granskning mot Beställningens Acceptanskrav (Kriterium 1–12)
+## 2. Granskning mot Beställningens Acceptanskrav (AK-01–AK-16)
 
-Varje acceptanskriterium från beställaren är specificerat med mätbara gränsvärden i [ACCEPTANSKRAV.md](ACCEPTANSKRAV.md), direkt kopplat till JIRA-ärenden och bevisat i källkoden:
+Kraven nedan är hämtade direkt ur [ACCEPTANSKRAV.md](ACCEPTANSKRAV.md) ($($krvRows.Count) krav, avsnitt 4). Varje hänvisad testmetod kördes och kontrollerades av sviten ovan.
 
-| Kriterium | Beskrivning | JIRA-ärenden | Status | Bevis i testsviten / koden |
-|---|---|---|---|---|
-| **1** | **Bokning med flera tjänster** | SCRUM-147, SCRUM-148, SCRUM-151 | **UPPFYLLT** | `BookingServicesTest.testBookingWithMultipleServices` skapar bokning med 3 tjänster (Oljebyte, Bromsservice, Däckbyte) och läser tillbaka exakt samma lista. Tabell `booking_service_items` persisterar kopplingen. |
-| **2** | **Tjänster kan ändras innan arbetet börjat** | SCRUM-150, SCRUM-154 | **UPPFYLLT** | `BookingServicesTest.testCannotModifyServicesWhenWorkStarted` bevisar att ändringar tillåts i status `BOOKED`, men nekas omedelbart vid `IN_PROGRESS` eller `COMPLETED`. UI inaktiverar ändringsknappar. |
-| **3** | **Total beräknad arbetstid visas** | SCRUM-153 | **UPPFYLLT** | `Booking.getTotalEstimatedMinutes` summerar tidsåtgången: 45 + 90 + 30 = **165 minuter**. Visas i bokningsdialog, schemavy och bokningsöversikt. |
-| **4** | **Total beräknad kostnad visas** | SCRUM-153 | **UPPFYLLT** | `Booking.getTotalEstimatedCost` summerar baspriserna: 899 + 1495 + 399 = **2 793 kr**. Beräknas i realtid i formuläret vid tillägg/borttag. |
-| **5** | **Arbetsordern innehåller arbeten som ska utföras** | SCRUM-156, SCRUM-157, SCRUM-158 | **UPPFYLLT** | `WorkOrder` bär tjänsterna via `work_order_service_items` och kopplas till mekaniker och bokning. |
-| **6** | **Fakturan har flera fakturarader** | SCRUM-162, SCRUM-163 | **UPPFYLLT** | `InvoiceLineTest.testOneLinePerPerformedService` bevisar att en faktura för flera tjänster får en separat rad per tjänst med namn, baspris, rabatt och slutpris. |
-| **7** | **Pris på en tjänst kan ändras** | SCRUM-159 | **UPPFYLLT** | `GarageSystem.updateServiceItem` och `EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay` bevisar att administratören kan uppdatera katalogpriser och att nya bokningar slår igenom med det nya priset. |
-| **8** | **Prisändring påverkar inte gamla arbeten/fakturor** | SCRUM-160, SCRUM-161 | **UPPFYLLT** | `InvoiceLineTest.testPriceChangeDoesNotChangeSavedLines`, `EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay` och `EvidenceVerificationTest.testScrum161HistoricalPricesVisibleInUi` visar att priser fryses i `invoice_lines` och visas med frysta belopp på arbetsordrar och fakturor i UI. Äldre arbeten/fakturor förblir 100% oförändrade efter prishöjning. |
-| **9** | **Rabattfunktioner fungerar med nya fakturamodellen** | SCRUM-165, SCRUM-166 | **UPPFYLLT** | `EvidenceVerificationTest.testScrum165VipAndDiscountCodesWorkAsBefore` verifierar VIP 10%, WELCOME10 (10%), SERVICE200 (200 kr) och skydd mot negativ total. |
-| **10** | **Ny information sparas permanent** | SCRUM-167, SCRUM-168 | **UPPFYLLT** | `booking_service_items` och `invoice_lines` sparas i SQLite via JDBC. `EvidenceVerificationTest.testScrum168RoundtripForNewEntities` visar full CRUD-rundtur. |
-| **11** | **Informationen finns kvar efter omstart** | SCRUM-169, SCRUM-170 | **UPPFYLLT** | `EvidenceVerificationTest.testScrum169RestartEvidence` bevisar äkta tvåprocessomstart via `RestartProofRunner` med skilda OS-PID:er (Process 1 skriver canary-data och terminerar, Process 2 startar ny JVM och verifierar dataintegritet). `testScrum170ExistingDataRetained` bevisar noll dataförlust mot legacy AutoCore 2.0-databas. |
-| **12** | **Befintlig funktionalitet fungerar intakt** | SCRUM-171, SCRUM-172 | **UPPFYLLT** | `EvidenceVerificationTest.testScrum172NineCoreAreasVerified` bekräftar alla nio kärnområden med konkreta operationer och assertions: Kunder, Fordon, Bokningar, Mekaniker, Arbetsordrar, Fakturering, Betalningar, Rabatter samt Svenska/Engelska. |
+| Krav | Beskrivning | Mätvärde / bevis | Testklass & metod | Jira-kort | Status |
+|---|---|---|---|---|---|
+$krvTable
 
 ---
 

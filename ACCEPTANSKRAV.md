@@ -55,7 +55,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
   - Anropa `Booking.getTotalEstimatedMinutes()`.
   - **Godkänt mätvärde:** Summan ska vara exakt `45 + 90 + 30 = 165` minuter.
 * **Implementation:** `Booking.getTotalEstimatedMinutes`, `BookingDialogs`, `EntityPages`.
-* **Kopplat testfall:** `BookingServicesTest.testTotalEstimatedMinutesCalculation`
+* **Kopplat testfall:** `BookingServicesTest.testEstimatedTimeAndCostCalculationsAndFormatting`
 * **Jira-spårbarhet:** SCRUM-153
 * **Status:** GODKÄND (100%)
 
@@ -68,7 +68,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
   - Anropa `Booking.getTotalEstimatedCost()`.
   - **Godkänt mätvärde:** Summan ska vara exakt `899.0 + 1495.0 + 399.0 = 2 793.00 kr` (tolerans < 0.001 kr).
 * **Implementation:** `Booking.getTotalEstimatedCost`, `BookingDialogs`.
-* **Kopplat testfall:** `BookingServicesTest.testTotalEstimatedCostCalculation`
+* **Kopplat testfall:** `BookingServicesTest.testEstimatedTimeAndCostCalculationsAndFormatting`
 * **Jira-spårbarhet:** SCRUM-153
 * **Status:** GODKÄND (100%)
 
@@ -81,7 +81,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
   - Läsa tillbaka arbetsordern från databasen (`work_order_service_items`).
   - **Godkänt mätvärde:** Arbetsorderns tjänstelista innehåller exakt IDs `[1, 2]`, kopplad till rätt mekaniker-ID och boknings-ID.
 * **Implementation:** Tabell `work_order_service_items`, modell `WorkOrder`, repository `WorkOrderRepository`.
-* **Kopplat testfall:** `WorkOrderTest.testWorkOrderContainsServiceItems`
+* **Kopplat testfall:** `EvidenceVerificationTest.testScrum169RestartEvidence`
 * **Jira-spårbarhet:** SCRUM-156, SCRUM-157, SCRUM-158
 * **Status:** GODKÄND (100%)
 
@@ -261,9 +261,9 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 |---|---|---|---|---|---|
 | **AK-01** | Flertjänstbokning | 3 tjänster länkade & återlästa | `BookingServicesTest.testBookingWithMultipleServices` | SCRUM-147, 148, 151 | **GODKÄND** |
 | **AK-02** | Låsning vid startat arbete | Exception vid modifikation i `IN_PROGRESS` | `BookingServicesTest.testCannotModifyServicesWhenWorkStarted` | SCRUM-150, 154 | **GODKÄND** |
-| **AK-03** | Total tidsberäkning | 45 + 90 + 30 = 165 minuter | `BookingServicesTest.testTotalEstimatedMinutesCalculation` | SCRUM-153 | **GODKÄND** |
-| **AK-04** | Total kostnadsberäkning | 899 + 1495 + 399 = 2 793.00 kr | `BookingServicesTest.testTotalEstimatedCostCalculation` | SCRUM-153 | **GODKÄND** |
-| **AK-05** | Arbetsorder bär tjänster | Tjänste-IDs `[1, 2]` i arbetsorder | `WorkOrderTest.testWorkOrderContainsServiceItems` | SCRUM-156, 157, 158 | **GODKÄND** |
+| **AK-03** | Total tidsberäkning | 45 + 90 + 30 = 165 minuter | `BookingServicesTest.testEstimatedTimeAndCostCalculationsAndFormatting` | SCRUM-153 | **GODKÄND** |
+| **AK-04** | Total kostnadsberäkning | 899 + 1495 + 399 = 2 793.00 kr | `BookingServicesTest.testEstimatedTimeAndCostCalculationsAndFormatting` | SCRUM-153 | **GODKÄND** |
+| **AK-05** | Arbetsorder bär tjänster | Tjänste-IDs `[1, 2]` i arbetsorder | `EvidenceVerificationTest.testScrum169RestartEvidence` | SCRUM-156, 157, 158 | **GODKÄND** |
 | **AK-06** | Flera fakturarader | 2 rader genererade med delbelopp | `InvoiceLineTest.testOneLinePerPerformedService` | SCRUM-162, 163 | **GODKÄND** |
 | **AK-07** | Prisändring i katalog | Nya ordrar får nytt pris (1 099 kr) | `EvidenceVerificationTest.testScrum159PriceChangeControlledAllTheWay` | SCRUM-159 (D1) | **GODKÄND** |
 | **AK-08** | Historisk prisfrysning | Gamla fakturor behåller 899 kr trots prishöjning | `EvidenceVerificationTest.testScrum161HistoricalPricesVisibleInUi` | SCRUM-160, 161 (D3) | **GODKÄND** |
@@ -300,3 +300,21 @@ För att köra enbart acceptanskraven och beviskorten:
 ```
 
 Alla 88 tester körs automatiskt och verifierar varje mätpunkt utan krav på externa verktyg eller Jira-inloggning.
+
+---
+
+## 6. Lägga till ett nytt acceptanskrav
+
+Sviten hämtar kraven ur den här filen, så ett nytt krav behöver bara tre saker:
+
+1. **Kravet:** lägg en ny rubrik `### AK-17: <namn>` i avsnitt 2 med mätmetod och godkänt mätvärde.
+2. **Testet:** skriv en publik metod `testXxx()` i valfri `*Test`-klass under `com/wac/autocore/test/`.
+   `TestRunner` hittar klasserna själv — ingen lista behöver uppdateras. En klass som inte nämns i
+   `TestRunner.GROUP_OF` körs i modulen `Enhetstester`.
+3. **Raden:** lägg kravet i spårbarhetsmatrisen i avsnitt 4 med exakt `KlassNamn.metodNamn` i testkolumnen.
+
+Kör sedan `./test.sh` (Windows: `.\test.ps1`). Då gäller:
+
+* varje hänvisning i matrisen måste finnas som testmetod, annars blir körningen röd (`BEVISKOPPLING`),
+* rapportens kravtabell fylls på från matrisen — nya krav skrivs inte in i skriptet,
+* antalet tester och statusen i rapporten räknas från de moduler som faktiskt kördes.
