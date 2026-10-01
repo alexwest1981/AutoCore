@@ -109,6 +109,37 @@
     -fx-text-fill: #111827;
 }
 
+/* Alla ComboBoxar: ren vit bakgrund, skarp kant och neutral text */
+.combo-box, .combo-box-base, .choice-box {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 4px 8px;
+    -fx-cursor: hand;
+}
+.combo-box:hover, .combo-box-base:hover, .choice-box:hover {
+    -fx-background-color: white;
+    -fx-border-color: #9ca3af;
+}
+.combo-box:showing, .combo-box-base:showing, .choice-box:showing {
+    -fx-background-color: white;
+    -fx-border-color: -wac-ring;
+}
+.combo-box:focused, .combo-box-base:focused, .choice-box:focused {
+    -fx-background-color: white;
+    -fx-border-color: -wac-ring;
+    -fx-border-width: 1.5;
+}
+.combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: #111827;
+}
+.combo-box .arrow, .combo-box-base .arrow, .choice-box .arrow {
+    -fx-background-color: #6b7280;
+}
+
 /*
  * components.css — delat komponentlager (forts.).
  *

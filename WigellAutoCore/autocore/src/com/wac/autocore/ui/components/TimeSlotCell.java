@@ -47,8 +47,8 @@ public class TimeSlotCell extends ListCell<LocalTime> {
 
             Label textLabel = new Label(timeStr + "  (" + statusText + ")");
             textLabel.setStyle(busy
-                    ? "-fx-text-fill: #f87171; -fx-font-weight: bold;"
-                    : "-fx-text-fill: #22c55e; -fx-font-weight: bold;");
+                    ? "-fx-text-fill: #9ca3af; -fx-font-weight: normal;"
+                    : "-fx-text-fill: #111827; -fx-font-weight: normal;");
 
             HBox box = new HBox(8, dot, textLabel);
             box.setAlignment(Pos.CENTER_LEFT);
@@ -59,13 +59,13 @@ public class TimeSlotCell extends ListCell<LocalTime> {
             if (isDropdownItem) {
                 setDisable(busy);
                 if (busy) {
-                    setStyle("-fx-opacity: 0.60; -fx-background-color: rgba(248, 113, 113, 0.12);");
+                    setStyle("-fx-opacity: 0.50; -fx-background-color: transparent;");
                 } else {
-                    setStyle("-fx-opacity: 1.0; -fx-background-color: rgba(34, 197, 94, 0.08);");
+                    setStyle("-fx-opacity: 1.0; -fx-background-color: transparent;");
                 }
             } else {
                 setDisable(false);
-                setStyle("");
+                setStyle("-fx-background-color: transparent;");
             }
         }
     }

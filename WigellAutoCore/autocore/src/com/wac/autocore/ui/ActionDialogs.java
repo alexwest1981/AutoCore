@@ -44,6 +44,7 @@ public final class ActionDialogs {
         if (!pane.getStyleClass().contains("root")) {
             pane.getStyleClass().add("root");
         }
+        dialog.setResizable(true);
         javafx.scene.Scene appScene = com.wac.autocore.theme.ThemeManager.getCurrentScene();
         if (appScene != null && appScene.getWindow() != null) {
             try {
@@ -67,9 +68,10 @@ public final class ActionDialogs {
 
     public static GridPane createGrid() {
         GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(14, 14, 14, 14));
+        grid.setHgap(14);
+        grid.setVgap(14);
+        grid.setPadding(new Insets(18, 22, 18, 22));
+        grid.setPrefWidth(580);
         return grid;
     }
 
