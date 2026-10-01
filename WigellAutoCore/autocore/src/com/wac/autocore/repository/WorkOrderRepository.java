@@ -111,21 +111,42 @@ public class WorkOrderRepository {
     }
 
     private void saveServiceItems(WorkOrder workOrder) throws SQLException {
-        String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
-        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed) VALUES (?, ?, ?)";
+        // Spara utan completed först (databasen sätter DEFAULT 0)
+        String insertOrIgnore = "INSERT OR IGNORE INTO work_order_service_items (work_order_id, service_item_id) VALUES (?, ?)";
+        String updateCompleted = "UPDATE work_order_service_items SET completed = ? WHERE work_order_id = ? AND service_item_id = ?";
 
         try (Connection connection = Db.getConnection()) {
-            try (PreparedStatement delete = connection.prepareStatement(deleteLinks);
-                 PreparedStatement insert = connection.prepareStatement(insertLink)) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement insert = connection.prepareStatement(insertOrIgnore);
+                 PreparedStatement update = connection.prepareStatement(updateCompleted)) {
+
+                // Säkerställ att vi har en lista att arbeta med så vi slipper NullPointerException
+                List<Integer> completedItems = workOrder.getCompletedServiceItems();
+                if (completedItems == null) {
+                    completedItems = new ArrayList<>();
+                }
+
                 for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+                    // 1. Skapa länken säkert (om den inte finns). completed blir 0 per automatik via DEFAULT i SQL.
                     insert.setInt(1, workOrder.getId());
                     insert.setInt(2, serviceItemId);
                     insert.addBatch();
-                int isCompleted = workOrder.getCompletedServiceItems().contains(serviceItemId) ? 1 : 0;
-                insert.setInt(3, isCompleted);
-                    insert.executeUpdate();
+
+                    // 2. Uppdatera statusen explicit till 1 eller 0 (aldrig null)
+                    int isCompleted = completedItems.contains(serviceItemId) ? 1 : 0;
+                    update.setInt(1, isCompleted);
+                    update.setInt(2, workOrder.getId());
+                    update.setInt(3, serviceItemId);
+                    update.addBatch();
+                }
+
+                insert.executeBatch();
+                update.executeBatch();
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
             }
-        }
         }
     }
 
