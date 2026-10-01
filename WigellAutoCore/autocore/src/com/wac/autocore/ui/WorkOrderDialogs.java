@@ -218,51 +218,97 @@ public final class WorkOrderDialogs {
         GridPane linesGrid = ActionDialogs.createGrid();
         Label h1 = new Label(I18n.get("table.col.service"));
         h1.setStyle("-fx-font-weight: bold;");
+        Label hTime = new Label(I18n.get("table.col.estimated_time"));
+        hTime.setStyle("-fx-font-weight: bold;");
         Label h2 = new Label(I18n.get("table.col.price"));
         h2.setStyle("-fx-font-weight: bold;");
+        Label hStatus = new Label(I18n.get("table.col.status"));
+        hStatus.setStyle("-fx-font-weight: bold;");
+
         linesGrid.add(h1, 0, 0);
-        linesGrid.add(h2, 1, 0);
+        linesGrid.add(hTime, 1, 0);
+        linesGrid.add(h2, 2, 0);
+        linesGrid.add(hStatus, 3, 0);
 
         int row = 1;
         double sum = 0.0;
+        int totalMin = 0;
+        int completedCount = 0;
+        int totalCount = (workOrder.getServiceItemIds() != null) ? workOrder.getServiceItemIds().size() : 0;
+
         if (workOrder.getServiceItemIds() != null) {
             for (Integer sid : workOrder.getServiceItemIds()) {
                 String name = null;
                 Double price = null;
-                if (inv != null && inv.getLines() != null) {
+                int estMinutes = 0;
+
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid.intValue()) {
+                        name = s.getName();
+                        estMinutes = s.getEstimatedMinutes();
+                        price = s.getPrice();
+                        break;
+                    }
+                }
+
+                Double frozenPrice = workOrder.getCompletedServicePrice(sid.intValue());
+                if (frozenPrice != null) {
+                    price = frozenPrice;
+                } else if (inv != null && inv.getLines() != null) {
                     for (InvoiceLine line : inv.getLines()) {
-                        if (line.getServiceItemId() == sid) {
+                        if (line.getServiceItemId() == sid.intValue()) {
                             name = line.getServiceName();
                             price = line.getPrice();
                             break;
                         }
                     }
                 }
-                if (name == null) {
-                    for (ServiceItem s : garage.getServiceItems()) {
-                        if (s.getId() == sid) {
-                            name = s.getName();
-                            if (price == null) price = s.getPrice();
-                            break;
-                        }
-                    }
-                }
+
                 if (name == null) name = "Service #" + sid;
                 if (price == null) price = 0.0;
                 sum += price;
+                totalMin += estMinutes;
+
+                boolean done = workOrder.getCompletedServiceItems() != null
+                        && workOrder.getCompletedServiceItems().contains(sid);
+                if (done) {
+                    completedCount++;
+                }
+
+                Label statusChip = new Label();
+                statusChip.getStyleClass().add("badge");
+                if (done) {
+                    statusChip.setText("✔ " + I18n.get("status.completed"));
+                    statusChip.getStyleClass().add("green");
+                } else if ("COMPLETED".equals(workOrder.getStatus())) {
+                    statusChip.setText(I18n.get("status.cancelled"));
+                    statusChip.getStyleClass().add("grey");
+                } else {
+                    statusChip.setText(I18n.get("status.to_be_performed"));
+                    statusChip.getStyleClass().add("yellow");
+                }
 
                 linesGrid.add(new Label(SeedText.resolve(name)), 0, row);
-                linesGrid.add(new Label(UiFormatters.formatMoney(price)), 1, row);
+                linesGrid.add(new Label(estMinutes + " min"), 1, row);
+                linesGrid.add(new Label(UiFormatters.formatMoney(price)), 2, row);
+                linesGrid.add(statusChip, 3, row);
                 row++;
             }
         }
 
         Label totalLabel = new Label(I18n.get("table.col.total") + ":");
         totalLabel.setStyle("-fx-font-weight: bold;");
+        Label totalTimeVal = new Label(totalMin + " min");
+        totalTimeVal.setStyle("-fx-font-weight: bold;");
         Label totalVal = new Label(UiFormatters.formatMoney(inv != null ? inv.getAmount() : sum));
         totalVal.setStyle("-fx-font-weight: bold;");
+        Label totalStatusVal = new Label(completedCount + "/" + totalCount + " " + I18n.get("status.completed").toLowerCase());
+        totalStatusVal.setStyle("-fx-font-weight: bold;");
+
         linesGrid.add(totalLabel, 0, row);
-        linesGrid.add(totalVal, 1, row);
+        linesGrid.add(totalTimeVal, 1, row);
+        linesGrid.add(totalVal, 2, row);
+        linesGrid.add(totalStatusVal, 3, row);
 
         content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid);
         dialog.getDialogPane().setContent(content);

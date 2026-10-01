@@ -115,8 +115,12 @@ public final class SlotDetailsDialog {
                 : (b != null ? EntityLookup.bookingServices(garage, b) : "-");
         grid.add(new Label(sNames), 1, rowIdx++);
 
-        int estMin = (b != null) ? EntityLookup.bookingTotalMinutes(garage, b) : 0;
-        double estCost = (b != null) ? EntityLookup.bookingTotalPrice(garage, b) : 0.0;
+        int estMin = (hasWorkOrder && wo != null)
+                ? EntityLookup.workOrderTotalMinutes(garage, wo)
+                : ((b != null) ? EntityLookup.bookingTotalMinutes(garage, b) : 0);
+        double estCost = (hasWorkOrder && wo != null)
+                ? EntityLookup.workOrderTotal(garage, wo)
+                : ((b != null) ? EntityLookup.bookingTotalPrice(garage, b) : 0.0);
         if (estMin > 0) {
             grid.add(new Label(I18n.get("dialog.slot.estimated_time")), 0, rowIdx);
             grid.add(new Label(estMin + " min"), 1, rowIdx++);

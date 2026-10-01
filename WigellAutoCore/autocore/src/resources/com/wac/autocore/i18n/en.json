@@ -181,7 +181,9 @@
     "created": "Created",
     "work_order_created": "Work order created",
     "successful": "Successful",
-    "failed": "Failed"
+    "failed": "Failed",
+    "to_be_performed": "To be performed",
+    "performed": "Performed"
   },
   "common": {
     "yes": "Yes",

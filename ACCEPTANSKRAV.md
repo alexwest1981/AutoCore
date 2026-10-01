@@ -74,14 +74,14 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 
 ---
 
-### AK-05: Arbetsordern innehåller arbeten som ska utföras
-* **Krav:** När en arbetsorder skapas utifrån en bokning ska samtliga beställda tjänster automatiskt föras över till arbetsordern så att mekanikern vet exakt vilka moment som ska genomföras.
+### AK-05: Arbetsordern innehåller och visar arbeten som ska utföras
+* **Krav:** När en arbetsorder skapas utifrån en bokning ska samtliga beställda tjänster automatiskt föras över till arbetsordern, och arbetsordern ska i gränssnittet tydligt visa samtliga ingående moment, priser, beräknad arbetstid och status (utförd vs att utföra) så att mekanikern vet exakt vilka moment som ska genomföras.
 * **Mätmetod & Kriterium:**
-  - Skapa arbetsorder från bokning med 2 tjänster (id 1, id 2).
-  - Läsa tillbaka arbetsordern från databasen (`work_order_service_items`).
-  - **Godkänt mätvärde:** Arbetsorderns tjänstelista innehåller exakt IDs `[1, 2]`, kopplad till rätt mekaniker-ID och boknings-ID.
-* **Implementation:** Tabell `work_order_service_items`, modell `WorkOrder`, repository `WorkOrderRepository`.
-* **Kopplat testfall:** `EvidenceVerificationTest.testScrum169RestartEvidence`
+  - Skapa arbetsorder från bokning med 3 tjänster (id 1, 2, 3).
+  - Läsa tillbaka arbetsordern från databasen (`work_order_service_items`) och verifiera visning i UI (`EntityLookup`, `WorkOrderDialogs`).
+  - **Godkänt mätvärde:** Arbetsorderns tjänstelista innehåller samtliga tjänster med namn, frysta/aktuella priser, total beräknad arbetstid summerad, samt individuell statusmarkering per moment.
+* **Implementation:** Tabell `work_order_service_items`, modell `WorkOrder`, `WorkOrderDialogs.showWorkOrderDetailsDialog`, `EntityLookup.workOrderTotalMinutes`, `EntityLookup.workOrderServicesWithStatus`.
+* **Kopplat testfall:** `WorkOrderServiceTest.testWorkOrderDisplaysServicesToBePerformed`
 * **Jira-spårbarhet:** SCRUM-156, SCRUM-157, SCRUM-158
 * **Status:** GODKÄND (100%)
 

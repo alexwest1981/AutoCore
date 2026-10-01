@@ -82,6 +82,16 @@ public class ConsolePrinter {
         }
         for (WorkOrder order : workOrders) {
             System.out.println(order);
+            if (order.getServiceItemIds() != null && !order.getServiceItemIds().isEmpty()) {
+                System.out.println("   Services to perform (" + order.getServiceItemIds().size() + "):");
+                for (Integer sid : order.getServiceItemIds()) {
+                    boolean done = order.getCompletedServiceItems() != null && order.getCompletedServiceItems().contains(sid);
+                    Double price = order.getCompletedServicePrice(sid.intValue());
+                    String priceStr = price != null ? " (" + price + " kr)" : "";
+                    String st = done ? "[Completed]" : "[To perform]";
+                    System.out.println("     • Service #" + sid + priceStr + " " + st);
+                }
+            }
         }
     }
 
