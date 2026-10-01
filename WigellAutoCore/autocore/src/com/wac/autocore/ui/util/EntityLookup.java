@@ -191,6 +191,13 @@ public final class EntityLookup {
     public static double workOrderServicePrice(GarageSystem garage, WorkOrder wo, int serviceItemId) {
         if (garage == null) return 0.0;
         if (wo != null) {
+            // Det frysta priset är priset som gällde när arbetet utfördes, och det ska
+            // visas även innan fakturan finns. Samma ordning som i detaljdialogen:
+            // fryst pris, sedan fakturaradens pris, sist katalogen.
+            Double frozenPrice = wo.getCompletedServicePrice(serviceItemId);
+            if (frozenPrice != null) {
+                return frozenPrice.doubleValue();
+            }
             Invoice inv = invoiceForWorkOrder(garage, wo.getId());
             if (inv != null && inv.getLines() != null) {
                 for (InvoiceLine line : inv.getLines()) {
@@ -219,12 +226,15 @@ public final class EntityLookup {
                 sb.append(", ");
             }
             String name = null;
-            Double price = null;
+            Double frozenPrice = wo.getCompletedServicePrice(sid.intValue());
+            Double price = frozenPrice;
             if (invoice != null && invoice.getLines() != null) {
                 for (InvoiceLine line : invoice.getLines()) {
                     if (line.getServiceItemId() == sid) {
                         name = line.getServiceName();
-                        price = line.getPrice();
+                        if (price == null) {
+                            price = line.getPrice();
+                        }
                         break;
                     }
                 }
@@ -253,19 +263,12 @@ public final class EntityLookup {
 
     public static double workOrderTotal(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null) return 0.0;
-        Invoice inv = invoiceForWorkOrder(garage, wo.getId());
-        if (inv != null) {
-            return inv.getAmount();
-        }
         if (wo.getServiceItemIds() == null) return 0.0;
+        // Summeras per tjänst med samma ordning som workOrderServicePrice, alltså
+        // fryst pris först. Då stämmer summan med det fakturan kommer att bygga.
         double total = 0.0;
         for (Integer sid : wo.getServiceItemIds()) {
-            for (ServiceItem s : garage.getServiceItems()) {
-                if (s.getId() == sid) {
-                    total += s.getPrice();
-                    break;
-                }
-            }
+            total += workOrderServicePrice(garage, wo, sid.intValue());
         }
         return total;
     }
