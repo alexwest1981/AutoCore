@@ -107,6 +107,18 @@ if (-not $foundJdk) {
     exit 1
 }
 
+# Projektet importerar javafx.* i 40 filer: en JDK 8 utan JavaFX ger 40 kompileringsfel.
+$jfxOk = $false
+foreach ($jfx in @("$foundJdk/jre/lib/ext/jfxrt.jar", "$foundJdk/jre/lib/jfxrt.jar", "$foundJdk/lib/jfxrt.jar")) {
+    if (Test-Path $jfx) { $jfxOk = $true }
+}
+if (-not $jfxOk) {
+    Write-Host "Fel: JDK 8 hittades ($foundJdk), men den innehåller inte JavaFX." -ForegroundColor Red
+    Write-Host "Projektet kompilerar inte utan JavaFX (javafx.* används i 40 filer)."
+    Write-Host "Installera en JDK 8 med JavaFX, t.ex. BellSoft Liberica JDK 8 Full."
+    exit 1
+}
+
 $javaBin = Get-JdkTool $foundJdk "java"
 $javacBin = Get-JdkTool $foundJdk "javac"
 $javaVer = & "$javaBin" -version 2>&1 | Select-Object -First 1

@@ -261,6 +261,20 @@ fi
 export JDK8_HOME="$FOUND_JDK"
 export JAVA_HOME="$FOUND_JDK"
 
+# Koden importerar javafx.* i 40 filer: en JDK 8 utan JavaFX ger 40 kompileringsfel,
+# så kontrollera det här i stället för att låta javac förklara saken.
+JFX_OK=0
+for jfx in "$FOUND_JDK/jre/lib/ext/jfxrt.jar" "$FOUND_JDK/jre/lib/jfxrt.jar" "$FOUND_JDK/lib/jfxrt.jar"; do
+    [ -f "$jfx" ] && JFX_OK=1
+done
+if [ "$JFX_OK" -eq 0 ]; then
+    echo -e "${RED}${BOLD}Fel: JDK 8 hittades ($FOUND_JDK), men den innehåller inte JavaFX.${RESET}"
+    echo "Projektet kompilerar inte utan JavaFX (javafx.* används i 40 filer)."
+    echo "Installera en JDK 8 med JavaFX, t.ex. BellSoft Liberica JDK 8 Full, och kör:"
+    echo "  ./test.sh --jdk \"/sökväg/till/LibericaJDK-8-Full\""
+    exit 1
+fi
+
 EXE=""
 if [ -x "$FOUND_JDK/bin/javac.exe" ]; then
     EXE=".exe"
