@@ -60,6 +60,16 @@ public class WorkOrderService {
             return null;
         }
 
+        // En bokning ska bara kunna få en arbetsorder. Utan den här spärren kan
+        // samma bokning faktureras två gånger.
+        for (WorkOrder existingOrder : getAll()) {
+            if (existingOrder.getBookingId() == bookingId) {
+                System.out.println("Booking with ID " + bookingId + " already has work order "
+                        + existingOrder.getId() + ".");
+                return null;
+            }
+        }
+
         Mechanic mechanic = findMechanic(mechanicId);
         if (mechanic == null) {
             System.out.println("Mechanic with ID " + mechanicId + " does not exist.");
