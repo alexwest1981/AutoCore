@@ -494,6 +494,24 @@ TableView .table-row-cell:selected:focused .table-cell,
 .primary-button:pressed, .create-button:pressed, .wide-action:pressed {
     -fx-background-color: -wac-accent-pressed;
 }
+.add-service-btn, .button.add-service-btn {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 0 14px;
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-alignment: CENTER;
+}
+.add-service-btn:hover, .button.add-service-btn:hover {
+    -fx-background-color: -wac-accent-hover;
+}
+.add-service-btn:pressed, .button.add-service-btn:pressed {
+    -fx-background-color: -wac-accent-pressed;
+}
 .secondary-button, .filter-button, .more-button {
     -fx-background-color: -wac-surface;
     -fx-text-fill: -wac-text;

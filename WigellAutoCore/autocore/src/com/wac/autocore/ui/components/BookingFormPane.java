@@ -14,6 +14,7 @@ import com.wac.autocore.ui.util.UiFormatters;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -106,6 +107,8 @@ public class BookingFormPane extends GridPane {
         this.serviceBox = new ComboBox<ServiceItem>();
         this.serviceBox.getItems().addAll(garage.getServiceItems());
         this.serviceBox.setMaxWidth(Double.MAX_VALUE);
+        this.serviceBox.setPrefHeight(34);
+        this.serviceBox.setMinHeight(34);
         setupComboBoxDisplay(this.serviceBox, new StringConverter<ServiceItem>() {
             @Override
             public String toString(ServiceItem s) {
@@ -120,12 +123,24 @@ public class BookingFormPane extends GridPane {
         }
 
         Button addServiceBtn = new Button("+ " + I18n.get("dialog.booking.add_service"));
-        addServiceBtn.setStyle("-fx-cursor: hand; -fx-padding: 4 10; -fx-font-weight: bold;");
+        addServiceBtn.setPrefHeight(34);
+        addServiceBtn.setMinHeight(34);
+        addServiceBtn.getStyleClass().addAll("primary", "primary-button", "add-service-btn");
+        final String baseStyle = "-fx-cursor: hand; -fx-background-color: -wac-accent; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 0 14px; -fx-alignment: center;";
+        final String hoverStyle = "-fx-cursor: hand; -fx-background-color: -wac-accent-hover; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 0 14px; -fx-alignment: center;";
+        addServiceBtn.setStyle(baseStyle);
+        addServiceBtn.setOnMouseEntered(ev -> {
+            if (!addServiceBtn.isDisabled()) addServiceBtn.setStyle(hoverStyle);
+        });
+        addServiceBtn.setOnMouseExited(ev -> {
+            if (!addServiceBtn.isDisabled()) addServiceBtn.setStyle(baseStyle);
+        });
 
         final boolean isServicesLocked = existingBooking != null && existingBooking.isWorkStarted();
         if (isServicesLocked) {
             this.serviceBox.setDisable(true);
             addServiceBtn.setDisable(true);
+            addServiceBtn.setStyle(baseStyle + " -fx-opacity: 0.5;");
         }
 
         if (existingBooking != null) {
@@ -380,6 +395,7 @@ public class BookingFormPane extends GridPane {
         serviceLbl.setPadding(new Insets(6, 0, 0, 0));
         add(serviceLbl, 0, rowIdx);
         HBox servicePickerRow = new HBox(8, this.serviceBox, addServiceBtn);
+        servicePickerRow.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(this.serviceBox, Priority.ALWAYS);
         VBox serviceCol = new VBox(6);
         serviceCol.getChildren().add(servicePickerRow);
