@@ -180,7 +180,8 @@ public class Booking {
 
     public boolean isWorkStarted() {
         return "IN_PROGRESS".equalsIgnoreCase(status)
-                || "COMPLETED".equalsIgnoreCase(status);
+                || "COMPLETED".equalsIgnoreCase(status)
+                || "WORK_ORDER_CREATED".equalsIgnoreCase(status);
     }
 
     public boolean canModifyServices() {
