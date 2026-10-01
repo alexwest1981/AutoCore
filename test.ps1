@@ -12,10 +12,28 @@ Set-Location $scriptDir
 # med inbyggd JavaFX-runtime).
 # ==============================================================================
 
+# ==============================================================================
+# 0. KONFIGURATION AV JAVA 8 JDK (VIKTIGT FÖR WINDOWS POWERSHELL)
+# ==============================================================================
+# Om skriptet inte hittar din Java 8 automatiskt, avkommentera och ange sökvägen:
+#
+# $customJdk = "C:\Program Files\BellSoft\LibericaJDK-8-Full"
+#
+# Du hittar troligen din JDK i mappen:
+#   C:\Program Files\BellSoft\LibericaJDK-8-Full
+#   C:\Program Files\BellSoft\LibericaJDK-8
+#   C:\Program Files\Java\jdk1.8.0_xxx
+#   C:\Program Files\Eclipse Adoptium\jdk-8.x.x
+# ==============================================================================
+
 # 1. Hitta Java 8 JDK
 $foundJdk = $null
 
-if ($env:JDK8_HOME -and (Test-Path "$env:JDK8_HOME\bin\javac.exe")) {
+if ($customJdk -and (Test-Path "$customJdk\bin\javac.exe")) {
+    $foundJdk = $customJdk
+}
+
+if (-not $foundJdk -and $env:JDK8_HOME -and (Test-Path "$env:JDK8_HOME\bin\javac.exe")) {
     $foundJdk = $env:JDK8_HOME
 }
 

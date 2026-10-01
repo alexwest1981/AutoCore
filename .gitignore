@@ -34,10 +34,16 @@ target/
 *.zip
 *.pdf
 RetrospektDagbok.md
+JiraAnalys_Sprint3_Flaskhalsar.md
+
+# Personliga testrapporter och lokala resultat
+rapport.md
+rapport*.md
 
 # OS files
-.DS_Store
+*.DS_Store
 Thumbs.db
 
 # JVM crash logs
 hs_err_pid*.log
+
