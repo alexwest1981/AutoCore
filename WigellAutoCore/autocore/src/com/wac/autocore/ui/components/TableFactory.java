@@ -104,7 +104,7 @@ public final class TableFactory {
         TableColumn<S, String> c = new TableColumn<S, String>(title);
         c.setPrefWidth(width);
         c.setMinWidth(Math.min(width, 80));
-        c.setMaxWidth(160);
+        c.setMaxWidth(Math.max(width * 1.5, 240));
         c.setCellValueFactory(cd -> new ReadOnlyStringWrapper(mapper.apply(cd.getValue())));
         c.setCellFactory(column -> new TableCell<S, String>() {
             @Override

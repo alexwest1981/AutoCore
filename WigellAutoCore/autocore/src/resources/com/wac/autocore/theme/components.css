@@ -868,9 +868,20 @@ TableView .table-row-cell:selected:focused .table-cell,
    15. WCAG 2.1 TILLGÄNGLIGHET: FOCUS VISIBLE (2.4.7) & KONTRAST
    ============================================================ */
 .button:focused, .nav-item:focused,
-.text-field:focused, .combo-box:focused {
+.text-field:focused, .combo-box:focused, .date-picker:focused {
     -fx-border-color: -wac-ring;
     -fx-border-width: 2px;
+}
+
+.date-picker > .text-field,
+.date-picker > .text-field:focused,
+.date-picker:focused > .text-field,
+.combo-box > .text-field,
+.combo-box > .text-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
 }
 
 .text-field, .text-area {
@@ -1354,7 +1365,9 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-border-radius: 6;
     -fx-background-radius: 6;
     -fx-padding: 3px 8px;
-    -fx-min-height: 25px;
+    -fx-min-height: 28px;
+    -fx-pref-height: 28px;
+    -fx-alignment: CENTER_LEFT;
 }
 .kanban-slot-row-compact.free {
     -fx-background-color: -wac-shell;
@@ -1381,14 +1394,14 @@ TableView .table-row-cell:selected:focused .table-cell,
 .kanban-slot-plus-btn {
     -fx-font-size: 11px;
     -fx-padding: 0;
-    -fx-min-width: 24px;
-    -fx-pref-width: 24px;
-    -fx-max-width: 24px;
-    -fx-min-height: 24px;
-    -fx-pref-height: 24px;
-    -fx-max-height: 24px;
-    -fx-background-radius: 12px;
-    -fx-border-radius: 12px;
+    -fx-min-width: 20px;
+    -fx-pref-width: 20px;
+    -fx-max-width: 20px;
+    -fx-min-height: 20px;
+    -fx-pref-height: 20px;
+    -fx-max-height: 20px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
     -fx-alignment: CENTER;
     -fx-content-display: graphic-only;
     -fx-cursor: hand;

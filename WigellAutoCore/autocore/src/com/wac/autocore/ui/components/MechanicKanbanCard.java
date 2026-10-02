@@ -102,7 +102,7 @@ public class MechanicKanbanCard {
         // Horisontell scroll om många mekaniker tillkommer
         ScrollPane scroll = new ScrollPane(cardsRow);
         scroll.setFitToHeight(true);
-        scroll.setFitToWidth(true);
+        scroll.setFitToWidth(false);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
@@ -151,10 +151,10 @@ public class MechanicKanbanCard {
                 if (activeFilter[0] == null || activeFilter[0].equalsIgnoreCase(SeedText.resolve(m.getSpecialization()))) {
                     MechanicKanbanCard card = new MechanicKanbanCard(garage, i, router, onRefresh);
                     VBox cardView = card.getView();
-                    cardView.setMinWidth(310);
+                    cardView.setMinWidth(320);
                     cardView.setPrefWidth(350);
-                    cardView.setMaxWidth(480);
-                    HBox.setHgrow(cardView, Priority.ALWAYS);
+                    cardView.setMaxWidth(400);
+                    HBox.setHgrow(cardView, Priority.NEVER);
                     cardsRow.getChildren().add(cardView);
                     count++;
                 }
@@ -292,7 +292,7 @@ public class MechanicKanbanCard {
 
         this.cardContainer = new VBox(8);
         this.cardContainer.getStyleClass().addAll("kanban-card", "kanban-card-compact");
-        this.cardContainer.setMinWidth(290);
+        this.cardContainer.setMinWidth(320);
         this.cardContainer.setPrefWidth(350);
 
         this.headerBox = new VBox(6);
@@ -342,10 +342,15 @@ public class MechanicKanbanCard {
 
         Label nameLabel = new Label(mech.getName());
         nameLabel.getStyleClass().add("kanban-mech-name-compact");
-        nameLabel.setMinWidth(Region.USE_PREF_SIZE);
+        nameLabel.setMinWidth(0);
+        nameLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
+        nameLabel.setTooltip(new Tooltip(mech.getName()));
+        HBox.setHgrow(nameLabel, Priority.ALWAYS);
 
         HBox mechTitle = new HBox(6, avatar, nameLabel);
         mechTitle.setAlignment(Pos.CENTER_LEFT);
+        mechTitle.setMinWidth(0);
+        HBox.setHgrow(mechTitle, Priority.ALWAYS);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -357,10 +362,12 @@ public class MechanicKanbanCard {
 
         HBox toggleGroup = new HBox(2, dayBtn, weekBtn, monthBtn);
         toggleGroup.getStyleClass().add("kanban-toggle-group-compact");
+        toggleGroup.setMinWidth(Region.USE_PREF_SIZE);
 
         Button optionsBtn = new Button();
         optionsBtn.getStyleClass().addAll("kanban-options-btn", "ghost", "small");
         optionsBtn.setTooltip(new Tooltip(I18n.get("kanban.card.options")));
+        optionsBtn.setMinWidth(Region.USE_PREF_SIZE);
 
         SVGPath dotsIcon = new SVGPath();
         dotsIcon.setContent("M 2 3.2 a 1.2 1.2 0 1 1 0 -2.4 a 1.2 1.2 0 0 1 0 2.4 z M 2 7.2 a 1.2 1.2 0 1 1 0 -2.4 a 1.2 1.2 0 0 1 0 2.4 z M 2 11.2 a 1.2 1.2 0 1 1 0 -2.4 a 1.2 1.2 0 0 1 0 2.4 z");
@@ -401,12 +408,16 @@ public class MechanicKanbanCard {
         // Rad 2: Specialisering och tillgänglighetsbadge
         Label specLabel = new Label(formatSpecialization(SeedText.resolve(mech.getSpecialization())));
         specLabel.getStyleClass().add("kanban-mech-sub-compact");
+        specLabel.setMinWidth(0);
+        specLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
+        HBox.setHgrow(specLabel, Priority.ALWAYS);
 
         Region spr2 = new Region();
         HBox.setHgrow(spr2, Priority.ALWAYS);
 
         Label statusBadge = new Label(mech.isAvailable() ? I18n.get("table.col.available") : I18n.get("table.col.unavailable"));
         statusBadge.getStyleClass().addAll("badge", mech.isAvailable() ? "green" : "yellow", "small");
+        statusBadge.setMinWidth(Region.USE_PREF_SIZE);
 
         HBox subRow = new HBox(6, specLabel, spr2, statusBadge);
         subRow.setAlignment(Pos.CENTER_LEFT);
@@ -523,7 +534,9 @@ public class MechanicKanbanCard {
 
                 Button jumpBtn = new Button("📅 " + I18n.get("kanban.card.next_booking", fullNextStr));
                 jumpBtn.getStyleClass().addAll("ghost", "small");
-                jumpBtn.setMinWidth(Region.USE_PREF_SIZE);
+                jumpBtn.setMinWidth(0);
+                jumpBtn.setMaxWidth(Double.MAX_VALUE);
+                jumpBtn.setTextOverrun(OverrunStyle.ELLIPSIS);
                 jumpBtn.setStyle("-fx-font-size: 11px; -fx-padding: 3px 6px; -fx-text-fill: -wac-accent; -fx-cursor: hand;");
                 jumpBtn.setOnAction(e -> {
                     selectedDate = nextDate;
@@ -531,6 +544,7 @@ public class MechanicKanbanCard {
                 });
                 HBox jumpBox = new HBox(jumpBtn);
                 jumpBox.setAlignment(Pos.CENTER);
+                HBox.setHgrow(jumpBtn, Priority.ALWAYS);
                 jumpBox.setPadding(new Insets(2, 0, 0, 0));
                 slotList.getChildren().add(jumpBox);
             }

@@ -156,15 +156,17 @@ TextField, PasswordField, TextArea,
     -fx-text-fill: -wac-text;
     -fx-prompt-text-fill: -wac-muted;
     -fx-border-color: -wac-line;
+    -fx-border-width: 2px;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-padding: 6px 10px;
+    -fx-padding: 5px 9px;
 }
 ComboBox, .combo-box, .combo-box-base, .choice-box {
     -fx-background-color: #ffffff;
     -fx-text-fill: -wac-text;
     -fx-prompt-text-fill: -wac-muted;
     -fx-border-color: -wac-line;
+    -fx-border-width: 2px;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-padding: 2px 6px;
@@ -172,15 +174,18 @@ ComboBox, .combo-box, .combo-box-base, .choice-box {
 .combo-box:hover, .combo-box-base:hover, .choice-box:hover {
     -fx-background-color: #ffffff;
     -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
 }
 .combo-box:showing, .combo-box-base:showing, .choice-box:showing {
     -fx-background-color: #ffffff;
     -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
 }
 TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused,
 .text-field:focused, .combo-box:focused, .combo-box-base:focused {
     -fx-background-color: #ffffff;
     -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
 }
 .combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
     -fx-background-color: transparent;
@@ -190,6 +195,50 @@ TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused,
 }
 .combo-box .arrow, .combo-box-base .arrow, .choice-box .arrow {
     -fx-background-color: #6b7280;
+}
+
+/* DatePicker utan dubbla ramar */
+DatePicker, .date-picker {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 0;
+}
+DatePicker:hover, .date-picker:hover {
+    -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
+}
+DatePicker:focused, .date-picker:focused,
+.date-picker:contains-focus {
+    -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
+}
+.date-picker > .text-field,
+.date-picker > .text-field:focused,
+.date-picker:focused > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 5px 9px;
+}
+.date-picker > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0 8px 0 0;
+    -fx-cursor: hand;
+}
+.date-picker > .arrow-button .arrow {
+    -fx-background-color: #6b7280;
+}
+.date-picker:hover > .arrow-button .arrow,
+.date-picker:focused > .arrow-button .arrow {
+    -fx-background-color: -wac-text;
 }
 
 ScrollPane { -fx-background-color: transparent; }
@@ -398,7 +447,7 @@ TableView .table-view, .table-view { -fx-padding: 0; }
 }
 
 .pages {
-    -fx-padding: 22px 26px 26px 26px;
+    -fx-padding: 22px 26px 40px 26px;
     -fx-background-color: -wac-shell;
 }
 .page-title {

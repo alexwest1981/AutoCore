@@ -146,22 +146,22 @@ public final class EntityPages {
         FilterableTable<Booking> table = TableFactory.create(garage.getBookings());
         TableView<Booking> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 50, c -> String.valueOf(c.getId())),
+                TableFactory.col(I18n.get("table.col.id"), 65, c -> String.valueOf(c.getId())),
                 TableFactory.col(I18n.get("table.col.vehicle"), 110, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
                 TableFactory.col(I18n.get("table.col.date"), 100, c -> String.valueOf(c.getDate())),
-                TableFactory.col(I18n.get("table.col.time"), 110, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
-                TableFactory.col(I18n.get("table.col.services"), 180, c -> EntityLookup.bookingServices(garage, c)),
-                TableFactory.col(I18n.get("table.col.estimated_time"), 100, c -> {
+                TableFactory.col(I18n.get("table.col.time"), 70, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
+                TableFactory.col(I18n.get("table.col.services"), 190, c -> EntityLookup.bookingServices(garage, c)),
+                TableFactory.col(I18n.get("table.col.estimated_time"), 75, c -> {
                     int min = EntityLookup.bookingTotalMinutes(garage, c);
                     return min > 0 ? min + " min" : "-";
                 }),
-                TableFactory.col(I18n.get("table.col.estimated_cost"), 110, c -> {
+                TableFactory.col(I18n.get("table.col.estimated_cost"), 85, c -> {
                     double cost = EntityLookup.bookingTotalPrice(garage, c);
                     return cost > 0 ? UiFormatters.formatMoney(cost) : "-";
                 }),
-                TableFactory.col(I18n.get("table.col.mechanic"), 130, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
-                TableFactory.col(I18n.get("table.col.description"), 200, c -> SeedText.resolve(c.getDescription())),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 110, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.col(I18n.get("table.col.mechanic"), 120, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
+                TableFactory.col(I18n.get("table.col.description"), 180, c -> SeedText.resolve(c.getDescription())),
+                TableFactory.badgeCol(I18n.get("table.col.status"), 160, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.bookings.action_create"));
