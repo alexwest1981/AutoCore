@@ -376,7 +376,18 @@ public class BookingFormPane extends GridPane {
         // 8. Status (endast vid redigering)
         if (existingBooking != null) {
             this.statusBox = new ComboBox<String>();
-            this.statusBox.getItems().addAll("BOOKED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED");
+            if (existingBooking.isWorkStarted()) {
+                // Arbetet är påbörjat eller en arbetsorder finns. Då får statusen inte gå
+                // tillbaka till Bokad eller Bekräftad, och bokningen får inte avbokas,
+                // för då öppnas låset på tjänsterna igen.
+                this.statusBox.getItems().addAll("IN_PROGRESS", "COMPLETED");
+                if (existingBooking.getStatus() != null
+                        && !this.statusBox.getItems().contains(existingBooking.getStatus())) {
+                    this.statusBox.getItems().add(existingBooking.getStatus());
+                }
+            } else {
+                this.statusBox.getItems().addAll("BOOKED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED");
+            }
             this.statusBox.getSelectionModel().select(existingBooking.getStatus() != null ? existingBooking.getStatus() : "BOOKED");
         } else {
             this.statusBox = null;

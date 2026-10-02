@@ -293,7 +293,8 @@
       "total_time": "Estimated total time: {0} minutes",
       "total_price": "Estimated price: {0}",
       "remove_service": "Remove",
-      "services_locked_work_started": "Services cannot be modified because work has started"
+      "services_locked_work_started": "Services cannot be modified because work has started",
+      "status_locked_work_started": "The status cannot be changed back once work has started."
     },
     "service": {
       "create": {
