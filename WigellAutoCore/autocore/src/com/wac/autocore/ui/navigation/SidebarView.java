@@ -274,10 +274,12 @@ public class SidebarView {
     private void addGroup(VBox parent, String i18nKey, NavSpec... items) {
         Label t = new Label(I18n.get(i18nKey).toUpperCase());
         t.getStyleClass().add("side-label");
+        t.setCursor(Cursor.DEFAULT);
         groupHeaders.add(new GroupHeader(i18nKey, t));
 
         HBox head = new HBox(t);
         head.getStyleClass().add("nav-group-head");
+        head.setCursor(Cursor.DEFAULT);
         head.setPadding(new Insets(0, 14, 6, 14));
 
         VBox list = new VBox(2);
@@ -295,6 +297,7 @@ public class SidebarView {
         b.setMaxWidth(Double.MAX_VALUE);
         b.setAlignment(Pos.CENTER_LEFT);
         b.setUserData(key);
+        b.setCursor(Cursor.HAND);
         b.getStyleClass().addAll("ghost", "nav-item");
         b.setOnAction(e -> {
             if (onNavigate != null) {
