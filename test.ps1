@@ -231,6 +231,11 @@ function Run-AuditModule($code, $title, $num) {
     $exitCode = $LASTEXITCODE
     $ErrorActionPreference = $previous
 
+    # Modulens råa utdata sparas. Utan den går det inte att se varför en modul blev röd utan resultatrad.
+    $moduleLog = "out/audit/$code.log"
+    New-Item -ItemType Directory -Force -Path (Split-Path $moduleLog) | Out-Null
+    $output | Out-File -FilePath $moduleLog -Encoding utf8
+
     foreach ($line in $output) {
         if ($line -match "Kör:") {
             Write-Host $line -ForegroundColor DarkGray
@@ -271,9 +276,15 @@ function Run-AuditModule($code, $title, $num) {
             "wcag"     { $script:modWcag = "$mPassed/$mTests" }
         }
     } else {
+        # En modul utan resultatrad är inte samma sak som en modul med fallna tester.
+        if ($mTests -eq 0) {
+            Write-Host "  Ingen resultatrad från modulen (javas slutkod $exitCode)." -ForegroundColor Yellow
+            Write-Host "  Rå utdata: $moduleLog - sista raderna:" -ForegroundColor DarkGray
+            $output | Select-Object -Last 12 | ForEach-Object { Write-Host "    $_" }
+        }
         Write-Host "Status: MISSLYCKAD ($mPassed/$mTests tester, $mFailed fel)" -ForegroundColor Red
         $row.Status = "MISSLYCKAD"
-        $script:moduleErrors += $title
+        $script:moduleErrors += "$title (utdata: $moduleLog)"
         $script:allGreen = $false
     }
 }

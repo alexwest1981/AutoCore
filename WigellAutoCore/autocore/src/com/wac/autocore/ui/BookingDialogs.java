@@ -94,9 +94,9 @@ public final class BookingDialogs {
                         b.setEndTime(startTime.plusMinutes(estMin));
                     }
 
-                    try {
-                        garage.updateBooking(b);
-                    } catch (Exception ignored) {}
+                    if (!saveBookingOrReport(garage, b)) {
+                        return;
+                    }
 
                     // Reservera tid i schemat om mekaniker valts (workOrderId = 0)
                     if (chosenMech != null) {
@@ -173,9 +173,9 @@ public final class BookingDialogs {
                     booking.setEndTime(startTime.plusMinutes(estMin));
                 }
 
-                try {
-                    garage.updateBooking(booking);
-                } catch (Exception ignored) {}
+                if (!saveBookingOrReport(garage, booking)) {
+                    return;
+                }
 
                 // Återboka i schemat om mekaniker är tilldelad och bokningen ej är avbokad
                 if (chosenMech != null && !"CANCELLED".equalsIgnoreCase(status)) {
@@ -246,6 +246,23 @@ public final class BookingDialogs {
                 if (onSuccess != null) onSuccess.run();
             }
         });
+    }
+
+    /**
+     * Sparar bokningen och visar felet i stället för att svälja det. En tyst misslyckad skrivning
+     * lämnade kvar en bokning som såg skapad ut men saknade tid och tjänster, utan att någon fick veta.
+     */
+    private static boolean saveBookingOrReport(GarageSystem garage, Booking booking) {
+        try {
+            garage.updateBooking(booking);
+            return true;
+        } catch (Exception e) {
+            String reason = e.getMessage();
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                    I18n.get("dialog.booking.save_failed")
+                            + (reason == null || reason.trim().isEmpty() ? "" : " (" + reason + ")"));
+            return false;
+        }
     }
 
     /**

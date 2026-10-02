@@ -36,6 +36,36 @@ public class MechanicSpecializationTest {
         }
     }
 
+    /**
+     * Valet sparas som nyckel i demodatans ordlista, inte som texten användaren såg. Sparas texten
+     * står den kvar i det språk den skrevs i och visas oöversatt efter ett språkbyte.
+     */
+    public void testTheChosenSpecializationIsStoredAsAKeyNotAsText() {
+        String original = I18n.getLanguage();
+        try {
+            I18n.setLanguage("en");
+            TestRunner.assertEquals("seed.mechanic.brakes.specialization",
+                    MechanicDialogs.specializationToStore("Brakes"),
+                    "Ett fast val ska sparas som nyckel, inte som engelsk text");
+
+            I18n.setLanguage("sv");
+            TestRunner.assertEquals("seed.mechanic.brakes.specialization",
+                    MechanicDialogs.specializationToStore("Bromsar"),
+                    "Samma val på svenska ska bli samma nyckel");
+            TestRunner.assertEquals("seed.mechanic.brakes.specialization",
+                    MechanicDialogs.specializationToStore("Brakes"),
+                    "En text som skrevs på engelska ska kännas igen även när gränssnittet är svenskt");
+            TestRunner.assertEquals("seed.mechanic.general_service.specialization",
+                    MechanicDialogs.specializationToStore("   "),
+                    "Tomt val ska bli den allmänna servicen, inte en text i aktivt språk");
+            TestRunner.assertEquals("Elsystem",
+                    MechanicDialogs.specializationToStore("Elsystem"),
+                    "Fritext som inte är ett av våra val ska sparas precis som den skrevs");
+        } finally {
+            I18n.setLanguage(original);
+        }
+    }
+
     private static boolean containsSwedishLetters(List<String> texts) {
         for (String text : texts) {
             if (text != null && text.matches(".*[åäöÅÄÖ].*")) {

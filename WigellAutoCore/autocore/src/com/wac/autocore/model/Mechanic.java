@@ -11,9 +11,22 @@ public class Mechanic {
     public Mechanic(int id, String name, String phone, String specialization) {
         this.id = id;
         this.name = name;
-        this.phone = phone;
+        this.phone = ContactRules.normalizePhone(phone);
         this.specialization = specialization;
         this.available = true;
+    }
+
+    /**
+     * Kontaktuppgifterna för en mekaniker: namnet ska vara ifyllt och telefonnumret följer samma regel
+     * som kundens (tio siffror). Namnet får innehålla siffror, för demodata och provrader använder
+     * etiketter som "D2-mekaniker".
+     * Suffixet hör ihop med nyckeln {@code dialog.validation.<suffix>} i språkfilerna.
+     */
+    public static String validationProblem(String name, String phone) {
+        if (name == null || name.trim().isEmpty()) {
+            return ContactRules.PROBLEM_REQUIRED;
+        }
+        return ContactRules.phoneProblem(phone);
     }
 
     public int getId() {
@@ -37,7 +50,7 @@ public class Mechanic {
     }
 
     public void setPhone(String phone) {
-        this.phone = phone;
+        this.phone = ContactRules.normalizePhone(phone);
     }
 
     public String getSpecialization() {

@@ -1,6 +1,8 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.model.ContactRules;
 import com.wac.autocore.model.Customer;
+import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.service.CustomerService;
 import com.wac.autocore.service.GarageSystem;
@@ -26,31 +28,31 @@ public class CustomerValidationTest {
     }
 
     public void testNamesPhonesAndEmailsAreChecked() {
-        TestRunner.assertEquals(Customer.PROBLEM_NAME_DIGITS,
+        TestRunner.assertEquals(ContactRules.PROBLEM_NAME_DIGITS,
                 Customer.validationProblem("Lucas 2", "070-1234567", "lucas@exempel.se"),
                 "Siffror i namnet ska nekas");
-        TestRunner.assertEquals(Customer.PROBLEM_NAME_DIGITS,
+        TestRunner.assertEquals(ContactRules.PROBLEM_NAME_DIGITS,
                 Customer.validationProblem("Lucas2024", "070-1234567", ""),
                 "Siffror sist i namnet ska nekas");
 
-        TestRunner.assertEquals(Customer.PROBLEM_PHONE_TEN_DIGITS,
+        TestRunner.assertEquals(ContactRules.PROBLEM_PHONE_TEN_DIGITS,
                 Customer.validationProblem("Lucas", "070-1234abc", ""),
                 "Bokstäver i telefonnumret ska nekas");
-        TestRunner.assertEquals(Customer.PROBLEM_PHONE_TEN_DIGITS,
+        TestRunner.assertEquals(ContactRules.PROBLEM_PHONE_TEN_DIGITS,
                 Customer.validationProblem("Lucas", "070-123456", ""),
                 "9 siffror ska nekas");
-        TestRunner.assertEquals(Customer.PROBLEM_PHONE_TEN_DIGITS,
+        TestRunner.assertEquals(ContactRules.PROBLEM_PHONE_TEN_DIGITS,
                 Customer.validationProblem("Lucas", "070-12345678", ""),
                 "11 siffror ska nekas");
 
-        TestRunner.assertEquals(Customer.PROBLEM_EMAIL_FORMAT,
+        TestRunner.assertEquals(ContactRules.PROBLEM_EMAIL_FORMAT,
                 Customer.validationProblem("Lucas", "070-1234567", "lucas.exempel.se"),
                 "En adress utan @ ska nekas");
-        TestRunner.assertEquals(Customer.PROBLEM_EMAIL_FORMAT,
+        TestRunner.assertEquals(ContactRules.PROBLEM_EMAIL_FORMAT,
                 Customer.validationProblem("Lucas", "070-1234567", "lucas@exempel"),
                 "En adress utan domändel ska nekas");
 
-        TestRunner.assertEquals(Customer.PROBLEM_REQUIRED,
+        TestRunner.assertEquals(ContactRules.PROBLEM_REQUIRED,
                 Customer.validationProblem("", "070-1234567", ""),
                 "Tomt namn ska nekas");
         TestRunner.assertEquals(null,
@@ -59,6 +61,37 @@ public class CustomerValidationTest {
         TestRunner.assertEquals(null,
                 Customer.validationProblem("Lucas Berg", "070 1234567", "lucas@exempel.se"),
                 "Ett fullständigt namn, telefonnummer och en giltig adress ska gå igenom");
+    }
+
+    /**
+     * Mekanikerns namn och telefonnummer lyder under samma regel som kundens — regeln sitter i
+     * {@link ContactRules} och körs från GarageSystem, inte bara i formuläret.
+     */
+    public void testMechanicContactRulesUseTheSameRuleAsTheCustomer() throws Exception {
+        TestRunner.assertEquals(ContactRules.PROBLEM_PHONE_TEN_DIGITS,
+                Mechanic.validationProblem("Sven Berg", "070-1234abc"),
+                "Bokstäver i mekanikerns telefonnummer ska nekas");
+        TestRunner.assertEquals(ContactRules.PROBLEM_PHONE_TEN_DIGITS,
+                Mechanic.validationProblem("Sven Berg", "070-123456"),
+                "Nio siffror ska nekas även för en mekaniker");
+        TestRunner.assertEquals(ContactRules.PROBLEM_REQUIRED,
+                Mechanic.validationProblem("", "070-1234567"),
+                "Tomt namn ska nekas");
+        TestRunner.assertEquals(null,
+                Mechanic.validationProblem("D2-mekaniker", "070-1234567"),
+                "Ett namn med siffra ska gå igenom — demodata använder sådana namn");
+        TestRunner.assertEquals("070-1234567",
+                new Mechanic(0, "Sven Berg", "0701234567", "seed.mechanic.brakes.specialization").getPhone(),
+                "Mekanikerns telefonnummer ska normaliseras som kundens");
+
+        try {
+            new GarageSystem().createMechanic("Sven Berg", "070-1234abc", "seed.mechanic.brakes.specialization");
+            TestRunner.assertTrue(false, "Tjänstelagret ska neka ett telefonnummer med bokstäver");
+        } catch (IllegalArgumentException expected) {
+            TestRunner.assertTrue(expected.getMessage() != null
+                            && expected.getMessage().contains(ContactRules.PROBLEM_PHONE_TEN_DIGITS),
+                    "Nekandet ska namnge regeln som bröts, men sa: " + expected.getMessage());
+        }
     }
 
     /**
@@ -71,7 +104,7 @@ public class CustomerValidationTest {
             service.createCustomer("Lucas 2", "070-1234567", "lucas@exempel.se");
             TestRunner.assertTrue(false, "Tjänstelagret ska neka ett namn med siffror");
         } catch (IllegalArgumentException expected) {
-            TestRunner.assertTrue(expected.getMessage() != null && expected.getMessage().contains(Customer.PROBLEM_NAME_DIGITS),
+            TestRunner.assertTrue(expected.getMessage() != null && expected.getMessage().contains(ContactRules.PROBLEM_NAME_DIGITS),
                     "Nekandet ska namnge regeln som bröts, men sa: " + expected.getMessage());
         }
 

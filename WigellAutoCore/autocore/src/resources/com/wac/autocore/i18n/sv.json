@@ -286,6 +286,7 @@
       "time_available": "Ledig",
       "time_busy": "Upptagen",
       "slot_busy_error": "Den valda tiden är redan upptagen hos denna mekaniker. Vänligen välj en ledig tid.",
+      "save_failed": "Bokningen kunde inte sparas.",
       "desc_prompt": "T.ex. Årlig service och bromsbyte",
       "add_service": "Lägg till",
       "selected_services": "Valda tjänster",
@@ -337,7 +338,6 @@
       },
       "available": "Tillgänglig för bokningar",
       "spec_prompt": "T.ex. Däck & Hjul, Motor, AC",
-      "default_spec": "Allmän service",
       "name_prompt": "T.ex. Anders Svensson",
       "phone_prompt": "070-1234567"
     },
@@ -516,10 +516,7 @@
     "specialization": {
       "general_service": "Allmän service",
       "brakes": "Bromsar",
-      "diagnostics": "Diagnostik & Felsökning",
-      "wheels": "Däck & Hjul",
-      "engine": "Motor & Drivlina",
-      "climate": "AC & Klimat"
+      "diagnostics": "Diagnostik & Felsökning"
     },
     "filter": {
       "all": "Alla",

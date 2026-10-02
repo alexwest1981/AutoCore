@@ -286,6 +286,7 @@
       "time_available": "Available",
       "time_busy": "Busy",
       "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
+      "save_failed": "The booking could not be saved.",
       "desc_prompt": "E.g. Annual service and brake replacement",
       "add_service": "Add",
       "selected_services": "Selected services",
@@ -337,7 +338,6 @@
       },
       "available": "Available for bookings",
       "spec_prompt": "E.g. Tyres & Wheels, Engine, AC",
-      "default_spec": "General service",
       "name_prompt": "E.g. Anders Svensson",
       "phone_prompt": "070-1234567"
     },
@@ -516,10 +516,7 @@
     "specialization": {
       "general_service": "General service",
       "brakes": "Brakes",
-      "diagnostics": "Diagnostics",
-      "wheels": "Tyres & Wheels",
-      "engine": "Engine & Drivetrain",
-      "climate": "AC & Climate"
+      "diagnostics": "Diagnostics"
     },
     "filter": {
       "all": "All",

@@ -2,7 +2,6 @@ package com.wac.autocore.ui;
 
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.repository.MechanicRepository;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 
@@ -24,8 +23,6 @@ import com.wac.autocore.seed.SeedText;
  * Modala dialoger för mekanikerhantering (skapa, redigera, ta bort).
  */
 public final class MechanicDialogs {
-
-    private static final MechanicRepository mechanicRepository = new MechanicRepository();
 
     private MechanicDialogs() {}
 
@@ -57,22 +54,20 @@ public final class MechanicDialogs {
             if (response == ButtonType.OK) {
                 String name = nameField.getText().trim();
                 String phone = phoneField.getText().trim();
-                String spec = specBox.getEditor().getText() != null ? specBox.getEditor().getText().trim() : "";
-                if (spec.isEmpty() && specBox.getValue() != null) {
-                    spec = specBox.getValue().trim();
-                }
 
-                if (name.isEmpty() || phone.isEmpty()) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                String problem = Mechanic.validationProblem(name, phone);
+                if (problem != null) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
                     return;
                 }
 
-                Mechanic mechanic = new Mechanic(0, name, phone, spec.isEmpty() ? I18n.get("dialog.mechanic.default_spec") : spec);
-
                 try {
-                    mechanicRepository.save(mechanic);
+                    garage.createMechanic(name, phone, specializationToStore(chosenSpecialization(specBox)));
                 } catch (SQLException e) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    return;
+                } catch (IllegalArgumentException rejected) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), rejected.getMessage());
                     return;
                 }
 
@@ -115,19 +110,16 @@ public final class MechanicDialogs {
             if (response == ButtonType.OK) {
                 String name = nameField.getText().trim();
                 String phone = phoneField.getText().trim();
-                String spec = specBox.getEditor().getText() != null ? specBox.getEditor().getText().trim() : "";
-                if (spec.isEmpty() && specBox.getValue() != null) {
-                    spec = specBox.getValue().trim();
-                }
 
-                if (name.isEmpty() || phone.isEmpty()) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                String problem = Mechanic.validationProblem(name, phone);
+                if (problem != null) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
                     return;
                 }
 
                 mechanic.setName(name);
                 mechanic.setPhone(phone);
-                mechanic.setSpecialization(spec.isEmpty() ? I18n.get("dialog.mechanic.default_spec") : spec);
+                mechanic.setSpecialization(specializationToStore(chosenSpecialization(specBox)));
                 mechanic.setAvailable(availBox.isSelected());
 
                 try {
@@ -142,6 +134,16 @@ public final class MechanicDialogs {
         });
     }
 
+    /** De fasta specialiseringarna, som nycklar i demodatans ordlista. Nyckeln sparas, texten visas. */
+    private static final String[] SPECIALIZATION_KEYS = {
+        "seed.mechanic.general_service.specialization",
+        "seed.mechanic.brakes.specialization",
+        "seed.mechanic.diagnostics.specialization",
+        "seed.mechanic.wheels.specialization",
+        "seed.mechanic.engine.specialization",
+        "seed.mechanic.climate.specialization"
+    };
+
     /**
      * Förslagen som visas i rullistan för specialisering. Offentlig och utan JavaFX så att provet kan
      * läsa exakt den lista användaren får: den innehöll tidigare tre svenska texter som låg fast i
@@ -149,12 +151,9 @@ public final class MechanicDialogs {
      */
     public static List<String> suggestSpecializations(GarageSystem garage) {
         List<String> suggestions = new ArrayList<String>();
-        suggestions.add(I18n.get("dialog.mechanic.default_spec"));
-        suggestions.add(I18n.get("kanban.specialization.brakes"));
-        suggestions.add(I18n.get("kanban.specialization.diagnostics"));
-        suggestions.add(I18n.get("kanban.specialization.wheels"));
-        suggestions.add(I18n.get("kanban.specialization.engine"));
-        suggestions.add(I18n.get("kanban.specialization.climate"));
+        for (String key : SPECIALIZATION_KEYS) {
+            suggestions.add(SeedText.resolve(key));
+        }
 
         if (garage != null) {
             for (ServiceItem s : garage.getServiceItems()) {
@@ -165,6 +164,44 @@ public final class MechanicDialogs {
             }
         }
         return suggestions;
+    }
+
+    /**
+     * Värdet som ska sparas: nyckeln när texten är ett av våra fasta val, annars det användaren skrev.
+     * Sparas texten blir den kvar i det språk den skrevs i och visas oöversatt efter ett språkbyte.
+     */
+    public static String specializationToStore(String chosen) {
+        String text = chosen == null ? "" : chosen.trim();
+        if (text.isEmpty()) {
+            return SPECIALIZATION_KEYS[0];
+        }
+        for (String key : SPECIALIZATION_KEYS) {
+            if (isOneOfOurChoices(key, text)) {
+                return key;
+            }
+        }
+        return text;
+    }
+
+    private static boolean isOneOfOurChoices(String key, String text) {
+        if (text.equalsIgnoreCase(SeedText.get(key))) {
+            return true;
+        }
+        for (String lang : new String[] {SeedText.LANG_SV, SeedText.LANG_EN}) {
+            String value = SeedText.loadDictionary(lang).get(key);
+            if (value != null && text.equalsIgnoreCase(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String chosenSpecialization(ComboBox<String> box) {
+        String typed = box.getEditor().getText();
+        if (typed != null && !typed.trim().isEmpty()) {
+            return typed.trim();
+        }
+        return box.getValue() != null ? box.getValue().trim() : "";
     }
 
     private static ComboBox<String> createSpecializationBox(GarageSystem garage, String currentSpec) {

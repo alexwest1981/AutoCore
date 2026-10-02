@@ -307,7 +307,19 @@ public class GarageSystem {
     }
 
     public void updateMechanic(Mechanic mechanic) throws SQLException {
+        if (mechanic == null) {
+            return;
+        }
+        refuseUnlessStorableMechanic(mechanic.getName(), mechanic.getPhone());
         mechanicRepository.save(mechanic);
+    }
+
+    /** Samma regel som för kunden, i den väg alla skrivare av en mekanikerrad går genom. */
+    private static void refuseUnlessStorableMechanic(String name, String phone) {
+        String problem = Mechanic.validationProblem(name, phone);
+        if (problem != null) {
+            throw new IllegalArgumentException("Mechanic data rejected: " + problem);
+        }
     }
 
     public boolean canDeleteMechanic(int mechanicId) {
@@ -339,6 +351,7 @@ public class GarageSystem {
     }
 
     public Mechanic createMechanic(String name, String phone, String specialization) throws SQLException {
+        refuseUnlessStorableMechanic(name, phone);
         Mechanic mechanic = new Mechanic(0, name, phone, specialization);
         mechanicRepository.save(mechanic);
         return mechanic;

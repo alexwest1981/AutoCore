@@ -383,6 +383,12 @@ run_runner_module() {
         | sed "s/${ESC}\[[0-9;]*[A-Za-z]//g")
     EXIT_CODE=$?
 
+    # Modulens råa utdata sparas. Utan den går det inte att se varför en modul blev röd utan
+    # resultatrad — körningen är då förbi och beviset borta.
+    MODULE_LOG="$DIR/out/audit/${code}.log"
+    mkdir -p "$DIR/out/audit"
+    printf '%s\n' "$OUTPUT" > "$MODULE_LOG"
+
     # Skriv ut relevanta rader
     echo "$OUTPUT" | grep -E "(Kör:|✔|❌|\[SCRUM|\[G2|\[SmokeTest|•|\[[0-9]/9\])" | while IFS= read -r line; do
         if [[ "$line" =~ Kör: ]]; then
@@ -418,11 +424,18 @@ run_runner_module() {
         echo -e "${GREEN}${BOLD}Status: GODKÄND ($M_PASSED/$M_TESTS tester)${RESET}"
         MOD_STATUS+=("GODKÄND")
     else
+        # En modul utan resultatrad är inte samma sak som en modul med fallna tester. Säg vilket det
+        # var, och visa slutet av den råa utdatan, så nästa läsare slipper gissa.
+        if [ "$M_TESTS" -eq 0 ]; then
+            echo -e "  ${YELLOW}Ingen resultatrad från modulen (javas slutkod $EXIT_CODE).${RESET}"
+            echo -e "  ${DIM}Rå utdata: out/audit/${code}.log - sista raderna:${RESET}"
+            printf '%s\n' "$OUTPUT" | tail -n 12 | sed 's/^/    /'
+        fi
         echo -e "${RED}${BOLD}Status: MISSLYCKAD ($M_PASSED/$M_TESTS tester, $M_FAILED fel)${RESET}"
         MOD_STATUS+=("MISSLYCKAD")
         TOTAL_FAILED=$((TOTAL_FAILED + 1))
         ALL_GREEN=false
-        ERRORS+=("$title")
+        ERRORS+=("$title (utdata: out/audit/${code}.log)")
     fi
 
     case "$code" in
