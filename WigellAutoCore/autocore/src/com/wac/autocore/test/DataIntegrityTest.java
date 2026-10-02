@@ -10,6 +10,7 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.InvoiceRepository;
+import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.service.GarageSystem;
 
@@ -89,7 +90,7 @@ public class DataIntegrityTest {
             Invoice invoice = garage.createInvoice(orderId, null);
             TestRunner.assertNotNull(invoice, "Fakturan ska skapas ur arbetsordern");
             invoiceId = invoice.getId();
-            Payment payment = garage.processPayment(invoiceId, "KORT");
+            Payment payment = garage.processPayment(invoiceId, "CARD");
             TestRunner.assertNotNull(payment, "Betalningen ska registreras");
             paymentId = payment.getId();
 
@@ -276,7 +277,7 @@ public class DataIntegrityTest {
             TestRunner.assertEquals(Double.valueOf(round(2394.55)), Double.valueOf(round(invoice.getAmount())),
                     "899,10 + 1495,45 ska bli 2394,55 — tappas ören blir det 2394,00");
 
-            Payment payment = garage.processPayment(invoiceId, "KORT");
+            Payment payment = garage.processPayment(invoiceId, "CARD");
             paymentId = payment.getId();
             double paid = 0;
             List<Payment> payments = garage.getPayments();
@@ -308,6 +309,316 @@ public class DataIntegrityTest {
                 garage.deleteServiceItem(secondServiceId);
             }
         }
+    }
+
+    /**
+     * Ett jobb ska bara kunna faktureras en gång. Gränssnittet hindrar att samma bokning
+     * väljs om, men tjänsten själv frågade aldrig om arbetsordern redan hade en faktura.
+     */
+    public void testAnInvoiceIsCreatedOnlyOncePerWorkOrder() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        int mechanicId = 0;
+        int bookingId = 0;
+        int orderId = 0;
+        int invoiceId = 0;
+
+        try {
+            Mechanic mechanic = garage.createMechanic("Revision-en-faktura", "070-0000024", "Allmän service");
+            mechanicId = mechanic.getId();
+            ServiceItem service = garage.getServiceItems().get(0);
+            Booking booking = bookingWith(garage, new int[]{service.getId()}, "Revision: en faktura");
+            bookingId = booking.getId();
+            WorkOrder order = garage.createWorkOrder(bookingId, mechanicId);
+            orderId = order.getId();
+            garage.startWorkOrder(orderId);
+            garage.markServicesAsCompleted(orderId, new int[]{service.getId()});
+            garage.completeWorkOrder(orderId);
+            invoiceId = garage.createInvoice(orderId, null).getId();
+
+            Invoice again = garage.createInvoice(orderId, null);
+            TestRunner.assertEquals(null, again,
+                    "En arbetsorder som redan är fakturerad ska inte kunna faktureras igen");
+            TestRunner.assertEquals(Integer.valueOf(1), Integer.valueOf(invoicesFor(orderId)),
+                    "Arbetsordern ska ha exakt en faktura");
+        } finally {
+            if (invoiceId > 0) {
+                new InvoiceRepository().delete(invoiceId);
+            }
+            if (orderId > 0) {
+                new WorkOrderRepository().delete(orderId);
+            }
+            if (bookingId > 0) {
+                new BookingRepository().delete(bookingId);
+            }
+            if (mechanicId > 0) {
+                garage.deleteMechanic(mechanicId);
+            }
+        }
+    }
+
+    /**
+     * Ett arbete ska inte kunna markeras utfört innan det har startat. Annars fryses priset
+     * på en order som står i CREATED, och fakturan kan byggas på arbete som aldrig påbörjades.
+     */
+    public void testServicesCannotBeMarkedPerformedBeforeTheWorkHasStarted() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        int mechanicId = 0;
+        int bookingId = 0;
+        int orderId = 0;
+
+        try {
+            Mechanic mechanic = garage.createMechanic("Revision-innan-start", "070-0000025", "Allmän service");
+            mechanicId = mechanic.getId();
+            ServiceItem service = garage.getServiceItems().get(0);
+            Booking booking = bookingWith(garage, new int[]{service.getId()}, "Revision: innan start");
+            bookingId = booking.getId();
+            WorkOrder order = garage.createWorkOrder(bookingId, mechanicId);
+            orderId = order.getId();
+
+            boolean marked = garage.markServicesAsCompleted(orderId, new int[]{service.getId()});
+            TestRunner.assertFalse(marked,
+                    "En tjänst ska inte kunna markeras utförd på en arbetsorder som inte har startat");
+            WorkOrder reloaded = new WorkOrderRepository().findById(orderId);
+            TestRunner.assertEquals(Integer.valueOf(0), Integer.valueOf(reloaded.getCompletedServiceItems().size()),
+                    "Ingen tjänst ska stå som utförd innan arbetet har startat");
+        } finally {
+            if (orderId > 0) {
+                new WorkOrderRepository().delete(orderId);
+            }
+            if (bookingId > 0) {
+                new BookingRepository().delete(bookingId);
+            }
+            if (mechanicId > 0) {
+                garage.deleteMechanic(mechanicId);
+            }
+        }
+    }
+
+    /** Statusen ska bara ga framat: en slutförd arbetsorder far inte startas igen. */
+    public void testACompletedWorkOrderCannotBeStartedAgain() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        int mechanicId = 0;
+        int bookingId = 0;
+        int orderId = 0;
+
+        try {
+            Mechanic mechanic = garage.createMechanic("Revision-status", "070-0000026", "Allmän service");
+            mechanicId = mechanic.getId();
+            ServiceItem service = garage.getServiceItems().get(0);
+            Booking booking = bookingWith(garage, new int[]{service.getId()}, "Revision: status framat");
+            bookingId = booking.getId();
+            WorkOrder order = garage.createWorkOrder(bookingId, mechanicId);
+            orderId = order.getId();
+            garage.startWorkOrder(orderId);
+            garage.markServicesAsCompleted(orderId, new int[]{service.getId()});
+            garage.completeWorkOrder(orderId);
+
+            garage.startWorkOrder(orderId);
+            WorkOrder reloaded = new WorkOrderRepository().findById(orderId);
+            TestRunner.assertEquals("COMPLETED", reloaded.getStatus(),
+                    "En slutförd arbetsorder ska inte kunna startas igen");
+        } finally {
+            if (orderId > 0) {
+                new WorkOrderRepository().delete(orderId);
+            }
+            if (bookingId > 0) {
+                new BookingRepository().delete(bookingId);
+            }
+            if (mechanicId > 0) {
+                garage.deleteMechanic(mechanicId);
+            }
+        }
+    }
+
+    /** Rabatten ska klämmas mot beloppet, så en faktura aldrig kan bli negativ. */
+    public void testTheDiscountCannotExceedTheAmount() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        int mechanicId = 0;
+        int bookingId = 0;
+        int orderId = 0;
+        int invoiceId = 0;
+        int serviceId = 0;
+        int paymentId = 0;
+
+        try {
+            ServiceItem cheap = garage.createServiceItem("Revision-billig", "Prov", 99.0, 10);
+            serviceId = cheap.getId();
+            Mechanic mechanic = garage.createMechanic("Revision-betalning", "070-0000027", "Allmän service");
+            mechanicId = mechanic.getId();
+            Booking booking = bookingWith(garage, new int[]{serviceId}, "Revision: dubbel betalning");
+            bookingId = booking.getId();
+            WorkOrder order = garage.createWorkOrder(bookingId, mechanicId);
+            orderId = order.getId();
+            garage.startWorkOrder(orderId);
+            garage.markServicesAsCompleted(orderId, new int[]{serviceId});
+            garage.completeWorkOrder(orderId);
+
+            Invoice invoice = garage.createInvoice(orderId, "SERVICE200");
+            invoiceId = invoice.getId();
+            TestRunner.assertTrue(invoice.getTotalAmount() >= 0.0,
+                    "En 200-kronorsrabatt på en 99-kronorsfaktura får inte ge ett negativt belopp, fick "
+                            + invoice.getTotalAmount());
+            TestRunner.assertEquals(Double.valueOf(round(99.0)), Double.valueOf(round(invoice.getAmount())),
+                    "Fakturans belopp före rabatt ska vara tjänstens pris, 99 kr");
+            TestRunner.assertEquals(Double.valueOf(round(99.0)), Double.valueOf(round(invoice.getDiscount())),
+                    "Rabatten ska klämmas till beloppet, inte dra av mer än det finns");
+            TestRunner.assertEquals(Double.valueOf(0.0), Double.valueOf(round(invoice.getTotalAmount())),
+                    "Efter klämd rabatt ska summan bli noll, aldrig negativ");
+
+            TestRunner.assertEquals(null, garage.processPayment(invoiceId, "KORT"),
+                    "En faktura på noll kronor har inget att betala");
+        } finally {
+            deletePayment(paymentId);
+            if (invoiceId > 0) {
+                new InvoiceRepository().delete(invoiceId);
+            }
+            if (orderId > 0) {
+                new WorkOrderRepository().delete(orderId);
+            }
+            if (bookingId > 0) {
+                new BookingRepository().delete(bookingId);
+            }
+            if (mechanicId > 0) {
+                garage.deleteMechanic(mechanicId);
+            }
+            if (serviceId > 0) {
+                garage.deleteServiceItem(serviceId);
+            }
+        }
+    }
+
+    /** En betald faktura ska inte kunna betalas en gång till. */
+    public void testAPaidInvoiceCannotBePaidTwice() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        int mechanicId = 0;
+        int bookingId = 0;
+        int orderId = 0;
+        int invoiceId = 0;
+        int paymentId = 0;
+
+        try {
+            Mechanic mechanic = garage.createMechanic("Revision-dubbelbetalning", "070-0000028", "Allmän service");
+            mechanicId = mechanic.getId();
+            ServiceItem service = garage.getServiceItems().get(0);
+            Booking booking = bookingWith(garage, new int[]{service.getId()}, "Revision: dubbel betalning");
+            bookingId = booking.getId();
+            WorkOrder order = garage.createWorkOrder(bookingId, mechanicId);
+            orderId = order.getId();
+            garage.startWorkOrder(orderId);
+            garage.markServicesAsCompleted(orderId, new int[]{service.getId()});
+            garage.completeWorkOrder(orderId);
+            Invoice invoice = garage.createInvoice(orderId, null);
+            invoiceId = invoice.getId();
+
+            Payment first = garage.processPayment(invoiceId, "CARD");
+            TestRunner.assertNotNull(first, "Fakturan ska kunna betalas en gång");
+            paymentId = first.getId();
+
+            TestRunner.assertEquals(null, garage.processPayment(invoiceId, "BITCOIN"),
+                    "En betaltyp systemet inte känner igen ska nekas");
+
+            Payment second = garage.processPayment(invoiceId, "KORT");
+            TestRunner.assertEquals(null, second, "En betald faktura ska inte kunna betalas igen");
+            TestRunner.assertEquals(Integer.valueOf(1), Integer.valueOf(paymentsFor(invoiceId)),
+                    "Fakturan ska ha exakt en betalning");
+        } finally {
+            deletePayment(paymentId);
+            if (invoiceId > 0) {
+                new InvoiceRepository().delete(invoiceId);
+            }
+            if (orderId > 0) {
+                new WorkOrderRepository().delete(orderId);
+            }
+            if (bookingId > 0) {
+                new BookingRepository().delete(bookingId);
+            }
+            if (mechanicId > 0) {
+                garage.deleteMechanic(mechanicId);
+            }
+        }
+    }
+
+    /**
+     * Registreringsnumret ska se likadant ut hur det än skrivs in: versaler, och ett mellanslag
+     * mellan bokstäverna och siffrorna. "abc 123" och "ABC123" är samma plåt, inte två fordon.
+     */
+    public void testRegistrationNumbersAreStoredTheSameWayEveryTime() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        int customerId = garage.getCustomers().get(0).getId();
+        int vehicleId = 0;
+
+        try {
+            Vehicle created = garage.createVehicle("rev 123", "Volvo", "Prov", 2020, customerId);
+            TestRunner.assertNotNull(created, "Fordonet ska kunna skapas");
+            vehicleId = created.getId();
+            TestRunner.assertEquals("REV 123", created.getRegistrationNumber(),
+                    "Numret ska sparas i versaler med mellanslag mellan bokstäverna och siffrorna");
+
+            Vehicle reloaded = new VehicleRepository().findById(vehicleId);
+            TestRunner.assertEquals("REV 123", reloaded.getRegistrationNumber(),
+                    "Numret ska stå likadant när det läses tillbaka ur databasen");
+        } finally {
+            if (vehicleId > 0) {
+                garage.deleteVehicle(vehicleId);
+            }
+        }
+    }
+
+    /**
+     * Hela registret ska vara skrivet på samma sätt — även rader som sparades innan regeln fanns,
+     * och även när de kommit in via seeddatan eller en äldre databasfil.
+     */
+    public void testEveryRegistrationNumberInTheDatabaseIsWrittenTheSameWay() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        List<Vehicle> vehicles = garage.getVehicles();
+        for (int i = 0; i < vehicles.size(); i++) {
+            Vehicle vehicle = vehicles.get(i);
+            String stored = vehicle.getRegistrationNumber();
+            if (stored == null) {
+                continue;
+            }
+            TestRunner.assertEquals(Vehicle.normalizeRegistrationNumber(stored), stored,
+                    "Fordon " + vehicle.getId() + " har numret \"" + stored + "\" i en annan skepnad än regeln");
+        }
+    }
+
+    /** Ett registreringsnummer tillhör ett fordon, även när numret skrivs in med olika bokstäver. */
+    public void testTheSameRegistrationNumberCannotBeSavedTwice() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        int customerId = garage.getCustomers().get(0).getId();
+        int vehicleId = 0;
+
+        try {
+            Vehicle first = garage.createVehicle("XYZ 789", "Saab", "Prov", 2015, customerId);
+            TestRunner.assertNotNull(first, "Det första fordonet ska kunna skapas");
+            vehicleId = first.getId();
+
+            Vehicle second = null;
+            try {
+                second = garage.createVehicle("xyz789", "Volvo", "Prov", 2016, customerId);
+            } catch (RuntimeException refused) {
+                // Ett nej är ett godkänt svar: det är just vad regeln är till för.
+            }
+            TestRunner.assertEquals(null, second,
+                    "Samma registreringsnummer ska inte kunna läggas in två gånger");
+            TestRunner.assertEquals(Integer.valueOf(1), Integer.valueOf(countQuery(
+                    "SELECT COUNT(*) FROM vehicles WHERE registration_number = 'XYZ 789'")),
+                    "Numret ska bara finnas på ett fordon");
+        } finally {
+            if (vehicleId > 0) {
+                garage.deleteVehicle(vehicleId);
+            }
+        }
+    }
+
+    /** Antal betalningar på en faktura. */
+    private int paymentsFor(int invoiceId) throws SQLException {
+        return countQuery("SELECT COUNT(*) FROM payments WHERE invoice_id = " + invoiceId);
+    }
+
+    /** Antal fakturor som pekar på en arbetsorder. */
+    private int invoicesFor(int workOrderId) throws SQLException {
+        return countQuery("SELECT COUNT(*) FROM invoices WHERE work_order_id = " + workOrderId);
     }
 
     /** Antal rader vars förälder inte finns. */
@@ -347,13 +658,20 @@ public class DataIntegrityTest {
         }
     }
 
+    /**
+     * Planterar en betalning som pekar på en faktura som inte finns.
+     *
+     * Läser tillbaka id:t på samma anslutning med last_insert_rowid(). Att öppna en andra
+     * anslutning här — vilket provet gjorde först — låste SQLite och hela sviten stannade.
+     */
     private int insertOrphanPayment() throws SQLException {
         Connection connection = Db.getConnection();
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate("INSERT INTO payments (invoice_id, amount, payment_type, payment_date, successful) "
                     + "VALUES (999999999, 1.0, 'REVISION', '2026-01-01', 1)");
-            return countQuery("SELECT MAX(id) FROM payments WHERE invoice_id = 999999999");
+            ResultSet keys = statement.executeQuery("SELECT last_insert_rowid()");
+            return keys.next() ? keys.getInt(1) : 0;
         } finally {
             connection.close();
         }

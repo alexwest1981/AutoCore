@@ -197,6 +197,11 @@ public class WorkOrderService {
             return false;
         }
 
+        if (!"IN_PROGRESS".equals(workOrder.getStatus())) {
+            System.out.println("Services can only be marked as performed on a work order in progress.");
+            return false;
+        }
+
         if (serviceItemIds == null || serviceItemIds.length == 0) {
             System.out.println("No services given for work order " + workOrderId + ".");
             return false;
