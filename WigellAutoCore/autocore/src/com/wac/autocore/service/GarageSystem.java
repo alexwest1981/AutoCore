@@ -320,7 +320,20 @@ public class GarageSystem {
         return true;
     }
 
+    /**
+     * Nekar en borttagning som skulle lämna en rad utan förälder. Skydden fanns tidigare
+     * bara i gränssnittet, så ett anrop underifrån — en meny, ett skript, ett tangentkommando —
+     * kunde ta bort en bokning med faktura kvar och lämna fakturan pekande i tomma luften.
+     */
+    private void refuseUnless(boolean allowed, String reason) {
+        if (!allowed) {
+            throw new IllegalStateException(reason);
+        }
+    }
+
     public void deleteMechanic(int mechanicId) throws SQLException {
+        refuseUnless(canDeleteMechanic(mechanicId),
+                "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.");
         mechanicRepository.delete(mechanicId);
         MechanicSchedule.getInstance().removeSlotsForMechanic(mechanicId);
     }
@@ -347,6 +360,8 @@ public class GarageSystem {
     }
 
     public void deleteCustomer(int customerId) throws SQLException {
+        refuseUnless(canDeleteCustomer(customerId),
+                "Kunden kan inte tas bort: ett av kundens fordon har ett fakturerat jobb.");
         for (Vehicle v : getVehicles()) {
             if (v.getCustomerId() == customerId) {
                 vehicleRepository.delete(v.getId());
@@ -389,6 +404,8 @@ public class GarageSystem {
     }
 
     public void deleteVehicle(int vehicleId) throws SQLException {
+        refuseUnless(canDeleteVehicle(vehicleId),
+                "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.");
         vehicleRepository.delete(vehicleId);
     }
 
@@ -434,6 +451,8 @@ public class GarageSystem {
     }
 
     public void deleteBooking(int bookingId) throws SQLException {
+        refuseUnless(canCancelOrDeleteBooking(bookingId),
+                "Bokningen kan inte tas bort: den har en arbetsorder med faktura.");
         bookingRepository.delete(bookingId);
         MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
         MechanicSchedule.getInstance().syncFromDatabase();
@@ -474,6 +493,8 @@ public class GarageSystem {
     }
 
     public void deleteServiceItem(int serviceItemId) throws SQLException {
+        refuseUnless(canDeleteServiceItem(serviceItemId),
+                "Tjänsten kan inte tas bort: den ligger i en bokning eller en arbetsorder.");
         serviceItemRepository.delete(serviceItemId);
     }
 }
