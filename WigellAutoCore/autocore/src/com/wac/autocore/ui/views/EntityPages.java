@@ -222,12 +222,12 @@ public final class EntityPages {
         FilterableTable<WorkOrder> table = TableFactory.create(garage.getWorkOrders());
         TableView<WorkOrder> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.booking"), 90, c -> String.valueOf(c.getBookingId())),
-                TableFactory.col(I18n.get("table.col.mechanic"), 170, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
+                TableFactory.col(I18n.get("table.col.id"), 60, c -> String.valueOf(c.getId())),
+                TableFactory.col(I18n.get("table.col.booking"), 80, c -> String.valueOf(c.getBookingId())),
+                TableFactory.col(I18n.get("table.col.mechanic"), 150, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
                 TableFactory.col(I18n.get("table.col.services"), 270, c -> EntityLookup.workOrderServicesWithPrices(garage, c)),
-                TableFactory.col(I18n.get("table.col.total"), 110, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 130, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.col(I18n.get("table.col.total"), 100, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
+                TableFactory.badgeCol(I18n.get("table.col.status"), 160, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.workorders.action_create"));
