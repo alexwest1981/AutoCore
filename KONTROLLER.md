@@ -123,3 +123,25 @@ hittas automatiskt i paketet.
 Dataflödesanalysen läser kompilatorns eget träd, och de klasserna ligger i JDK:ns `lib/tools.jar`.
 Skripten lägger filen på klassökvägen när den finns. Får du `package com.sun.source does not exist`
 kör du ett JRE i stället för ett JDK — se felsökningsavsnittet i `Audit_Readme.md`.
+
+## Var resultatet hamnar
+
+En granskning som bara syns för den som körde den finns inte. Resultatet hamnar på sex ställen:
+
+* **I terminalen**, direkt. `./test.sh` skriver `Status: GODKÄND (7/7 tester)` för säkerhetsområdet,
+  en rad per test, och vid ett fall vad analysen hittade — med fil och radnummer på samma rad, så
+  raden syns i svitens utdrag och inte klipps bort.
+* **`rapport.md`** i projektroten, vid en full körning. Filen är gitignorerad, alltså en lokal
+  rapport per maskin — den följer inte med i repot.
+* **CI-loggen** på GitHub Actions, vid varje push och pull request. Det är där en granskning som
+  faller syns för någon annan än den som körde den.
+* **`KONTROLLER.md`** (den här filen) och **`Audit_Readme.md`**: vad som kontrolleras, varför, och
+  vad körningen gav.
+* **`ACCEPTANSKRAV.md`**: AK-15:s rad namnger båda granskningarna och antalet tester, och rubriken
+  överst säger hur många tester hela sviten ska ha.
+* **Projektloggen i Obsidian-valvet**: en post per arbetstillfälle med vad som gjordes och mättes,
+  vilka commits som gick in, och vad som är kvar.
+
+Det som **inte** får en post av sig själv är Jira-tavlan: analysen är ingen egen uppgift i sprinten
+utan hör till AK-15 och till säkerhetsbeviset. Ska den synas där måste den skrivas in, och det är
+ett medvetet val — tavlan beskriver arbetet, inte varje kontroll som bevakar det.
