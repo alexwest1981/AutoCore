@@ -19,7 +19,8 @@ public class SecurityAuditTest {
 
     private static final File SRC_ROOT = new File("WigellAutoCore/autocore/src");
 
-    private static List<File> listJavaFiles(File dir) {
+    /** Delas med DataFlowAuditTest, som genomsöker samma källträd. */
+    static List<File> listJavaFiles(File dir) {
         List<File> files = new ArrayList<File>();
         if (dir == null || !dir.exists()) return files;
         File[] children = dir.listFiles();

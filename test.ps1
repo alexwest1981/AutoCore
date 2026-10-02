@@ -181,7 +181,18 @@ Write-Host -NoNewline "[0/6] Kompilerar källkod och resurser med javac... "
 $sourcesFile = "$outDir/sources.txt"
 Get-ChildItem -Path $srcDir -Filter "*.java" -Recurse | ForEach-Object { $_.FullName } | Set-Content -Path $sourcesFile
 
-& $javacBin -encoding UTF-8 -d $outDir -sourcepath "$srcDir$cpSep$resDir" -cp $jdbcJar "@$sourcesFile"
+# DataFlowAuditTest läser kompilatorns eget träd (com.sun.source), som ligger i JDK:ns tools.jar.
+# Den måste ligga både på kompilerings- och körvägen. Saknas den körs sviten ändå, och då säger
+# testet självt ifrån i stället för att tigas ihjäl.
+$toolsJar = Join-Path $foundJdk "lib/tools.jar"
+$cpBuild = $jdbcJar
+$cpRun = "$outDir$cpSep$jdbcJar"
+if (Test-Path $toolsJar) {
+    $cpBuild = "$jdbcJar$cpSep$toolsJar"
+    $cpRun = "$outDir$cpSep$jdbcJar$cpSep$toolsJar"
+}
+
+& $javacBin -encoding UTF-8 -d $outDir -sourcepath "$srcDir$cpSep$resDir" -cp $cpBuild "@$sourcesFile"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "MISSLYCKADES" -ForegroundColor Red
     Remove-Item $sourcesFile -Force -ErrorAction SilentlyContinue
@@ -215,7 +226,7 @@ function Run-AuditModule($code, $title, $num) {
     # Samma stderr-problem som ovan: kör testerna med "Continue" och återställ sedan.
     $previous = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
-    $output = & $javaBin "-Dfile.encoding=UTF-8" -cp "$outDir$cpSep$jdbcJar" com.wac.autocore.test.TestRunner $code 2>&1 |
+    $output = & $javaBin "-Dfile.encoding=UTF-8" -cp $cpRun com.wac.autocore.test.TestRunner $code 2>&1 |
         ForEach-Object { "$_" -replace "$esc\[[0-9;]*[A-Za-z]", "" }
     $exitCode = $LASTEXITCODE
     $ErrorActionPreference = $previous

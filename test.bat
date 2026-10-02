@@ -123,9 +123,15 @@ if not exist "%OUT_DIR%" mkdir "%OUT_DIR%"
 if exist "%RES_DIR%" xcopy /E /I /Y "%RES_DIR%\*" "%OUT_DIR%\" >nul 2>&1
 
 set "SOURCES_FILE=%OUT_DIR%\sources.txt"
+set "CP_BUILD=%JDBC_JAR%"
+set "CP_RUN=%OUT_DIR%;%JDBC_JAR%"
+if exist "%JAVA_HOME%\lib\tools.jar" (
+    set "CP_BUILD=%JDBC_JAR%;%JAVA_HOME%\lib\tools.jar"
+    set "CP_RUN=%OUT_DIR%;%JDBC_JAR%;%JAVA_HOME%\lib\tools.jar"
+)
 dir /s /b "%SRC_DIR%\*.java" > "%SOURCES_FILE%"
 
-"%JAVAC_BIN%" -encoding UTF-8 -d "%OUT_DIR%" -sourcepath "%SRC_DIR%;%RES_DIR%" -cp "%JDBC_JAR%" @"%SOURCES_FILE%"
+"%JAVAC_BIN%" -encoding UTF-8 -d "%OUT_DIR%" -sourcepath "%SRC_DIR%;%RES_DIR%" -cp "%CP_BUILD%" @"%SOURCES_FILE%"
 if %ERRORLEVEL% neq 0 (
     echo Kompileringsfel!
     del "%SOURCES_FILE%" >nul 2>&1
@@ -133,5 +139,5 @@ if %ERRORLEVEL% neq 0 (
 )
 del "%SOURCES_FILE%" >nul 2>&1
 
-"%JAVA_BIN%" -cp "%OUT_DIR%;%JDBC_JAR%" com.wac.autocore.test.TestRunner %*
+"%JAVA_BIN%" -cp "%CP_RUN%" com.wac.autocore.test.TestRunner %*
 exit /b %ERRORLEVEL%

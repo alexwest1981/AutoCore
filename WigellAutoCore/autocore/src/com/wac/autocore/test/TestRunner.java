@@ -23,6 +23,7 @@ public class TestRunner {
         {"bevis", "EvidenceVerificationTest"},
         {"quality", "CodeQualityTest"},
         {"security", "SecurityAuditTest"},
+        {"security", "DataFlowAuditTest"},
         {"wcag", "WcagAccessibilityTest"},
     };
     private static final String DEFAULT_GROUP = "unit";
