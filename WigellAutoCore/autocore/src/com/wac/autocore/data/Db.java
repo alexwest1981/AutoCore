@@ -143,10 +143,13 @@ public class Db {
             statement.executeUpdate(migrateSql);
 
 
-            // SCRUM-163 (E2): Skapa fakturarader för fakturor som fanns innan tabellen
+            // SCRUM-163 (E2): Skapa fakturarader för fakturor som fanns innan tabellen.
+            // Priset tas från det frysta priset på arbetsorderns rad när det finns, annars
+            // från katalogen. Utan det får en gammal faktura dagens pris i stället för
+            // priset som gällde när arbetet utfördes.
             String migrateInvoiceLinesSql = "INSERT INTO invoice_lines "
                     + "(invoice_id, service_item_id, service_name, price, discount) "
-                    + "SELECT i.id, s.id, s.name, s.price, 0 "
+                    + "SELECT i.id, s.id, s.name, CASE WHEN w.price IS NOT NULL THEN w.price ELSE s.price END, 0 "
                     + "FROM invoices i "
                     + "JOIN work_order_service_items w ON w.work_order_id = i.work_order_id "
                     + "JOIN service_items s ON s.id = w.service_item_id "
