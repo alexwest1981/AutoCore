@@ -212,7 +212,7 @@
         "title": "Ta bort kund",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort {0}? Alla fordon kopplade till kunden tas också bort.",
-        "has_active_orders": "Kan inte ta bort {0} eftersom kunden har fordon med aktiva bokningar eller arbetsordrar."
+        "has_active_orders": "Kan inte ta bort {0} eftersom kunden har fordon med bokningar, arbetsordrar eller fakturor."
       },
       "name": "Fullständigt namn",
       "email": "E-postadress",
@@ -237,7 +237,7 @@
         "title": "Ta bort fordon",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort fordon {0}?",
-        "has_active_orders": "Kan inte ta bort fordon {0} eftersom det har aktiva bokningar eller arbetsordrar."
+        "has_active_orders": "Kan inte ta bort fordon {0} eftersom det har bokningar, arbetsordrar eller fakturor."
       },
       "reg_nr": "Registreringsnummer (t.ex. ABC123)",
       "brand": "Märke",
@@ -264,13 +264,13 @@
         "title": "Avboka bokning",
         "header": "Bekräfta avbokning",
         "confirm": "Är du säker på att du vill avboka bokning #{0}?",
-        "has_active_orders": "Kan inte avboka bokning #{0} eftersom den har en aktiv arbetsorder."
+        "has_active_orders": "Kan inte avboka bokning #{0} eftersom den har en arbetsorder eller en faktura."
       },
       "delete": {
         "title": "Ta bort bokning",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort bokning #{0}?",
-        "has_active_orders": "Kan inte ta bort bokning #{0} eftersom den har en aktiv arbetsorder."
+        "has_active_orders": "Kan inte ta bort bokning #{0} eftersom den har en arbetsorder eller en faktura."
       },
       "vehicle_select": "Välj fordon",
       "date": "Bokningsdatum",
@@ -293,7 +293,8 @@
       "total_time": "Beräknad total arbetstid: {0} minuter",
       "total_price": "Beräknat pris: {0}",
       "remove_service": "Ta bort",
-      "services_locked_work_started": "Tjänster kan inte ändras eftersom arbetet har påbörjats"
+      "services_locked_work_started": "Tjänster kan inte ändras eftersom arbetet har påbörjats",
+      "status_locked_work_started": "Statusen kan inte ändras tillbaka när arbetet har påbörjats."
     },
     "service": {
       "create": {
@@ -310,7 +311,7 @@
         "title": "Ta bort tjänst",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort tjänsten {0}?",
-        "has_active_orders": "Kan inte ta bort tjänsten {0} eftersom den ingår i en aktiv arbetsorder."
+        "has_active_orders": "Kan inte ta bort tjänsten {0} eftersom den ligger i en bokning eller i ett arbete som inte är klart."
       },
       "name_prompt": "Tjänstens namn (t.ex. Bromsbyte)",
       "desc_prompt": "Beskrivning av arbetet",

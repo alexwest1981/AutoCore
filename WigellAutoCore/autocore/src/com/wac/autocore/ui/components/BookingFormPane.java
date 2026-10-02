@@ -385,7 +385,18 @@ public class BookingFormPane extends GridPane {
         // 8. Status (endast vid redigering)
         if (existingBooking != null) {
             this.statusBox = new ComboBox<String>();
-            this.statusBox.getItems().addAll("BOOKED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED");
+            if (existingBooking.isWorkStarted()) {
+                // Arbetet är påbörjat eller en arbetsorder finns. Då får statusen inte gå
+                // tillbaka till Bokad eller Bekräftad, och bokningen får inte avbokas,
+                // för då öppnas låset på tjänsterna igen.
+                this.statusBox.getItems().addAll("IN_PROGRESS", "COMPLETED");
+                if (existingBooking.getStatus() != null
+                        && !this.statusBox.getItems().contains(existingBooking.getStatus())) {
+                    this.statusBox.getItems().add(existingBooking.getStatus());
+                }
+            } else {
+                this.statusBox.getItems().addAll("BOOKED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED");
+            }
             this.statusBox.setMaxWidth(Double.MAX_VALUE);
             setupComboBoxDisplay(this.statusBox, new StringConverter<String>() {
                 @Override
@@ -488,7 +499,10 @@ public class BookingFormPane extends GridPane {
             desc = SeedText.resolve(getSelectedService().getName());
         }
 
-        if (v == null || date == null || desc.isEmpty()) {
+        // En ny bokning måste innehålla minst en tjänst. Vid en redigering gäller inte
+        // kravet, eftersom en bokning som redan finns får behålla sina tjänster.
+        if (v == null || date == null || desc.isEmpty()
+                || (excludeBookingId == 0 && chosenServices.isEmpty())) {
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
             return false;
         }
@@ -506,7 +520,14 @@ public class BookingFormPane extends GridPane {
     public Vehicle getSelectedVehicle() { return vehicleBox.getValue(); }
     public LocalDate getSelectedDate() { return datePicker.getValue(); }
     public List<ServiceItem> getSelectedServices() { return new ArrayList<ServiceItem>(selectedServices); }
-    public ServiceItem getSelectedService() { return selectedServices.isEmpty() ? serviceBox.getValue() : selectedServices.get(0); }
+    /**
+     * Den första tjänst som lagts till i bokningen, eller null när ingen är vald.
+     * Rullistans värde räknas inte, för det är bara ett förslag som står förvalt.
+     */
+    public ServiceItem getSelectedService() {
+        return selectedServices.isEmpty() ? null : selectedServices.get(0);
+    }
+
     public int getTotalEstimatedMinutes() {
         int total = 0;
         for (ServiceItem s : selectedServices) {

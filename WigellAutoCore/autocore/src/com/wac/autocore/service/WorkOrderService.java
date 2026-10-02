@@ -11,7 +11,9 @@ import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service som hanterar livscykeln för en arbetsorder (WorkOrder).
@@ -58,6 +60,16 @@ public class WorkOrderService {
         if (bookingServiceIds.isEmpty()) {
             System.out.println("Booking with ID " + bookingId + " has no services to perform.");
             return null;
+        }
+
+        // En bokning ska bara kunna få en arbetsorder. Utan den här spärren kan
+        // samma bokning faktureras två gånger.
+        for (WorkOrder existingOrder : getAll()) {
+            if (existingOrder.getBookingId() == bookingId) {
+                System.out.println("Booking with ID " + bookingId + " already has work order "
+                        + existingOrder.getId() + ".");
+                return null;
+            }
         }
 
         Mechanic mechanic = findMechanic(mechanicId);
@@ -139,6 +151,20 @@ public class WorkOrderService {
             System.out.println("Only work orders in progress can be completed.");
             return false;
         }
+
+        // Priset frysas även när ordern slutförs utan att någon har markerat arbetena.
+        // Priset läggs på raden utan att tjänsten markeras som utförd, för fakturan ska
+        // fortfarande bara byggas på de arbeten som faktiskt markerats.
+        Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
+        for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+            if (!priser.containsKey(serviceItemId)) {
+                ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
+                if (serviceItem != null) {
+                    priser.put(serviceItemId, Double.valueOf(serviceItem.getPrice()));
+                }
+            }
+        }
+        workOrder.setCompletedServicePrices(priser);
 
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
         Booking booking = findBooking(workOrder.getBookingId());

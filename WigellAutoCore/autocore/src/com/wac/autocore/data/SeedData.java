@@ -125,28 +125,42 @@ public class SeedData {
             firstOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(firstOrder);
 
+            // Bokningens status ska spegla arbetsordern, annars ser startdatan motsägelsefull ut.
+            firstBooking.setStatus("IN_PROGRESS");
+            bookingRepository.save(firstBooking);
+
             WorkOrder secondOrder = new WorkOrder(0, secondBooking.getId(), johan.getId());
             secondOrder.addServiceItem(brakeService.getId());
             workOrderRepository.save(secondOrder);
+            secondBooking.setStatus("WORK_ORDER_CREATED");
+            bookingRepository.save(secondBooking);
 
             WorkOrder thirdOrder = new WorkOrder(0, fourthBooking.getId(), sara.getId());
             thirdOrder.addServiceItem(brakeService.getId());
             thirdOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(thirdOrder);
+            fourthBooking.setStatus("IN_PROGRESS");
+            bookingRepository.save(fourthBooking);
 
             WorkOrder fourthOrder = new WorkOrder(0, fifthBooking.getId(), mikael.getId());
             fourthOrder.addServiceItem(diagnostics.getId());
             fourthOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(fourthOrder);
+            fifthBooking.setStatus("IN_PROGRESS");
+            bookingRepository.save(fifthBooking);
 
             WorkOrder fifthOrder = new WorkOrder(0, thirdBooking.getId(), johan.getId());
             fifthOrder.addServiceItem(brakeService.getId());
             fifthOrder.addServiceItem(annualService.getId());
             workOrderRepository.save(fifthOrder);
+            thirdBooking.setStatus("WORK_ORDER_CREATED");
+            bookingRepository.save(thirdBooking);
 
             WorkOrder sixthOrder = new WorkOrder(0, sixthBooking.getId(), mikael.getId());
             sixthOrder.addServiceItem(diagnostics.getId());
             workOrderRepository.save(sixthOrder);
+            sixthBooking.setStatus("WORK_ORDER_CREATED");
+            bookingRepository.save(sixthBooking);
         } catch (SQLException e) {
             System.out.println("Could not seed sample data: " + e.getMessage());
         }

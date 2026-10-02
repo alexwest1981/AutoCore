@@ -47,6 +47,8 @@ public final class OverviewView {
                 active++;
             }
         }
+        // Summan måste vara ett decimaltal. Med heltal kapas öret bort för varje
+        // betalning, och intäkten blir lägre än det som faktiskt betalats in.
         double revenue = 0.0;
         for (Payment p : payments) {
             if (p.isSuccessful()) {

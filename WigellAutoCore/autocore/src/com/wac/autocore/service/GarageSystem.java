@@ -374,6 +374,17 @@ public class GarageSystem {
                 }
             }
         }
+        // Ett fordon vars jobb har fakturerats får inte tas bort. Fakturan pekar på arbetet,
+        // arbetet på bokningen och bokningen på fordonet. Kunden nekas via sina fordon.
+        for (Booking b : getBookings()) {
+            if (b.getVehicleId() == vehicleId) {
+                for (WorkOrder wo : getWorkOrders()) {
+                    if (wo.getBookingId() == b.getId() && hasInvoiceForWorkOrder(wo.getId())) {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -386,10 +397,27 @@ public class GarageSystem {
         MechanicSchedule.getInstance().syncFromDatabase();
     }
 
+    /** Sant om arbetsordern har en faktura. Fakturan pekar på arbetet, arbetet på bokningen. */
+    private boolean hasInvoiceForWorkOrder(int workOrderId) {
+        for (Invoice invoice : getInvoices()) {
+            if (invoice.getWorkOrderId() == workOrderId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean canCancelOrDeleteBooking(int bookingId) {
         for (WorkOrder wo : getWorkOrders()) {
-            if (wo.getBookingId() == bookingId && !"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
-                return false;
+            if (wo.getBookingId() == bookingId) {
+                if (!"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+                    return false;
+                }
+                // En slutförd order får inte lämna en faktura som pekar på en bokning
+                // som inte finns, alltså nekas borttagningen så länge fakturan finns.
+                if (hasInvoiceForWorkOrder(wo.getId())) {
+                    return false;
+                }
             }
         }
         return true;
@@ -425,6 +453,17 @@ public class GarageSystem {
         for (WorkOrder wo : getWorkOrders()) {
             if (!"COMPLETED".equalsIgnoreCase(wo.getStatus()) && wo.getServiceItemIds() != null) {
                 for (int id : wo.getServiceItemIds()) {
+                    if (id == serviceItemId) {
+                        return false;
+                    }
+                }
+            }
+        }
+        // Tjänsten får inte heller tas bort så länge den ligger i en bokning, oavsett
+        // arbetsorderns status. Annars pekar bokningsraden på en tjänst som inte finns.
+        for (Booking b : getBookings()) {
+            if (b.getServiceItemIds() != null) {
+                for (int id : b.getServiceItemIds()) {
                     if (id == serviceItemId) {
                         return false;
                     }

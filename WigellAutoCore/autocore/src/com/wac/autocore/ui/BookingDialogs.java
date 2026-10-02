@@ -80,8 +80,10 @@ public final class BookingDialogs {
                     b.setStatus("BOOKED");
                     if (!chosenServices.isEmpty()) {
                         b.setServiceItems(chosenServices);
-                    } else if (chosenService != null) {
-                        b.setServiceItemId(chosenService.getId());
+                    } else if (chosenService != null && !b.addServiceItem(chosenService)) {
+                        ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                                I18n.get("dialog.booking.services_locked_work_started"));
+                        return;
                     }
                     if (chosenMech != null) {
                         b.setMechanicId(chosenMech.getId());
@@ -145,14 +147,25 @@ public final class BookingDialogs {
                 booking.setVehicleId(v.getId());
                 booking.setDate(date);
                 booking.setDescription(desc);
-                booking.setStatus(status);
                 if (!chosenServices.isEmpty()) {
                     booking.setServiceItems(chosenServices);
-                } else if (chosenService != null) {
-                    booking.setServiceItemId(chosenService.getId());
-                } else {
+                } else if (chosenService != null && !booking.addServiceItem(chosenService)) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                            I18n.get("dialog.booking.services_locked_work_started"));
+                    return;
+                } else if (chosenServices.isEmpty() && chosenService == null) {
                     booking.setServiceItems(java.util.Collections.emptyList());
                 }
+
+                // Statusen sätts sist, för en statusändring tillbaka till Bokad öppnar
+                // låset på tjänsterna igen. Är arbetet påbörjat får den inte gå tillbaka.
+                if (booking.isWorkStarted() && !statusTillaten(status)
+                        && !status.equalsIgnoreCase(booking.getStatus())) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                            I18n.get("dialog.booking.status_locked_work_started"));
+                    return;
+                }
+                booking.setStatus(status);
                 booking.setMechanicId(chosenMech != null ? chosenMech.getId() : 0);
                 if (startTime != null) {
                     booking.setStartTime(startTime);
@@ -240,5 +253,11 @@ public final class BookingDialogs {
      */
     public static boolean isHourBooked(GarageSystem garage, Mechanic mechanic, LocalDate date, int hour, int excludeBookingId) {
         return BookingAvailability.isHourBooked(garage, mechanic, date, hour, excludeBookingId);
+    }
+
+    /** Statusar som får sättas när arbetet redan har påbörjats. */
+    private static boolean statusTillaten(String status) {
+        return "IN_PROGRESS".equalsIgnoreCase(status)
+                || "COMPLETED".equalsIgnoreCase(status);
     }
 }

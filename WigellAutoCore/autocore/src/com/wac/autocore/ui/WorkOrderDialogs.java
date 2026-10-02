@@ -39,10 +39,18 @@ public final class WorkOrderDialogs {
     }
 
     public static void showCreateWorkOrderDialog(GarageSystem garage, Booking defaultBooking, Runnable onSuccess) {
+        // En bokning som redan har en arbetsorder ska inte gå att välja igen.
+        List<Integer> bookingsWithOrder = new ArrayList<Integer>();
+        for (WorkOrder order : garage.getWorkOrders()) {
+            bookingsWithOrder.add(order.getBookingId());
+        }
+
         List<Booking> bookings = new ArrayList<Booking>();
         for (Booking b : garage.getBookings()) {
             if ("BOOKED".equalsIgnoreCase(b.getStatus()) || "CONFIRMED".equalsIgnoreCase(b.getStatus())) {
-                bookings.add(b);
+                if (!bookingsWithOrder.contains(Integer.valueOf(b.getId()))) {
+                    bookings.add(b);
+                }
             }
         }
 
