@@ -19,6 +19,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Verify test.ps1 is saved as UTF-8 with BOM (Windows PowerShell 5.1)
+        run: |
+          if [ "$(head -c 3 test.ps1 | od -An -tx1 | tr -d ' \n')" != "efbbbf" ]; then
+            echo "::error file=test.ps1::test.ps1 saknar UTF-8 BOM. Windows PowerShell 5.1 läser då filen som Cp1252 och skriptet kraschar. Spara filen som 'UTF-8 with BOM' (se .editorconfig)."
+            exit 1
+          fi
+          echo "test.ps1 har UTF-8 BOM."
+
       - name: Setup Java 8 with JavaFX (BellSoft Liberica JDK)
         uses: actions/setup-java@v4
         with:

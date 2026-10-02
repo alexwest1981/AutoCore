@@ -1,4 +1,4 @@
-# PowerShell test runner för Windows
+﻿# PowerShell test runner för Windows
 $ErrorActionPreference = "Stop"
 
 # Windows PowerShell 5.1: läs Javas utdata som UTF-8 så att å, ä, ö, ✔ och ❌ blir rätt.
