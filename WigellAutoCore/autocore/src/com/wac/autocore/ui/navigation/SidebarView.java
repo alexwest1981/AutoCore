@@ -128,12 +128,15 @@ public class SidebarView {
         if (logoImg != null && !logoImg.isError()) {
             ImageView logoView = new ImageView(logoImg);
             logoView.setPreserveRatio(true);
-            logoView.setFitWidth(200);
+            logoView.setFitWidth(190);
             logoView.setSmooth(true);
 
             StackPane logoContainer = new StackPane(logoView);
             logoContainer.setAlignment(Pos.CENTER);
             logoContainer.setPadding(new Insets(25, 25, 50, 25));
+            logoContainer.setMinWidth(240);
+            logoContainer.setPrefWidth(240);
+            logoContainer.setMaxWidth(240);
             brandNode = logoContainer;
         } else {
             StackPane mark = new StackPane();
