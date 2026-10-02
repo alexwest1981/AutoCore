@@ -2,8 +2,6 @@ package com.wac.autocore.test;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.ui.i18n.I18n;
-import com.wac.autocore.theme.ThemeCatalog;
 
 import java.io.InputStream;
 import java.sql.Connection;

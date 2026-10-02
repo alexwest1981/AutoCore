@@ -1,6 +1,5 @@
 package com.wac.autocore.test;
 
-import com.wac.autocore.data.Db;
 import com.wac.autocore.model.*;
 import com.wac.autocore.repository.*;
 import com.wac.autocore.seed.SeedText;
@@ -11,7 +10,6 @@ import com.wac.autocore.ui.util.UiFormatters;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
