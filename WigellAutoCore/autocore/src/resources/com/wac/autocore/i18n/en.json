@@ -398,7 +398,10 @@
       "required": "Please fill in all required fields.",
       "invalid_number": "Please enter a valid numeric value.",
       "missing_fields": "The following fields are missing: {0}",
-      "invalid_year": "Please enter a valid model year (e.g. 2022)."
+      "invalid_year": "Please enter a valid model year (e.g. 2022).",
+      "name_digits": "The name cannot contain digits.",
+      "phone_ten_digits": "The phone number must be exactly 10 digits (e.g. 070-1234567).",
+      "email_format": "Enter a valid email address (e.g. name@example.com)."
     },
     "success": {
       "saved": "Saved successfully."
@@ -513,7 +516,10 @@
     "specialization": {
       "general_service": "General service",
       "brakes": "Brakes",
-      "diagnostics": "Diagnostics"
+      "diagnostics": "Diagnostics",
+      "wheels": "Tyres & Wheels",
+      "engine": "Engine & Drivetrain",
+      "climate": "AC & Climate"
     },
     "filter": {
       "all": "All",

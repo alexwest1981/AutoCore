@@ -507,9 +507,15 @@ public class BookingFormPane extends GridPane {
 
         Mechanic chosenMech = getSelectedMechanic();
         LocalTime startTime = getSelectedStartTime();
-        if (chosenMech != null && startTime != null && BookingAvailability.isHourBooked(garage, chosenMech, date, startTime.getHour(), excludeBookingId)) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.slot_busy_error"));
-            return false;
+        if (chosenMech != null && startTime != null) {
+            // Hela bokningens tid kontrolleras, inte bara starttimmen: ett 210-minutersjobb som
+            // börjar 12:00 går in i en bokning 13:00-16:30.
+            int minutes = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
+            if (BookingAvailability.isRangeBooked(garage, chosenMech, date, startTime,
+                    startTime.plusMinutes(minutes), excludeBookingId)) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.slot_busy_error"));
+                return false;
+            }
         }
 
         return true;

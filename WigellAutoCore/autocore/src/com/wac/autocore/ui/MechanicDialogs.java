@@ -142,18 +142,19 @@ public final class MechanicDialogs {
         });
     }
 
-    private static ComboBox<String> createSpecializationBox(GarageSystem garage, String currentSpec) {
-        ComboBox<String> box = new ComboBox<String>();
-        box.setEditable(true);
-        box.setPromptText(I18n.get("dialog.mechanic.spec_prompt"));
-
+    /**
+     * Förslagen som visas i rullistan för specialisering. Offentlig och utan JavaFX så att provet kan
+     * läsa exakt den lista användaren får: den innehöll tidigare tre svenska texter som låg fast i
+     * koden och därför stod kvar på svenska även när gränssnittet kördes på engelska.
+     */
+    public static List<String> suggestSpecializations(GarageSystem garage) {
         List<String> suggestions = new ArrayList<String>();
         suggestions.add(I18n.get("dialog.mechanic.default_spec"));
         suggestions.add(I18n.get("kanban.specialization.brakes"));
         suggestions.add(I18n.get("kanban.specialization.diagnostics"));
-        suggestions.add("Däck & Hjul");
-        suggestions.add("Motor & Drivlina");
-        suggestions.add("AC & Klimat");
+        suggestions.add(I18n.get("kanban.specialization.wheels"));
+        suggestions.add(I18n.get("kanban.specialization.engine"));
+        suggestions.add(I18n.get("kanban.specialization.climate"));
 
         if (garage != null) {
             for (ServiceItem s : garage.getServiceItems()) {
@@ -163,8 +164,15 @@ public final class MechanicDialogs {
                 }
             }
         }
+        return suggestions;
+    }
 
-        box.getItems().addAll(suggestions);
+    private static ComboBox<String> createSpecializationBox(GarageSystem garage, String currentSpec) {
+        ComboBox<String> box = new ComboBox<String>();
+        box.setEditable(true);
+        box.setPromptText(I18n.get("dialog.mechanic.spec_prompt"));
+
+        box.getItems().addAll(suggestSpecializations(garage));
         if (currentSpec != null && !currentSpec.trim().isEmpty()) {
             box.getEditor().setText(currentSpec);
             box.setValue(currentSpec);

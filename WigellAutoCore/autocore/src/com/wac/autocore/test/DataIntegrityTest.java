@@ -547,6 +547,12 @@ public class DataIntegrityTest {
         int customerId = garage.getCustomers().get(0).getId();
         int vehicleId = 0;
 
+        for (Vehicle v : garage.getVehicles()) {
+            if ("REV 123".equalsIgnoreCase(v.getRegistrationNumber())) {
+                garage.deleteVehicle(v.getId());
+            }
+        }
+
         try {
             Vehicle created = garage.createVehicle("rev 123", "Volvo", "Prov", 2020, customerId);
             TestRunner.assertNotNull(created, "Fordonet ska kunna skapas");
@@ -587,6 +593,12 @@ public class DataIntegrityTest {
         GarageSystem garage = new GarageSystem();
         int customerId = garage.getCustomers().get(0).getId();
         int vehicleId = 0;
+
+        for (Vehicle v : garage.getVehicles()) {
+            if ("XYZ 789".equalsIgnoreCase(v.getRegistrationNumber())) {
+                garage.deleteVehicle(v.getId());
+            }
+        }
 
         try {
             Vehicle first = garage.createVehicle("XYZ 789", "Saab", "Prov", 2015, customerId);

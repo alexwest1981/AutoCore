@@ -345,7 +345,7 @@ public class GarageSystem {
     }
 
     public void updateCustomer(Customer customer) throws SQLException {
-        customerRepository.save(customer);
+        customerService.updateCustomer(customer);
     }
 
     public boolean canDeleteCustomer(int customerId) {

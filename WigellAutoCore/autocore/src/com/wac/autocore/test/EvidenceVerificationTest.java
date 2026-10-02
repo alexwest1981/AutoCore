@@ -580,7 +580,7 @@ public class EvidenceVerificationTest {
 
         try {
             // 1. Kundhantering (CRUD & VIP-flaggshantering)
-            c = garage.createCustomer("G2 Kund", "070-123456", "g2@wigell.se");
+            c = garage.createCustomer("Gtvå Kund", "070-1234567", "g2@wigell.se");
             TestRunner.assertNotNull(c, "Kund ska skapas");
             c.setVip(true);
             custRepo.save(c);

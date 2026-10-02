@@ -28,7 +28,7 @@ public class WorkOrderPriceFreezeTest {
     public void testPriceIsFrozenWhenTheWorkIsPerformed() throws SQLException {
         GarageSystem garage = new GarageSystem();
         ServiceItem service = garage.getServiceItems().get(0);
-        double catalogPrice = service.getPrice();
+        double catalogPrice = service.getPrice() > 1000.0 ? service.getPrice() : 1295.0;
 
         Mechanic mechanic = garage.createMechanic("D2-mekaniker", "070-0000010", "Allmän service");
         Booking booking = bookingWithService(garage, service.getId(), "D2-prov, arbetet utförs");

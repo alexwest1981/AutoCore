@@ -154,7 +154,11 @@ public class ConsoleApp {
         System.out.print("Email: ");
         String email = scanner.nextLine();
 
-        garageSystem.createCustomer(name, phone, email);
+        try {
+            garageSystem.createCustomer(name, phone, email);
+        } catch (IllegalArgumentException rejected) {
+            System.out.println("Customer was not saved: " + rejected.getMessage());
+        }
     }
 
     private static void createVehicle() {

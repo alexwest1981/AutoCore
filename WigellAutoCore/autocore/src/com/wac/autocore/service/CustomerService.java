@@ -38,6 +38,8 @@ public class CustomerService {
     }
 
     public Customer createCustomer(String name, String phone, String email) {
+        refuseUnlessStorable(name, phone, email);
+
         Customer customer = new Customer(0, name, phone, email);
 
         try {
@@ -51,5 +53,28 @@ public class CustomerService {
         System.out.println(customer);
 
         return customer;
+    }
+
+    /**
+     * Sparar en ändrad kund. Ändringen går genom samma regel som skapandet, annars kunde en ogiltig
+     * rad skrivas in via redigera-dialogen i stället för via skapa-dialogen.
+     */
+    public void updateCustomer(Customer customer) throws SQLException {
+        if (customer == null) {
+            return;
+        }
+        refuseUnlessStorable(customer.getName(), customer.getPhone(), customer.getEmail());
+        customerRepository.save(customer);
+    }
+
+    /**
+     * The rule is enforced here, not in the form, so every writer of a customer row is covered.
+     * The message names the broken rule; the form turns it into text in the active language.
+     */
+    private static void refuseUnlessStorable(String name, String phone, String email) {
+        String problem = Customer.validationProblem(name, phone, email);
+        if (problem != null) {
+            throw new IllegalArgumentException("Customer data rejected: " + problem);
+        }
     }
 }

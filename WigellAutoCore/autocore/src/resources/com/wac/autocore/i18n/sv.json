@@ -398,7 +398,10 @@
       "required": "Vänligen fyll i alla obligatoriska fält.",
       "invalid_number": "Vänligen ange ett giltigt numeriskt värde.",
       "missing_fields": "Följande fält saknas: {0}",
-      "invalid_year": "Vänligen ange en giltig årsmodell (t.ex. 2022)."
+      "invalid_year": "Vänligen ange en giltig årsmodell (t.ex. 2022).",
+      "name_digits": "Namnet får inte innehålla siffror.",
+      "phone_ten_digits": "Telefonnumret måste vara exakt 10 siffror (t.ex. 070-1234567).",
+      "email_format": "Ange en giltig e-postadress (t.ex. namn@exempel.se)."
     },
     "success": {
       "saved": "Sparades framgångsrikt."
@@ -513,7 +516,10 @@
     "specialization": {
       "general_service": "Allmän service",
       "brakes": "Bromsar",
-      "diagnostics": "Diagnostik & Felsökning"
+      "diagnostics": "Diagnostik & Felsökning",
+      "wheels": "Däck & Hjul",
+      "engine": "Motor & Drivlina",
+      "climate": "AC & Klimat"
     },
     "filter": {
       "all": "Alla",

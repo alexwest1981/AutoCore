@@ -52,8 +52,9 @@ public final class CustomerDialogs {
                 String phone = phoneField.getText().trim();
                 String email = emailField.getText().trim();
 
-                if (name.isEmpty() || phone.isEmpty()) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                String problem = Customer.validationProblem(name, phone, email);
+                if (problem != null) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
                     return;
                 }
 
@@ -100,8 +101,9 @@ public final class CustomerDialogs {
                 String phone = phoneField.getText().trim();
                 String email = emailField.getText().trim();
 
-                if (name.isEmpty() || phone.isEmpty()) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                String problem = Customer.validationProblem(name, phone, email);
+                if (problem != null) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
                     return;
                 }
 
