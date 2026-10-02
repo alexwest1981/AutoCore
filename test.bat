@@ -126,7 +126,10 @@ if exist "%RES_DIR%" xcopy /E /I /Y "%RES_DIR%\*" "%OUT_DIR%\" >nul 2>&1
 set "SOURCES_FILE=%OUT_DIR%\sources.txt"
 set "CP_BUILD=%JDBC_JAR%"
 set "CP_RUN=%OUT_DIR%;%JDBC_JAR%"
-if defined FOUND_JDK if exist "%FOUND_JDK%\lib\tools.jar" (
+if exist "WigellAutoCore\autocore\lib\tools.jar" (
+    set "CP_BUILD=%JDBC_JAR%;WigellAutoCore\autocore\lib\tools.jar"
+    set "CP_RUN=%OUT_DIR%;%JDBC_JAR%;WigellAutoCore\autocore\lib\tools.jar"
+) else if defined FOUND_JDK if exist "%FOUND_JDK%\lib\tools.jar" (
     set "CP_BUILD=%JDBC_JAR%;%FOUND_JDK%\lib\tools.jar"
     set "CP_RUN=%OUT_DIR%;%JDBC_JAR%;%FOUND_JDK%\lib\tools.jar"
 ) else if exist "%JAVA_HOME%\lib\tools.jar" (

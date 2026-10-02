@@ -301,7 +301,8 @@ MISSING=0
 # DataFlowAuditTest läser kompilatorns eget träd (com.sun.source), som ligger i JDK:ns tools.jar.
 # Den måste ligga både på kompilerings- och körvägen. Saknas den (ovanligt för ett JDK 8) körs
 # sviten ändå — och då säger testet självt ifrån i stället för att tigas ihjäl.
-TOOLS_JAR="$FOUND_JDK/lib/tools.jar"
+TOOLS_JAR="$DIR/WigellAutoCore/autocore/lib/tools.jar"
+[ -f "$TOOLS_JAR" ] || TOOLS_JAR="$FOUND_JDK/lib/tools.jar"
 [ -f "$TOOLS_JAR" ] || TOOLS_JAR=""
 
 if [ -f "$JDBC_JAR" ]; then

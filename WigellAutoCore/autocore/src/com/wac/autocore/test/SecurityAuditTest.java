@@ -17,7 +17,19 @@ import java.util.regex.Pattern;
  */
 public class SecurityAuditTest {
 
-    private static final File SRC_ROOT = new File("WigellAutoCore/autocore/src");
+    private static final File SRC_ROOT = resolveSrcRoot();
+
+    private static File resolveSrcRoot() {
+        File[] candidates = new File[] {
+                new File("WigellAutoCore/autocore/src"),
+                new File("autocore/src"),
+                new File("src")
+        };
+        for (File c : candidates) {
+            if (c.exists() && c.isDirectory()) return c;
+        }
+        return candidates[0];
+    }
 
     /** Delas med DataFlowAuditTest, som genomsöker samma källträd. */
     static List<File> listJavaFiles(File dir) {

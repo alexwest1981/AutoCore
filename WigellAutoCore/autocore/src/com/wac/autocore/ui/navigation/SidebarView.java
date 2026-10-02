@@ -129,7 +129,7 @@ public class SidebarView {
         if (logoImg != null && !logoImg.isError()) {
             ImageView logoView = new ImageView(logoImg);
             logoView.setPreserveRatio(true);
-            logoView.setFitWidth(190);
+            logoView.setFitWidth(170);
             logoView.setSmooth(true);
 
             StackPane logoContainer = new StackPane(logoView);

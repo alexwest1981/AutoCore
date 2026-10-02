@@ -1,4 +1,4 @@
-﻿# PowerShell test runner för Windows
+# PowerShell test runner för Windows
 $ErrorActionPreference = "Stop"
 
 # Windows PowerShell 5.1: läs Javas utdata som UTF-8 så att å, ä, ö, ✔ och ❌ blir rätt.
@@ -184,7 +184,10 @@ Get-ChildItem -Path $srcDir -Filter "*.java" -Recurse | ForEach-Object { $_.Full
 # DataFlowAuditTest läser kompilatorns eget träd (com.sun.source), som ligger i JDK:ns tools.jar.
 # Den måste ligga både på kompilerings- och körvägen. Saknas den körs sviten ändå, och då säger
 # testet självt ifrån i stället för att tigas ihjäl.
-$toolsJar = Join-Path $foundJdk "lib/tools.jar"
+$toolsJar = "WigellAutoCore/autocore/lib/tools.jar"
+if (-not (Test-Path $toolsJar)) {
+    $toolsJar = Join-Path $foundJdk "lib/tools.jar"
+}
 $cpBuild = $jdbcJar
 $cpRun = "$outDir$cpSep$jdbcJar"
 if (Test-Path $toolsJar) {

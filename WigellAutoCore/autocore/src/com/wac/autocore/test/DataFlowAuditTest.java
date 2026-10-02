@@ -59,7 +59,19 @@ import java.util.Set;
  */
 public class DataFlowAuditTest {
 
-    private static final File SRC_ROOT = new File("WigellAutoCore/autocore/src");
+    private static final File SRC_ROOT = resolveSrcRoot();
+
+    private static File resolveSrcRoot() {
+        File[] candidates = new File[] {
+                new File("WigellAutoCore/autocore/src"),
+                new File("autocore/src"),
+                new File("src")
+        };
+        for (File c : candidates) {
+            if (c.exists() && c.isDirectory()) return c;
+        }
+        return candidates[0];
+    }
 
     /** Anrop som skickar en fråga till databasen. */
     private static final Set<String> SQL_SINKS = new HashSet<String>(Arrays.asList(
@@ -434,6 +446,13 @@ public class DataFlowAuditTest {
 
     private static JavaCompiler compiler() {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        if (compiler == null) {
+            try {
+                Class<?> javacToolClass = Class.forName("com.sun.tools.javac.api.JavacTool");
+                compiler = (JavaCompiler) javacToolClass.getMethod("create").invoke(null);
+            } catch (Throwable ignored) {
+            }
+        }
         TestRunner.assertNotNull(compiler,
                 "Dataflödesanalysen behöver JDK:ns kompilator (javac), men den hittades inte. "
                         + "Kör sviten med ett JDK och inte ett JRE — annars bevakas ingenting.");
