@@ -19,6 +19,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
@@ -73,13 +74,23 @@ public final class WorkOrderDialogs {
         dialog.setHeaderText(I18n.get("dialog.workorder.create.header"));
         ActionDialogs.styleDialog(dialog);
 
-        VBox content = new VBox(12);
-        content.setPadding(new Insets(10));
+        VBox content = new VBox(14);
+        content.setPadding(new Insets(16, 20, 16, 20));
+        content.setPrefWidth(640);
 
         GridPane grid = ActionDialogs.createGrid();
+        grid.setPrefWidth(640);
+        javafx.scene.layout.ColumnConstraints col0 = new javafx.scene.layout.ColumnConstraints();
+        col0.setMinWidth(140);
+        col0.setPrefWidth(150);
+        javafx.scene.layout.ColumnConstraints col1 = new javafx.scene.layout.ColumnConstraints();
+        col1.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(col0, col1);
 
         ComboBox<Booking> bookingBox = new ComboBox<Booking>();
         bookingBox.getItems().addAll(bookings);
+        bookingBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(bookingBox, Priority.ALWAYS);
         bookingBox.setConverter(new StringConverter<Booking>() {
             @Override
             public String toString(Booking b) {
@@ -91,6 +102,8 @@ public final class WorkOrderDialogs {
 
         ComboBox<Mechanic> mechanicBox = new ComboBox<Mechanic>();
         mechanicBox.getItems().addAll(mechanics);
+        mechanicBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(mechanicBox, Priority.ALWAYS);
         mechanicBox.setConverter(new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
@@ -188,8 +201,9 @@ public final class WorkOrderDialogs {
                 + " (" + I18n.get("table.col.booking") + " #" + workOrder.getBookingId() + ")");
         ActionDialogs.styleDialog(dialog);
 
-        VBox content = new VBox(12);
-        content.setPadding(new Insets(14));
+        VBox content = new VBox(14);
+        content.setPadding(new Insets(18, 22, 18, 22));
+        content.setPrefWidth(640);
 
         GridPane infoGrid = ActionDialogs.createGrid();
         infoGrid.add(new Label(I18n.get("table.col.status") + ":"), 0, 0);
@@ -338,8 +352,9 @@ public final class WorkOrderDialogs {
         dialog.setHeaderText(I18n.get("dialog.workorder.mark_performed_header"));
         ActionDialogs.styleDialog(dialog);
 
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(16));
+        VBox content = new VBox(12);
+        content.setPadding(new Insets(18, 22, 18, 22));
+        content.setPrefWidth(580);
 
         Label info = new Label(I18n.get("dialog.workorder.mark_performed_desc"));
         info.setWrapText(true);

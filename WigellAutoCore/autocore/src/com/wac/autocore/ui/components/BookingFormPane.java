@@ -60,10 +60,17 @@ public class BookingFormPane extends GridPane {
 
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour) {
-        setHgap(10);
-        setVgap(10);
-        setPadding(new Insets(14, 14, 14, 14));
-        setPrefWidth(460);
+        setHgap(14);
+        setVgap(14);
+        setPadding(new Insets(18, 22, 18, 22));
+        setPrefWidth(640);
+
+        javafx.scene.layout.ColumnConstraints col0 = new javafx.scene.layout.ColumnConstraints();
+        col0.setMinWidth(120);
+        col0.setPrefWidth(130);
+        javafx.scene.layout.ColumnConstraints col1 = new javafx.scene.layout.ColumnConstraints();
+        col1.setHgrow(Priority.ALWAYS);
+        getColumnConstraints().addAll(col0, col1);
 
         this.totalSummaryLabel.setWrapText(true);
         this.totalSummaryLabel.setMaxWidth(Double.MAX_VALUE);
@@ -78,6 +85,7 @@ public class BookingFormPane extends GridPane {
         // 1. Fordon
         this.vehicleBox = new ComboBox<Vehicle>();
         this.vehicleBox.getItems().addAll(garage.getVehicles());
+        this.vehicleBox.setMaxWidth(Double.MAX_VALUE);
         setupComboBoxDisplay(this.vehicleBox, new StringConverter<Vehicle>() {
             @Override
             public String toString(Vehicle v) {
@@ -229,6 +237,7 @@ public class BookingFormPane extends GridPane {
         this.mechanicFilterHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
 
         this.mechanicBox = new ComboBox<Mechanic>();
+        this.mechanicBox.setMaxWidth(Double.MAX_VALUE);
         setupComboBoxDisplay(this.mechanicBox, new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
@@ -388,17 +397,35 @@ public class BookingFormPane extends GridPane {
             } else {
                 this.statusBox.getItems().addAll("BOOKED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED");
             }
+            this.statusBox.setMaxWidth(Double.MAX_VALUE);
+            setupComboBoxDisplay(this.statusBox, new StringConverter<String>() {
+                @Override
+                public String toString(String st) {
+                    return st != null ? UiFormatters.statusWord(st) : "";
+                }
+                @Override
+                public String fromString(String string) { return null; }
+            });
             this.statusBox.getSelectionModel().select(existingBooking.getStatus() != null ? existingBooking.getStatus() : "BOOKED");
         } else {
             this.statusBox = null;
         }
 
         // Layout i Grid
+        this.datePicker.setMaxWidth(Double.MAX_VALUE);
+        this.startTimeBox.setMaxWidth(Double.MAX_VALUE);
+        this.descField.setMaxWidth(Double.MAX_VALUE);
+        if (this.statusBox != null) {
+            this.statusBox.setMaxWidth(Double.MAX_VALUE);
+        }
+
         int rowIdx = 0;
         add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, rowIdx);
+        GridPane.setHgrow(this.vehicleBox, Priority.ALWAYS);
         add(this.vehicleBox, 1, rowIdx++);
 
         add(new Label(I18n.get("dialog.booking.date") + ":"), 0, rowIdx);
+        GridPane.setHgrow(this.datePicker, Priority.ALWAYS);
         add(this.datePicker, 1, rowIdx++);
 
         Label serviceLbl = new Label(I18n.get("dialog.booking.service_select") + ":");
@@ -409,6 +436,7 @@ public class BookingFormPane extends GridPane {
         servicePickerRow.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(this.serviceBox, Priority.ALWAYS);
         VBox serviceCol = new VBox(6);
+        GridPane.setHgrow(serviceCol, Priority.ALWAYS);
         serviceCol.getChildren().add(servicePickerRow);
         if (isServicesLocked) {
             Label lockNotice = new Label("🔒 " + I18n.get("dialog.booking.services_locked_work_started"));
@@ -423,19 +451,23 @@ public class BookingFormPane extends GridPane {
         mechLbl.setPadding(new Insets(6, 0, 0, 0));
         add(mechLbl, 0, rowIdx);
         VBox mechCol = new VBox(4, this.mechanicBox, this.mechanicFilterHint);
+        GridPane.setHgrow(mechCol, Priority.ALWAYS);
         add(mechCol, 1, rowIdx++);
 
         add(new Label(I18n.get("dialog.booking.time_select") + ":"), 0, rowIdx);
+        GridPane.setHgrow(this.startTimeBox, Priority.ALWAYS);
         add(this.startTimeBox, 1, rowIdx++);
 
         add(new Label(""), 0, rowIdx);
         add(this.durationLabel, 1, rowIdx++);
 
         add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
+        GridPane.setHgrow(this.descField, Priority.ALWAYS);
         add(this.descField, 1, rowIdx++);
 
         if (this.statusBox != null) {
             add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
+            GridPane.setHgrow(this.statusBox, Priority.ALWAYS);
             add(this.statusBox, 1, rowIdx++);
         }
     }

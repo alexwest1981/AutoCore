@@ -15,6 +15,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
@@ -56,9 +57,18 @@ public final class BillingDialogs {
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
+        grid.setPrefWidth(600);
+        javafx.scene.layout.ColumnConstraints col0 = new javafx.scene.layout.ColumnConstraints();
+        col0.setMinWidth(140);
+        col0.setPrefWidth(150);
+        javafx.scene.layout.ColumnConstraints col1 = new javafx.scene.layout.ColumnConstraints();
+        col1.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(col0, col1);
 
         ComboBox<WorkOrder> orderBox = new ComboBox<WorkOrder>();
         orderBox.getItems().addAll(completedOrders);
+        orderBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(orderBox, Priority.ALWAYS);
         orderBox.getSelectionModel().selectFirst();
         orderBox.setConverter(new StringConverter<WorkOrder>() {
             @Override
@@ -71,6 +81,8 @@ public final class BillingDialogs {
 
         TextField discountField = new TextField();
         discountField.setPromptText(I18n.get("dialog.invoice.discount_prompt"));
+        discountField.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(discountField, Priority.ALWAYS);
 
         grid.add(new Label(I18n.get("dialog.invoice.workorder_select") + ":"), 0, 0);
         grid.add(orderBox, 1, 0);
@@ -102,7 +114,7 @@ public final class BillingDialogs {
         }
 
         if (unpaid.isEmpty()) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("common.close"));
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.payment.no_unpaid_invoices"));
             return;
         }
 
@@ -112,9 +124,18 @@ public final class BillingDialogs {
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
+        grid.setPrefWidth(600);
+        javafx.scene.layout.ColumnConstraints col0 = new javafx.scene.layout.ColumnConstraints();
+        col0.setMinWidth(140);
+        col0.setPrefWidth(150);
+        javafx.scene.layout.ColumnConstraints col1 = new javafx.scene.layout.ColumnConstraints();
+        col1.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(col0, col1);
 
         ComboBox<Invoice> invoiceBox = new ComboBox<Invoice>();
         invoiceBox.getItems().addAll(unpaid);
+        invoiceBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(invoiceBox, Priority.ALWAYS);
         if (preselected != null && unpaid.contains(preselected)) {
             invoiceBox.getSelectionModel().select(preselected);
         } else {
@@ -123,7 +144,7 @@ public final class BillingDialogs {
         invoiceBox.setConverter(new StringConverter<Invoice>() {
             @Override
             public String toString(Invoice inv) {
-                return inv == null ? "" : I18n.get("table.col.invoice") + " #" + inv.getId() + " - " + inv.getTotalAmount() + " " + I18n.get("common.currency") + " (" + I18n.get("table.col.workorder") + " #" + inv.getWorkOrderId() + ")";
+                return inv == null ? "" : I18n.get("table.col.invoice") + " #" + inv.getId() + " - " + UiFormatters.formatMoney(inv.getTotalAmount()) + " (" + I18n.get("table.col.workorder") + " #" + inv.getWorkOrderId() + ")";
             }
             @Override
             public Invoice fromString(String string) { return null; }
@@ -131,6 +152,8 @@ public final class BillingDialogs {
 
         ComboBox<String> typeBox = new ComboBox<String>();
         typeBox.getItems().addAll("SWISH", "CARD", "CASH");
+        typeBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(typeBox, Priority.ALWAYS);
         typeBox.getSelectionModel().select("SWISH");
 
         grid.add(new Label(I18n.get("dialog.payment.invoice_select") + ":"), 0, 0);
@@ -161,8 +184,9 @@ public final class BillingDialogs {
                 + ", " + invoice.getInvoiceDate() + ")");
         ActionDialogs.styleDialog(dialog);
 
-        VBox content = new VBox(12);
-        content.setPadding(new Insets(14));
+        VBox content = new VBox(14);
+        content.setPadding(new Insets(18, 22, 18, 22));
+        content.setPrefWidth(600);
 
         Label notice = new Label(I18n.get("dialog.workorder.historical_notice"));
         notice.getStyleClass().addAll("srow-sub", "small");

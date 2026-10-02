@@ -150,17 +150,36 @@ Button.kanban-scroll-btn:hover, .button.kanban-scroll-btn:hover {
     -fx-border-color: -wac-ring;
 }
 
-TextField, PasswordField, TextArea, ComboBox {
-    -fx-background-color: -wac-card;
+TextField, PasswordField, TextArea, ComboBox,
+.text-field, .password-field, .text-area,
+.combo-box, .combo-box-base, .choice-box {
+    -fx-background-color: #ffffff;
     -fx-text-fill: -wac-text;
     -fx-prompt-text-fill: -wac-muted;
     -fx-border-color: -wac-line;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
     -fx-padding: 6px 10px;
 }
-TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused {
+.combo-box:hover, .combo-box-base:hover, .choice-box:hover {
+    -fx-background-color: #ffffff;
     -fx-border-color: -wac-ring;
+}
+.combo-box:showing, .combo-box-base:showing, .choice-box:showing {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -wac-ring;
+}
+TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused,
+.text-field:focused, .combo-box:focused, .combo-box-base:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -wac-ring;
+}
+.combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-text;
+}
+.combo-box .arrow, .combo-box-base .arrow, .choice-box .arrow {
+    -fx-background-color: #6b7280;
 }
 
 ScrollPane { -fx-background-color: transparent; }

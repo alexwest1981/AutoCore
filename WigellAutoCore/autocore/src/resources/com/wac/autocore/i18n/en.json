@@ -391,7 +391,8 @@
       "method_card": "Credit Card",
       "method_swish": "Swish",
       "method_cash": "Cash",
-      "amount": "Amount to pay"
+      "amount": "Amount to pay",
+      "no_unpaid_invoices": "There are no unpaid invoices to process payment for."
     },
     "validation": {
       "required": "Please fill in all required fields.",
