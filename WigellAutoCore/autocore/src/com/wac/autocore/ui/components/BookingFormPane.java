@@ -115,8 +115,6 @@ public class BookingFormPane extends GridPane {
         this.serviceBox = new ComboBox<ServiceItem>();
         this.serviceBox.getItems().addAll(garage.getServiceItems());
         this.serviceBox.setMaxWidth(Double.MAX_VALUE);
-        this.serviceBox.setPrefHeight(34);
-        this.serviceBox.setMinHeight(34);
         setupComboBoxDisplay(this.serviceBox, new StringConverter<ServiceItem>() {
             @Override
             public String toString(ServiceItem s) {
@@ -131,11 +129,10 @@ public class BookingFormPane extends GridPane {
         }
 
         Button addServiceBtn = new Button("+ " + I18n.get("dialog.booking.add_service"));
-        addServiceBtn.setPrefHeight(34);
-        addServiceBtn.setMinHeight(34);
+        addServiceBtn.setMaxHeight(Double.MAX_VALUE);
         addServiceBtn.getStyleClass().addAll("primary", "primary-button", "add-service-btn");
-        final String baseStyle = "-fx-cursor: hand; -fx-background-color: -wac-accent; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 0 14px; -fx-alignment: center;";
-        final String hoverStyle = "-fx-cursor: hand; -fx-background-color: -wac-accent-hover; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 0 14px; -fx-alignment: center;";
+        final String baseStyle = "-fx-cursor: hand; -fx-background-color: -wac-accent; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 7px 14px; -fx-alignment: center;";
+        final String hoverStyle = "-fx-cursor: hand; -fx-background-color: -wac-accent-hover; -fx-text-fill: -wac-on-accent; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 7px 14px; -fx-alignment: center;";
         addServiceBtn.setStyle(baseStyle);
         addServiceBtn.setOnMouseEntered(ev -> {
             if (!addServiceBtn.isDisabled()) addServiceBtn.setStyle(hoverStyle);
@@ -434,6 +431,7 @@ public class BookingFormPane extends GridPane {
         add(serviceLbl, 0, rowIdx);
         HBox servicePickerRow = new HBox(8, this.serviceBox, addServiceBtn);
         servicePickerRow.setAlignment(Pos.CENTER_LEFT);
+        servicePickerRow.setFillHeight(true);
         HBox.setHgrow(this.serviceBox, Priority.ALWAYS);
         VBox serviceCol = new VBox(6);
         GridPane.setHgrow(serviceCol, Priority.ALWAYS);
@@ -553,6 +551,7 @@ public class BookingFormPane extends GridPane {
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
+                setAlignment(Pos.CENTER_LEFT);
                 if (empty) {
                     setText(null);
                     setGraphic(null);
@@ -566,6 +565,7 @@ public class BookingFormPane extends GridPane {
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
+                setAlignment(Pos.CENTER_LEFT);
                 if (empty) {
                     setText(null);
                     setGraphic(null);

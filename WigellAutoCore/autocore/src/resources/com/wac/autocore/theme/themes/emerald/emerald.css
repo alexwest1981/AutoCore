@@ -150,9 +150,8 @@ Button.kanban-scroll-btn:hover, .button.kanban-scroll-btn:hover {
     -fx-border-color: -wac-ring;
 }
 
-TextField, PasswordField, TextArea, ComboBox,
-.text-field, .password-field, .text-area,
-.combo-box, .combo-box-base, .choice-box {
+TextField, PasswordField, TextArea,
+.text-field, .password-field, .text-area {
     -fx-background-color: #ffffff;
     -fx-text-fill: -wac-text;
     -fx-prompt-text-fill: -wac-muted;
@@ -160,6 +159,15 @@ TextField, PasswordField, TextArea, ComboBox,
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-padding: 6px 10px;
+}
+ComboBox, .combo-box, .combo-box-base, .choice-box {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: -wac-text;
+    -fx-prompt-text-fill: -wac-muted;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 2px 6px;
 }
 .combo-box:hover, .combo-box-base:hover, .choice-box:hover {
     -fx-background-color: #ffffff;
@@ -177,6 +185,8 @@ TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused,
 .combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
     -fx-background-color: transparent;
     -fx-text-fill: -wac-text;
+    -fx-padding: 4px 6px;
+    -fx-alignment: CENTER_LEFT;
 }
 .combo-box .arrow, .combo-box-base .arrow, .choice-box .arrow {
     -fx-background-color: #6b7280;

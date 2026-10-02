@@ -116,7 +116,7 @@
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-border-width: 1;
-    -fx-padding: 4px 8px;
+    -fx-padding: 2px 6px;
     -fx-cursor: hand;
 }
 .combo-box:hover, .combo-box-base:hover, .choice-box:hover {
@@ -135,6 +135,8 @@
 .combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
     -fx-background-color: transparent;
     -fx-text-fill: #111827;
+    -fx-padding: 4px 6px;
+    -fx-alignment: CENTER_LEFT;
 }
 .combo-box .arrow, .combo-box-base .arrow, .choice-box .arrow {
     -fx-background-color: #6b7280;
@@ -532,9 +534,7 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-cursor: hand;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
-    -fx-padding: 0 14px;
-    -fx-min-height: 34px;
-    -fx-pref-height: 34px;
+    -fx-padding: 7px 14px;
     -fx-alignment: CENTER;
 }
 .add-service-btn:hover, .button.add-service-btn:hover {
