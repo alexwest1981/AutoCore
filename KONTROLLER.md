@@ -5,9 +5,10 @@ En post per tillfälle, nyaste överst. Siffrorna är mätta, inte uppskattade.
 
 ---
 
-## 2026-10-02 · PR #70, mergad till develop (`7c16067`)
+## 2026-10-02 · PR #70 och #72, mergade till develop (`d3230ef`)
 
-Körd samma dag på JDK 8 (`jdk8u504-full`), `./test.sh`:
+Körd samma dag på JDK 8 (`jdk8u504-full`), `./test.sh`. Siffrorna är från körningen efter PR #72;
+före den var summan 110/110 och säkerhetsområdet 4/4.
 
 | Område | Resultat |
 |---|---|
@@ -15,11 +16,12 @@ Körd samma dag på JDK 8 (`jdk8u504-full`), `./test.sh`:
 | [2/6] Enhetstester — affärslogik, bokningar, scheman, mätetal, sök | GODKÄND 85/85 |
 | [3/6] Jira beviskort (SCRUM-159, 165, 168–173) | GODKÄND 8/8 |
 | [4/6] Kvalitetskontroll — språkparitet, temaintegritet, arkitektur | GODKÄND 4/4 |
-| [5/6] Säkerhetskontroll — SQL-injektion, hemligheter, exekveringsskydd | GODKÄND 4/4 |
+| [5/6] Säkerhetskontroll — SQL-injektion, hemligheter, exekveringsskydd | GODKÄND 7/7 |
 | [6/6] WCAG 2.1 AAA — kontrast, fokus, textstorlek | GODKÄND 5/5 |
-| **Totalt** | **GODKÄND 110/110**, exit 0 |
+| **Totalt** | **GODKÄND 113/113**, exit 0 |
 
-CI (GitHub Actions, *Build, Test & Quality Audits*) grön på 41 s, merge-läge CLEAN.
+CI (GitHub Actions, *Build, Test & Quality Audits*) grön (41 s för #70, 32 s för #72), merge-läge
+CLEAN.
 
 ### Åtgärder i koden
 
@@ -73,16 +75,34 @@ tillståndsregler, i18n-paritet) i stället för de enskilda fall som en gång i
 * **Känsliga uppgifter i loggen:**
   `System.(out|err).print…(password|secret|creditcard|cvv|personnummer)`
 
-Läget 2026-10-02: 4/4 godkända — inga hårdkodade hemligheter, inga SQL-injektionsmönster, ingen
+Läget 2026-10-02: 7/7 godkända — inga hårdkodade hemligheter, inga SQL-injektionsmönster, ingen
 farlig processkörning, ingen känslig loggning. Granskningen fällde en riktig rad samma dag: en
 `DELETE` som byggdes med strängkonkatenering i testkoden
 (`"DELETE FROM " + table + " WHERE id = " + id`) och som byttes mot en `PreparedStatement` med
 parametrar.
 
-**Känd begränsning:** reglerna är mönsterbaserade, inte en dataflödesanalys. SQL-regeln kräver att
-frågan byggs med `+` och körs på *samma* rad; en fråga som byggs ihop på en rad och körs på en
-annan går igenom granskningen. Den fångar den vanliga formen av misstaget, inte varje variant — och
-den ersätter inte en genomläsning av den som skriver koden.
+### Dataflödesanalysen (PR #72)
+
+Mönstren ovan tittar på en rad i taget. `DataFlowAuditTest` följer i stället **värdet**: den läser
+kompilatorns eget träd och skiljer därför på `"SELECT * FROM " + TABELL` (konstant, ofarlig) och
+`"SELECT * FROM " + namn` (data, farlig). En fråga som byggs på en rad och körs på en annan — som
+mönstren inte ser — fångas. Både `String`-konkatenering, `String.format`, `valueOf`, `join` och
+`StringBuilder.append` följs, fram till `executeQuery`, `executeUpdate`, `execute`,
+`prepareStatement`, `prepareCall`, `addBatch`, `Runtime.exec` och `ProcessBuilder`.
+
+Analysen har ett eget prov, `testTheAnalysisCatchesWhatThePatternMisses`: den matar in en farlig och
+en ofarlig kodsnutt i minnet och kräver att den ena fälls och den andra lämnas i fred. Utan det
+provet vet vi inte om analysen kan larma alls — och en granskning som aldrig larmar ser lika grön ut
+som en ren kodbas.
+
+*Gränser:* ingen typanalys (en sträng är en sträng) och ingen analys över metodgränser — ett värde
+som byggs i en annan metod och skickas in följs inte. Regeln är därför att ett värde är smittat när
+det **byggts** av data, inte för att det kommer in i en metod; annars hade varje hjälpmetod som tar
+en fråga som parameter larmat, och en granskning som larmar fel blir avstängd.
+
+**Känd begränsning, sammanfattad:** reglerna är mönsterbaserade och analysen saknar typanalys och
+interproceduranalys. Tillsammans täcker de den vanliga formen av misstaget, inte varje variant — de
+ersätter inte en genomläsning av den som skriver koden.
 
 ### Så körs kontrollerna
 
@@ -99,3 +119,7 @@ den ersätter inte en genomläsning av den som skriver koden.
 Samma skript finns för Windows (`test.ps1`, `test.bat`). Filen `test.ps1` sparas med UTF-8 BOM —
 utan den läser PowerShell 5.1 å/ä/ö fel. Windows-versionen kör samma kontroller; testklasserna
 hittas automatiskt i paketet.
+
+Dataflödesanalysen läser kompilatorns eget träd, och de klasserna ligger i JDK:ns `lib/tools.jar`.
+Skripten lägger filen på klassökvägen när den finns. Får du `package com.sun.source does not exist`
+kör du ett JRE i stället för ett JDK — se felsökningsavsnittet i `Audit_Readme.md`.
