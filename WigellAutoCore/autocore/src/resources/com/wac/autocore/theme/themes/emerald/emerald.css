@@ -349,6 +349,16 @@ TableView .table-view, .table-view { -fx-padding: 0; }
     -fx-cursor: hand;
 }
 
+.nav-icon {
+    -fx-fill: -wac-side-muted;
+}
+.nav-item:hover .nav-icon, Button.ghost.nav-item:hover .nav-icon {
+    -fx-fill: #ffffff;
+}
+.nav-item.selected .nav-icon, Button.ghost.nav-item.selected .nav-icon {
+    -fx-fill: -wac-on-accent;
+}
+
 .avatar {
     -fx-background-color: -wac-accent;
     -fx-background-radius: 999;

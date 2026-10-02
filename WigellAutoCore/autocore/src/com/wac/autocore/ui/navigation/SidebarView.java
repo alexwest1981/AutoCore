@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.SVGPath;
 
 import java.io.File;
 import java.io.InputStream;
@@ -299,6 +300,13 @@ public class SidebarView {
         b.setUserData(key);
         b.setCursor(Cursor.HAND);
         b.getStyleClass().addAll("ghost", "nav-item");
+
+        SVGPath icon = createNavIcon(key);
+        if (icon != null && icon.getContent() != null && !icon.getContent().isEmpty()) {
+            b.setGraphic(icon);
+            b.setGraphicTextGap(10);
+        }
+
         b.setOnAction(e -> {
             if (onNavigate != null) {
                 onNavigate.accept(key);
@@ -310,5 +318,54 @@ public class SidebarView {
         }
         nav.getChildren().add(b);
         return b;
+    }
+
+    private static SVGPath createNavIcon(String key) {
+        SVGPath icon = new SVGPath();
+        String path;
+        switch (key) {
+            case "overview":
+                // 4-quadrant dashboard layout
+                path = "M 1 1 h 5 v 5 h -5 Z M 8 1 h 5 v 5 h -5 Z M 1 8 h 5 v 5 h -5 Z M 8 8 h 5 v 5 h -5 Z";
+                break;
+            case "customers":
+                // User / Customer profile
+                path = "M 7 1 a 3 3 0 1 1 0 6 a 3 3 0 0 1 0 -6 Z M 2 13 c 0 -3 2.5 -4.5 5 -4.5 s 5 1.5 5 4.5 v 1 h -10 Z";
+                break;
+            case "vehicles":
+                // Vehicle / Automobile silhouette
+                path = "M 2 8 l 2 -5 h 6 l 2 5 h 2 a 1 1 0 0 1 1 1 v 3 a 1 1 0 0 1 -1 1 h -1 a 1.5 1.5 0 0 1 -3 0 h -4 a 1.5 1.5 0 0 1 -3 0 h -1 a 1 1 0 0 1 -1 -1 v -3 a 1 1 0 0 1 1 -1 Z M 4.5 4.5 l -1.2 2.5 h 7.4 l -1.2 -2.5 Z";
+                break;
+            case "bookings":
+                // Calendar with date grid
+                path = "M 1 3 a 2 2 0 0 1 2 -2 h 8 a 2 2 0 0 1 2 2 v 9 a 2 2 0 0 1 -2 2 h -8 a 2 2 0 0 1 -2 -2 Z M 2.5 5 h 9 v 7 h -9 Z M 3 0.5 h 1.5 v 2 h -1.5 Z M 9.5 0.5 h 1.5 v 2 h -1.5 Z M 4 7 h 2 v 1.8 h -2 Z M 7.5 7 h 2 v 1.8 h -2 Z M 4 9.5 h 2 v 1.8 h -2 Z M 7.5 9.5 h 2 v 1.8 h -2 Z";
+                break;
+            case "services":
+                // Service catalog / Gear
+                path = "M 6 0 h 2 v 2 h -2 Z M 6 12 h 2 v 2 h -2 Z M 0 6 h 2 v 2 h -2 Z M 12 6 h 2 v 2 h -2 Z M 2 2 h 1.8 v 1.8 h -1.8 Z M 10.2 10.2 h 1.8 v 1.8 h -1.8 Z M 2 10.2 h 1.8 v 1.8 h -1.8 Z M 10.2 2 h 1.8 v 1.8 h -1.8 Z M 7 3 a 4 4 0 1 0 0 8 a 4 4 0 0 0 0 -8 Z M 7 5.5 a 1.5 1.5 0 1 1 0 3 a 1.5 1.5 0 0 1 0 -3 Z";
+                break;
+            case "mechanics":
+                // Mechanic / Tool wrench
+                path = "M 11.5 0.5 a 3.5 3.5 0 0 0 -3.2 2.1 l -6.5 6.5 a 1.5 1.5 0 0 0 2.1 2.1 l 6.5 -6.5 a 3.5 3.5 0 0 0 2.1 -3.2 l -1.8 1.8 l -1.2 -0.4 l -0.4 -1.2 Z";
+                break;
+            case "workorders":
+                // Work order clipboard checklist
+                path = "M 3 2 a 1 1 0 0 1 1 -1 h 6 a 1 1 0 0 1 1 1 v 11 a 1 1 0 0 1 -1 1 h -6 a 1 1 0 0 1 -1 -1 Z M 4.5 4 h 5 v 1.2 h -5 Z M 4.5 6.5 h 5 v 1.2 h -5 Z M 4.5 9 h 3.5 v 1.2 h -3.5 Z M 5 0 h 4 v 1.5 h -4 Z";
+                break;
+            case "invoices":
+                // Invoice / Billing receipt
+                path = "M 2 0.5 h 10 v 13 l -1.5 -1 l -1.5 1 l -1.5 -1 l -1.5 1 l -1.5 -1 l -1.5 1 l -1 -0.7 v -12.3 Z M 4 3 h 6 v 1.2 h -6 Z M 4 5.5 h 6 v 1.2 h -6 Z M 4 8 h 4 v 1.2 h -4 Z";
+                break;
+            case "payments":
+                // Payment / Credit card
+                path = "M 1 2 a 1.5 1.5 0 0 1 1.5 -1.5 h 9 a 1.5 1.5 0 0 1 1.5 1.5 v 8 a 1.5 1.5 0 0 1 -1.5 1.5 h -9 a 1.5 1.5 0 0 1 -1.5 -1.5 Z M 2 4.5 h 10 v 2 h -10 Z M 3 8 h 2.5 v 1.5 h -2.5 Z M 7 8 h 2 v 1.5 h -2 Z";
+                break;
+            default:
+                path = "";
+                break;
+        }
+        icon.setContent(path);
+        icon.getStyleClass().add("nav-icon");
+        return icon;
     }
 }

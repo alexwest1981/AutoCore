@@ -670,6 +670,15 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-text-fill: #ffffff;
     -fx-cursor: hand;
 }
+.nav-icon {
+    -fx-fill: -wac-side-muted;
+}
+.side-link:hover .nav-icon, .side-overview:hover .nav-icon, .fleet-nav:hover .nav-icon, .nav-item:hover .nav-icon {
+    -fx-fill: #ffffff;
+}
+.side-current .nav-icon, .fleet-nav-active .nav-icon, .nav-item.selected .nav-icon {
+    -fx-fill: -wac-on-accent;
+}
 .nav-group-title, .side-label, .nav-group-head {
     -fx-text-fill: -wac-side-muted;
     -fx-font-size: 11px;
