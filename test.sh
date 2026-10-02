@@ -2,7 +2,8 @@
 # ==============================================================================
 # WIGELL AUTOCORE - HUVUDSKRIPT FÖR KVALITET, SÄKERHET, SMOKETEST & JIRA-BEVIS
 # ==============================================================================
-# Detta skript bygger projektet, kör hela test- och auditsviten samt genererar
+# Detta skript bygger projektet och kör appens egna tester (Smoketest, Enheter, Bevis).
+# Granskningarna — Kvalitet, Säkerhet och WCAG — körs med --audit, och allt med --all,
 # den officiella verifieringsrapporten "rapport.md" som bevisar att alla
 # acceptanskriterier och JIRA-beviskort är uppfyllda inför slutredovisning.
 #
@@ -118,7 +119,7 @@ is_jdk8() {
 }
 
 # Läs kommandoradsargument och flaggor
-MODE="all"
+MODE="core"
 CLI_JDK=""
 
 while [[ $# -gt 0 ]]; do
@@ -134,7 +135,9 @@ while [[ $# -gt 0 ]]; do
             echo "  --jdk, -j <sökväg>   Ange sökväg till Java 8 JDK manuellt"
             echo ""
             echo "Lägen:"
-            echo "  all                  Kör allt (Smoketest, Enheter, Bevis, Kvalitet, Säkerhet, WCAG) (standard)"
+            echo "  core                 Appens egna tester: Smoketest, Enheter, Bevis (standard)"
+            echo "  --audit, audit       Granskningarna: Kvalitet, Säkerhet, WCAG"
+            echo "  --all, all           Allt ovanstående, inklusive rapport.md"
             echo "  --smoke, smoke       Kör endast Smoketest"
             echo "  --unit, unit         Kör endast enhetstester"
             echo "  --bevis, bevis       Kör endast JIRA Beviskorten"
@@ -143,7 +146,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --wcag, wcag         Kör endast WCAG 2.1 AAA tillgänglighetskontroll"
             exit 0
             ;;
-        all|--unit|unit|--quality|quality|--security|security|--wcag|wcag|--bevis|bevis|--smoke|smoke)
+        all|--all|core|--core|audit|--audit|--unit|unit|--quality|quality|--security|security|--wcag|wcag|--bevis|bevis|--smoke|smoke)
             MODE="$1"
             shift
             ;;
@@ -152,6 +155,10 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Läget kan anges med eller utan inledande -- (audit eller --audit). Normalisera en gång här,
+# så att varje grind nedan bara behöver känna till en stavning.
+MODE="${MODE#--}"
 
 # Sök och verifiera JDK
 FOUND_JDK=""
@@ -301,7 +308,8 @@ MISSING=0
 # DataFlowAuditTest läser kompilatorns eget träd (com.sun.source), som ligger i JDK:ns tools.jar.
 # Den måste ligga både på kompilerings- och körvägen. Saknas den (ovanligt för ett JDK 8) körs
 # sviten ändå — och då säger testet självt ifrån i stället för att tigas ihjäl.
-TOOLS_JAR="$FOUND_JDK/lib/tools.jar"
+TOOLS_JAR="$DIR/WigellAutoCore/autocore/lib/tools.jar"
+[ -f "$TOOLS_JAR" ] || TOOLS_JAR="$FOUND_JDK/lib/tools.jar"
 [ -f "$TOOLS_JAR" ] || TOOLS_JAR=""
 
 if [ -f "$JDBC_JAR" ]; then
@@ -383,6 +391,12 @@ run_runner_module() {
         | sed "s/${ESC}\[[0-9;]*[A-Za-z]//g")
     EXIT_CODE=$?
 
+    # Modulens råa utdata sparas. Utan den går det inte att se varför en modul blev röd utan
+    # resultatrad — körningen är då förbi och beviset borta.
+    MODULE_LOG="$DIR/out/audit/${code}.log"
+    mkdir -p "$DIR/out/audit"
+    printf '%s\n' "$OUTPUT" > "$MODULE_LOG"
+
     # Skriv ut relevanta rader
     echo "$OUTPUT" | grep -E "(Kör:|✔|❌|\[SCRUM|\[G2|\[SmokeTest|•|\[[0-9]/9\])" | while IFS= read -r line; do
         if [[ "$line" =~ Kör: ]]; then
@@ -418,11 +432,18 @@ run_runner_module() {
         echo -e "${GREEN}${BOLD}Status: GODKÄND ($M_PASSED/$M_TESTS tester)${RESET}"
         MOD_STATUS+=("GODKÄND")
     else
+        # En modul utan resultatrad är inte samma sak som en modul med fallna tester. Säg vilket det
+        # var, och visa slutet av den råa utdatan, så nästa läsare slipper gissa.
+        if [ "$M_TESTS" -eq 0 ]; then
+            echo -e "  ${YELLOW}Ingen resultatrad från modulen (javas slutkod $EXIT_CODE).${RESET}"
+            echo -e "  ${DIM}Rå utdata: out/audit/${code}.log - sista raderna:${RESET}"
+            printf '%s\n' "$OUTPUT" | tail -n 12 | sed 's/^/    /'
+        fi
         echo -e "${RED}${BOLD}Status: MISSLYCKAD ($M_PASSED/$M_TESTS tester, $M_FAILED fel)${RESET}"
         MOD_STATUS+=("MISSLYCKAD")
         TOTAL_FAILED=$((TOTAL_FAILED + 1))
         ALL_GREEN=false
-        ERRORS+=("$title")
+        ERRORS+=("$title (utdata: out/audit/${code}.log)")
     fi
 
     case "$code" in
@@ -436,17 +457,17 @@ run_runner_module() {
 }
 
 # 1. Smoketest
-if [ "$MODE" = "all" ] || [ "$MODE" = "--smoke" ] || [ "$MODE" = "smoke" ]; then
+if [ "$MODE" = "all" ] || [ "$MODE" = "core" ] || [ "$MODE" = "smoke" ]; then
     run_runner_module "smoke" "SMOKETEST (Databasschema, Klassladdning, Resurser & Startup)" "[1/6]"
 fi
 
 # 2. Enhetstester
-if [ "$MODE" = "all" ] || [ "$MODE" = "--unit" ] || [ "$MODE" = "unit" ]; then
+if [ "$MODE" = "all" ] || [ "$MODE" = "core" ] || [ "$MODE" = "unit" ]; then
     run_runner_module "unit" "ENHETSTESTER (Affärslogik, Bokningar, Scheman, Mätetal & Sök)" "[2/6]"
 fi
 
 # 3. JIRA Beviskort
-if [ "$MODE" = "all" ] || [ "$MODE" = "--bevis" ] || [ "$MODE" = "bevis" ]; then
+if [ "$MODE" = "all" ] || [ "$MODE" = "core" ] || [ "$MODE" = "bevis" ]; then
     run_runner_module "bevis" "JIRA BEVISKORT (SCRUM-159, SCRUM-165, SCRUM-168-173)" "[3/6]"
 fi
 
@@ -454,7 +475,7 @@ fi
 TODO_COUNT=0
 MOJIBAKE_HITS=""
 EMPTY_STR_HITS=""
-if [ "$MODE" = "all" ] || [ "$MODE" = "--quality" ] || [ "$MODE" = "quality" ]; then
+if [ "$MODE" = "all" ] || [ "$MODE" = "audit" ] || [ "$MODE" = "quality" ]; then
     run_runner_module "quality" "KVALITETSKONTROLL (Språkparitet, Temaintegritet & Arkitektur)" "[4/6]"
 
     TODO_COUNT=$(grep -rnE "(TODO|FIXME)" "$SRC_DIR" 2>/dev/null | grep -v "Test.java" | wc -l || true)
@@ -525,7 +546,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--quality" ] || [ "$MODE" = "quality" ]; 
 fi
 
 # 5. Säkerhetskontroll
-if [ "$MODE" = "all" ] || [ "$MODE" = "--security" ] || [ "$MODE" = "security" ]; then
+if [ "$MODE" = "all" ] || [ "$MODE" = "audit" ] || [ "$MODE" = "security" ]; then
     run_runner_module "security" "SÄKERHETSKONTROLL (SQL-injektion, Hemligheter & Exekveringsskydd)" "[5/6]"
     if [ -f "$DIR/.gitignore" ]; then
         echo -e "  ${GREEN}✔${RESET} .gitignore finns och skyddar hemligheter och byggartefakter"
@@ -539,7 +560,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "--security" ] || [ "$MODE" = "security" ]
 fi
 
 # 6. WCAG 2.1 AAA Tillgänglighet
-if [ "$MODE" = "all" ] || [ "$MODE" = "--wcag" ] || [ "$MODE" = "wcag" ]; then
+if [ "$MODE" = "all" ] || [ "$MODE" = "audit" ] || [ "$MODE" = "wcag" ]; then
     run_runner_module "wcag" "WCAG 2.1 AAA KONTROLL (Kontrast >= 7.0:1, Fokus & Textstorlek)" "[6/6]"
 fi
 
@@ -577,7 +598,7 @@ echo ""
 
 # Generera rapport.md - bara efter en full körning, och bara med det utfall som mättes.
 if [ "$MODE" != "all" ]; then
-    echo -e "${DIM}Rapport hoppas över: endast en delmängd av modulerna kördes (MODE=$MODE). Kör ./test.sh utan argument för full rapport.${RESET}"
+    echo -e "${DIM}Rapport hoppas över: endast en delmängd av modulerna kördes (MODE=$MODE). Kör ./test.sh --all för full rapport.${RESET}"
     echo ""
 elif [ "$ALL_GREEN" = true ]; then
 cat <<EOF > "$RAPPORT_FILE"

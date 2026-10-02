@@ -46,11 +46,12 @@ git pull origin develop
 * **Mätbara Acceptanskrav (AK-01 till AK-16):** Se [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md) för fullständig specifikation av alla 16 mätbara krav, tröskelvärden och testmetoder.
 * **Testskriptets Arkitektur & Dokumentation:** Läs [`Audit_Readme.md`](Audit_Readme.md) för en djupgående genomgång av hur testskriptet fungerar, dess sex granskningssteg, automatisk JDK-detektering och felsökning.
 * **Fullständig test- och auditsvit:**
-  - **Linux / macOS:** Kör `./test.sh` (eller `./check.sh`)
+  - **Linux / macOS:** Kör `./test.sh`
   - **Windows (PowerShell):** Kör `.\test.ps1`
   - **Windows (CMD):** Kör `test.bat`
   - Kör enbart acceptanskrav och beviskort: `./test.sh bevis`
-  - Skriptet skriver automatiskt en detaljerad granskningsrapport till `rapport.md`.
+  - Granskningarna (kvalitet, säkerhet, WCAG): `./test.sh --audit`
+  - Allt, plus rapport till `rapport.md`: `./test.sh --all`
 * **Konsolversionen (CLI):** Kör `./start.sh ConsoleApp` i terminalen, eller `ConsoleApp.java` i IntelliJ
 * **Modulvisa testappar:**
   - **Kunder:** `com.wac.autocore.gui.customers.TestCustomer`
@@ -185,8 +186,8 @@ innehåller står i [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md), och sviten kontrolle
 * **`WcagAccessibilityTest`**: WCAG 2.1 AAA kontrastmätningar (>= 7.0:1 för normal text, >= 4.5:1 för UI), fokusindikatorer och minsta teckenstorlek.
 * **GitHub Actions CI (`.github/workflows/ci.yml`)**: Körs automatiskt vid varje push/PR med Liberica JDK 8 (med JavaFX) och virtuell framebuffer (`xvfb-run`).
 * **Kör tester:**
-  - `./check.sh` för komplett grafisk auditrapport (alla sex områden).
-  - `./test.sh` för snabb enhetstestkörning.
+  - `./test.sh` för appens egna tester. Utan argument stannar den där, utan granskningarna.
+  - `./test.sh --audit` för granskningarna, `./test.sh --all` för allt plus rapport.
 * **[`KONTROLLER.md`](KONTROLLER.md)**: säkerhetsåtgärderna i koden och de kontroller som körts, område för område, med resultat och datum. Där ser du vad som skyddas, var i koden, och vad granskningen inte fångar.
 
 ### UI & Tillgänglighet (WCAG 2.1 AAA)

@@ -152,9 +152,9 @@ Kör testerna när som helst med:
 ```bash
 ./test.sh
 ```
-eller en full kvalitets- och säkerhetsaudit med:
+eller granskningarna (kvalitet, säkerhet, WCAG) med:
 ```bash
-./check.sh
+./test.sh --audit
 ```
 
 ---
