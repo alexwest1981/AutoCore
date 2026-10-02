@@ -186,6 +186,7 @@ Systemet skyddas av **57 automatiserade tester och 50 systemkontroller** samt au
 * **Kör tester:**
   - `./check.sh` för komplett grafisk auditrapport (Alla 4 moduler, 50 kontroller).
   - `./test.sh` för snabb enhetstestkörning (57 tester).
+* **[`KONTROLLER.md`](KONTROLLER.md)**: säkerhetsåtgärderna i koden och de kontroller som körts, område för område, med resultat och datum — vad som skyddas, var i koden, och vad granskningen inte fångar.
 
 ### UI & Tillgänglighet (WCAG 2.1 AAA)
 * **Zebramönstrade tabeller:** Varannan rad har dämpad kontrastfärg för snabbare och behagligare läsning.
