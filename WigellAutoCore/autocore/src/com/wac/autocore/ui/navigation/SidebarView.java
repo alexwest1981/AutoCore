@@ -134,7 +134,7 @@ public class SidebarView {
 
             StackPane logoContainer = new StackPane(logoView);
             logoContainer.setAlignment(Pos.CENTER);
-            logoContainer.setPadding(new Insets(25, 25, 50, 25));
+            logoContainer.setPadding(new Insets(25, 25, 30, 25));
             logoContainer.setMinWidth(240);
             logoContainer.setPrefWidth(240);
             logoContainer.setMaxWidth(240);
