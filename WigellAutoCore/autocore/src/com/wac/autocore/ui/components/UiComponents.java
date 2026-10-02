@@ -103,12 +103,26 @@ public final class UiComponents {
         table.setPlaceholder(placeholder);
         HBox.setHgrow(table, Priority.ALWAYS);
 
+        /* Låt tabellen visa ALLA rader utan intern scroll.
+           Den yttre ScrollPane i AutoCoreApp hanterar sidscroll. */
+        final double CELL_HEIGHT = 32;
+        final double HEADER_HEIGHT = 36;
+        table.setFixedCellSize(CELL_HEIGHT);
+        Runnable resize = () -> {
+            int rows = table.getItems().size();
+            double h = HEADER_HEIGHT + (rows * CELL_HEIGHT) + 2; // +2 for border
+            table.setPrefHeight(h);
+            table.setMinHeight(h);
+            table.setMaxHeight(h);
+        };
+        resize.run();
+        table.getItems().addListener((javafx.collections.ListChangeListener<Object>) c -> resize.run());
+
         VBox inner = new VBox();
         inner.getStyleClass().add("panel");
         inner.getChildren().add(table);
         inner.setPadding(new Insets(4, 6, 6, 6));
 
-        VBox.setVgrow(table, Priority.ALWAYS);
         return new VBox(18, topRow, inner);
     }
 }
