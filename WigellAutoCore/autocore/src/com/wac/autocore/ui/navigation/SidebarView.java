@@ -133,7 +133,7 @@ public class SidebarView {
 
             StackPane logoContainer = new StackPane(logoView);
             logoContainer.setAlignment(Pos.CENTER);
-            logoContainer.setPadding(new Insets(20, 20, 40, 20));
+            logoContainer.setPadding(new Insets(25, 25, 50, 25));
             brandNode = logoContainer;
         } else {
             StackPane mark = new StackPane();
