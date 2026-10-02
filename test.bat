@@ -119,13 +119,17 @@ set "RES_DIR=WigellAutoCore\autocore\src\resources"
 set "OUT_DIR=out\production\Systemarkitektur"
 set "JDBC_JAR=WigellAutoCore\autocore\lib\sqlite-jdbc-3.53.4.0.jar"
 
-if not exist "%OUT_DIR%" mkdir "%OUT_DIR%"
+if exist "%OUT_DIR%" rmdir /s /q "%OUT_DIR%"
+mkdir "%OUT_DIR%"
 if exist "%RES_DIR%" xcopy /E /I /Y "%RES_DIR%\*" "%OUT_DIR%\" >nul 2>&1
 
 set "SOURCES_FILE=%OUT_DIR%\sources.txt"
 set "CP_BUILD=%JDBC_JAR%"
 set "CP_RUN=%OUT_DIR%;%JDBC_JAR%"
-if exist "%JAVA_HOME%\lib\tools.jar" (
+if defined FOUND_JDK if exist "%FOUND_JDK%\lib\tools.jar" (
+    set "CP_BUILD=%JDBC_JAR%;%FOUND_JDK%\lib\tools.jar"
+    set "CP_RUN=%OUT_DIR%;%JDBC_JAR%;%FOUND_JDK%\lib\tools.jar"
+) else if exist "%JAVA_HOME%\lib\tools.jar" (
     set "CP_BUILD=%JDBC_JAR%;%JAVA_HOME%\lib\tools.jar"
     set "CP_RUN=%OUT_DIR%;%JDBC_JAR%;%JAVA_HOME%\lib\tools.jar"
 )
