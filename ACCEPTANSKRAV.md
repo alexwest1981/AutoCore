@@ -281,11 +281,11 @@ Vi mäter varje acceptanskrav på tre nivåer:
 
 ## 5. Så kör och mäter du kraven själv
 
-Så här kör du hela testsviten och får en automatisk rapport i [`rapport.md`](rapport.md):
+Så här kör du allt och får en automatisk rapport i [`rapport.md`](rapport.md):
 
 ```bash
-# På Linux / macOS:
-./test.sh
+# På Linux / macOS (--all kör både appens egna tester och granskningarna):
+./test.sh --all
 
 # På Windows (PowerShell):
 .\test.ps1

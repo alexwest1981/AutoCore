@@ -140,7 +140,7 @@ När skriptet körs går det igenom sex oberoende kontrollsteg i tur och ordning
 
 ## 4. Automatisk Rapportgenerering (`rapport.md`)
 
-Varje gång du kör hela skriptet skapas eller uppdateras filen [`rapport.md`](file:///home/alex/Documents/Skolgrejer/Systemarkitektur/rapport.md) i projektets rot.  
+Varje gång du kör hela sviten (`./test.sh --all`) skapas eller uppdateras filen [`rapport.md`](rapport.md) i projektets rot.  
 Rapporten innehåller:
 1. **Exekveringsmetadata:** Datum, klockslag, aktiv git-branch, git-commit, Java-version och operativsystem.
 2. **Kvantitativ sammanfattning:** Resultat för samtliga 6 moduler.
@@ -154,9 +154,11 @@ Rapporten innehåller:
 ## 5. Så Kör Du Skriptet
 
 ### Köra hela sviten och generera `rapport.md`
+Utan argument kör skriptet appens egna tester (Smoketest, Enheter, Bevis). Granskningarna körs med
+`--audit`, och `--all` kör allt och skriver rapporten.
 ```bash
 # Linux / macOS:
-./test.sh
+./test.sh --all
 
 # Windows (PowerShell):
 .\test.ps1

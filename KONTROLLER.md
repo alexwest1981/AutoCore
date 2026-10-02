@@ -108,7 +108,9 @@ ersätter inte en genomläsning av den som skriver koden.
 ### Så kör du kontrollerna
 
 ```bash
-./test.sh                 # hela sviten, sex områden
+./test.sh                 # appens egna tester: smoke, enheter, bevis
+./test.sh --audit         # granskningarna: kvalitet, säkerhet, WCAG
+./test.sh --all           # allt, plus rapport.md i projektroten
 ./test.sh --smoke         # databasschema, klassladdning, resurser, uppstart
 ./test.sh --unit          # enhetstesterna
 ./test.sh --bevis         # Jira-beviskorten
@@ -116,6 +118,11 @@ ersätter inte en genomläsning av den som skriver koden.
 ./test.sh --security      # säkerhetsgranskningen
 ./test.sh --wcag          # WCAG 2.1 AAA
 ```
+
+Utan argument stannar körningen vid appens egna tester, alltså de som hör till vardagen. Granskningarna
+körs med `--audit`, och det är den flaggan CI använder. Delningen finns för att granskningarna letar
+efter filer och verktyg som bara finns i en riktig projektrot, och därför ställer till besvär om någon
+kör dem löst inifrån en IDE.
 
 Samma skript finns för Windows (`test.ps1`, `test.bat`). Filen `test.ps1` sparas med UTF-8 BOM, för
 utan den läser PowerShell 5.1 å/ä/ö fel. Windows-versionen kör samma kontroller; testklasserna hittas

@@ -44,8 +44,7 @@ Projektet följer en ren skiktad arkitektur (**Layered Architecture**) under `Wi
 
 ```
 Systemarkitektur/
-├── check.sh                                  # Automatiserad audit-runner (hela sviten i färg)
-├── test.sh                                   # Snabbkörningsskript för enhetstester
+├── test.sh                                   # Testkörning: appens tester, --audit, --all
 ├── run.sh                                    # Körskript för GUI och CLI
 ├── README.md                                 # Projekt-README med snabbstart och modulöversikt
 ├── PROJECT_OVERVIEW.md                       # Detta arkitektur- och översiktsdokument
@@ -229,12 +228,12 @@ När projektet startade hade koden flera typiska "Code Smells" som vi nu har ref
 
 ## 6. Kvalitetssäkring, Säkerhetsanalys & WCAG 2.1 AAA
 
-Vi kvalitetssäkrar hela systemet med det automatiska verifieringsskriptet `./check.sh` (eller `./audit.sh`). Det kör hela sviten, fördelad på sex områden:
+Vi kvalitetssäkrar hela systemet med `./test.sh`. Utan argument kör den appens egna tester, med `--audit` granskningarna, och med `--all` allt:
 
 ```bash
-./check.sh          # Kör hela audit-sviten (Alla 4 moduler)
-./check.sh --unit   # Endast enhetstesterna
-./check.sh --wcag   # Endast WCAG 2.1 AAA
+./test.sh --audit   # Granskningarna (kvalitet, säkerhet, WCAG)
+./test.sh --unit   # Endast enhetstesterna
+./test.sh --wcag   # Endast WCAG 2.1 AAA
 ```
 
 ### De fyra modulerna:
@@ -272,7 +271,7 @@ Vi kvalitetssäkrar hela systemet med det automatiska verifieringsskriptet `./ch
 
 | Gruppmedlem | Huvudfokus & Arbetsområde | Aktuell status |
 | :--- | :--- | :--- |
-| **Alex** | Systemarkitektur, Fasad, I18n flerspråksmotor, Test- & Auditsvit (`check.sh`) | **Klart & Integrerat i develop** |
+| **Alex** | Systemarkitektur, Fasad, I18n flerspråksmotor, Test- & Auditsvit (`test.sh`) | **Klart & Integrerat i develop** |
 | **Daniel** | Databasintegration (SQLite-persistens via `lib/sqlite-jdbc-...`) | **Pågående arbete** |
 | **Lucas** | Domänmodeller, affärsregler för ordrar och bokningsflöden | **Klart & Integrerat i develop** |
 | **Vivianne** | JavaFX GUI-vyer, layout, styling, WCAG-anpassning & teman | **Klart & Integrerat i develop** |
@@ -292,8 +291,8 @@ git checkout develop
 # Hämta in det senaste från teamet
 git pull origin develop
 
-# Kör hela audit-kontrollen innan du pushar nya ändringar
-./check.sh
+# Kör granskningarna innan du pushar nya ändringar
+./test.sh --audit
 ```
 
 När alla 50 kontroller är gröna är det säkert att pusha koden till `origin/develop`.
