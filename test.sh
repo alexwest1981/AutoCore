@@ -298,11 +298,32 @@ MISSING=0
 [ -f "$JDBC_JAR" ] || { echo -e "${RED}Fel: SQLite-drivrutinen saknas: $JDBC_JAR${RESET}"; MISSING=1; }
 [ "$MISSING" -eq 0 ] || exit 1
 
+# DataFlowAuditTest läser kompilatorns eget träd (com.sun.source), som ligger i JDK:ns tools.jar.
+# Den måste ligga både på kompilerings- och körvägen. Saknas den (ovanligt för ett JDK 8) körs
+# sviten ändå — och då säger testet självt ifrån i stället för att tigas ihjäl.
+TOOLS_JAR="$FOUND_JDK/lib/tools.jar"
+[ -f "$TOOLS_JAR" ] || TOOLS_JAR=""
+
 if [ -f "$JDBC_JAR" ]; then
     CP_RUN="$OUT_DIR$CP_SEP$JDBC_JAR"
-    CP_ARG=(-cp "$JDBC_JAR")
+    CP_BUILD="$JDBC_JAR"
 else
     CP_RUN="$OUT_DIR"
+    CP_BUILD=""
+fi
+
+if [ -n "$TOOLS_JAR" ]; then
+    CP_RUN="$CP_RUN$CP_SEP$TOOLS_JAR"
+    if [ -n "$CP_BUILD" ]; then
+        CP_BUILD="$CP_BUILD$CP_SEP$TOOLS_JAR"
+    else
+        CP_BUILD="$TOOLS_JAR"
+    fi
+fi
+
+if [ -n "$CP_BUILD" ]; then
+    CP_ARG=(-cp "$CP_BUILD")
+else
     CP_ARG=()
 fi
 

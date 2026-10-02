@@ -115,13 +115,16 @@ När skriptet körs sekventiellt genomförs sex oberoende kontrollsteg:
 
 ---
 
-### [5/6] Säkerhetsanalys (`SecurityAuditTest.java`)
+### [5/6] Säkerhetsanalys (`SecurityAuditTest.java` + `DataFlowAuditTest.java`)
 **Mål:** Förhindra säkerhetssårbarheter och dataläckor.
 * **SQL-injektionsskydd:** Statisk analys som säkerställer att alla SQL-satser i servicelager och repositories använder parametriserade `PreparedStatement` (`?`) istället för dynamisk strängkonkatenering.
+* **Dataflödesanalys (SQL och processer):** `DataFlowAuditTest` följer var en sträng kommer ifrån i stället för att titta på en rad i taget. En fråga som byggs med `+` på en rad och körs på en annan — vilket mönsterletningen ovan inte ser — fångas, eftersom analysen läser kompilatorns eget träd (`javac`). Kända konstanter (`private static final String TABELL = "payments"`) och literaler är ofarliga; allt annat som sammanfogas blir data och får inte nå `executeQuery`/`executeUpdate`/`prepareStatement` eller ett processanrop. Analysen har ett eget prov (`testTheAnalysisCatchesWhatThePatternMisses`) som bevisar att den fäller det mönstret och lämnar den ofarliga varianten i fred — en granskning som aldrig larmar ser annars lika grön ut som en ren kodbas.
 * **Inga hårdkodade hemligheter:** Skannar efter mönster för råa lösenord, API-nycklar och hemliga tokens.
 * **Skydd för känslig person- och betaldata:** Förhindrar att personnummer, lösenord eller kreditkortsnummer skrivs ut till terminalen via `System.out` / `System.err`.
 * **Process- och Runtime-skydd:** Verifierar att applikationskoden inte anropar `Runtime.getRuntime().exec` eller `ProcessBuilder` oskyddat.
 * **Versionshanteringsskydd:** Validerar att `.gitignore` aktivt skyddar lokala rapporter, loggböcker och databasfiler.
+
+*Kända gränser för dataflödesanalysen:* ingen typanalys och ingen analys över metodgränser — ett värde som byggs i en annan metod och skickas in följs inte. Det står också i `KONTROLLER.md`.
 
 ---
 
@@ -201,4 +204,8 @@ Om du bara vill testa en specifik del under pågående utveckling:
 ### 4. "Hur lägger jag till ett nytt test?"
 * Skapa din testmetod i lämplig testklass under `WigellAutoCore/autocore/src/com/wac/autocore/test/`.
 * Använd `TestRunner.assertEquals`, `TestRunner.assertTrue` eller `TestRunner.assertFalse`.
-* Registrera metoden i `TestRunner.java` under rätt modul för att den automatiskt ska ingå i `./test.sh`.
+* En ny testklass hittas automatiskt om filnamnet slutar på `Test.java`, och metoderna körs om de börjar med `test` och inte tar några argument. Ska klassen höra till en annan modul än Enhetstester, lägg till den i `GROUP_OF` i `TestRunner.java`.
+
+### 5. "Kompileringsfel: package com.sun.source does not exist"
+* **Orsak:** `DataFlowAuditTest` läser kompilatorns eget träd, och de klasserna ligger i JDK:ns `lib/tools.jar`. Skripten lägger automatiskt till den filen på klassökvägen när den finns.
+* **Lösning:** Kör med ett JDK och inte ett JRE. Kontrollera att `<JDK>/lib/tools.jar` finns; peka annars `CUSTOM_JDK` mot din JDK 8-installation.
