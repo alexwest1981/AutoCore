@@ -1,136 +1,185 @@
 # AutoCore - JavaFX GUI & Arkitektur
 
-Detta dokument beskriver JavaFX-gränssnittet i **Wigell AutoCore** (`com.wac.autocore.ui`), dess modulära arkitektur, hur data flödar samt hur de automatiserade enhetstesterna fungerar.
+Här beskrivs JavaFX-gränssnittet i **Wigell AutoCore** (`com.wac.autocore.ui`): hur paketen hänger
+ihop, hur data tar sig fram, och hur enhetstesterna körs.
 
 ---
 
 ## 1. Starta och köra
 
-* **Starta huvudapplikationen:**
+* **Starta applikationen:**
   ```bash
   ./run.sh Main
   ```
-  eller kör `Main.java` direkt via IDE (IntelliJ).
+  eller öppna `Main.java` i IntelliJ och kör därifrån.
 
-* **Kör automatiserade enhetstester:**
+* **Kör enhetstesterna:**
   ```bash
   ./test.sh
   ```
-  Tester körs via den fristående test-runnern `com.wac.autocore.test.TestRunner` direkt mot JDK 8 utan externa byggberoenden.
+  Testerna går genom `com.wac.autocore.test.TestRunner`, som kör direkt mot JDK 8 utan byggverktyg
+  eller externa beroenden.
 
 ---
 
-## 2. Arkitektur och Moduluppdelning
+## 2. Arkitektur och moduluppdelning
 
-Arkitekturen följer Single Responsibility Principle och är indelad i följande paket under `com.wac.autocore.ui`:
+Varje paket under `com.wac.autocore.ui` har en uppgift, i linje med Single Responsibility Principle.
 
 ### Huvudklass
-* **`AutoCoreApp.java`**: Slank koordinator (~80 rader). Sätter upp JavaFX `Stage`, `Scene` (1280x800), root `BorderPane` ("shell"), applicerar default-tema och kopplar samman sidonavigering, toppbar och sidrouter.
+* **`AutoCoreApp.java`**: tunn koordinator, omkring 80 rader. Sätter upp `Stage` och `Scene`
+  (1280x800), root-`BorderPane` ("shell"), lägger på standtemat och knyter ihop sidonavigering,
+  toppbar och sidrouter.
 
 ### Navigering (`navigation/`)
-* **`SidebarView.java`**: Bygger vänstermenyn med varumärkesbadge ("AC", "AutoCore Workshop System") och kollapsbara grupper (*Customers*, *Vehicles*, *Bookings*, *Workshop*, *Finance*). Hanterar aktiv knappmarkering (`.selected`).
-* **`TopNavView.java`**: Horisontell toppnavigeringslist för "Top bar"-läget med direktknappar och logisk sektionsindelning. Synkroniserar aktiv sida med samma WAC-tokens för alla teman.
-* **`PageRouter.java`**: Ansvarar för sidbyten och synkroniserar aktiv sidmarkering mot både `SidebarView` och `TopNavView`, samt kopplar automatiskt den aktiva sidans tabell till toppbarens sökfält så att filtrering sker mot rätt vy.
+* **`SidebarView.java`**: bygger vänstermenyn med varumärkesbadge ("AC", "AutoCore Workshop System")
+  och kollapsbara grupper (*Customers*, *Vehicles*, *Bookings*, *Workshop*, *Finance*). Håller reda
+  på vilken knapp som är markerad (`.selected`).
+* **`TopNavView.java`**: horisontell toppnavigering för "Top bar"-läget, med direktknappar och
+  logiska sektioner. Markerar aktiv sida med samma WAC-tokens som övriga teman.
+* **`PageRouter.java`**: byter sida och markerar rätt post i både `SidebarView` och `TopNavView`.
+  Kopplar också den aktiva sidans tabell till toppbarens sökfält, så att filtreringen hamnar i rätt vy.
 
 ### Komponenter (`components/`)
-* **`TopBar` (inbyggd i `AutoCoreApp.java`)**: Toppmeny med varumärke (i toppläge), sökfält, layout-toggle (`Sidebar ◧` / `Top bar ⎕`) och tema-ComboBox. Ligger direkt i applikationskoden så att den enkelt kan anpassas. Stöder sömlös växling mellan fullbreddstoppmeny och sidomeny utan att tappa aktiv sida. Inkluderar dynamisk styling för mörka och ljusa teman samt popup-scensynkronisering via Java-reflektion så att popup-fönstret ärver appens tema och `.root`-klass utan CSS-varningar.
-* **`BookingFormPane.java`**: Komposit JavaFX-formulärpanel för tidsbokning med dynamisk validering, koppling mot verkstadens tjänster, mekanikertilldelning och beräkning av tidsåtgång.
-* **`TimeSlotCell.java`**: Specialiserad ComboBox-cell för tidsval som i realtid visualiserar om mekanikern är ledig (🟢) eller upptagen (🔴).
-* **`MechanicKanbanCard.java`**: Interaktivt Kanban-kort för mekanikerscheman. Implementerar dagsvy (07:00–16:00) med klickbara SVG-plusknappar för direktbokning, utfällbar *inline drawer* för bokningsinformation, veckovy med 4-stegs färgprogression (grön, gul, orange, röd), månadsvy för tillgänglighet, snabbnavigering till nästa bokningsdag (`📅 Nästa bokning: ... →`), samt en kontextuell kebabmeny (`⋮`) för redigering eller säker borttagning av mekaniker.
-* **`TableFactory.java`**: Typad fabrik för att skapa `TableView` kopplad till `FilteredList`. Innehåller hjälpare för standardtextkolumner (`col`), statusbadge-kolumner (`badgeCol`) och flerkolumnssökning (`applySearch`). Sökningen hämtar celldata direkt från radobjektet (`col.getCellData(row)`), vilket förhindrar `IndexOutOfBoundsException` när filtrerade vyer söks.
-* **`UiComponents.java`**: Återanvändbara UI-element: primära och sekundära knappar, KPI-kort, informationspaneler och standardiserade sidhuvuden (`pageHead`, `buildEntityPage`).
+* **`TopBar` (ligger i `AutoCoreApp.java`)**: toppmeny med varumärke (i toppläge), sökfält,
+  layoutväxlare (`Sidebar ◧` / `Top bar ⎕`) och tema-ComboBox. Den ligger i applikationskoden för att
+  vara lätt att ändra. Växlingen mellan fullbreddstoppmeny och sidomeny tappar inte aktiv sida.
+  Styling för mörka och ljusa teman sköts dynamiskt, och popup-fönster ärver appens tema och
+  `.root`-klass via reflektion, utan CSS-varningar.
+* **`BookingFormPane.java`**: sammansatt formulärpanel för tidsbokning, med validering medan man
+  skriver, koppling mot verkstadens tjänster, mekanikertilldelning och beräkning av tidsåtgång.
+* **`TimeSlotCell.java`**: egen ComboBox-cell för tidsval som visar direkt om mekanikern är ledig
+  (🟢) eller upptagen (🔴).
+* **`MechanicKanbanCard.java`**: interaktivt Kanban-kort för mekanikerschemat. Dagsvy (07:00–16:00)
+  med klickbara SVG-plusknappar för direktbokning, utfällbar *inline drawer* med bokningsinfo,
+  veckovy med färgprogression i fyra steg (grön, gul, orange, röd), månadsvy för tillgänglighet,
+  snabbnavigering till nästa bokningsdag (`📅 Nästa bokning: ... →`) och en kebabmeny (`⋮`) för att
+  redigera eller ta bort en mekaniker.
+* **`TableFactory.java`**: typad fabrik som bygger en `TableView` kopplad till `FilteredList`, med
+  hjälpare för textkolumner (`col`), statusbadges (`badgeCol`) och sökning över flera kolumner
+  (`applySearch`). Sökningen hämtar celldata direkt från radobjektet (`col.getCellData(row)`), vilket
+  hindrar `IndexOutOfBoundsException` när man söker i en filtrerad vy.
+* **`UiComponents.java`**: återanvändbara element som primära och sekundära knappar, KPI-kort,
+  informationspaneler och standardiserade sidhuvuden (`pageHead`, `buildEntityPage`).
 
 ### Vyer (`views/`)
-* **`OverviewView.java`**: Huvuddashboard med 4 KPI-kort (Aktiva arbetsordrar, Total omsättning, Bokningar, Mekaniker i tjänst), snabbknappar för modaler, den interaktiva mekaniker-kanbantavlan med specialiseringsfilter och horisontell rullning, kommande bokningar och sökbar tabell för senaste arbetsordrar.
-* **`EntityPages.java`**: Dedikerade byggare för varje domänentitet:
+* **`OverviewView.java`**: huvuddashboarden med fyra KPI-kort (aktiva arbetsordrar, total omsättning,
+  bokningar, mekaniker i tjänst), snabbknappar till modalerna, mekaniker-kanbantavlan med
+  specialiseringsfilter och vågrät rullning, kommande bokningar och en sökbar tabell över de senaste
+  arbetsordrarna.
+* **`EntityPages.java`**: en byggare per domänentitet:
   - Kunder (med "+ New customer")
   - Fordon (med "+ Register vehicle")
   - Bokningar (med "+ New booking")
-  - Arbetsordrar (med "+ New work order", samt dynamiska "Start order" / "Complete order" knappar styrda av radurval)
+  - Arbetsordrar (med "+ New work order", samt "Start order" och "Complete order" som styrs av
+    radurvalet)
   - Tjänster (priskatalog och beräknad tidsåtgång)
   - Mekaniker (specialisering och tillgänglighet)
   - Fakturor (med "+ Create invoice" och "Pay selected invoice")
   - Betalningar (med "+ Register payment")
 
-### Ren logik & Presentationshjälpare (`util/`)
-* **`UiFormatters.java`**: Ren formateringslogik frikopplad från JavaFX-fönsterkontexten. Formaterar valuta (`formatMoney`), datum (`todayFormatted`, `formatDate`), trunkerar långa texter och mappar statusord till CSS-badgeklasser.
-* **`BookingAvailability.java`**: Ren beräkningsmodul för tidsslottar och kollisionskontroll för bokningar mot mekanikerns schema.
-* **`EntityLookup.java`**: Slår upp relaterade namn (kund, fordon, mekaniker, tjänster) baserat på ID mot `GarageSystem`.
+### Ren logik och presentationshjälpare (`util/`)
+* **`UiFormatters.java`**: formateringslogik som inte rör JavaFX-fönstret. Formaterar valuta
+  (`formatMoney`) och datum (`todayFormatted`, `formatDate`), kortar långa texter och mappar statusord
+  till CSS-badgeklasser.
+* **`BookingAvailability.java`**: räknar ut lediga tidsslottar och upptäcker krockar mot mekanikerns
+  schema.
+* **`EntityLookup.java`**: slår upp namn på kund, fordon, mekaniker och tjänster via id mot
+  `GarageSystem`.
 
 ---
 
-## 3. Sökarkitektur & Granulär Global Sökning
+## 3. Sökning i hela systemet
 
-Sökfunktionen i AutoCore erbjuder en samlad och granulär global sökvy (`SearchResultsView`):
-1. **Sökning över hela systemet:** När användaren skriver i toppbarens sökfält söks samtliga domänmodeller igenom via `GlobalSearch` (Kunder, Fordon, Arbetsordrar, Bokningar, Mekaniker, Fakturor och Tjänster).
-2. **Sektionsindelade resultat:** Resultaten delas in i separata paneler med antal träffar och tydliga tabeller. Endast sektioner som har minst en matchande post visas.
-3. **Direktnavigering till sektion:** Varje sektionspanel har en "Open in [Sektion] →"-knapp som navigerar direkt till motsvarande entitetssida.
-4. **Sömlöst flöde utan att fastna:** Användaren kan söka på ett namn ("Anna"), se kunder och tillhörande ordrar, och därefter omedelbart ändra till ett fordon ("Volvo") för att se fordon och bokningar – utan att behöva återvända till Overview däremellan.
-5. **Automatisk återgång:** Tömmer användaren sökfältet återgår vyn automatiskt till sidan man besökte innan sökningen påbörjades.
+`SearchResultsView` är en egen vy för global sökning:
+1. **Hela systemet på en gång:** när du skriver i toppbarens sökfält söks kunder, fordon,
+   arbetsordrar, bokningar, mekaniker, fakturor och tjänster igenom via `GlobalSearch`.
+2. **Egna paneler per sektion:** resultaten hamnar i separata paneler med antal träffar och egna
+   tabeller. Paneler utan träffar visas inte.
+3. **Vidare till rätt sida:** varje panel har en "Open in [Sektion] →"-knapp som går direkt till
+   motsvarande entitetssida.
+4. **Utan att fastna:** du kan söka på "Anna", se kunder och deras ordrar, och sedan byta till
+   "Volvo" för att se fordon och bokningar, utan att gå via Overview emellan.
+5. **Tillbaka automatiskt:** tömmer du sökfältet går vyn tillbaka till sidan du var på innan du
+   började söka.
 
 ---
 
-## 4. Automatiserade Enhetstester (`com.wac.autocore.test`)
+## 4. Enhetstester (`com.wac.autocore.test`)
 
-Eftersom all presentations-, beräknings-, sök- och uppslagslogik är isolerad i rena hjälpklasser kan den enhetstestas till 100% utan att öppna ett grafiskt fönster.
+Presentations-, beräknings-, sök- och uppslagslogiken ligger i rena hjälpklasser, så den går att
+testa utan att öppna ett grafiskt fönster.
 
 * **`GlobalSearchTest.java`**:
-  - Testar global sökning över kunder, fordon, mekaniker och arbetsordrar.
-  - Verifierar träffar över flera domänentiteter samtidigt (cross-entity search).
-  - Verifierar skiftlägesokänslighet (uppercase/lowercase/mixed case).
-  - Verifierar tomma och ogiltiga söksträngar.
+  - söker över kunder, fordon, mekaniker och arbetsordrar.
+  - kontrollerar träffar över flera domänentiteter samtidigt.
+  - kontrollerar skiftlägesokänslighet (uppercase/lowercase/mixed case).
+  - kontrollerar tomma och ogiltiga söksträngar.
 * **`TableFactoryTest.java`**:
-  - Testar flerkolumnssökning med `FilteredList`.
-  - Verifierar delsträngsmatchning, skiftlägesokänslighet (case-insensitivity) och blankstegstrimning.
-  - Verifierar att sökning på redan filtrerad tabell inte kraschar med indexfel.
+  - söker över flera kolumner med `FilteredList`.
+  - kontrollerar delsträngar, skiftlägesokänslighet och att blanksteg trimmas.
+  - kontrollerar att sökning i en redan filtrerad tabell inte kraschar med indexfel.
 * **`UiFormattersTest.java`**:
-  - Testar valutaformatering (`long` och `double`).
-  - Testar texttrunkering med ellipser (`…`).
-  - Testar statusordsöversättning (`BOOKED` $\rightarrow$ `Booked`, etc.).
-  - Testar badge- och punkt-CSS-klasser (`success`, `danger`, `warn`, `info`).
-  - Testar engelsk datumgenerering.
+  - kontrollerar valutformatering (`long` och `double`).
+  - kontrollerar texttrunkering med ellips (`…`).
+  - kontrollerar översättning av statusord (`BOOKED` → `Booked`, och så vidare).
+  - kontrollerar badge- och punkt-CSS-klasser (`success`, `danger`, `warn`, `info`).
+  - kontrollerar engelsk datumgenerering.
 * **`EntityLookupTest.java`**:
-  - Testar ID-uppslag mot `GarageSystem` för kunder, fordon, mekaniker och tjänster.
-  - Verifierar korrekta fallbacks för okända ID:n.
-  - Verifierar mekanikers specialisering och kvalificering för tjänster.
+  - kontrollerar id-uppslag mot `GarageSystem` för kunder, fordon, mekaniker och tjänster.
+  - kontrollerar fallback när id:t är okänt.
+  - kontrollerar mekanikers specialisering och kvalificering för tjänster.
 * **`OverviewMetricsTest.java`**:
-  - Verifierar KPI-beräkningar för aktiva arbetsordrar, total omsättning från lyckade betalningar och mekanikertillgänglighet.
+  - kontrollerar KPI-beräkningarna: aktiva arbetsordrar, omsättning från lyckade betalningar och
+    mekanikertillgänglighet.
 * **`MechanicScheduleTest.java`**:
-  - Verifierar 9 dagslots (07:00–16:00), dubbelbokningsskydd, tidsslotstillgänglighet, avbokningssynkronisering, veckoöversikt, månadstillgänglighet, färgprogression (grön -> gul -> orange -> röd) samt `getNextBookingDate`.
+  - kontrollerar de nio dagslotterna (07:00–16:00), skyddet mot dubbelbokning, lediga slotter,
+    avbokning, veckoöversikt, månadstillgänglighet, färgprogressionen (grön → gul → orange → röd)
+    och `getNextBookingDate`.
 * **`I18nTest.java`**:
-  - Verifierar språkväxling i realtid, parameteriserade meddelanden, fallback och full paritet mellan `sv.json` och `en.json`.
-* **`CodeQualityTest.java`, `SecurityAuditTest.java`, `WcagAccessibilityTest.java`**:
-  - Verifierar frikoppling av servicelagret, SQL-injektionsskydd, inga hårdkodade hemligheter och WCAG 2.1 AAA-kontrast och fokusringar.
+  - kontrollerar språkväxling i realtid, parameteriserade meddelanden, fallback och full paritet
+    mellan `sv.json` och `en.json`.
+* **`CodeQualityTest.java`, `DocumentationTest.java`, `SecurityAuditTest.java`,
+  `DataFlowAuditTest.java`, `WcagAccessibilityTest.java`**:
+  - kontrollerar frikoppling av servicelagret, att dokumentsiffrorna stämmer med sviten,
+    SQL-injektionsskydd (både mönster och dataflöde), att inga hemligheter ligger hårdkodade, och
+    WCAG 2.1 AAA för kontrast och fokusringar.
 * **`TestRunner.java`**:
-  - Egenutvecklad, fristående test-runner med färgkodad utskrift och tydliga felrapporter. Totalt 57 automatiserade tester.
+  - egen testkörare med färgkodad utskrift och tydliga felrapporter. Den hittar testklasserna själv:
+    allt som slutar på `Test.java` i paketet körs.
 
 Kör testerna när som helst med:
 ```bash
 ./test.sh
 ```
-eller kör en fullständig kvalitets- och säkerhetsaudit med:
+eller en full kvalitets- och säkerhetsaudit med:
 ```bash
 ./check.sh
 ```
 
 ---
 
-## 5. Teman & CSS-arkitektur
+## 5. Teman och CSS
 
-Applikationen stöder 7 färgteman som kan växlas direkt under körning i toppmenyn:
-* `dark` (Mörkt modernt, standard)
-* `night` (Djupt natt-tema)
-* `light` (Ljust och rent)
-* `azure` (Blå accent)
-* `classic` (Klassisk industristil)
-* `emerald` (Grön accent)
-* `volt` (Högkontrast neon)
-* `default` (Plain JavaFX Modena för jämförelse och tillgänglighet)
+Applikationen har 7 färgteman som växlas direkt i toppmenyn medan programmet kör:
+* `dark` (mörkt modernt, standard)
+* `night` (djupt natt-tema)
+* `light` (ljust och rent)
+* `azure` (blå accent)
+* `classic` (klassisk industristil)
+* `emerald` (grön accent)
+* `volt` (högkontrast neon)
+* `default` (vanlig JavaFX Modena, för jämförelse och tillgänglighet)
 
-### Viktiga CSS-egenskaper & fixar
-1. **Ingen färgstagnation vid temabyte:** Cellerna i ComboBox (`.theme-pick`) styrs uteslutande via CSS-regler i `components.css`, `dark.css` och `night.css`. Inga inline `setStyle(...)` används på `ListCell`, vilket eliminerar buggen där celler behöll vit text efter byte mellan ljusa och mörka teman.
-2. **Full kontrast i tabeller:** Både vanliga och markerade rader har explicit textfärg och bakgrundsfärg för att undvika osynlig text i alla teman.
-3. **Modaler & dialoger:** [ActionDialogs.java](file:///home/alex/Documents/Skolgrejer/Systemarkitektur/WigellAutoCore/autocore/src/com/wac/autocore/ui/ActionDialogs.java) applicerar det aktiva temat på alla `Dialog` och `Alert`-fönster via en `setOnShowing`-lyssnare.
-4. **Popup-scener:** ComboBox-popups synkroniserar sina stylesheets och behåller `.root`-klassen så att Modenas standardtokens (`-fx-box-border`, `-fx-base`) alltid hittas utan CSS-varningar.
-5. **Default-temat (Plain JavaFX):** Innehåller explicita regler för `.page-title` (24px fetstil) och aktiv meny (.nav-item.selected) för tydlig hierarki även utan anpassat designtema.
-
+### CSS-egenskaper som varit viktiga
+1. **Ingen färgstagnation vid temabyte:** cellerna i ComboBox (`.theme-pick`) styrs helt via CSS i
+   `components.css`, `dark.css` och `night.css`. Ingen `setStyle(...)` körs på `ListCell`, vilket
+   tog bort buggen där celler behöll vit text efter ett byte mellan ljust och mörkt tema.
+2. **Kontrast i tabeller:** både vanliga och markerade rader har egen text- och bakgrundsfärg, så
+   ingen text blir osynlig i något tema.
+3. **Modaler och dialoger:** `ActionDialogs.java` lägger det aktiva temat på alla `Dialog`- och
+   `Alert`-fönster via en `setOnShowing`-lyssnare.
+4. **Popup-scener:** ComboBox-popups synkroniserar sina stylesheets och behåller `.root`-klassen, så
+   att Modenas standardtokens (`-fx-box-border`, `-fx-base`) alltid hittas utan CSS-varningar.
+5. **Standtemat (vanlig JavaFX):** har egna regler för `.page-title` (24px fetstil) och aktiv meny
+   (`.nav-item.selected`), så hierarkin syns även utan anpassat tema.

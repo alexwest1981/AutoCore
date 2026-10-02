@@ -1,13 +1,13 @@
 # Audit & Test Suite – Dokumentation och Arkitektur (`Audit_Readme.md`)
 
-Välkommen till den officiella dokumentationen för AutoCores test- och granskningssvit.  
-Detta dokument förklarar i detalj **hur testskripten fungerar, vad varje kontroll gör, varför den finns och hur du kör sviten på din dator** (oavsett om du kör Windows, macOS eller Linux).
+Här är dokumentationen för AutoCores test- och granskningssvit.  
+Den går igenom **hur testskripten fungerar, vad varje kontroll gör, varför den finns och hur du kör sviten på din dator**, oavsett om du kör Windows, macOS eller Linux.
 
 ---
 
 ## 1. Syfte och Filosofi
 
-Test- och auditsviten (`test.sh`, `test.ps1`, `test.bat`) är byggd för att garantera att AutoCore uppfyller:
+Test- och auditsviten (`test.sh`, `test.ps1`, `test.bat`) ska visa att AutoCore uppfyller:
 1. **Beställarens 12 acceptanskriterier** (se [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md)).
 2. **JIRA-beviskorten** för Sprint 3 (D1, D3, E4, F2, F3, F4, G1, G2, G3).
 3. **Akademiska och professionella kvalitetskrav:** Ren arkitektur, flerspråkighet (I18n), WCAG 2.1 AAA tillgänglighet och hög applikationssäkerhet.
@@ -17,7 +17,7 @@ Test- och auditsviten (`test.sh`, `test.ps1`, `test.bat`) är byggd för att gar
 
 ## 2. Filstruktur och Plattformsoberoende
 
-Skriptet finns i tre varianter för att fungera sömlöst på alla operativsystem i teamet:
+Det finns tre varianter av skriptet, så att det fungerar på alla operativsystem i teamet:
 
 | Fil | Operativsystem | Skaltyp / Miljö |
 |---|---|---|
@@ -38,19 +38,19 @@ Skripten letar automatiskt efter en installerad Java 8 / Liberica JDK i standard
 > ```
 
 ### UTF-8 Teckenkodning vid Kompilering
-Samtliga skript anropar `javac` med flaggan `-encoding UTF-8`. Detta förhindrar `Cp1252`-teckenfel på Windows när källkoden eller testerna innehåller symboler som `✔`, `❌` eller svenska tecken (`å`, `ä`, `ö`).
+Alla skript kör `javac` med flaggan `-encoding UTF-8`. Det hindrar `Cp1252`-fel på Windows när källkoden eller testerna innehåller symboler som `✔`, `❌` eller svenska tecken (`å`, `ä`, `ö`).
 
 ---
 
 ## 3. De Sex Granskningsmodulerna i Detalj
 
-När skriptet körs sekventiellt genomförs sex oberoende kontrollsteg:
+När skriptet körs går det igenom sex oberoende kontrollsteg i tur och ordning:
 
 ```
 [0/6] Kompilering (javac med UTF-8 och SQLite-drivrutin)
   │
   ├── [1/6] Smoketest (Hälsa, schema, klassladdning, uppstartstid)
-  ├── [2/6] Enhetstester (56 tester för domänlogik och servicelager)
+  ├── [2/6] Enhetstester (domänlogik och servicelager)
   ├── [3/6] JIRA Beviskort & Acceptanskrav (9 beviskort, omstart, migrering)
   ├── [4/6] Kodkvalitet & Arkitektur (I18n, temaintegritet, frikoppling)
   ├── [5/6] Säkerhetsanalys (SQL-injektion, hemligheter, processer)
@@ -60,27 +60,27 @@ När skriptet körs sekventiellt genomförs sex oberoende kontrollsteg:
 ---
 
 ### [1/6] Smoketest (`SmokeTest.java`)
-**Mål:** Validera att applikationen är tekniskt frisk innan tyngre tester startas.
-* **Databasintegritet:** Verifierar att SQLite-filen kan öppnas och att alla **10 tabeller** existerar:
+**Mål:** Se att applikationen är tekniskt frisk innan de tyngre testerna startar.
+* **Databasintegritet:** Kollar att SQLite-filen går att öppna och att alla **10 tabeller** finns där:
   `customers`, `vehicles`, `mechanics`, `service_items`, `bookings`, `booking_service_items`, `work_orders`, `work_order_service_items`, `invoices`, `invoice_lines`, `payments`.
-* **Klassladdning:** Laddar 13 kritiska klasser (inklusive presentations- och servicelager) för att avslöja saknade klassfiler eller länkfel (`NoClassDefFoundError`).
-* **Resursvalidering:** Kontrollerar att språkresurser (`sv.json`, `en.json`) och stilmallar (`style.css`, temafiler) finns och kan läsas som strömmar.
-* **Prestanda vid uppstart:** Säkerställer att initialisering och schemavalidering sker på under **2,0 sekunder** (< 200 ms på moderna maskiner).
+* **Klassladdning:** Laddar 13 kritiska klasser (inklusive presentations- och servicelager) för att fånga saknade klassfiler och länkfel (`NoClassDefFoundError`).
+* **Resursvalidering:** Ser att språkresurser (`sv.json`, `en.json`) och stilmallar (`style.css`, temafiler) finns och går att läsa som strömmar.
+* **Prestanda vid uppstart:** Ser till att initialisering och schemavalidering sker på under **2,0 sekunder** (< 200 ms på moderna maskiner).
 
 ---
 
-### [2/6] Enhetstester (56 tester)
-**Mål:** Verifiera domänlogik, beräkningar och servicelager i detalj.
-* **Flertjänstbokning (`BookingServicesTest`):** Validerar flertjänstassociationer, statuslåsning vid startat arbete (`IN_PROGRESS`), samt sammanlagd beräkning av tidsåtgång (minuter) och baspris.
-* **Arbetsordrar (`WorkOrderTest`):** Validerar livscykeln `CREATED` -> `IN_PROGRESS` -> `COMPLETED`, koppling till mekaniker samt att tjänsterna överförs från bokningen.
-* **Fakturarader (`InvoiceLineTest`):** Validerar att varje utförd tjänst får en separat rad, att radsumman matchar fakturans delbelopp och att historiska rader fryses.
-* **Schemakonflikter (`ScheduleConflictTest`):** Verifierar mekanikerscheman, tidsblockeringar och överlappningsskydd.
+### [2/6] Enhetstester
+**Mål:** Gå igenom domänlogik, beräkningar och servicelager i detalj.
+* **Flertjänstbokning (`BookingServicesTest`):** Kollar att flera tjänster kan kopplas ihop, att statusen låses när arbetet startat (`IN_PROGRESS`), och att tidsåtgång (minuter) och baspris räknas samman.
+* **Arbetsordrar (`WorkOrderTest`):** Följer livscykeln `CREATED` -> `IN_PROGRESS` -> `COMPLETED`, kopplingen till mekaniker och att tjänsterna hänger med från bokningen.
+* **Fakturarader (`InvoiceLineTest`):** Kollar att varje utförd tjänst får en egen rad, att radsumman stämmer med fakturans delbelopp och att historiska rader fryses.
+* **Schemakonflikter (`ScheduleConflictTest`):** Går igenom mekanikerscheman, tidsblockeringar och skyddet mot överlapp.
 * **Persistens och Mätetal:** Enhetstester för repository-CRUD och KPI-rapportering.
 
 ---
 
 ### [3/6] JIRA Beviskort & Mätbara Acceptanskrav (`EvidenceVerificationTest.java`)
-**Mål:** Formellt bevisa beställarens 12 acceptanskriterier och sprintens 9 beviskort:
+**Mål:** Lägga formella bevis för beställarens 12 acceptanskriterier och sprintens 9 beviskort:
 
 1. **SCRUM-159 (D1 Beviskort – Prisändring kontrollerad hela vägen):**
    Höjer priset i katalogen från 899 kr till 1 299 kr. Skapar en ny bokning/faktura till det nya priset och bevisar att den äldre fakturan behåller 899 kr.
@@ -106,54 +106,54 @@ När skriptet körs sekventiellt genomförs sex oberoende kontrollsteg:
 ---
 
 ### [4/6] Kodkvalitet & Arkitektur (`CodeQualityTest.java`)
-**Mål:** Säkra professionell kodstandard och arkitektur.
-* **100% Språkparitet:** Kontrollerar att samtliga nycklar i `sv.json` återfinns i `en.json` (och vice versa).
+**Mål:** Hålla koden och arkitekturen på en professionell nivå.
+* **100% Språkparitet:** Kollar att varje nyckel i `sv.json` också finns i `en.json` (och tvärtom).
 * **Teckenkodningsskydd (Mojibake):** Skannar JSON-språkfiler efter felkodade tecken (`Ã¥`, `Ã¤`, `Ã¶`, `Ã©`) och tomma översättningar `""`.
-* **Arkitektonisk frikoppling:** Verifierar att servicelagret (`com.wac.autocore.service.*`) inte importerar eller har några beroenden mot presentationslagret (`javafx.*` eller `ui.*`).
-* **Filstorleksbegränsning:** Validerar att ingen Java-källkodsfil överskrider 1 200 rader för att motverka monolitiska "God Objects" (största komponenten `MechanicKanbanCard.java` är 1 022 rader).
+* **Arkitektonisk frikoppling:** Ser att servicelagret (`com.wac.autocore.service.*`) inte importerar eller på annat sätt hänger på presentationslagret (`javafx.*` eller `ui.*`).
+* **Filstorleksbegränsning:** Kräver att ingen Java-källkodsfil går över 1 200 rader, som skydd mot monolitiska "God Objects" (största komponenten `MechanicKanbanCard.java` är 1 022 rader).
 * **Statisk TODO/FIXME-analys:** Räknar kvarvarande TODO-noteringar i produktionskällkoden.
 
 ---
 
 ### [5/6] Säkerhetsanalys (`SecurityAuditTest.java` + `DataFlowAuditTest.java`)
-**Mål:** Förhindra säkerhetssårbarheter och dataläckor.
-* **SQL-injektionsskydd:** Statisk analys som säkerställer att alla SQL-satser i servicelager och repositories använder parametriserade `PreparedStatement` (`?`) istället för dynamisk strängkonkatenering.
-* **Dataflödesanalys (SQL och processer):** `DataFlowAuditTest` följer var en sträng kommer ifrån i stället för att titta på en rad i taget. En fråga som byggs med `+` på en rad och körs på en annan — vilket mönsterletningen ovan inte ser — fångas, eftersom analysen läser kompilatorns eget träd (`javac`). Kända konstanter (`private static final String TABELL = "payments"`) och literaler är ofarliga; allt annat som sammanfogas blir data och får inte nå `executeQuery`/`executeUpdate`/`prepareStatement` eller ett processanrop. Analysen har ett eget prov (`testTheAnalysisCatchesWhatThePatternMisses`) som bevisar att den fäller det mönstret och lämnar den ofarliga varianten i fred — en granskning som aldrig larmar ser annars lika grön ut som en ren kodbas.
-* **Inga hårdkodade hemligheter:** Skannar efter mönster för råa lösenord, API-nycklar och hemliga tokens.
-* **Skydd för känslig person- och betaldata:** Förhindrar att personnummer, lösenord eller kreditkortsnummer skrivs ut till terminalen via `System.out` / `System.err`.
+**Mål:** Stoppa säkerhetshål och dataläckor.
+* **SQL-injektionsskydd:** Statisk analys som kräver att alla SQL-satser i servicelager och repositories använder parametriserade `PreparedStatement` (`?`) istället för att klistra ihop strängar.
+* **Dataflödesanalys (SQL och processer):** `DataFlowAuditTest` följer var en sträng kommer ifrån i stället för att titta på en rad i taget. En fråga som byggs med `+` på en rad och körs på en annan, vilket mönsterletningen ovan inte ser, fångas, eftersom analysen läser kompilatorns eget träd (`javac`). Kända konstanter (`private static final String TABELL = "payments"`) och literaler är ofarliga; allt annat som sammanfogas blir data och får inte nå `executeQuery`/`executeUpdate`/`prepareStatement` eller ett processanrop. Analysen har ett eget prov (`testTheAnalysisCatchesWhatThePatternMisses`) som bevisar att den fäller det mönstret och lämnar den ofarliga varianten i fred. En granskning som aldrig larmar ser annars lika grön ut som en ren kodbas.
+* **Inga hårdkodade hemligheter:** Skannar efter råa lösenord, API-nycklar och hemliga tokens.
+* **Skydd för känslig person- och betaldata:** Stoppar personnummer, lösenord och kreditkortsnummer från att skrivas ut till terminalen via `System.out` / `System.err`.
 * **Process- och Runtime-skydd:** Verifierar att applikationskoden inte anropar `Runtime.getRuntime().exec` eller `ProcessBuilder` oskyddat.
-* **Versionshanteringsskydd:** Validerar att `.gitignore` aktivt skyddar lokala rapporter, loggböcker och databasfiler.
+* **Versionshanteringsskydd:** Kollar att `.gitignore` faktiskt skyddar lokala rapporter, loggböcker och databasfiler.
 
-*Kända gränser för dataflödesanalysen:* ingen typanalys och ingen analys över metodgränser — ett värde som byggs i en annan metod och skickas in följs inte. Det står också i `KONTROLLER.md`.
+*Kända gränser för dataflödesanalysen:* ingen typanalys och ingen analys över metodgränser. Ett värde som byggs i en annan metod och skickas in följs inte. Det står också i `KONTROLLER.md`.
 
 ---
 
 ### [6/6] WCAG 2.1 AAA Tillgänglighet (`WcagAccessibilityTest.java`)
-**Mål:** Garantera att gränssnittet är tillgängligt för alla användare, inklusive personer med synnedsättningar.
-* **Färgkontrast >= 7.0:1:** Beräknar färgkontrast enligt W3C:s formel för relativ luminans:
+**Mål:** Se till att gränssnittet går att använda för alla, även personer med synnedsättning.
+* **Färgkontrast >= 7.0:1:** Räknar ut färgkontrast enligt W3C:s formel för relativ luminans:
   $$\text{Kontrastkvot} = \frac{L_1 + 0.05}{L_2 + 0.05}$$
   Alla standardtextelement i aktivt tema (*Emerald*) måste ha en kontrastkvot på minst **7.0:1** mot sin bakgrund (WCAG 2.1 AAA).
-* **Fokusindikatorer:** Verifierar att interaktiva komponenter (knappar, textfält, tabeller) har tydliga fokusramar definierade i CSS.
-* **Minsta Textstorlek:** Validerar att all brödtext och alla kontrollelement använder minst 11 px fontstorlek.
+* **Fokusindikatorer:** Kollar att interaktiva komponenter (knappar, textfält, tabeller) har tydliga fokusramar i CSS.
+* **Minsta Textstorlek:** Ser till att all brödtext och alla kontrollelement håller minst 11 px fontstorlek.
 
 ---
 
 ## 4. Automatisk Rapportgenerering (`rapport.md`)
 
-Varje gång hela skriptet körs skapas eller uppdateras filen [`rapport.md`](file:///home/alex/Documents/Skolgrejer/Systemarkitektur/rapport.md) i projektets rot.  
+Varje gång du kör hela skriptet skapas eller uppdateras filen [`rapport.md`](file:///home/alex/Documents/Skolgrejer/Systemarkitektur/rapport.md) i projektets rot.  
 Rapporten innehåller:
 1. **Exekveringsmetadata:** Datum, klockslag, aktiv git-branch, git-commit, Java-version och operativsystem.
-2. **Kvantitativ sammanfattning:** Resultat för samtliga 6 moduler (88/88 tester).
+2. **Kvantitativ sammanfattning:** Resultat för samtliga 6 moduler.
 3. **Acceptanskravsmatris:** Detaljerad tabell med status för Kriterium 1 till 12 (länkat till [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md)).
 4. **Detaljerade bevisutfall:** Tabeller med radantal före/efter för migrering, PID-värden för omstartstestet, rabattberäkningar och provdata.
 
-> **Observera:** `rapport.md` och personliga analysfiler ignoreras av `.gitignore` och ska aldrig pushas till det gemensamma repositoriet.
+> **Observera:** `.gitignore` ignorerar `rapport.md` och personliga analysfiler, och de ska aldrig pushas till det gemensamma repositoriet.
 
 ---
 
 ## 5. Så Kör Du Skriptet
 
-### Köra hela sviten (Alla 88 tester och generera `rapport.md`)
+### Köra hela sviten och generera `rapport.md`
 ```bash
 # Linux / macOS:
 ./test.sh
@@ -166,13 +166,13 @@ test.bat
 ```
 
 ### Köra enskilda delmoduler
-Om du bara vill testa en specifik del under pågående utveckling:
+Om du bara vill testa en viss del medan du utvecklar:
 
 ```bash
 # Kör enbart Smoketest:
 ./test.sh smoke
 
-# Kör enbart Enhetstester (56 tester):
+# Kör enbart Enhetstester:
 ./test.sh unit
 
 # Kör enbart JIRA Beviskort & Acceptanskrav (9 bevis):

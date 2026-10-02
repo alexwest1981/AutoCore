@@ -1,9 +1,9 @@
 # Wigell AutoCore 2.5 – Specifikation av Mätbara Acceptanskrav
 
-Detta dokument definierar samtliga **mätbara acceptanskrav (AK-01 t.o.m. AK-16)** för AutoCore 2.5 (Sprint 3).  
-Eftersom inte alla i utvecklingsteamet har Jira MCP eller extern Jira-koppling konfigurerad i sin lokala miljö, utgör detta dokument den **fristående källan för krav och mätetal**.
+Här hittar du samtliga **mätbara acceptanskrav (AK-01 t.o.m. AK-16)** för AutoCore 2.5 (Sprint 3).  
+Alla i utvecklingsteamet har inte Jira MCP eller en extern Jira-koppling i sin lokala miljö. Därför är det här dokumentet den **fristående källan för krav och mätetal**.
 
-Alla krav är konstruerade för att kunna verifieras och mätas automatiskt av vem som helst via testskripten:
+Vem som helst kan verifiera och mäta samtliga krav automatiskt via testskripten:
 * **Linux / macOS:** `./test.sh`
 * **Windows (PowerShell):** `.\test.ps1`
 * **Windows (CMD):** `test.bat`
@@ -13,10 +13,10 @@ Alla krav är konstruerade för att kunna verifieras och mätas automatiskt av v
 
 ## 1. Mätprinciper och Definition av Godkänd (Pass/Fail)
 
-Varje acceptanskrav mäts utifrån tre nivåer:
-1. **Deterministiskt testfall:** Ett eller flera automatiserade Java-testfall som exekverar exakt den affärslogik eller databasoperation som kravet stipulerar.
-2. **Mätbart utfall (Kvantitativt kriterium):** Exakta värden (t.ex. radantal före vs efter, tidsåtgång i minuter, belopp i kronor och ören, kontrastkvot >= 7.0:1) som måste stämma på decimalen.
-3. **Auditstatus:** Alla 113 tester i testsviten måste passera med 100% grönt utfall för att systemet ska anses godkänt för release.
+Vi mäter varje acceptanskrav på tre nivåer:
+1. **Deterministiskt testfall:** Ett eller flera automatiserade Java-testfall som kör exakt den affärslogik eller databasoperation som kravet pekar på.
+2. **Mätbart utfall (Kvantitativt kriterium):** Exakta värden (t.ex. radantal före vs efter, tidsåtgång i minuter, belopp i kronor och ören, kontrastkvot >= 7.0:1) som ska stämma ända ned på decimalen.
+3. **Auditstatus:** Alla 115 tester i testsviten måste passera med 100% grönt utfall innan systemet räknas som godkänt för release.
 
 ---
 
@@ -36,7 +36,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 ---
 
 ### AK-02: Tjänster kan ändras innan arbetet påbörjats
-* **Krav:** En boknings tjänster ska kunna läggas till eller tas bort så länge bokningens status är `BOOKED`. Så fort arbetet har påbörjats (`IN_PROGRESS`) eller slutförts (`COMPLETED`) ska alla försök till ändring avvisas med ett undantag, och gränssnittet ska inaktivera ändringsknappar.
+* **Krav:** Så länge bokningens status är `BOOKED` ska man kunna lägga till eller ta bort tjänster på en bokning. Så fort arbetet har påbörjats (`IN_PROGRESS`) eller slutförts (`COMPLETED`) ska systemet avvisa varje försök till ändring med ett undantag, och gränssnittet ska inaktivera ändringsknapparna.
 * **Mätmetod & Kriterium:**
   - Lägga till en tjänst när bokningen har status `BOOKED` -> Ska lyckas utan undantag.
   - Sätta status till `IN_PROGRESS` och anropa `addServiceItem` / `removeServiceItem`.
@@ -75,7 +75,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 ---
 
 ### AK-05: Arbetsordern innehåller och visar arbeten som ska utföras
-* **Krav:** När en arbetsorder skapas utifrån en bokning ska samtliga beställda tjänster automatiskt föras över till arbetsordern, och arbetsordern ska i gränssnittet tydligt visa samtliga ingående moment, priser, beräknad arbetstid och status (utförd vs att utföra) så att mekanikern vet exakt vilka moment som ska genomföras.
+* **Krav:** När en arbetsorder skapas utifrån en bokning ska alla beställda tjänster följa med automatiskt. Arbetsordern ska i gränssnittet visa samtliga ingående moment, priser, beräknad arbetstid och status (utförd vs att utföra), så att mekanikern exakt ser vilka moment som ska genomföras.
 * **Mätmetod & Kriterium:**
   - Skapa arbetsorder från bokning med 3 tjänster (id 1, 2, 3).
   - Läsa tillbaka arbetsordern från databasen (`work_order_service_items`) och verifiera visning i UI (`EntityLookup`, `WorkOrderDialogs`).
@@ -101,7 +101,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 ---
 
 ### AK-07: Pris på en tjänst kan ändras i katalogen
-* **Krav:** Verkstadsadministratören ska när som helst kunna ändra baspriset på en tjänst i tjänstekatalogen, och prishöjningen ska omedelbart gälla för alla framtida bokningar och faktureringar.
+* **Krav:** Verkstadsadministratören ska kunna ändra baspriset på en tjänst i tjänstekatalogen när som helst. Det nya priset ska gälla direkt för alla framtida bokningar och faktureringar.
 * **Mätmetod & Kriterium:**
   - Ändra pris på tjänst ID 1 från 899.00 kr till 1 099.00 kr via `GarageSystem.updateServiceItem()`.
   - Skapa en ny bokning och arbetsorder för tjänst ID 1.
@@ -115,7 +115,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 ---
 
 ### AK-08: Prisändring påverkar inte gamla arbeten eller fakturor (Prisfrysning)
-* **Krav:** En prishöjning i katalogen får ALDRIG ändra beloppet på tidigare slutförda arbetsordrar eller utfärdade fakturor. Historiska priser ska förbli orörda både i databasen och i gränssnittet.
+* **Krav:** En prishöjning i katalogen får ALDRIG ändra beloppet på tidigare slutförda arbetsordrar eller utfärdade fakturor. Historiska priser ska ligga orörda både i databasen och i gränssnittet.
 * **Mätmetod & Kriterium:**
   - Faktura A skapas för Oljeservice till pris 899.00 kr.
   - Priset höjs i katalogen till 1 299.00 kr.
@@ -130,7 +130,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 ---
 
 ### AK-09: Rabattfunktioner fungerar med den nya fakturamodellen
-* **Krav:** Befintliga rabattregler (VIP-rabatt 10%, rabattkod `WELCOME10` 10%, kampanjkod `SERVICE200` 200 kr) ska appliceras korrekt på summan av fakturaraderna, och slutbeloppet får aldrig bli negativt.
+* **Krav:** Systemet ska tillämpa befintliga rabattregler (VIP-rabatt 10%, rabattkod `WELCOME10` 10%, kampanjkod `SERVICE200` 200 kr) korrekt på summan av fakturaraderna. Slutbeloppet får aldrig bli negativt.
 * **Mätmetod & Kriterium:**
   - Testfall 1 (VIP): Kund med `vip=true` -> Delsumma 1 295.00 kr ger exakt 10% rabatt (129.50 kr) -> Slutbelopp `1 165.50 kr`.
   - Testfall 2 (`WELCOME10`): Rabattkod ger exakt 10% avdrag på fakturan -> Slutbelopp `1 165.50 kr`.
@@ -144,7 +144,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 ---
 
 ### AK-10: Ny information sparas permanent i databasen
-* **Krav:** All data rörande flertjänstkopplingar (`booking_service_items`) och fakturarader (`invoice_lines`) ska persisteras relationellt i SQLite via JDBC och stödja fullständig livscykel (Create, Read, Update, Delete).
+* **Krav:** All data rörande flertjänstkopplingar (`booking_service_items`) och fakturarader (`invoice_lines`) ska sparas relationellt i SQLite via JDBC och stödja fullständig livscykel (Create, Read, Update, Delete).
 * **Mätmetod & Kriterium:**
   - Genomföra en fullständig rundtur för båda tabellerna: Infoga canary-poster, läsa tillbaka och verifiera fält, uppdatera relationen, verifiera ändringen och slutligen radera posterna.
   - **Godkänt mätvärde:** Samtliga JDBC-anrop lyckas utan SQLite-undantag och radavstämning är 100% konsistent.
@@ -157,7 +157,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 
 ### AK-11: Informationen finns kvar efter verklig processomstart (Omstartsbevis & Noll Dataförlust)
 * **Krav:** 
-  1. Dataintegriteten ska bevisas över en **verklig processomstart i operativsystemet** (inte enbart minnescache eller nya Java-objekt i samma JVM).
+  1. Vi ska bevisa dataintegriteten över en **verklig processomstart i operativsystemet** (inte bara via minnescache eller nya Java-objekt i samma JVM).
   2. Migrering från AutoCore 2.0 till 2.5 ska ske med **noll dataförlust** över alla befintliga tabeller.
 * **Mätmetod & Kriterium:**
   - **Del A (Tvåprocessomstart):** `RestartProofRunner` startar Process 1 (Writer, PID X) som sparar canary-relationer och terminerar (`exit 0`). Därefter startas Process 2 (Verifier, PID Y där PID Y ≠ PID X) i en helt ny JVM som verifierar att alla poster och relationer kvarstår orörda.
@@ -218,7 +218,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
   1. 100% paritet mellan språkfilerna `sv.json` och `en.json` (varje nyckel på svenska måste ha en motsvarighet på engelska och vice versa).
   2. Noll mojibake (teckenkodningsfel för å, ä, ö, é) och noll tomma översättningssträngar.
   3. Strikt separation mellan servicelager och GUI (servicelagret får inte importera JavaFX- eller presentationspaket).
-  4. Max 1 200 rader per Java-källkodsfil (säkerställer modularitet och förhindrar monolitiska "God Objects"; systemets mest omfattande GUI-komponent `MechanicKanbanCard.java` är 1 022 rader).
+  4. Högst 1 200 rader per Java-källkodsfil (det håller koden modulär och stoppar monolitiska "God Objects"; systemets största GUI-komponent `MechanicKanbanCard.java` ligger på 1 022 rader).
 * **Mätmetod & Kriterium:**
   - Kör `CodeQualityTest`.
   - **Godkänt mätvärde:** Saknade nycklar == 0, mojibake == 0, felaktiga GUI-beroenden i servicelagret == 0, max filrader <= 1 200.
@@ -246,7 +246,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 * **Krav:**
   1. Textkontrast i det aktiva temat (*Emerald*) ska uppfylla WCAG 2.1 AAA-nivå med en kontrastkvot på minst **7.0:1** mot bakgrunden.
   2. Alla interaktiva kontroller ska ha tydliga fokusindikatorer.
-  3. Minsta textstorlek i applikationen ska vara minst 11 px (inga oläsliga mikrotexter).
+  3. Ingen text i applikationen får vara mindre än 11 px (inga oläsliga mikrotexter).
 * **Mätmetod & Kriterium:**
   - `WcagAccessibilityTest` beräknar den relativa luminansen för alla accent-, sidopanels- och kortfärger enligt W3C:s formel `(L1 + 0.05) / (L2 + 0.05)`.
   - **Godkänt mätvärde:** Kontrastkvot >= 7.00:1 för samtliga kontrollerade textelement.
@@ -281,7 +281,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 
 ## 5. Så kör och mäter du kraven själv
 
-För att köra hela testsviten och få en automatisk rapport genererad i [`rapport.md`](rapport.md):
+Så här kör du hela testsviten och får en automatisk rapport i [`rapport.md`](rapport.md):
 
 ```bash
 # På Linux / macOS:
@@ -294,12 +294,12 @@ För att köra hela testsviten och få en automatisk rapport genererad i [`rappo
 test.bat
 ```
 
-För att köra enbart acceptanskraven och beviskorten:
+Vill du bara köra acceptanskraven och beviskorten:
 ```bash
 ./test.sh bevis
 ```
 
-Alla 113 tester körs automatiskt och verifierar varje mätpunkt utan krav på externa verktyg eller Jira-inloggning.
+Alla 115 tester körs automatiskt och verifierar varje mätpunkt. Du behöver varken externa verktyg eller Jira-inloggning.
 
 ---
 
@@ -309,12 +309,12 @@ Sviten hämtar kraven ur den här filen, så ett nytt krav behöver bara tre sak
 
 1. **Kravet:** lägg en ny rubrik `### AK-17: <namn>` i avsnitt 2 med mätmetod och godkänt mätvärde.
 2. **Testet:** skriv en publik metod `testXxx()` i valfri `*Test`-klass under `com/wac/autocore/test/`.
-   `TestRunner` hittar klasserna själv — ingen lista behöver uppdateras. En klass som inte nämns i
-   `TestRunner.GROUP_OF` körs i modulen `Enhetstester`.
+   `TestRunner` hittar klasserna själv, så ingen lista behöver uppdateras. Nämns en klass inte i
+   `TestRunner.GROUP_OF` körs den i modulen `Enhetstester`.
 3. **Raden:** lägg kravet i spårbarhetsmatrisen i avsnitt 4 med exakt `KlassNamn.metodNamn` i testkolumnen.
 
 Kör sedan `./test.sh` (Windows: `.\test.ps1`). Då gäller:
 
 * varje hänvisning i matrisen måste finnas som testmetod, annars blir körningen röd (`BEVISKOPPLING`),
-* rapportens kravtabell fylls på från matrisen — nya krav skrivs inte in i skriptet,
-* antalet tester och statusen i rapporten räknas från de moduler som faktiskt kördes.
+* rapportens kravtabell fylls på från matrisen, så nya krav skrivs inte in i skriptet,
+* antalet tester och statusen i rapporten kommer från de moduler som faktiskt kördes.
