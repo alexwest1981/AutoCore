@@ -22,6 +22,7 @@ public class TestRunner {
         {"smoke", "SmokeTest"},
         {"bevis", "EvidenceVerificationTest"},
         {"quality", "CodeQualityTest"},
+        {"quality", "DocumentationTest"},
         {"security", "SecurityAuditTest"},
         {"security", "DataFlowAuditTest"},
         {"wcag", "WcagAccessibilityTest"},
