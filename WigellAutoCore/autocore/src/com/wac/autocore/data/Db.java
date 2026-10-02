@@ -156,12 +156,56 @@ public class Db {
                     + "WHERE NOT EXISTS (SELECT 1 FROM invoice_lines l WHERE l.invoice_id = i.id)";
             statement.executeUpdate(migrateInvoiceLinesSql);
 
+            // Registreringsnummer i samma skepnad i hela registret: versaler och mellanslag mellan
+            // bokstäverna och siffrorna, så att "abc123" och "ABC 123" inte blir två olika fordon.
+            // Går inte att göra i SQL, eftersom mellanslaget sätts in på rätt plats i Java.
+            // Körs efter anslutningen ovan, på sin egen, så att ingen öppen kurs låser SQLite.
+
             System.out.println("Databas redo: " + DATABASE_PATH);
 
         } catch (SQLException e) {
             System.out.println("Kunde inte skapa tabellerna: " + e.getMessage());
         }
 
+        normalizeRegistrationNumbers();
         SeedData.seedIfEmpty();
+    }
+
+    /**
+     * Rättar registreringsnummer som sparades innan modellen började normalisera dem.
+     * Idempotent: bara rader som avviker skrivs om, så den kan köra varje gång.
+     *
+     * Öppnar sin egen anslutning och stänger läsningen innan den skriver — en öppen läskurs
+     * på samma anslutning låser SQLite, och då stannar hela sviten i nästa skrivning.
+     */
+    private static void normalizeRegistrationNumbers() {
+        java.util.List<Integer> ids = new java.util.ArrayList<Integer>();
+        java.util.List<String> numbers = new java.util.ArrayList<String>();
+
+        try (java.sql.Connection connection = getConnection()) {
+            java.sql.Statement read = connection.createStatement();
+            java.sql.ResultSet rows = read.executeQuery(
+                    "SELECT id, registration_number FROM vehicles WHERE registration_number IS NOT NULL");
+            while (rows.next()) {
+                ids.add(Integer.valueOf(rows.getInt(1)));
+                numbers.add(rows.getString(2));
+            }
+            rows.close();
+            read.close();
+
+            java.sql.PreparedStatement write = connection.prepareStatement(
+                    "UPDATE vehicles SET registration_number = ? WHERE id = ?");
+            for (int i = 0; i < ids.size(); i++) {
+                String normalized = com.wac.autocore.model.Vehicle.normalizeRegistrationNumber(numbers.get(i));
+                if (normalized != null && !normalized.equals(numbers.get(i))) {
+                    write.setString(1, normalized);
+                    write.setInt(2, ids.get(i).intValue());
+                    write.executeUpdate();
+                }
+            }
+            write.close();
+        } catch (java.sql.SQLException e) {
+            System.out.println("Kunde inte rätta registreringsnumren: " + e.getMessage());
+        }
     }
 }

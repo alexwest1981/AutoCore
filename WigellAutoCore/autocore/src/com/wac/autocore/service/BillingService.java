@@ -67,6 +67,13 @@ public class BillingService {
             return null;
         }
 
+        // Ett jobb ska bara faktureras en gång. Gränssnittet hindrar att samma bokning väljs om,
+        // men anropet kan komma underifrån — och då blev det två fakturor på samma arbete.
+        if (hasInvoiceFor(workOrderId)) {
+            System.out.println("Invoice already exists for work order " + workOrderId + ".");
+            return null;
+        }
+
         List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
         List<Integer> targetServiceIds = workOrder.getCompletedServiceItems();
         // SCRUM-158 (C3): Utförda arbeten ligger till grund för fakturan.
@@ -155,6 +162,24 @@ public class BillingService {
 
         return invoice;
     }
+    /**
+     * Sant om arbetsordern redan har en faktura. Fakturan kan komma från vilken väg som helst,
+     * så kontrollen görs mot databasen och inte mot gränssnittets urval.
+     */
+    private boolean hasInvoiceFor(int workOrderId) {
+        try {
+            List<Invoice> invoices = invoiceRepository.findAll();
+            for (int i = 0; i < invoices.size(); i++) {
+                if (invoices.get(i).getWorkOrderId() == workOrderId) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Could not check for existing invoices: " + e.getMessage());
+        }
+        return false;
+    }
+
     /**
      * SCRUM-166 (E5): fördelar fakturans rabatt på raderna i proportion till radens pris.
      * Varje del avrundas till hela ören. Avrundningsresten läggs på den dyraste raden,

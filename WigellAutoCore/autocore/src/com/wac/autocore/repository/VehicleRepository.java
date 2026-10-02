@@ -12,12 +12,40 @@ import java.util.List;
 
 public class VehicleRepository {
 
+    /**
+     * Sparar fordonet. Numret är redan normaliserat i modellen (versaler, mellanslag mellan
+     * bokstäver och siffror), och här hålls den regel som gränssnittet inte kan hålla själv:
+     * ett registreringsnummer tillhör ett fordon. Både skapandet och uppdateringen går genom
+     * den här metoden, så regeln gäller varifrån anropet än kommer.
+     *
+     * Krockkontrollen görs på samma anslutning som skrivningen och stängs innan den skriver,
+     * så att en öppen läskurs inte låser SQLite.
+     */
     public void save(Vehicle vehicle) throws SQLException {
+        String registrationNumber = vehicle.getRegistrationNumber();
+        if (registrationNumber == null || registrationNumber.trim().isEmpty()) {
+            throw new IllegalStateException("Fordonet saknar registreringsnummer.");
+        }
+
         if (vehicle.getId() == 0 || findById(vehicle.getId()) == null) {
             insert(vehicle);
         } else {
             update(vehicle);
         }
+    }
+
+    /** Sant om ett annat fordon redan har numret. Frågan stängs innan den som anropade skriver. */
+    private boolean registrationNumberTaken(Connection connection, String registrationNumber, int exceptId)
+            throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(
+                "SELECT COUNT(*) FROM vehicles WHERE registration_number = ? AND id <> ?");
+        statement.setString(1, registrationNumber);
+        statement.setInt(2, exceptId);
+        ResultSet result = statement.executeQuery();
+        boolean taken = result.next() && result.getInt(1) > 0;
+        result.close();
+        statement.close();
+        return taken;
     }
 
     public List<Vehicle> findAll() throws SQLException {
@@ -71,6 +99,11 @@ public class VehicleRepository {
         try (Connection connection = Db.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
+            if (registrationNumberTaken(connection, vehicle.getRegistrationNumber(), 0)) {
+                throw new IllegalStateException("Registreringsnumret " + vehicle.getRegistrationNumber()
+                        + " tillhör redan ett annat fordon.");
+            }
+
             statement.setString(1, vehicle.getRegistrationNumber());
             statement.setString(2, vehicle.getBrand());
             statement.setString(3, vehicle.getModel());
@@ -91,6 +124,11 @@ public class VehicleRepository {
 
         try (Connection connection = Db.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            if (registrationNumberTaken(connection, vehicle.getRegistrationNumber(), vehicle.getId())) {
+                throw new IllegalStateException("Registreringsnumret " + vehicle.getRegistrationNumber()
+                        + " tillhör redan ett annat fordon.");
+            }
 
             statement.setString(1, vehicle.getRegistrationNumber());
             statement.setString(2, vehicle.getBrand());

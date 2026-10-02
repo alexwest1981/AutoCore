@@ -1,55 +1,142 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.data.Db;
+import com.wac.autocore.model.Booking;
+import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.Payment;
+import com.wac.autocore.model.ServiceItem;
+import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.repository.BookingRepository;
+import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.service.GarageSystem;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Mätetalen på översikten, kontrollerade mot databasen i stället för mot sig själva.
+ *
+ * De tre proven var tidigare tautologier — "antalet är inte negativt", "antalet överstiger
+ * inte antalet" — och kunde därför aldrig falla. Punkt 9 i genomgången (intäkten tappade
+ * öret) gick rakt igenom den vakten. Proven jämför nu två oberoende vägar till samma tal,
+ * eller följer ett tillstånd hela vägen i stället för att döma databasen som helhet.
+ */
 public class OverviewMetricsTest {
 
-    public void testActiveWorkOrdersCalculation() {
+    public void testActiveWorkOrdersCalculation() throws SQLException {
         GarageSystem garage = new GarageSystem();
         List<WorkOrder> orders = garage.getWorkOrders();
 
-        long activeCount = 0;
-        for (WorkOrder wo : orders) {
-            if (!"COMPLETED".equals(wo.getStatus())) {
-                activeCount++;
+        int activeInMemory = 0;
+        for (int i = 0; i < orders.size(); i++) {
+            if (!"COMPLETED".equalsIgnoreCase(orders.get(i).getStatus())) {
+                activeInMemory++;
             }
         }
 
-        TestRunner.assertTrue(activeCount >= 0, "Active work orders is non-negative");
-        TestRunner.assertTrue(activeCount <= orders.size(), "Active work orders cannot exceed total orders");
+        int activeInDatabase = countFromDatabase(
+                "SELECT COUNT(*) FROM work_orders WHERE status IS NULL OR status <> 'COMPLETED'");
+        TestRunner.assertEquals(Integer.valueOf(activeInDatabase), Integer.valueOf(activeInMemory),
+                "Antalet pågående arbetsordrar ska stämma med databasen, inte bara med listan i minnet");
     }
 
+    /**
+     * Intäkten räknas på två oberoende vägar: ur betalningarna och ur de betalda fakturorna.
+     * Är de inte samma tal har ören tappats någonstans på vägen.
+     */
     public void testTotalRevenueCalculation() {
         GarageSystem garage = new GarageSystem();
-        List<Payment> payments = garage.getPayments();
 
-        double revenue = 0;
-        for (Payment p : payments) {
-            if (p.isSuccessful()) {
-                revenue += p.getAmount();
+        double fromPayments = 0.0;
+        List<Payment> payments = garage.getPayments();
+        for (int i = 0; i < payments.size(); i++) {
+            if (payments.get(i).isSuccessful()) {
+                fromPayments += payments.get(i).getAmount();
             }
         }
 
-        TestRunner.assertTrue(revenue >= 0.0, "Revenue cannot be negative");
+        double fromInvoices = 0.0;
+        List<Invoice> invoices = garage.getInvoices();
+        for (int i = 0; i < invoices.size(); i++) {
+            if (invoices.get(i).isPaid()) {
+                fromInvoices += invoices.get(i).getTotalAmount();
+            }
+        }
+
+        TestRunner.assertEquals(Double.valueOf(round(fromPayments)), Double.valueOf(round(fromInvoices)),
+                "Intäkten ska bli samma tal ur betalningarna som ur de betalda fakturorna — "
+                        + "betalningar " + fromPayments + " kr, fakturor " + fromInvoices + " kr");
     }
 
-    public void testMechanicAvailabilityCount() {
+    /**
+     * Tillståndet ska följa arbetet: mekanikern blir upptagen när arbetet startar och ledig när
+     * det är klart. Provet följer sin egen mekaniker hela vägen i stället för att döma hela
+     * databasen, så kvarglömd data från en avbruten körning inte får det att falla.
+     */
+    public void testMechanicAvailabilityFollowsTheWorkOrder() throws SQLException {
         GarageSystem garage = new GarageSystem();
-        List<Mechanic> mechanics = garage.getMechanics();
+        Vehicle vehicle = garage.getVehicles().get(0);
+        ServiceItem service = garage.getServiceItems().get(0);
+        Mechanic mechanic = garage.createMechanic("Revision-tillgänglighet", "070-0000029", "Allmän service");
+        Booking booking = new Booking(0, vehicle.getId(), LocalDate.now().plusDays(21), "Revision: tillgänglighet");
+        List<Integer> serviceIds = new ArrayList<Integer>();
+        serviceIds.add(Integer.valueOf(service.getId()));
+        booking.setServiceItemIds(serviceIds);
+        new BookingRepository().save(booking);
 
-        int available = 0;
-        for (Mechanic m : mechanics) {
-            if (m.isAvailable()) {
-                available++;
+        int orderId = 0;
+        try {
+            int mechanicId = mechanic.getId();
+            TestRunner.assertTrue(available(garage, mechanicId), "En ny mekaniker ska stå som ledig");
+
+            WorkOrder order = garage.createWorkOrder(booking.getId(), mechanicId);
+            orderId = order.getId();
+            garage.startWorkOrder(orderId);
+            TestRunner.assertFalse(available(garage, mechanicId),
+                    "Mekanikern ska stå som upptagen när arbetet är igång");
+
+            garage.markServicesAsCompleted(orderId, new int[]{service.getId()});
+            garage.completeWorkOrder(orderId);
+            TestRunner.assertTrue(available(garage, mechanicId),
+                    "Mekanikern ska stå som ledig igen när arbetet är klart");
+        } finally {
+            if (orderId > 0) {
+                new WorkOrderRepository().delete(orderId);
+            }
+            new BookingRepository().delete(booking.getId());
+            garage.deleteMechanic(mechanic.getId());
+        }
+    }
+
+    private boolean available(GarageSystem garage, int mechanicId) {
+        List<Mechanic> mechanics = garage.getMechanics();
+        for (int i = 0; i < mechanics.size(); i++) {
+            if (mechanics.get(i).getId() == mechanicId) {
+                return mechanics.get(i).isAvailable();
             }
         }
+        return false;
+    }
 
-        TestRunner.assertTrue(available >= 0, "Available count cannot be negative");
-        TestRunner.assertTrue(available <= mechanics.size(), "Available count cannot exceed team size");
+    private int countFromDatabase(String sql) throws SQLException {
+        Connection connection = Db.getConnection();
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery(sql);
+            return result.next() ? result.getInt(1) : 0;
+        } finally {
+            connection.close();
+        }
+    }
+
+    private double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }
