@@ -119,7 +119,7 @@ is_jdk8() {
 }
 
 # Läs kommandoradsargument och flaggor
-MODE="core"
+MODE="all"
 CLI_JDK=""
 
 while [[ $# -gt 0 ]]; do
