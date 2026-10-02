@@ -16,7 +16,7 @@ Alla krav är konstruerade för att kunna verifieras och mätas automatiskt av v
 Varje acceptanskrav mäts utifrån tre nivåer:
 1. **Deterministiskt testfall:** Ett eller flera automatiserade Java-testfall som exekverar exakt den affärslogik eller databasoperation som kravet stipulerar.
 2. **Mätbart utfall (Kvantitativt kriterium):** Exakta värden (t.ex. radantal före vs efter, tidsåtgång i minuter, belopp i kronor och ören, kontrastkvot >= 7.0:1) som måste stämma på decimalen.
-3. **Auditstatus:** Alla 88 tester i testsviten måste passera med 100% grönt utfall för att systemet ska anses godkänt för release.
+3. **Auditstatus:** Alla 113 tester i testsviten måste passera med 100% grönt utfall för att systemet ska anses godkänt för release.
 
 ---
 
@@ -235,9 +235,9 @@ Varje acceptanskrav mäts utifrån tre nivåer:
   4. Inga oskyddade externa processanrop i applikationskoden.
   5. `.gitignore` ska aktivt skydda personliga rapporter, analyser och hemligheter.
 * **Mätmetod & Kriterium:**
-  - Kör `SecurityAuditTest` och regex-skanning av källkodsträdet.
+  - Kör `SecurityAuditTest` (mönster i källkoden) och `DataFlowAuditTest` (dataflödesanalys på kompilatorns träd).
   - **Godkänt mätvärde:** 0 sårbarheter, 0 hårdkodade hemligheter funna.
-* **Kopplat testfall:** `SecurityAuditTest` (4 tester)
+* **Kopplat testfall:** `SecurityAuditTest` + `DataFlowAuditTest` (7 tester)
 * **Status:** GODKÄND (100%)
 
 ---
@@ -274,7 +274,7 @@ Varje acceptanskrav mäts utifrån tre nivåer:
 | **AK-12** | 9 Kärnområden intakta | Kunder, Fordon, Bokning, Mekaniker, mm. OK | `EvidenceVerificationTest.testScrum172NineCoreAreasVerified` | SCRUM-171, 172 (G1, G2) | **GODKÄND** |
 | **AK-13** | Debitera enbart utfört arbete | 3 beställda -> 2 utförda -> 2 på faktura | `EvidenceVerificationTest.testScrum173PresentationEndToEndFlow` | SCRUM-173 (G3), C3 | **GODKÄND** |
 | **AK-14** | Språkparitet & Arkitektur | 0 saknade nycklar, 0 mojibake, ren arkitektur | `CodeQualityTest` (4 tester) | Kvalitetskrav | **GODKÄND** |
-| **AK-15** | Säkerhet & Injektionsskydd | 0 sårbarheter, 100% PreparedStatement | `SecurityAuditTest` (4 tester) | Säkerhetskrav | **GODKÄND** |
+| **AK-15** | Säkerhet & Injektionsskydd | 0 sårbarheter, 100% PreparedStatement | `SecurityAuditTest` + `DataFlowAuditTest` (7 tester) | Säkerhetskrav | **GODKÄND** |
 | **AK-16** | WCAG 2.1 AAA Tillgänglighet | Kontrast >= 7.0:1, fokusindikatorer, min 11px | `WcagAccessibilityTest` (5 tester) | WCAG AAA | **GODKÄND** |
 
 ---
@@ -299,7 +299,7 @@ För att köra enbart acceptanskraven och beviskorten:
 ./test.sh bevis
 ```
 
-Alla 88 tester körs automatiskt och verifierar varje mätpunkt utan krav på externa verktyg eller Jira-inloggning.
+Alla 113 tester körs automatiskt och verifierar varje mätpunkt utan krav på externa verktyg eller Jira-inloggning.
 
 ---
 
