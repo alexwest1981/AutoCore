@@ -76,12 +76,6 @@ public final class WorkOrderDialogs {
 
         GridPane grid = ActionDialogs.createGrid();
         grid.setPrefWidth(640);
-        javafx.scene.layout.ColumnConstraints col0 = new javafx.scene.layout.ColumnConstraints();
-        col0.setMinWidth(140);
-        col0.setPrefWidth(150);
-        javafx.scene.layout.ColumnConstraints col1 = new javafx.scene.layout.ColumnConstraints();
-        col1.setHgrow(Priority.ALWAYS);
-        grid.getColumnConstraints().addAll(col0, col1);
 
         ComboBox<Booking> bookingBox = new ComboBox<Booking>();
         bookingBox.getItems().addAll(bookings);
@@ -303,7 +297,10 @@ public final class WorkOrderDialogs {
         content.setPadding(new Insets(18, 22, 18, 22));
         content.setPrefWidth(640);
 
+        // Detaljvyn är upplysningar, inte ett formulär. Utan kolumnregler hamnar värdena direkt
+        // efter sina etiketter i stället för att tryckas ut till höger.
         GridPane infoGrid = ActionDialogs.createGrid();
+        infoGrid.getColumnConstraints().clear();
         infoGrid.add(new Label(I18n.get("table.col.status") + ":"), 0, 0);
         Label statusBadge = new Label(UiFormatters.statusWord(workOrder.getStatus()));
         statusBadge.getStyleClass().add("badge");
@@ -335,7 +332,16 @@ public final class WorkOrderDialogs {
         Label notice = new Label(I18n.get("dialog.workorder.historical_notice"));
         notice.getStyleClass().addAll("srow-sub", "small");
 
+        // Rader av tjänster är en tabell med fyra kolumner, så den får fyra egna kolumnregler.
         GridPane linesGrid = ActionDialogs.createGrid();
+        linesGrid.getColumnConstraints().clear();
+        for (int i = 0; i < 4; i++) {
+            javafx.scene.layout.ColumnConstraints column = new javafx.scene.layout.ColumnConstraints();
+            column.setMinWidth(100);
+            column.setPrefWidth(140);
+            column.setHgrow(Priority.ALWAYS);
+            linesGrid.getColumnConstraints().add(column);
+        }
         Label h1 = new Label(I18n.get("table.col.service"));
         h1.setStyle("-fx-font-weight: bold;");
         Label hTime = new Label(I18n.get("table.col.estimated_time"));

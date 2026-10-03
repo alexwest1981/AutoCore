@@ -21,6 +21,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -82,7 +83,17 @@ public final class ActionDialogs {
         grid.setHgap(14);
         grid.setVgap(14);
         grid.setPadding(new Insets(18, 22, 18, 22));
-        grid.setPrefWidth(580);
+        grid.setPrefWidth(480);
+        // Etikettkolumnen breddas efter sin längsta text, annars klipps långa etiketter. Bara
+        // fältkolumnen växer, så fälten tar resten utan att bli bredare än nödvändigt.
+        if (grid.getColumnConstraints().isEmpty()) {
+            javafx.scene.layout.ColumnConstraints labelColumn = new javafx.scene.layout.ColumnConstraints();
+            javafx.scene.layout.ColumnConstraints fieldColumn = new javafx.scene.layout.ColumnConstraints();
+            fieldColumn.setMinWidth(240);
+            fieldColumn.setPrefWidth(300);
+            fieldColumn.setHgrow(Priority.ALWAYS);
+            grid.getColumnConstraints().addAll(labelColumn, fieldColumn);
+        }
         return grid;
     }
 
