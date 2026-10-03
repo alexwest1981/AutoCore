@@ -31,6 +31,14 @@ public final class EntityPages {
 
     private EntityPages() {}
 
+    /**
+     * Antalsraden ovanför tabellen. Ett styck heter annat än flera, så singularvarianten av
+     * nyckeln används när siffran är ett.
+     */
+    private static String meta(String key, int count) {
+        return I18n.get(count == 1 ? key + ".one" : key, count);
+    }
+
     public static VBox buildCustomersPage(GarageSystem garage, PageRouter router) {
         FilterableTable<Customer> table = TableFactory.create(garage.getCustomers());
         TableView<Customer> t = table.getTableView();
@@ -81,7 +89,7 @@ public final class EntityPages {
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.customers.title"),
-                I18n.get("entity.customers.meta", garage.getCustomers().size()),
+                meta("entity.customers.meta", garage.getCustomers().size()),
                 I18n.get("entity.customers.subtitle"),
                 t, deleteBtn, editBtn, addBtn);
     }
@@ -137,7 +145,7 @@ public final class EntityPages {
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.vehicles.title"),
-                I18n.get("entity.vehicles.meta", garage.getVehicles().size()),
+                meta("entity.vehicles.meta", garage.getVehicles().size()),
                 I18n.get("entity.vehicles.subtitle"),
                 t, deleteBtn, editBtn, addBtn);
     }
@@ -213,7 +221,7 @@ public final class EntityPages {
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.bookings.title"),
-                I18n.get("entity.bookings.meta", garage.getBookings().size()),
+                meta("entity.bookings.meta", garage.getBookings().size()),
                 I18n.get("entity.bookings.subtitle"),
                 t, cancelBtn, deleteBtn, editBtn, addBtn);
     }
@@ -311,8 +319,12 @@ public final class EntityPages {
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.workorders.title"),
-                I18n.get("entity.workorders.meta", garage.getWorkOrders().size()),
+                meta("entity.workorders.meta", garage.getWorkOrders().size()),
                 I18n.get("entity.workorders.subtitle"),
+                UiComponents.viewNotice(
+                        PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
+                        I18n.get("view.notice.workorders.one"),
+                        I18n.get("view.notice.workorders.many")),
                 t, detailsBtn, startBtn, markBtn, completeBtn, invoiceBtn, addBtn);
     }
 
@@ -366,7 +378,7 @@ public final class EntityPages {
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.services.title"),
-                I18n.get("entity.services.meta", garage.getServiceItems().size()),
+                meta("entity.services.meta", garage.getServiceItems().size()),
                 I18n.get("entity.services.subtitle"),
                 t, deleteBtn, editBtn, addBtn);
     }
@@ -421,7 +433,7 @@ public final class EntityPages {
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.mechanics.title"),
-                I18n.get("entity.mechanics.meta", garage.getMechanics().size()),
+                meta("entity.mechanics.meta", garage.getMechanics().size()),
                 I18n.get("entity.mechanics.subtitle"),
                 t, deleteBtn, editBtn, addBtn);
     }
@@ -489,8 +501,13 @@ public final class EntityPages {
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.invoices.title"),
-                I18n.get("entity.invoices.meta", garage.getInvoices().size()),
+                meta("entity.invoices.meta", garage.getInvoices().size()),
                 I18n.get("entity.invoices.subtitle"),
+                UiComponents.viewNotice(
+                        PageRouter.countBookingsReadyForInvoice(garage.getBookings(), garage.getWorkOrders(),
+                                garage.getInvoices()),
+                        I18n.get("view.notice.invoices.one"),
+                        I18n.get("view.notice.invoices.many")),
                 t, printBtn, linesBtn, payBtn, addBtn);
     }
 
@@ -512,8 +529,12 @@ public final class EntityPages {
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.payments.title"),
-                I18n.get("entity.payments.meta", garage.getPayments().size()),
+                meta("entity.payments.meta", garage.getPayments().size()),
                 I18n.get("entity.payments.subtitle"),
+                UiComponents.viewNotice(
+                        PageRouter.countUnpaidInvoices(garage.getInvoices()),
+                        I18n.get("view.notice.payments.one"),
+                        I18n.get("view.notice.payments.many")),
                 t, addBtn);
     }
 }

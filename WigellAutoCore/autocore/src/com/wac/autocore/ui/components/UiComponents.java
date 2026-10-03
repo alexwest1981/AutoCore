@@ -102,6 +102,16 @@ public final class UiComponents {
 
     public static VBox buildEntityPage(String title, String sub, String eyebrow,
                                        TableView<?> table, Node... actions) {
+        return buildEntityPage(title, sub, eyebrow, null, table, actions);
+    }
+
+    /**
+     * Samma sida, men med en notisrad överst. Raden visar samma siffra som sidebaren gör för vyn,
+     * så att man ser att det finns något att hantera även när man står i vyn. Är det inget att
+     * hantera tar raden ingen plats alls.
+     */
+    public static VBox buildEntityPage(String title, String sub, String eyebrow, Node notice,
+                                       TableView<?> table, Node... actions) {
         VBox titles = pageHead(title, sub, eyebrow);
         HBox.setHgrow(titles, Priority.ALWAYS);
 
@@ -146,6 +156,30 @@ public final class UiComponents {
         inner.getChildren().add(table);
         inner.setPadding(new Insets(4, 6, 6, 6));
 
-        return new VBox(18, topRow, inner);
+        if (notice == null) {
+            return new VBox(18, topRow, inner);
+        }
+        return new VBox(18, topRow, notice, inner);
+    }
+
+    /**
+     * Notisraden: en siffra och en rad om vad som väntar, i temats egen notisfärg. Är det inget
+     * att hantera blir raden osynlig och tar ingen plats.
+     */
+    public static Node viewNotice(int count, String singularKey, String pluralKey) {
+        HBox row = new HBox(10);
+        row.getStyleClass().add("notice");
+        row.setAlignment(Pos.CENTER_LEFT);
+        if (count <= 0) {
+            row.setVisible(false);
+            row.setManaged(false);
+            return row;
+        }
+        Label number = new Label(String.valueOf(count));
+        number.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
+        // Ett styck heter annat än flera, så texten väljs efter siffran.
+        Label message = new Label(com.wac.autocore.ui.i18n.I18n.get(count == 1 ? singularKey : pluralKey));
+        row.getChildren().addAll(number, message);
+        return row;
     }
 }
