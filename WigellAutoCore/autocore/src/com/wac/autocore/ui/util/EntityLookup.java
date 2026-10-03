@@ -426,7 +426,7 @@ public final class EntityLookup {
             sb.append(name);
             boolean done = wo.getCompletedServiceItems() != null && wo.getCompletedServiceItems().contains(sid);
             if (done) {
-                sb.append(" [✔ ").append(I18n.get("status.completed")).append("]");
+                sb.append(" [").append(I18n.get("status.completed")).append("]");
             } else {
                 sb.append(" [").append(I18n.get("status.to_be_performed")).append("]");
             }
