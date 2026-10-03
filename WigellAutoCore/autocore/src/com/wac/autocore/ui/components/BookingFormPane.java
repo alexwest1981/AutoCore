@@ -52,11 +52,28 @@ public class BookingFormPane extends GridPane {
     private final ComboBox<Vehicle> vehicleBox;
     private final DatePicker datePicker;
     private final ComboBox<ServiceItem> serviceBox;
+    /**
+     * Flervalsfältet för tjänster. Det äger valet; serviceBox finns kvar för äldre kodvägar men
+     * ritas inte längre ut. selectedServices är formulärets egen lista och speglas från fältet.
+     */
+    private MultiSelectComboBox<ServiceItem> serviceMulti;
     private final ObservableList<ServiceItem> selectedServices = FXCollections.observableArrayList();
     private final VBox selectedServicesContainer = new VBox(4);
     private final ScrollPane servicesScroll;
     private final Label totalSummaryLabel = new Label();
     private final ComboBox<Mechanic> mechanicBox;
+    /**
+     * Flervalsfältet för mekaniker. Auto-tilldelningen väljer mekanikerna i det, precis som
+     * tjänsterna ligger som chips. mechanicBox behålls som den som sparandet och tidskontrollerna
+     * läser, och hålls i takt med fältet.
+     */
+    private MultiSelectComboBox<Mechanic> mechanicMulti;
+    /** Id:n som användaren själv tagit bort ur auto-tilldelningen. De läggs inte tillbaka. */
+    private final java.util.Set<Integer> removedMechanics = new java.util.HashSet<Integer>();
+    /** Id:n som användaren själv lagt till utöver auto-tilldelningen. De ligger kvar när tjänsterna ändras. */
+    private final java.util.Set<Integer> manuallyAddedMechanics = new java.util.HashSet<Integer>();
+    /** Sant medan fältet fylls av auto-tilldelningen, så att det inte tolkas som ett användarval. */
+    private boolean updatingMechanicField;
     private final Label mechanicFilterHint;
     private final ComboBox<LocalTime> startTimeBox;
     private final Label durationLabel;
@@ -257,6 +274,25 @@ public class BookingFormPane extends GridPane {
         });
 
         // 3. Mekaniker med dynamiskt kvalifikationsfilter för samtliga valda tjänster
+
+// 4. Mekaniker med dynamiskt kvalifikationsfilter
+        // Fältets val speglas mot formulärets selectedServices, som summor och sparande läser.
+        this.serviceMulti = new MultiSelectComboBox<ServiceItem>(
+                I18n.get("dialog.booking.service_select"),
+                s -> SeedText.resolve(s.getName()),
+                s -> UiFormatters.formatMoney(s.getPrice()) + " · " + s.getEstimatedMinutes() + " min");
+        this.serviceMulti.setItems(garage.getServiceItems());
+        this.serviceMulti.setKeyProvider(s -> s.getId());
+        // En bokning som redan har tjänster visar dem som valda chips, även i redigeringsläge.
+        this.serviceMulti.setSelectedItems(new java.util.ArrayList<ServiceItem>(this.selectedServices));
+        this.serviceMulti.getSelectedItems().addListener(
+                (javafx.collections.ListChangeListener<ServiceItem>) c -> {
+                    this.selectedServices.setAll(this.serviceMulti.getSelectedItems());
+                    renderServices.run();
+                });
+        if (isServicesLocked) {
+            this.serviceMulti.setDisable(true);
+        }
         this.mechanicFilterHint = new Label();
         this.mechanicFilterHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
 
@@ -274,10 +310,49 @@ public class BookingFormPane extends GridPane {
 
         this.excludeId = existingBooking != null ? existingBooking.getId() : 0;
 
+        // Specialiseringen står i listan men inte i chipset.
+        // chipset i fältet visar bara namnet.
+        this.mechanicMulti = new MultiSelectComboBox<Mechanic>(
+                I18n.get("dialog.booking.mechanic_select"),
+                m -> m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ")");
+        this.mechanicMulti.setChipTextProvider(m -> m.getName());
+        this.mechanicMulti.setItems(garage.getMechanics());
+        this.mechanicMulti.setKeyProvider(m -> m.getId());
+        this.mechanicMulti.getSelectedItems().addListener(
+                (javafx.collections.ListChangeListener<Mechanic>) c -> {
+                    if (updatingMechanicField) {
+                        return;
+                    }
+                    // Teamets mekaniker som han tagit bort kommer ihåg som borttagna.
+                    java.util.List<Integer> remaining = new java.util.ArrayList<Integer>();
+                    for (Mechanic m : mechanicMulti.getSelectedItems()) {
+                        remaining.add(m.getId());
+                    }
+                    java.util.List<Integer> inTeam = new java.util.ArrayList<Integer>();
+                    for (Mechanic m : garage.getRequiredMechanics(selectedServices)) {
+                        inTeam.add(m.getId());
+                        if (remaining.contains(m.getId())) {
+                            removedMechanics.remove(m.getId());
+                        } else {
+                            removedMechanics.add(m.getId());
+                        }
+                    }
+                    // Egna tillägg utanför teamet hålls isär: de ligger kvar när tjänsterna ändras.
+                    for (Mechanic m : garage.getMechanics()) {
+                        if (inTeam.contains(m.getId())) {
+                            continue;
+                        }
+                        if (remaining.contains(m.getId())) {
+                            manuallyAddedMechanics.add(m.getId());
+                        } else {
+                            manuallyAddedMechanics.remove(m.getId());
+                        }
+                    }
+                });
+
         Runnable updateMechanics = () -> {
             List<Mechanic> team = garage.getRequiredMechanics(selectedServices);
             List<Mechanic> qualified = garage.getQualifiedMechanics(selectedServices);
-            Mechanic currentSel = getSelectedMechanic();
 
             mechanicBox.getItems().clear();
             mechanicBox.getItems().add(NO_MECHANIC);
@@ -292,47 +367,68 @@ public class BookingFormPane extends GridPane {
                 mechanicBox.getItems().addAll(garage.getMechanics());
             }
 
-            if (selectedServices.isEmpty()) {
-                mechanicFilterHint.setText("");
-            } else if (!team.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                for (Mechanic m : team) {
-                    if (sb.length() > 0) sb.append(", ");
-                    sb.append(m.getName());
+            // Teamet följer tjänsterna. Egna tillägg ligger kvar, bortvalda läggs inte tillbaka.
+            java.util.List<Mechanic> chosen = new java.util.ArrayList<Mechanic>();
+            java.util.List<Integer> inTeam = new java.util.ArrayList<Integer>();
+            for (Mechanic m : team) {
+                inTeam.add(m.getId());
+                if (!removedMechanics.contains(m.getId())) {
+                    chosen.add(m);
                 }
-                mechanicFilterHint.setText("🔧 " + I18n.get("dialog.booking.team_assigned", sb.toString()));
-                mechanicFilterHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-accent; -fx-font-weight: bold;");
-            } else {
+            }
+            // Bortval utanför teamet glöms, så att tjänsten kan komma tillbaka.
+            java.util.Iterator<Integer> removedIterator = removedMechanics.iterator();
+            while (removedIterator.hasNext()) {
+                if (!inTeam.contains(removedIterator.next())) {
+                    removedIterator.remove();
+                }
+            }
+            for (Mechanic m : garage.getMechanics()) {
+                if (!manuallyAddedMechanics.contains(m.getId())) {
+                    continue;
+                }
+                boolean redan = false;
+                for (Mechanic v : chosen) {
+                    if (v.getId() == m.getId()) {
+                        redan = true;
+                        break;
+                    }
+                }
+                if (!redan) {
+                    chosen.add(m);
+                }
+            }
+            updatingMechanicField = true;
+            mechanicMulti.setSelectedItems(chosen);
+            updatingMechanicField = false;
+
+            // Tipset behövs bara när tjänsterna inte går att bemanna.
+            if (!selectedServices.isEmpty() && team.isEmpty()) {
                 mechanicFilterHint.setText(I18n.get("dialog.booking.no_mechanic_for_selected_services"));
                 mechanicFilterHint.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171;");
+            } else {
+                mechanicFilterHint.setText("");
             }
 
-            int targetId = currentSel != null ? currentSel.getId()
-                    : (existingBooking != null ? existingBooking.getMechanicId()
-                    : (defaultMechanic != null ? defaultMechanic.getId() : 0));
-
-            if (targetId > 0) {
+            // Combon hålls i takt med fältet. Den är den som sparandet och tidskontrollerna läser.
+            java.util.List<Mechanic> chosenNow = getSelectedMechanics();
+            if (!chosenNow.isEmpty()) {
+                int firstId = chosenNow.get(0).getId();
                 boolean found = false;
                 for (Mechanic m : mechanicBox.getItems()) {
-                    if (m.getId() == targetId) {
+                    if (m.getId() == firstId) {
                         mechanicBox.getSelectionModel().select(m);
                         found = true;
                         break;
                     }
                 }
-                if (!found) {
-                    if (!team.isEmpty()) {
-                        mechanicBox.getSelectionModel().select(team.get(0));
-                    } else {
-                        mechanicBox.getSelectionModel().selectFirst();
-                    }
-                }
-            } else {
-                if (!team.isEmpty()) {
+                if (!found && !team.isEmpty()) {
                     mechanicBox.getSelectionModel().select(team.get(0));
-                } else {
-                    mechanicBox.getSelectionModel().selectFirst();
                 }
+            } else if (!team.isEmpty()) {
+                mechanicBox.getSelectionModel().select(team.get(0));
+            } else if (!mechanicBox.getItems().isEmpty()) {
+                mechanicBox.getSelectionModel().selectFirst();
             }
         };
 
@@ -388,7 +484,7 @@ public class BookingFormPane extends GridPane {
 
         Runnable ensureValidDate = () -> {
             int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            List<Mechanic> team = garage.getRequiredMechanics(selectedServices);
+            List<Mechanic> team = getSelectedMechanics();   // de mekaniker som är valda i fältet
             Mechanic m = getSelectedMechanic();
             LocalDate current = datePicker.getValue();
             if (current == null || !BookingAvailability.hasAvailableSlotOnDate(garage, m, team, current, duration, excludeId)) {
@@ -414,7 +510,7 @@ public class BookingFormPane extends GridPane {
                 return true;
             }
             LocalDate d = datePicker.getValue();
-            List<Mechanic> team = garage.getRequiredMechanics(selectedServices);
+            List<Mechanic> team = getSelectedMechanics();   // de mekaniker som är valda i fältet
             if (team != null && !team.isEmpty()) {
                 return BookingAvailability.isTeamBooked(garage, team, d, time, end, excludeId);
             }
@@ -580,19 +676,20 @@ public class BookingFormPane extends GridPane {
         GridPane.setValignment(serviceLbl, VPos.TOP);
         serviceLbl.setPadding(new Insets(6, 0, 0, 0));
         add(serviceLbl, 0, rowIdx);
-        HBox servicePickerRow = new HBox(8, this.serviceBox, addServiceBtn);
-        servicePickerRow.setAlignment(Pos.CENTER_LEFT);
-        servicePickerRow.setFillHeight(true);
-        HBox.setHgrow(this.serviceBox, Priority.ALWAYS);
         VBox serviceCol = new VBox(6);
         GridPane.setHgrow(serviceCol, Priority.ALWAYS);
-        serviceCol.getChildren().add(servicePickerRow);
+        // Fältet ska fylla kolumnen som combon gjorde, annars stannar pilen långt in från kanten.
+        this.serviceMulti.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(this.serviceMulti, Priority.ALWAYS);
+        // Ersätter combon, plusknappen och den separata listan, som togs bort.
+        // chips i fältet, och listan i fältet visar pris och tid per tjänst.
+        serviceCol.getChildren().add(this.serviceMulti);
         if (isServicesLocked) {
             Label lockNotice = new Label("🔒 " + I18n.get("dialog.booking.services_locked_work_started"));
             lockNotice.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171; -fx-font-weight: bold;");
             serviceCol.getChildren().add(lockNotice);
         }
-        serviceCol.getChildren().addAll(this.servicesScroll, this.totalSummaryLabel);
+        serviceCol.getChildren().add(this.totalSummaryLabel);
         add(serviceCol, 1, rowIdx++);
 
         // 3. Mekaniker
@@ -600,8 +697,10 @@ public class BookingFormPane extends GridPane {
         GridPane.setValignment(mechLbl, VPos.TOP);
         mechLbl.setPadding(new Insets(6, 0, 0, 0));
         add(mechLbl, 0, rowIdx);
-        VBox mechCol = new VBox(4, this.mechanicBox, this.mechanicFilterHint);
+        VBox mechCol = new VBox(4, this.mechanicMulti, this.mechanicFilterHint);
         GridPane.setHgrow(mechCol, Priority.ALWAYS);
+        this.mechanicMulti.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(this.mechanicMulti, Priority.ALWAYS);
         add(mechCol, 1, rowIdx++);
 
         // 4. Datum & Tid (Kalender synlig med starttid bredvid)
@@ -715,7 +814,7 @@ public class BookingFormPane extends GridPane {
         }
 
         // 2. Behörighetskontroll: kontrollera att valda tjänster kan bemannas av behöriga mekaniker
-        List<Mechanic> team = garage.getRequiredMechanics(selectedServices);
+        List<Mechanic> team = getSelectedMechanics();   // de mekaniker som är valda i fältet
         for (ServiceItem s : selectedServices) {
             boolean hasQualified = false;
             for (Mechanic m : team) {
@@ -772,8 +871,25 @@ public class BookingFormPane extends GridPane {
         return total;
     }
     public Mechanic getSelectedMechanic() {
-        Mechanic m = mechanicBox.getValue();
-        return m == NO_MECHANIC ? null : m;
+        List<Mechanic> chosen = getSelectedMechanics();
+        return chosen.isEmpty() ? null : chosen.get(0);
+    }
+
+    /**
+     * Mekanikerna som är valda i fältet, i den ordning de valdes. Auto-tilldelningen lägger in dem
+     * och användaren kan ta bort och lägga till. Tidskontrollerna använder hela listan.
+     */
+    public List<Mechanic> getSelectedMechanics() {
+        List<Mechanic> ut = new ArrayList<Mechanic>();
+        if (mechanicMulti != null) {
+            for (Mechanic m : mechanicMulti.getSelectedItems()) {
+                ut.add(m);
+            }
+        }
+        if (ut.isEmpty() && mechanicBox.getValue() != null && mechanicBox.getValue() != NO_MECHANIC) {
+            ut.add(mechanicBox.getValue());
+        }
+        return ut;
     }
 
     /** Låter dialogen veta när formuläret behöver mer plats, så att fönstret kan växa med det. */
@@ -869,7 +985,7 @@ public class BookingFormPane extends GridPane {
                         "dialog.booking.duration_too_long");
                 return;
             }
-            List<Mechanic> team = garage.getRequiredMechanics(selectedServices);
+            List<Mechanic> team = getSelectedMechanics();   // de mekaniker som är valda i fältet
             if (!BookingAvailability.hasAvailableSlotOnDate(garage, getSelectedMechanic(), team, date, duration, excludeId)) {
                 unbookable("-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-opacity: 0.50;",
                         "dialog.booking.date_fully_booked");
