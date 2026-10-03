@@ -15,6 +15,10 @@ JavaFX-gränssnittet (AutoCore Overview, tema *Emerald*):
 
 ![AutoCore JavaFX-gränssnitt](WigellAutoCore/docs/autocore-overview.png)
 
+Räknarna i menyn visar hur många poster som väntar på hantering — bokningar utan arbetsorder, arbetsordrar som inte påbörjats, obetalda fakturor och betalningar som inte gick igenom. Siffrorna i bilden är exempel:
+
+![Räknare i menyn](WigellAutoCore/docs/autocore-menu-counters.png)
+
 ## Teknisk stack
 - Java (JDK 8, BellSoft Liberica Full med JavaFX)
 - JavaFX-gränssnitt (GUI) med modulära komponenter och WCAG 2.1 AAA designsystem
