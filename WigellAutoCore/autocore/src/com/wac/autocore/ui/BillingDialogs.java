@@ -56,13 +56,7 @@ public final class BillingDialogs {
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
-        grid.setPrefWidth(600);
-        javafx.scene.layout.ColumnConstraints col0 = new javafx.scene.layout.ColumnConstraints();
-        col0.setMinWidth(140);
-        col0.setPrefWidth(150);
-        javafx.scene.layout.ColumnConstraints col1 = new javafx.scene.layout.ColumnConstraints();
-        col1.setHgrow(Priority.ALWAYS);
-        grid.getColumnConstraints().addAll(col0, col1);
+
 
         ComboBox<Booking> bookingBox = new ComboBox<Booking>();
         bookingBox.getItems().addAll(invoiceable);
@@ -141,13 +135,7 @@ public final class BillingDialogs {
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
-        grid.setPrefWidth(600);
-        javafx.scene.layout.ColumnConstraints col0 = new javafx.scene.layout.ColumnConstraints();
-        col0.setMinWidth(140);
-        col0.setPrefWidth(150);
-        javafx.scene.layout.ColumnConstraints col1 = new javafx.scene.layout.ColumnConstraints();
-        col1.setHgrow(Priority.ALWAYS);
-        grid.getColumnConstraints().addAll(col0, col1);
+
 
         ComboBox<Invoice> invoiceBox = new ComboBox<Invoice>();
         invoiceBox.getItems().addAll(unpaid);
@@ -214,12 +202,22 @@ public final class BillingDialogs {
 
         VBox content = new VBox(14);
         content.setPadding(new Insets(18, 22, 18, 22));
-        content.setPrefWidth(600);
+        content.setPrefWidth(620);
 
         Label notice = new Label(I18n.get("dialog.workorder.historical_notice"));
         notice.getStyleClass().addAll("srow-sub", "small");
 
         GridPane grid = ActionDialogs.createGrid();
+        // Den här dialogen är en tabell med fyra kolumner, så den byter ut de två kolumnreglerna
+        // mot fyra egna där alla får växa jämnt.
+        grid.getColumnConstraints().clear();
+        for (int i = 0; i < 4; i++) {
+            javafx.scene.layout.ColumnConstraints column = new javafx.scene.layout.ColumnConstraints();
+            column.setMinWidth(110);
+            column.setPrefWidth(150);
+            column.setHgrow(Priority.ALWAYS);
+            grid.getColumnConstraints().add(column);
+        }
         Label h1 = new Label(I18n.get("table.col.service"));
         h1.setStyle("-fx-font-weight: bold;");
         Label h2 = new Label(I18n.get("table.col.price"));

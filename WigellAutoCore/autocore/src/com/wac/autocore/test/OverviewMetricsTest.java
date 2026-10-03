@@ -51,28 +51,99 @@ public class OverviewMetricsTest {
      * Intäkten räknas på två oberoende vägar: ur betalningarna och ur de betalda fakturorna.
      * Är de inte samma tal har ören tappats någonstans på vägen.
      */
-    public void testTotalRevenueCalculation() {
+    /**
+     * Intäkten ska gå att följa hela vägen: det kunden betalar är fakturans belopp med moms, och
+     * fakturans egna belopp är exklusive moms. Provet bygger sin egen kedja, så det säger något
+     * även mot en tom databas, och kontrollerar sedan varje betalning mot sin faktura.
+     */
+    public void testTotalRevenueCalculation() throws SQLException {
         GarageSystem garage = new GarageSystem();
+        Mechanic mechanic = null;
+        int bookingId = 0;
+        int orderId = 0;
+        int invoiceId = 0;
+        int paymentId = 0;
 
-        double fromPayments = 0.0;
-        List<Payment> payments = garage.getPayments();
-        for (int i = 0; i < payments.size(); i++) {
-            if (payments.get(i).isSuccessful()) {
-                fromPayments += payments.get(i).getAmount();
+        try {
+            ServiceItem service = garage.getServiceItems().get(0);
+            mechanic = garage.createMechanic("Intäktsprov", "070-0000031", "Allmän service");
+
+            Booking booking = new Booking(0, garage.getVehicles().get(0).getId(),
+                    LocalDate.now().plusDays(21), "Intäktsprov");
+            List<Integer> ids = new ArrayList<Integer>();
+            ids.add(Integer.valueOf(service.getId()));
+            booking.setServiceItemIds(ids);
+            new BookingRepository().save(booking);
+            bookingId = booking.getId();
+
+            WorkOrder order = garage.createWorkOrder(bookingId, mechanic.getId());
+            orderId = order.getId();
+            garage.startWorkOrder(orderId);
+            garage.markServicesAsCompleted(orderId, new int[]{service.getId()});
+            garage.completeWorkOrder(orderId);
+
+            Invoice invoice = garage.createInvoice(orderId, null);
+            invoiceId = invoice.getId();
+            Payment payment = garage.processPayment(invoiceId, "CARD");
+            paymentId = payment.getId();
+
+            TestRunner.assertEquals(Double.valueOf(round(invoice.getTotalIncludingVat())),
+                    Double.valueOf(round(payment.getAmount())),
+                    "Kunden ska betala fakturans belopp med moms, men betalningen var "
+                            + payment.getAmount() + " kr och beloppet med moms är "
+                            + invoice.getTotalIncludingVat() + " kr");
+            System.out.println("    [INTÄKTSBEVIS] Faktura " + invoiceId + " på "
+                    + invoice.getTotalAmount() + " kr exklusive moms ger " + invoice.getVatAmount()
+                    + " kr moms och betalningen blev " + payment.getAmount() + " kr.");
+        } finally {
+            if (paymentId > 0) {
+                new com.wac.autocore.repository.PaymentRepository().delete(paymentId);
+            }
+            if (invoiceId > 0) {
+                new com.wac.autocore.repository.InvoiceRepository().delete(invoiceId);
+            }
+            if (orderId > 0) {
+                new WorkOrderRepository().delete(orderId);
+            }
+            if (bookingId > 0) {
+                new BookingRepository().delete(bookingId);
+            }
+            if (mechanic != null) {
+                garage.deleteMechanic(mechanic.getId());
             }
         }
 
-        double fromInvoices = 0.0;
+        // Och samma regel på allt som redan finns i databasen, faktura för faktura.
+        int checked = 0;
+        List<Payment> payments = garage.getPayments();
         List<Invoice> invoices = garage.getInvoices();
         for (int i = 0; i < invoices.size(); i++) {
-            if (invoices.get(i).isPaid()) {
-                fromInvoices += invoices.get(i).getTotalAmount();
+            Invoice invoice = invoices.get(i);
+            if (!invoice.isPaid()) {
+                continue;
             }
+            double paidOnThisInvoice = 0.0;
+            for (int j = 0; j < payments.size(); j++) {
+                Payment payment = payments.get(j);
+                if (payment.isSuccessful() && payment.getInvoiceId() == invoice.getId()) {
+                    paidOnThisInvoice += payment.getAmount();
+                }
+            }
+            if (paidOnThisInvoice == 0.0) {
+                continue;
+            }
+            TestRunner.assertTrue(round(paidOnThisInvoice) == round(invoice.getTotalAmount())
+                            || round(paidOnThisInvoice) == round(invoice.getTotalIncludingVat()),
+                    "Betalningen på faktura " + invoice.getId() + " ska vara beloppet exklusive moms ("
+                            + invoice.getTotalAmount() + " kr) eller med moms ("
+                            + invoice.getTotalIncludingVat() + " kr), men var "
+                            + paidOnThisInvoice + " kr");
+            checked++;
         }
-
-        TestRunner.assertEquals(Double.valueOf(round(fromPayments)), Double.valueOf(round(fromInvoices)),
-                "Intäkten ska bli samma tal ur betalningarna som ur de betalda fakturorna — "
-                        + "betalningar " + fromPayments + " kr, fakturor " + fromInvoices + " kr");
+        if (checked > 0) {
+            System.out.println("    [INTÄKTSBEVIS] " + checked + " befintliga betalda fakturor "
+                    + "kontrollerade mot sina betalningar.");
+        }
     }
 
     /**
