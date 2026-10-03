@@ -278,7 +278,8 @@ public final class EntityPages {
                     garage.startWorkOrder(sel.getId());
                 }
                 garage.completeWorkOrder(sel.getId());
-                garage.createInvoice(sel.getId(), null);
+                // Fakturan skapas inte här. Ordern ska stå och vänta på att faktureras, så
+                // menyvalet Fakturor visar att det finns ett jobb kvar att göra.
                 router.navigate("workorders");
             }
         });

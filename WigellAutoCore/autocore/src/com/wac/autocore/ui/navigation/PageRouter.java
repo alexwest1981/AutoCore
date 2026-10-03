@@ -140,27 +140,25 @@ public class PageRouter {
     }
 
     /**
-     * Räknarna i menyn visar flödet genom verksamhetens pipeline:
-     * 1. Bokningar: nya bokningar som väntar på att få en arbetsorder (status BOOKED).
-     * 2. Arbetsordrar: aktiva ordrar som utförs (status CREATED eller IN_PROGRESS).
-     * 3. Fakturor: obetalda fakturor som väntar på betalning (!isPaid).
-     * 4. Betalningar: betalda fakturor / genomförda betalningar (isSuccessful).
+     * Räknarna i menyn visar vad som väntar på att bli hanterat på den sidan, inte allt som finns där:
+     * 1. Arbetsordrar: bokningar som ännu inte har någon arbetsorder, alltså jobb att skapa en order för.
+     * 2. Bokningar: inget märke. Sidan visar bokningar, den har inget eget arbete att göra.
+     * 3. Fakturor: slutförda arbetsordrar som ännu inte har någon faktura.
+     * 4. Betalningar: fakturor som väntar på betalning (!isPaid).
      *
-     * Anropas från navigate(), som är enda vägen till en ny vy — därför följer räknaren med
+     * Anropas från navigate(), som är enda vägen till en ny vy, och därför följer räknaren med
      * varje ändring som ritar om sidan, utan egna lyssnare.
      */
     public void updateNavCounts() {
         if (sidebar == null) {
             return;
         }
-        sidebar.setNavCount("workorders", countNewWorkOrders(garage.getWorkOrders()));
-        sidebar.setNavCount("bookings", countNewBookings(garage.getBookings()));
-        sidebar.setNavCount("invoices", countUnpaidInvoices(garage.getInvoices()));
-        int paidCount = countPaidPayments(garage.getPayments());
-        if (paidCount == 0) {
-            paidCount = countPaidInvoices(garage.getInvoices());
-        }
-        sidebar.setNavCount("payments", paidCount);
+        sidebar.setNavCount("workorders",
+                countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()));
+        sidebar.setNavCount("bookings", 0);
+        sidebar.setNavCount("invoices",
+                countCompletedOrdersWithoutInvoice(garage.getWorkOrders(), garage.getInvoices()));
+        sidebar.setNavCount("payments", countUnpaidInvoices(garage.getInvoices()));
     }
 
     /** Obetalda fakturor är pengar som ska in, alltså det som väntar på hantering. */
@@ -229,6 +227,54 @@ public class PageRouter {
         int count = 0;
         for (Booking booking : bookings) {
             if ("BOOKED".equalsIgnoreCase(booking.getStatus())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Bokningar som ännu inte har någon arbetsorder, alltså jobb att skapa en order för.
+     * Avbokade bokningar räknas inte, de ska inte bli någon arbetsorder.
+     */
+    public static int countBookingsWithoutWorkOrder(List<Booking> bookings, List<WorkOrder> orders) {
+        int count = 0;
+        for (Booking booking : bookings) {
+            if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+                continue;
+            }
+            boolean hasOrder = false;
+            for (WorkOrder order : orders) {
+                if (order.getBookingId() == booking.getId()) {
+                    hasOrder = true;
+                    break;
+                }
+            }
+            if (!hasOrder) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Slutförda arbetsordrar som ännu inte har någon faktura, alltså jobb att fakturera.
+     * Statuslösa och icke slutförda ordrar hoppas över.
+     */
+    public static int countCompletedOrdersWithoutInvoice(List<WorkOrder> orders, List<Invoice> invoices) {
+        int count = 0;
+        for (WorkOrder order : orders) {
+            if (order.getStatus() == null || !"COMPLETED".equalsIgnoreCase(order.getStatus())) {
+                continue;
+            }
+            boolean hasInvoice = false;
+            for (Invoice invoice : invoices) {
+                if (invoice.getWorkOrderId() == order.getId()) {
+                    hasInvoice = true;
+                    break;
+                }
+            }
+            if (!hasInvoice) {
                 count++;
             }
         }
