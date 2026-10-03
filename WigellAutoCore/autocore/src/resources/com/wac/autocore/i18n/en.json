@@ -217,6 +217,7 @@
     },
     "subtotal": "Subtotal",
     "discount_total": "Discount",
+    "vat": "VAT (25%)",
     "total": "Amount due",
     "footer": "Thank you for your business!",
     "footer_terms": "Payment terms: {0} days net."

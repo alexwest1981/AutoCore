@@ -217,6 +217,7 @@
     },
     "subtotal": "Delsumma",
     "discount_total": "Rabatt",
+    "vat": "Moms (25 %)",
     "total": "Att betala",
     "footer": "Tack för ditt förtroende!",
     "footer_terms": "Betalningsvillkor: {0} dagar netto."

@@ -21,6 +21,33 @@ import java.util.List;
  */
 public class InvoiceTotalTest {
 
+    /**
+     * Momsen läggs på fakturan, och det är med moms kunden betalar. Alla andra belopp i appen är
+     * exklusive moms.
+     */
+    public void testVatIsAddedAndTheCustomerPaysIt() {
+        Invoice invoice = new Invoice(1, 1, LocalDate.now(), 1000.0);
+        TestRunner.assertEquals(250.0, invoice.getVatAmount(), "25 procent moms på 1000 kronor");
+        TestRunner.assertEquals(1250.0, invoice.getTotalIncludingVat(), "att betala med moms");
+        TestRunner.assertEquals(invoice.getTotalAmount() + invoice.getVatAmount(),
+                invoice.getTotalIncludingVat(), "momsraden och nettobeloppet ska bli summan exakt");
+
+        Invoice discounted = new Invoice(2, 1, LocalDate.now(), 1000.0);
+        discounted.setDiscount(100.0);
+        TestRunner.assertEquals(900.0, discounted.getTotalAmount(), "rabatten dras från nettobeloppet");
+        TestRunner.assertEquals(225.0, discounted.getVatAmount(), "momsen räknas på beloppet efter rabatt");
+        TestRunner.assertEquals(1125.0, discounted.getTotalIncludingVat(), "att betala efter rabatt och moms");
+
+        // Ören avrundas på momsraden, så raderna går ihop exakt.
+        Invoice odd = new Invoice(3, 1, LocalDate.now(), 999.90);
+        TestRunner.assertEquals(249.98, odd.getVatAmount(), "momsen avrundas till ören");
+        TestRunner.assertEquals(1249.88, odd.getTotalIncludingVat(), "summan blir nettobeloppet plus momsraden");
+
+        System.out.println("    [MOMSBEVIS] 1000 kr ger 250 kr moms och 1250 kr att betala. "
+                + "Med 100 kr rabatt: 225 kr moms och 1125 kr att betala. "
+                + "999,90 kr ger 249,98 kr moms och 1249,88 kr att betala.");
+    }
+
     private final GarageSystem garage = new GarageSystem();
 
     public void testTotalEqualsSumOfLinesOnThreeInvoices() throws SQLException {

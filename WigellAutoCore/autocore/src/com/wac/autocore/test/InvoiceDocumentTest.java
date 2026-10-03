@@ -66,7 +66,10 @@ public class InvoiceDocumentTest {
             assertContains(texts, "Bromsservice fram", "varje utfört arbete ska stå som en rad");
             assertContains(texts, "Oljebyte", "varje utfört arbete ska stå som en rad");
             assertContains(texts, UiFormatters.formatMoney(900.0), "priset per rad ska stå med");
-            assertContains(texts, UiFormatters.formatMoney(1300.0), "summan efter rabatt ska stå med");
+            // Fakturans egna belopp är exklusive moms, men det som ska betalas har moms på.
+            assertContains(texts, UiFormatters.formatMoney(invoice.getVatAmount()), "momsraden ska stå med");
+            assertContains(texts, UiFormatters.formatMoney(invoice.getTotalIncludingVat()),
+                    "att betala med moms ska stå som summa");
             assertContains(texts, i18nText("invoice.due_date"), "förfallodatumet ska stå med");
 
             String customer = EntityLookup.workOrderCustomerName(garage, order);
