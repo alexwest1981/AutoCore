@@ -62,6 +62,7 @@
       "title": "Kunder",
       "subtitle": "Register över privat- och företagskunder",
       "meta": "{0} registrerade",
+      "meta.one": "{0} registrerad",
       "action_create": "+ Ny kund",
       "action_edit": "Redigera kund",
       "action_delete": "Ta bort kund"
@@ -70,6 +71,7 @@
       "title": "Fordon",
       "subtitle": "Registrerade fordon i verkstadens databas",
       "meta": "{0} registrerade",
+      "meta.one": "{0} registrerad",
       "action_create": "+ Registrera fordon",
       "action_edit": "Redigera fordon",
       "action_delete": "Ta bort fordon"
@@ -78,6 +80,7 @@
       "title": "Bokningar",
       "subtitle": "Kommande och tidigare bokade servicetillfällen",
       "meta": "{0} bokningar",
+      "meta.one": "{0} bokning",
       "action_create": "+ Ny bokning",
       "action_cancel": "Avboka",
       "action_edit": "Redigera bokning",
@@ -87,6 +90,7 @@
       "title": "Tjänster",
       "subtitle": "Tjänstekatalog och prislista",
       "meta": "{0} tjänster",
+      "meta.one": "{0} tjänst",
       "action_create": "+ Skapa tjänst",
       "action_edit": "Redigera tjänst",
       "action_delete": "Ta bort tjänst"
@@ -95,6 +99,7 @@
       "title": "Mekaniker",
       "subtitle": "Verkstadens mekaniker, kompetens och tillgänglighet",
       "meta": "{0} anställda",
+      "meta.one": "{0} anställd",
       "action_create": "+ Lägg till mekaniker",
       "action_edit": "Redigera mekaniker",
       "action_delete": "Ta bort mekaniker"
@@ -103,6 +108,7 @@
       "title": "Arbetsordrar",
       "subtitle": "Pågående och slutförda verkstadsjobb",
       "meta": "{0} arbetsordrar",
+      "meta.one": "{0} arbetsorder",
       "action_create": "+ Ny arbetsorder",
       "action_start": "▶ Starta order",
       "action_mark_performed": "Markera utförda arbeten",
@@ -114,6 +120,7 @@
       "title": "Fakturor",
       "subtitle": "Utfärdade kundfakturor och betalningsstatus",
       "meta": "{0} fakturor",
+      "meta.one": "{0} faktura",
       "action_create": "+ Skapa faktura",
       "action_pay": "Betala vald faktura",
       "action_lines": "Visa rader",
@@ -123,6 +130,7 @@
       "title": "Betalningar",
       "subtitle": "Genomförda betalningar och transaktionskvitton",
       "meta": "{0} betalningar",
+      "meta.one": "{0} betalning",
       "action_create": "+ Registrera betalning"
     }
   },
@@ -585,6 +593,16 @@
       "edit_mech": "Redigera mekaniker",
       "delete_mech": "Ta bort mekaniker",
       "next_booking": "Nästa bokning: {0} →"
+    }
+  },
+  "view": {
+    "notice": {
+      "workorders.one": "Bokning som saknar en arbetsorder",
+      "workorders.many": "Bokningar som saknar en arbetsorder",
+      "invoices.one": "Bokning som väntar på en faktura",
+      "invoices.many": "Bokningar som väntar på en faktura",
+      "payments.one": "Faktura som väntar på betalning",
+      "payments.many": "Fakturor som väntar på betalning"
     }
   }
 }

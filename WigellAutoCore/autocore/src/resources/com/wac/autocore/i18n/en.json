@@ -62,6 +62,7 @@
       "title": "Customers",
       "subtitle": "Directory of private and corporate clients",
       "meta": "{0} registered",
+      "meta.one": "{0} registered",
       "action_create": "+ Create Customer",
       "action_edit": "Edit Customer",
       "action_delete": "Delete Customer"
@@ -70,6 +71,7 @@
       "title": "Vehicles",
       "subtitle": "Registered vehicles in the garage database",
       "meta": "{0} registered",
+      "meta.one": "{0} registered",
       "action_create": "+ Register Vehicle",
       "action_edit": "Edit Vehicle",
       "action_delete": "Delete Vehicle"
@@ -78,6 +80,7 @@
       "title": "Bookings",
       "subtitle": "Upcoming and past service appointments",
       "meta": "{0} bookings",
+      "meta.one": "{0} booking",
       "action_create": "+ Create Booking",
       "action_cancel": "Cancel Booking",
       "action_edit": "Edit Booking",
@@ -87,6 +90,7 @@
       "title": "Services",
       "subtitle": "Service catalog and price list",
       "meta": "{0} services",
+      "meta.one": "{0} service",
       "action_create": "+ Create Service",
       "action_edit": "Edit Service",
       "action_delete": "Delete Service"
@@ -95,6 +99,7 @@
       "title": "Mechanics",
       "subtitle": "Workshop staff, competence and availability",
       "meta": "{0} employees",
+      "meta.one": "{0} employee",
       "action_create": "+ Add Mechanic",
       "action_edit": "Edit Mechanic",
       "action_delete": "Delete Mechanic"
@@ -103,6 +108,7 @@
       "title": "Work Orders",
       "subtitle": "Ongoing and completed garage work orders",
       "meta": "{0} work orders",
+      "meta.one": "{0} work order",
       "action_create": "+ Create Work Order",
       "action_start": "▶ Start order",
       "action_mark_performed": "Mark performed work",
@@ -114,6 +120,7 @@
       "title": "Invoices",
       "subtitle": "Issued invoices and payment status",
       "meta": "{0} invoices",
+      "meta.one": "{0} invoice",
       "action_create": "+ Create Invoice",
       "action_pay": "Pay selected invoice",
       "action_lines": "Show lines",
@@ -123,6 +130,7 @@
       "title": "Payments",
       "subtitle": "Processed transactions and receipts",
       "meta": "{0} payments",
+      "meta.one": "{0} payment",
       "action_create": "+ Register Payment"
     }
   },
@@ -585,6 +593,16 @@
       "edit_mech": "Edit mechanic",
       "delete_mech": "Delete mechanic",
       "next_booking": "Next booking: {0} →"
+    }
+  },
+  "view": {
+    "notice": {
+      "workorders.one": "Booking without a work order",
+      "workorders.many": "Bookings without a work order",
+      "invoices.one": "Booking waiting to be invoiced",
+      "invoices.many": "Bookings waiting to be invoiced",
+      "payments.one": "Invoice waiting for payment",
+      "payments.many": "Invoices waiting for payment"
     }
   }
 }
