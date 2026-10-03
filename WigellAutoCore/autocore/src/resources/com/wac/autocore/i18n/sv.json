@@ -107,6 +107,7 @@
       "action_start": "▶ Starta order",
       "action_mark_performed": "Markera utförda arbeten",
       "action_complete": "✔ Slutför order",
+      "action_invoice": "Skapa faktura",
       "action_details": "Visa detaljer"
     },
     "invoices": {
@@ -401,7 +402,7 @@
       },
       "workorder_select": "Välj arbetsorder",
       "discount": "Rabatt / Kampanj (kr)",
-      "discount_prompt": "T.ex. WELCOME10 eller SERVICE200 (valfritt)",
+      "discount_prompt": "T.ex. 10off, WELCOME10, SERVICE200 eller belopp (valfritt)",
       "create_failed": "Fakturan kunde inte skapas.",
       "print_title": "Faktura",
       "print_header": "Förhandsgranskning av fakturan",

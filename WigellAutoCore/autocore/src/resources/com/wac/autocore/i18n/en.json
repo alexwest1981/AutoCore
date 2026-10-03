@@ -107,6 +107,7 @@
       "action_start": "▶ Start order",
       "action_mark_performed": "Mark performed work",
       "action_complete": "✔ Complete order",
+      "action_invoice": "Create invoice",
       "action_details": "View details"
     },
     "invoices": {
@@ -401,7 +402,7 @@
       },
       "workorder_select": "Select work order",
       "discount": "Discount / Promotion (SEK)",
-      "discount_prompt": "E.g. WELCOME10 or SERVICE200 (optional)",
+      "discount_prompt": "E.g. 10off, WELCOME10, SERVICE200 or amount (optional)",
       "create_failed": "The invoice could not be created.",
       "print_title": "Invoice",
       "print_header": "Invoice preview",

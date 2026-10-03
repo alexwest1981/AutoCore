@@ -295,6 +295,10 @@ public final class ActionDialogs {
         BillingDialogs.showCreateInvoiceDialog(garage, onSuccess);
     }
 
+    public static void showCreateInvoiceDialog(GarageSystem garage, WorkOrder preselected, Runnable onSuccess) {
+        BillingDialogs.showCreateInvoiceDialog(garage, preselected, onSuccess);
+    }
+
     public static void showProcessPaymentDialog(GarageSystem garage, Invoice preselected, Runnable onSuccess) {
         BillingDialogs.showProcessPaymentDialog(garage, preselected, onSuccess);
     }

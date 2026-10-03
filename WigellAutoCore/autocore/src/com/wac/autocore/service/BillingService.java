@@ -119,14 +119,37 @@ public class BillingService {
         }
 
         if (discountCode != null && !discountCode.trim().isEmpty()) {
-            if (discountCode.equalsIgnoreCase("WELCOME10")) {
+            String code = discountCode.trim();
+            if (code.equalsIgnoreCase("WELCOME10") || code.equalsIgnoreCase("10off") || code.equalsIgnoreCase("10%")) {
                 discount += amount * 0.10;
-                System.out.println("Discount code WELCOME10 applied.");
-            } else if (discountCode.equalsIgnoreCase("SERVICE200")) {
+                System.out.println("Discount code " + code + " applied: 10%");
+            } else if (code.equalsIgnoreCase("SERVICE200")) {
                 discount += 200.0;
                 System.out.println("Discount code SERVICE200 applied.");
             } else {
-                System.out.println("Unknown discount code. No code discount applied.");
+                try {
+                    if (code.endsWith("%")) {
+                        double pct = Double.parseDouble(code.substring(0, code.length() - 1).trim());
+                        discount += amount * (pct / 100.0);
+                        System.out.println("Discount code " + pct + "% applied.");
+                    } else if (code.toLowerCase().endsWith("off")) {
+                        double val = Double.parseDouble(code.substring(0, code.length() - 3).trim());
+                        if (val <= 100 && val > 0) {
+                            discount += amount * (val / 100.0);
+                        } else {
+                            discount += val;
+                        }
+                        System.out.println("Discount code " + code + " applied.");
+                    } else {
+                        double val = Double.parseDouble(code);
+                        if (val > 0) {
+                            discount += val;
+                            System.out.println("Discount " + val + " SEK applied.");
+                        }
+                    }
+                } catch (NumberFormatException ignored) {
+                    System.out.println("Unknown discount code. No code discount applied.");
+                }
             }
         }
 

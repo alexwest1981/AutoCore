@@ -30,6 +30,10 @@ public final class BillingDialogs {
     private BillingDialogs() {}
 
     public static void showCreateInvoiceDialog(GarageSystem garage, Runnable onSuccess) {
+        showCreateInvoiceDialog(garage, null, onSuccess);
+    }
+
+    public static void showCreateInvoiceDialog(GarageSystem garage, WorkOrder preselected, Runnable onSuccess) {
         List<WorkOrder> completedOrders = new ArrayList<WorkOrder>();
         for (WorkOrder wo : garage.getWorkOrders()) {
             if ("COMPLETED".equalsIgnoreCase(wo.getStatus())) {
@@ -69,7 +73,17 @@ public final class BillingDialogs {
         orderBox.getItems().addAll(completedOrders);
         orderBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(orderBox, Priority.ALWAYS);
-        orderBox.getSelectionModel().selectFirst();
+        if (preselected != null) {
+            for (WorkOrder wo : completedOrders) {
+                if (wo.getId() == preselected.getId()) {
+                    orderBox.getSelectionModel().select(wo);
+                    break;
+                }
+            }
+        }
+        if (orderBox.getSelectionModel().getSelectedItem() == null) {
+            orderBox.getSelectionModel().selectFirst();
+        }
         orderBox.setConverter(new StringConverter<WorkOrder>() {
             @Override
             public String toString(WorkOrder wo) {
