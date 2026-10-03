@@ -140,18 +140,27 @@ public class PageRouter {
     }
 
     /**
-     * Räknarna i menyn visar posterna som väntar på att bli hanterade: arbetsordrar som inte
-     * påbörjats, bokningar som ingen arbetsorder skapats ur än, obetalda fakturor och betalningar
-     * som inte gick igenom.
+     * Räknarna i menyn visar flödet genom verksamhetens pipeline:
+     * 1. Bokningar: nya bokningar som väntar på att få en arbetsorder (status BOOKED).
+     * 2. Arbetsordrar: aktiva ordrar som utförs (status CREATED eller IN_PROGRESS).
+     * 3. Fakturor: obetalda fakturor som väntar på betalning (!isPaid).
+     * 4. Betalningar: betalda fakturor / genomförda betalningar (isSuccessful).
      *
      * Anropas från navigate(), som är enda vägen till en ny vy — därför följer räknaren med
      * varje ändring som ritar om sidan, utan egna lyssnare.
      */
-    private void updateNavCounts() {
+    public void updateNavCounts() {
+        if (sidebar == null) {
+            return;
+        }
         sidebar.setNavCount("workorders", countNewWorkOrders(garage.getWorkOrders()));
         sidebar.setNavCount("bookings", countNewBookings(garage.getBookings()));
         sidebar.setNavCount("invoices", countUnpaidInvoices(garage.getInvoices()));
-        sidebar.setNavCount("payments", countFailedPayments(garage.getPayments()));
+        int paidCount = countPaidPayments(garage.getPayments());
+        if (paidCount == 0) {
+            paidCount = countPaidInvoices(garage.getInvoices());
+        }
+        sidebar.setNavCount("payments", paidCount);
     }
 
     /** Obetalda fakturor är pengar som ska in, alltså det som väntar på hantering. */
@@ -165,7 +174,29 @@ public class PageRouter {
         return count;
     }
 
-    /** En betalning som inte gick igenom ska göras om, och är därför kvar att hantera. */
+    /** Betalda fakturor ger +1 i betalningsmenyn. */
+    public static int countPaidInvoices(List<Invoice> invoices) {
+        int count = 0;
+        for (Invoice invoice : invoices) {
+            if (invoice.isPaid()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** En betalning som gått igenom / betald faktura ger +1 i betalningsmenyn. */
+    public static int countPaidPayments(List<Payment> payments) {
+        int count = 0;
+        for (Payment payment : payments) {
+            if (payment.isSuccessful()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** Bakåtkompatibilitet: betalningar som inte gick igenom. */
     public static int countFailedPayments(List<Payment> payments) {
         int count = 0;
         for (Payment payment : payments) {
@@ -176,16 +207,24 @@ public class PageRouter {
         return count;
     }
 
+    /**
+     * Räknar aktiva arbetsordrar som är under arbete eller väntar på att slutföras
+     * (status CREATED eller IN_PROGRESS). Slutförd arbetsorder (COMPLETED) lämnar räknaren.
+     */
     public static int countNewWorkOrders(List<WorkOrder> orders) {
         int count = 0;
         for (WorkOrder order : orders) {
-            if ("CREATED".equalsIgnoreCase(order.getStatus())) {
+            if (order.getStatus() != null && ("CREATED".equalsIgnoreCase(order.getStatus()) || "IN_PROGRESS".equalsIgnoreCase(order.getStatus()))) {
                 count++;
             }
         }
         return count;
     }
 
+    /**
+     * Räknar bokningar som väntar på en arbetsorder (status BOOKED).
+     * När bokningen får en arbetsorder (WORK_ORDER_CREATED) flyttas den vidare till arbetsordermenyn.
+     */
     public static int countNewBookings(List<Booking> bookings) {
         int count = 0;
         for (Booking booking : bookings) {
