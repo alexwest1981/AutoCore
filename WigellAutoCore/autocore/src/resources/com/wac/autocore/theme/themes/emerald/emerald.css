@@ -94,9 +94,9 @@ Button.small, .button.small {
 Button.kanban-toggle-btn-compact, .button.kanban-toggle-btn-compact {
     -fx-background-color: transparent;
     -fx-text-fill: -wac-muted;
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-padding: 3px 8px;
+    -fx-padding: 4px 10px;
     -fx-border-color: transparent;
     -fx-border-width: 0;
     -fx-background-radius: 4;
@@ -117,8 +117,8 @@ Button.kanban-filter-chip, .button.kanban-filter-chip {
     -fx-border-width: 1px;
     -fx-border-radius: 999;
     -fx-background-radius: 999;
-    -fx-padding: 3px 10px;
-    -fx-font-size: 11px;
+    -fx-padding: 5px 12px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-cursor: hand;
@@ -139,8 +139,8 @@ Button.kanban-scroll-btn, .button.kanban-scroll-btn {
     -fx-border-width: 1px;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-padding: 3px 8px;
-    -fx-font-size: 11px;
+    -fx-padding: 5px 10px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-cursor: hand;
