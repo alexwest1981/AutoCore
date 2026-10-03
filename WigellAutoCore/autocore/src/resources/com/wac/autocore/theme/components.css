@@ -1593,3 +1593,152 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-border-width: 1.5px;
     -fx-border-radius: 2px;
 }
+
+
+/* ============================================================
+   FLERVALSFÄLT — experimentgren
+   Förebild: DJ-Raven, ComboBoxMultiSelection i Swing. Valda poster ligger som
+   chips i fältet och rullistan har en kryssruta per post.
+
+   Stilen är avsiktligt kopierad rakt av appens egna fält längre upp i filen:
+   samma vita bakgrund, samma kant #d1d5db, samma rundning 8, samma luft 2px 6px
+   och samma höjd på 31 px som .combo-box mäter i appen. Popupen följer
+   .combo-box-popup > .list-view och .list-cell exakt, rad för rad. Texten i
+   listan är #111827 av samma skäl som appens egna fält: vitt fungerar i alla
+   teman, och temat bidrar med accenten på chipsen och i kryssrutorna.
+   ============================================================ */
+.multi-select {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 2px 6px;
+    -fx-spacing: 6;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+    -fx-min-height: 31px;
+    -fx-pref-height: 31px;
+    -fx-max-height: 31px;
+}
+.multi-select:hover {
+    -fx-border-color: #9ca3af;
+}
+.multi-select.showing {
+    -fx-border-color: -wac-ring;
+}
+.multi-select-placeholder {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 13px;
+}
+.multi-select-caret {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 11px;
+    -fx-padding: 0 2 0 4;
+}
+.multi-select-scroll, .multi-select-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+.multi-select-scroll {
+    -fx-padding: 0;
+}
+.multi-select-scroll .scroll-bar:horizontal {
+    -fx-pref-height: 5px;
+    -fx-background-color: transparent;
+}
+.multi-select-scroll .scroll-bar:horizontal .thumb {
+    -fx-background-color: #d1d5db;
+    -fx-background-radius: 999;
+}
+.multi-select-scroll .scroll-bar:horizontal .increment-button,
+.multi-select-scroll .scroll-bar:horizontal .decrement-button {
+    -fx-padding: 0;
+    -fx-opacity: 0;
+}
+
+/* Chipsen: samma rundning och samma gröna ton som appens märken,
+   men i fältets höjd så att raden håller 31 px. */
+.multi-select-chip {
+    -fx-background-color: -wac-accent-soft;
+    -fx-background-radius: 4;
+    -fx-padding: 1px 5px 1px 7px;
+}
+.multi-select-chip-text {
+    -fx-text-fill: -wac-accent;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.multi-select-chip-close {
+    -fx-text-fill: #f87171;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 1 0 2;
+    -fx-cursor: hand;
+}
+.multi-select-chip-close:hover {
+    -fx-text-fill: -wac-danger;
+}
+
+/* Rullistan: identisk med .combo-box-popup > .list-view och .list-cell. */
+.multi-select-popup {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 12, 0.10, 0, 4);
+}
+.multi-select-popup-scroll, .multi-select-popup-scroll > .viewport {
+    -fx-background-color: white;
+}
+.multi-select-popup-scroll {
+    -fx-padding: 0;
+}
+.multi-select-popup-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+.multi-select-popup-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: #d1d5db;
+    -fx-background-radius: 999;
+}
+.multi-select-row {
+    -fx-background-color: transparent;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+}
+.multi-select-row:hover {
+    -fx-background-color: -wac-accent-soft;
+}
+.multi-select-row.selected {
+    -fx-background-color: #e5e7eb;
+}
+.multi-select-row-text {
+    -fx-text-fill: #111827;
+    -fx-font-size: 13px;
+}
+.multi-select-row-sub {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 11px;
+}
+.multi-select-empty {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+    -fx-padding: 8 12;
+}
+.multi-select-check {
+    -fx-padding: 0;
+}
+.multi-select-check .box {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 2;
+}
+.multi-select-check:selected .box {
+    -fx-background-color: -wac-accent;
+    -fx-border-color: -wac-accent;
+}
+.multi-select-check:selected .mark {
+    -fx-background-color: white;
+}

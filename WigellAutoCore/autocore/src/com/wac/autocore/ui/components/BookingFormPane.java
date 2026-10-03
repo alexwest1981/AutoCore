@@ -52,6 +52,11 @@ public class BookingFormPane extends GridPane {
     private final ComboBox<Vehicle> vehicleBox;
     private final DatePicker datePicker;
     private final ComboBox<ServiceItem> serviceBox;
+    /**
+     * Flervalsfältet för tjänster. Det äger valet; serviceBox finns kvar för äldre kodvägar men
+     * ritas inte längre ut. selectedServices är formulärets egen lista och speglas från fältet.
+     */
+    private MultiSelectComboBox<ServiceItem> serviceMulti;
     private final ObservableList<ServiceItem> selectedServices = FXCollections.observableArrayList();
     private final VBox selectedServicesContainer = new VBox(4);
     private final ScrollPane servicesScroll;
@@ -257,6 +262,26 @@ public class BookingFormPane extends GridPane {
         });
 
         // 3. Mekaniker med dynamiskt kvalifikationsfilter för samtliga valda tjänster
+
+// 4. Mekaniker med dynamiskt kvalifikationsfilter
+        // Flervalsfältet är nu det som väljer tjänster. selectedServices är formulärets egen lista
+        // och hålls speglad från fältet, så summor, mekanikerfilter och sparande fungerar som förut.
+        this.serviceMulti = new MultiSelectComboBox<ServiceItem>(
+                I18n.get("dialog.booking.service_select"),
+                s -> SeedText.resolve(s.getName()),
+                s -> UiFormatters.formatMoney(s.getPrice()) + " · " + s.getEstimatedMinutes() + " min");
+        this.serviceMulti.setItems(garage.getServiceItems());
+        this.serviceMulti.setKeyProvider(s -> s.getId());
+        // En bokning som redan har tjänster visar dem som valda chips, även i redigeringsläge.
+        this.serviceMulti.setSelectedItems(new java.util.ArrayList<ServiceItem>(this.selectedServices));
+        this.serviceMulti.getSelectedItems().addListener(
+                (javafx.collections.ListChangeListener<ServiceItem>) c -> {
+                    this.selectedServices.setAll(this.serviceMulti.getSelectedItems());
+                    renderServices.run();
+                });
+        if (isServicesLocked) {
+            this.serviceMulti.setDisable(true);
+        }
         this.mechanicFilterHint = new Label();
         this.mechanicFilterHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
 
@@ -580,19 +605,17 @@ public class BookingFormPane extends GridPane {
         GridPane.setValignment(serviceLbl, VPos.TOP);
         serviceLbl.setPadding(new Insets(6, 0, 0, 0));
         add(serviceLbl, 0, rowIdx);
-        HBox servicePickerRow = new HBox(8, this.serviceBox, addServiceBtn);
-        servicePickerRow.setAlignment(Pos.CENTER_LEFT);
-        servicePickerRow.setFillHeight(true);
-        HBox.setHgrow(this.serviceBox, Priority.ALWAYS);
         VBox serviceCol = new VBox(6);
         GridPane.setHgrow(serviceCol, Priority.ALWAYS);
-        serviceCol.getChildren().add(servicePickerRow);
+        // Flervalsfältet ersätter combon, plusknappen och den separata listan. Valen syns som
+        // chips i fältet, och listan i fältet visar pris och tid per tjänst.
+        serviceCol.getChildren().add(this.serviceMulti);
         if (isServicesLocked) {
             Label lockNotice = new Label("🔒 " + I18n.get("dialog.booking.services_locked_work_started"));
             lockNotice.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171; -fx-font-weight: bold;");
             serviceCol.getChildren().add(lockNotice);
         }
-        serviceCol.getChildren().addAll(this.servicesScroll, this.totalSummaryLabel);
+        serviceCol.getChildren().add(this.totalSummaryLabel);
         add(serviceCol, 1, rowIdx++);
 
         // 3. Mekaniker
