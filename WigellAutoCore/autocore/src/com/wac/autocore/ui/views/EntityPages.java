@@ -245,15 +245,30 @@ public final class EntityPages {
         Button startBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_start"));
         Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
         Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
+        Button invoiceBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_invoice"));
         startBtn.setDisable(true);
         markBtn.setDisable(true);
         completeBtn.setDisable(true);
+        invoiceBtn.setDisable(true);
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
             startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
             markBtn.setDisable(sel == null || !"IN_PROGRESS".equals(sel.getStatus()));
             completeBtn.setDisable(sel == null || (!"IN_PROGRESS".equals(sel.getStatus()) && !"CREATED".equals(sel.getStatus())));
+
+            boolean canInvoice = false;
+            if (sel != null && "COMPLETED".equals(sel.getStatus())) {
+                boolean alreadyInvoiced = false;
+                for (Invoice inv : garage.getInvoices()) {
+                    if (inv.getWorkOrderId() == sel.getId()) {
+                        alreadyInvoiced = true;
+                        break;
+                    }
+                }
+                canInvoice = !alreadyInvoiced;
+            }
+            invoiceBtn.setDisable(!canInvoice);
         });
 
         startBtn.setOnAction(e -> {
@@ -278,9 +293,14 @@ public final class EntityPages {
                     garage.startWorkOrder(sel.getId());
                 }
                 garage.completeWorkOrder(sel.getId());
-                // Fakturan skapas inte här. Ordern ska stå och vänta på att faktureras, så
-                // menyvalet Fakturor visar att det finns ett jobb kvar att göra.
                 router.navigate("workorders");
+            }
+        });
+
+        invoiceBtn.setOnAction(e -> {
+            WorkOrder sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null && "COMPLETED".equals(sel.getStatus())) {
+                ActionDialogs.showCreateInvoiceDialog(garage, sel, () -> router.navigate("workorders"));
             }
         });
 
@@ -298,7 +318,7 @@ public final class EntityPages {
                 I18n.get("entity.workorders.title"),
                 I18n.get("entity.workorders.meta", garage.getWorkOrders().size()),
                 I18n.get("entity.workorders.subtitle"),
-                t, detailsBtn, startBtn, markBtn, completeBtn, addBtn);
+                t, detailsBtn, startBtn, markBtn, completeBtn, invoiceBtn, addBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
