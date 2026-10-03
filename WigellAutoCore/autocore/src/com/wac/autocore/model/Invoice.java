@@ -83,6 +83,20 @@ public class Invoice {
         this.totalAmount = Math.round((amount - discount) * 100.0) / 100.0;
     }
 
+    /** Momsen som läggs på fakturan. Alla belopp i appen är exklusive moms förutom de som
+     *  räknas fram här. */
+    public static final double VAT_RATE = 0.25;
+
+    /** Momsen på det som ska betalas, avrundad till ören. */
+    public double getVatAmount() {
+        return Math.round(this.totalAmount * VAT_RATE * 100.0) / 100.0;
+    }
+
+    /** Att betala inklusive moms. Summan blir exakt de två raderna tillsammans. */
+    public double getTotalIncludingVat() {
+        return Math.round((this.totalAmount + getVatAmount()) * 100.0) / 100.0;
+    }
+
     public List<InvoiceLine> getLines() {
         return lines;
     }

@@ -211,10 +211,14 @@ public final class InvoiceDocument {
             grid.add(right(label(I18n.get("invoice.discount_total"), 11, false, MUTED)), 0, 1);
             grid.add(right(label("- " + UiFormatters.formatMoney(invoice.getDiscount()), 11, false, INK)), 1, 1);
         }
+        grid.add(right(label(I18n.get("invoice.vat"), 11, false, MUTED)), 0, 2);
+        grid.add(right(label(UiFormatters.formatMoney(invoice.getVatAmount()), 11, false, INK)), 1, 2);
+
+        // Att betala är beloppet kunden ska betala, alltså med moms på.
         Label totalLabel = label(I18n.get("invoice.total"), 13, true, INK);
-        Label totalValue = label(UiFormatters.formatMoney(invoice.getTotalAmount()), 13, true, INK);
-        grid.add(right(totalLabel), 0, 2);
-        grid.add(right(totalValue), 1, 2);
+        Label totalValue = label(UiFormatters.formatMoney(invoice.getTotalIncludingVat()), 13, true, INK);
+        grid.add(right(totalLabel), 0, 3);
+        grid.add(right(totalValue), 1, 3);
 
         VBox box = new VBox(8, rule(), grid);
         box.setPadding(new Insets(4, 0, 0, 0));

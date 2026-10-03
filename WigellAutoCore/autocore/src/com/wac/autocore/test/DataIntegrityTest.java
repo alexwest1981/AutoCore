@@ -93,6 +93,9 @@ public class DataIntegrityTest {
             Payment payment = garage.processPayment(invoiceId, "CARD");
             TestRunner.assertNotNull(payment, "Betalningen ska registreras");
             paymentId = payment.getId();
+            // Kunden betalar hela beloppet med moms. Fakturans egna belopp är exklusive moms.
+            TestRunner.assertEquals(invoice.getTotalIncludingVat(), payment.getAmount(),
+                    "Betalningen ska gälla beloppet med moms");
 
             TestRunner.assertEquals(Integer.valueOf(orphansBefore), Integer.valueOf(orphanCount()),
                     "En hel kedja ska inte lämna en enda föräldralös rad efter sig");
@@ -286,8 +289,11 @@ public class DataIntegrityTest {
                     paid += payments.get(i).getAmount();
                 }
             }
-            TestRunner.assertEquals(Double.valueOf(round(invoice.getTotalAmount())), Double.valueOf(round(paid)),
-                    "Betalningen ska tacka hela fakturans belopp, ören inraknade");
+            // Kunden betalar med moms, och ören ska vara kvar hela vägen.
+            TestRunner.assertEquals(Double.valueOf(round(invoice.getTotalIncludingVat())), Double.valueOf(round(paid)),
+                    "Betalningen ska täcka hela fakturans belopp med moms, ören inräknade");
+            TestRunner.assertEquals(Double.valueOf(round(2993.19)), Double.valueOf(round(paid)),
+                    "2394,55 med 25 procent moms ska bli 2993,19 — tappas ören blir det 2993,00");
         } finally {
             deletePayment(paymentId);
             if (invoiceId > 0) {

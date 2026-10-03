@@ -68,7 +68,8 @@ public class PaymentService {
             return null;
         }
 
-        Payment payment = new Payment(0, invoiceId, invoice.getTotalAmount(), paymentType);
+        // Kunden betalar hela beloppet med moms. Fakturans egna belopp är exklusive moms.
+        Payment payment = new Payment(0, invoiceId, invoice.getTotalIncludingVat(), paymentType);
 
         boolean successful = false;
 
