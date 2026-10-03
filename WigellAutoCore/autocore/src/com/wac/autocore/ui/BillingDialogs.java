@@ -41,7 +41,12 @@ public final class BillingDialogs {
         List<Booking> invoiceable = garage.getInvoiceableBookings();
 
         if (invoiceable.isEmpty()) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("overview.empty.workorders"));
+            // Är det arbete kvar på bokningarna är det därför ingen faktura kan skapas, och då
+            // säger vi det i stället för att bara visa att listan är tom.
+            String message = garage.hasBookingWithUnfinishedWork()
+                    ? I18n.get("dialog.invoice.not_all_completed")
+                    : I18n.get("overview.empty.workorders");
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), message);
             return;
         }
 

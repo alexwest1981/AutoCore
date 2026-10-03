@@ -352,6 +352,70 @@ public class WorkOrderServiceTest {
         }
     }
 
+    /**
+     * Fakturan ska vänta tills hela bokningen är klar. Med en arbetsorder per mekaniker räcker det
+     * inte att en eller två av dem är slutförda.
+     */
+    public void testInvoiceWaitsForEveryWorkOrderOnABooking() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        Mechanic first = temporaryMechanic(garage, "Vänteprov A");
+        Mechanic second = temporaryMechanic(garage, "Vänteprov B");
+        Mechanic third = temporaryMechanic(garage, "Vänteprov C");
+        Booking booking = bookingWithServices(garage, 4, "Vänteprov bokning");
+        int bookingId = booking.getId();
+        int[] orderIds = new int[]{0, 0, 0};
+        int invoiceId = 0;
+
+        try {
+            List<Integer> all = booking.getServiceItemIds();
+            WorkOrder a = garage.createWorkOrder(bookingId, first.getId(),
+                    new ArrayList<Integer>(all.subList(0, 2)));
+            WorkOrder b = garage.createWorkOrder(bookingId, second.getId(),
+                    new ArrayList<Integer>(all.subList(2, 3)));
+            WorkOrder c = garage.createWorkOrder(bookingId, third.getId(),
+                    new ArrayList<Integer>(all.subList(3, 4)));
+            orderIds[0] = a.getId();
+            orderIds[1] = b.getId();
+            orderIds[2] = c.getId();
+
+            garage.startWorkOrder(a.getId());
+            garage.completeWorkOrder(a.getId());
+            garage.startWorkOrder(b.getId());
+            garage.completeWorkOrder(b.getId());
+
+            TestRunner.assertTrue(!containsBooking(garage.getInvoiceableBookings(), bookingId),
+                    "Bokningen ska inte erbjudas medan en arbetsorder återstår");
+            TestRunner.assertTrue(garage.createInvoiceForBooking(bookingId, null) == null,
+                    "Fakturan ska inte kunna skapas förrän alla arbetsordrar är slutförda");
+            TestRunner.assertTrue(garage.hasBookingWithUnfinishedWork(),
+                    "Systemet ska veta att det finns ofullbordat arbete");
+            TestRunner.assertTrue(garage.createInvoice(a.getId(), null) == null,
+                    "Inte heller en enskild arbetsorder ska gå att fakturera medan syskonen är kvar");
+            System.out.println("    [FAKTURABEVIS] 2 av 3 arbetsordrar klara: ingen faktura, "
+                    + "och bokningen erbjuds inte.");
+
+            garage.startWorkOrder(c.getId());
+            garage.completeWorkOrder(c.getId());
+
+            TestRunner.assertTrue(containsBooking(garage.getInvoiceableBookings(), bookingId),
+                    "Bokningen ska erbjudas när alla arbetsordrar är slutförda");
+            Invoice invoice = garage.createInvoiceForBooking(bookingId, null);
+            TestRunner.assertNotNull(invoice, "Fakturan ska skapas när hela bokningen är klar");
+            invoiceId = invoice.getId();
+            TestRunner.assertEquals(4, invoice.getLines().size(),
+                    "Fakturan ska ha alla fyra tjänsterna");
+            System.out.println("    [FAKTURABEVIS] 3 av 3 klara: faktura " + invoiceId
+                    + " med " + invoice.getLines().size() + " rader.");
+        } finally {
+            if (invoiceId > 0) {
+                new InvoiceRepository().delete(invoiceId);
+            }
+            deleteQuietly(garage, orderIds[0], 0, first.getId());
+            deleteQuietly(garage, orderIds[1], 0, second.getId());
+            deleteQuietly(garage, orderIds[2], bookingId, third.getId());
+        }
+    }
+
     private boolean containsBooking(List<Booking> bookings, int bookingId) {
         for (Booking booking : bookings) {
             if (booking.getId() == bookingId) {

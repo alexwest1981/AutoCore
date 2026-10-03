@@ -85,22 +85,36 @@ public class NavCountTest {
                 Integer.valueOf(PageRouter.countBookingsWithoutWorkOrder(pipelineBookings, pipelineOrders)),
                 "Bokning med arbetsorder lämnar arbetsordermärket");
 
-        // 3. Ordern slutförd: +1 på fakturor, för den väntar på att faktureras.
+        // 3. Bokningen delas upp, en arbetsorder per mekaniker. Märket räknar fakturor att skapa,
+        //    alltså bokningar, inte arbetsordrar.
         wo.setStatus("IN_PROGRESS");
         TestRunner.assertEquals(Integer.valueOf(0),
-                Integer.valueOf(PageRouter.countCompletedOrdersWithoutInvoice(pipelineOrders, pipelineInvoices)),
-                "Pågående arbetsorder räknas inte, den är inte klar");
-        wo.setStatus("COMPLETED");
-        TestRunner.assertEquals(Integer.valueOf(1),
-                Integer.valueOf(PageRouter.countCompletedOrdersWithoutInvoice(pipelineOrders, pipelineInvoices)),
-                "Slutförd arbetsorder utan faktura ger +1 på fakturor");
+                Integer.valueOf(PageRouter.countBookingsReadyForInvoice(
+                        pipelineBookings, pipelineOrders, pipelineInvoices)),
+                "Pågående arbetsorder räknas inte, hela bokningen ska vara klar");
 
-        // 4. Fakturan skapad: fakturmärket försvinner, +1 på betalningar.
+        WorkOrder sibling = new WorkOrder(2, 1, 2);
+        pipelineOrders.add(sibling);
+        wo.setStatus("COMPLETED");
+        TestRunner.assertEquals(Integer.valueOf(0),
+                Integer.valueOf(PageRouter.countBookingsReadyForInvoice(
+                        pipelineBookings, pipelineOrders, pipelineInvoices)),
+                "En av två arbetsordrar klar räcker inte, hela bokningen ska vara klar");
+
+        // 4. Hela bokningen klar: ett märke, för det är en faktura som ska skapas.
+        sibling.setStatus("COMPLETED");
+        TestRunner.assertEquals(Integer.valueOf(1),
+                Integer.valueOf(PageRouter.countBookingsReadyForInvoice(
+                        pipelineBookings, pipelineOrders, pipelineInvoices)),
+                "Hela bokningen klar ger ett märke, inte ett per arbetsorder");
+
+        // 5. Fakturan skapad: fakturmärket försvinner, +1 på betalningar.
         Invoice inv = new Invoice(1, 1, LocalDate.now(), 1000.0);
         pipelineInvoices.add(inv);
         TestRunner.assertEquals(Integer.valueOf(0),
-                Integer.valueOf(PageRouter.countCompletedOrdersWithoutInvoice(pipelineOrders, pipelineInvoices)),
-                "Fakturerad arbetsorder lämnar fakturmärket");
+                Integer.valueOf(PageRouter.countBookingsReadyForInvoice(
+                        pipelineBookings, pipelineOrders, pipelineInvoices)),
+                "Fakturerad bokning lämnar fakturmärket");
         TestRunner.assertEquals(Integer.valueOf(1), Integer.valueOf(PageRouter.countUnpaidInvoices(pipelineInvoices)),
                 "Obetald faktura ger +1 på betalningar");
 
