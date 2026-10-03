@@ -242,9 +242,10 @@ public class BookingFormPane extends GridPane {
         addServiceBtn.setOnAction(e -> {
             if (isServicesLocked) return;
             ServiceItem sel = serviceBox.getValue();
-            if (sel != null && !selectedServices.contains(sel)) {
+            if (sel != null && selectedServices.stream().noneMatch(s -> s.getId() == sel.getId())) {
                 selectedServices.add(sel);
             }
+
         });
 
         // 4. Mekaniker med dynamiskt kvalifikationsfilter
@@ -611,7 +612,7 @@ public class BookingFormPane extends GridPane {
                 }
                 setText(SeedText.resolve(item.getName()) + " · " + UiFormatters.formatMoney(item.getPrice())
                         + " (" + item.getEstimatedMinutes() + " min)");
-                boolean alreadyInBooking = selectedServices.contains(item);
+                boolean alreadyInBooking = selectedServices.stream().anyMatch(s -> s.getId() == item.getId());
                 setDisable(alreadyInBooking);
                 setOpacity(alreadyInBooking ? 0.45 : 1);
             }
