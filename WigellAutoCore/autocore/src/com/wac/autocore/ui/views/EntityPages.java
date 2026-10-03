@@ -253,7 +253,7 @@ public final class EntityPages {
             detailsBtn.setDisable(sel == null);
             startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
             markBtn.setDisable(sel == null || !"IN_PROGRESS".equals(sel.getStatus()));
-            completeBtn.setDisable(sel == null || !"IN_PROGRESS".equals(sel.getStatus()));
+            completeBtn.setDisable(sel == null || (!"IN_PROGRESS".equals(sel.getStatus()) && !"CREATED".equals(sel.getStatus())));
         });
 
         startBtn.setOnAction(e -> {
@@ -273,8 +273,13 @@ public final class EntityPages {
 
         completeBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && "IN_PROGRESS".equals(sel.getStatus())) {
+            if (sel != null && ("IN_PROGRESS".equals(sel.getStatus()) || "CREATED".equals(sel.getStatus()))) {
+                if ("CREATED".equals(sel.getStatus())) {
+                    garage.startWorkOrder(sel.getId());
+                }
                 garage.completeWorkOrder(sel.getId());
+                // Fakturan skapas inte här. Ordern ska stå och vänta på att faktureras, så
+                // menyvalet Fakturor visar att det finns ett jobb kvar att göra.
                 router.navigate("workorders");
             }
         });

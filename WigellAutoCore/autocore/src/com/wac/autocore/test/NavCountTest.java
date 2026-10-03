@@ -28,9 +28,9 @@ public class NavCountTest {
         withoutStatus.setStatus(null);
         orders.add(withoutStatus);
 
-        TestRunner.assertEquals(Integer.valueOf(1), Integer.valueOf(PageRouter.countNewWorkOrders(orders)),
-                "Bara arbetsordrar som inte påbörjats ska räknas som nya — pågående, klara och "
-                        + "statuslösa är redan hanterade eller okända");
+        TestRunner.assertEquals(Integer.valueOf(2), Integer.valueOf(PageRouter.countNewWorkOrders(orders)),
+                "Bara aktiva arbetsordrar (CREATED eller IN_PROGRESS) som inte slutförts ska räknas — "
+                        + "slutförda och statuslösa är klara eller okända");
         TestRunner.assertEquals(Integer.valueOf(0), Integer.valueOf(PageRouter.countNewWorkOrders(new ArrayList<WorkOrder>())),
                 "En tom lista ska ge noll, inte ett negativt eller påhittat antal");
     }
@@ -62,8 +62,65 @@ public class NavCountTest {
         payments.add(payment(true));
         payments.add(payment(true));
 
+        TestRunner.assertEquals(Integer.valueOf(2), Integer.valueOf(PageRouter.countPaidPayments(payments)),
+                "Betalda fakturor / genomförda betalningar ger +1 i betalningsmenyn");
         TestRunner.assertEquals(Integer.valueOf(1), Integer.valueOf(PageRouter.countFailedPayments(payments)),
-                "Bara betalningar som inte gick igenom ska räknas — de ska göras om");
+                "Bakåtkompatibilitet: countFailedPayments räknar misslyckade betalningar");
+
+        // Pipelinen genom menyn, i samma ordning användaren möter den:
+        // 1. Bokning skapad: +1 på arbetsordrar, för den väntar på en arbetsorder. Inget märke på bokningar.
+        Booking b = new Booking(1, 1, LocalDate.now(), "Revision: räknaren");
+        List<Booking> pipelineBookings = new ArrayList<Booking>();
+        pipelineBookings.add(b);
+        List<WorkOrder> pipelineOrders = new ArrayList<WorkOrder>();
+        List<Invoice> pipelineInvoices = new ArrayList<Invoice>();
+        TestRunner.assertEquals(Integer.valueOf(1),
+                Integer.valueOf(PageRouter.countBookingsWithoutWorkOrder(pipelineBookings, pipelineOrders)),
+                "Ny bokning ger +1 på arbetsordrar, den väntar på en arbetsorder");
+
+        // 2. Arbetsordern skapad: märket försvinner.
+        WorkOrder wo = new WorkOrder(1, 1, 1);
+        pipelineOrders.add(wo);
+        TestRunner.assertEquals(Integer.valueOf(0),
+                Integer.valueOf(PageRouter.countBookingsWithoutWorkOrder(pipelineBookings, pipelineOrders)),
+                "Bokning med arbetsorder lämnar arbetsordermärket");
+
+        // 3. Ordern slutförd: +1 på fakturor, för den väntar på att faktureras.
+        wo.setStatus("IN_PROGRESS");
+        TestRunner.assertEquals(Integer.valueOf(0),
+                Integer.valueOf(PageRouter.countCompletedOrdersWithoutInvoice(pipelineOrders, pipelineInvoices)),
+                "Pågående arbetsorder räknas inte, den är inte klar");
+        wo.setStatus("COMPLETED");
+        TestRunner.assertEquals(Integer.valueOf(1),
+                Integer.valueOf(PageRouter.countCompletedOrdersWithoutInvoice(pipelineOrders, pipelineInvoices)),
+                "Slutförd arbetsorder utan faktura ger +1 på fakturor");
+
+        // 4. Fakturan skapad: fakturmärket försvinner, +1 på betalningar.
+        Invoice inv = new Invoice(1, 1, LocalDate.now(), 1000.0);
+        pipelineInvoices.add(inv);
+        TestRunner.assertEquals(Integer.valueOf(0),
+                Integer.valueOf(PageRouter.countCompletedOrdersWithoutInvoice(pipelineOrders, pipelineInvoices)),
+                "Fakturerad arbetsorder lämnar fakturmärket");
+        TestRunner.assertEquals(Integer.valueOf(1), Integer.valueOf(PageRouter.countUnpaidInvoices(pipelineInvoices)),
+                "Obetald faktura ger +1 på betalningar");
+
+        // 5. Betald: betalningsmärket försvinner.
+        inv.setPaid(true);
+        TestRunner.assertEquals(Integer.valueOf(0), Integer.valueOf(PageRouter.countUnpaidInvoices(pipelineInvoices)),
+                "Betald faktura lämnar betalningsmärket");
+    }
+
+    /** En avbokad bokning ska inte be om en arbetsorder. */
+    public void testCancelledBookingIsNotCounted() {
+        List<Booking> bookings = new ArrayList<Booking>();
+        Booking cancelled = new Booking(1, 1, LocalDate.now(), "Avbokad");
+        cancelled.setStatus("CANCELLED");
+        bookings.add(cancelled);
+        bookings.add(new Booking(2, 1, LocalDate.now(), "Bokad"));
+
+        TestRunner.assertEquals(Integer.valueOf(1),
+                Integer.valueOf(PageRouter.countBookingsWithoutWorkOrder(bookings, new ArrayList<WorkOrder>())),
+                "Bara den bokade bokningen ska räknas, den avbokade ska inte bli någon arbetsorder");
     }
 
     private Invoice invoice(boolean paid) {
