@@ -25,50 +25,40 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Ett flervalsfält: de valda posterna visas som chips inuti fältet, och listan visar varje post med
- * en kryssruta. Ett klick på en rad växlar posten och lämnar listan öppen.
- *
- * Listan ritas inuti fönstret, i ett lager ovanpå vyn, inte i ett eget popup-fönster. Skälet är
- * att ett separat fönster får sin text omskalad av skrivbordsmiljön och blir suddig. Lagret rör
- * inget annat än sig självt och tas bort när listan stängs.
+ * Flervalsfält: valda poster som chips i fältet, en kryssruta per rad i listan. Listan ritas i ett
+ * lager ovanpå vyn, inte i ett popup-fönster, som blir suddigt i den här skrivbordsmiljön.
  */
 public class MultiSelectComboBox<T> extends HBox {
 
     /** Nyckel på det lager vi lagt in i scenen, så att flera fält kan dela samma lager. */
-    private static final String LAGER_NYCKEL = "multi-select-scene-lager";
+    private static final String LAYER_KEY = "multi-select-overlay-layer";
 
     private final ObservableList<T> items = FXCollections.observableArrayList();
     private final ObservableList<T> selected = FXCollections.observableArrayList();
     private final Function<T, String> labelProvider;
     private final Function<T, String> subLabelProvider;
     private final String placeholder;
-    /**
-     * Nyckeln som avgör om två poster är samma sak. Modellerna i appen har ingen equals, så två
-     * anrop till datahämtaren ger olika objekt för samma tjänst. Utan nyckeln skulle samma tjänst
-     * kunna väljas två gånger. Standard: posten själv, vilket räcker när anroparen håller samma
-     * objekt hela vägen.
-     */
-    private Function<T, Object> nyckel = item -> item;
-    /**
-     * Texten i chipset i fältet. Raden i listan får plats med mer, chipset mindre, så de kan skilja
-     * sig: mekanikerns specialisering står i listan men inte i chipset. Standard: samma som raden.
-     */
+    /** Avgör när två poster är samma sak. Modellerna saknar equals, så sätt den till id:t. */
+    private Function<T, Object> keyFunction = item -> item;
+    /** Chipset har mindre plats än listraden. Standard: samma text som raden. */
     private Function<T, String> chipTextProvider;
 
     private final HBox chips = new HBox(6);
     private final ScrollPane chipScroll = new ScrollPane(chips);
     private final Label placeholderLabel = new Label();
-    private final Label caret = new Label("▾");
+    /** Pilen: samma nodbygge som appens ComboBoxar, så att CSS ger den samma form och plats. */
+    private final Region caret = new Region();
+    private final StackPane caretButton = new StackPane(caret);
     private final VBox rows = new VBox(2);
     /** Rad och kryssruta per nyckel, så att en rad kan uppdateras utan att byggas om. */
-    private final java.util.Map<Object, HBox> radPerNyckel = new java.util.LinkedHashMap<Object, HBox>();
-    private final java.util.Map<Object, CheckBox> kryssPerNyckel = new java.util.LinkedHashMap<Object, CheckBox>();
+    private final java.util.Map<Object, HBox> rowByKey = new java.util.LinkedHashMap<Object, HBox>();
+    private final java.util.Map<Object, CheckBox> checkBoxByKey = new java.util.LinkedHashMap<Object, CheckBox>();
     private final ScrollPane rowScroll = new ScrollPane(rows);
     private final VBox panel = new VBox(rowScroll);
 
     private Pane overlay;
-    private boolean öppen;
-    private javafx.event.EventHandler<javafx.scene.input.MouseEvent> klickUtanför;
+    private boolean open;
+    private javafx.event.EventHandler<javafx.scene.input.MouseEvent> outsideClick;
     private javafx.event.EventHandler<javafx.scene.input.KeyEvent> escape;
 
     public MultiSelectComboBox(String placeholder, Function<T, String> labelProvider) {
@@ -82,9 +72,9 @@ public class MultiSelectComboBox<T> extends HBox {
         this.subLabelProvider = subLabelProvider;
 
         getStyleClass().add("multi-select");
+        setFocusTraversable(true);
         setAlignment(Pos.CENTER_LEFT);
-        // Luft, avstånd och höjd kommer från multi-select-reglerna i components.css, så att fältet
-        // blir exakt lika högt som appens egna ComboBoxar (31 px).
+        // Höjd och luft kommer från multi-select-reglerna i components.css (31 px).
 
         chips.setAlignment(Pos.CENTER_LEFT);
         chipScroll.getStyleClass().add("multi-select-scroll");
@@ -96,10 +86,25 @@ public class MultiSelectComboBox<T> extends HBox {
         placeholderLabel.getStyleClass().add("multi-select-placeholder");
         placeholderLabel.setText(this.placeholder);
 
-        caret.getStyleClass().add("multi-select-caret");
+        caretButton.getStyleClass().add("arrow-button");
+        caret.getStyleClass().add("arrow");
+        caret.setMouseTransparent(true);
 
-        getChildren().addAll(placeholderLabel, chipScroll, caret);
-        setOnMouseClicked(e -> toggleLista());
+        // Chipraden är den del som ska växa, så att pilen alltid hamnar vid fältets högerkant.
+        HBox.setHgrow(chipScroll, Priority.ALWAYS);
+        chipScroll.setMaxWidth(Double.MAX_VALUE);
+        // Klick var som helst i fältet öppnar listan. Filtret ligger på fältet och kör före barnen,
+        // så chipraden kan inte sluka klicket. Krysset på ett chip hoppas över.
+        addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+            if (isInsideClass((Node) e.getTarget(), "multi-select-chip-close")) {
+                return;
+            }
+            // Fältet tar fokus själv, annars stjäl chipraden det och fokusringen uteblir.
+            requestFocus();
+            toggleList();
+        });
+
+        getChildren().addAll(placeholderLabel, chipScroll, caretButton);
 
         rows.setPadding(new Insets(4));
         rowScroll.getStyleClass().add("multi-select-popup-scroll");
@@ -112,7 +117,7 @@ public class MultiSelectComboBox<T> extends HBox {
         selected.addListener((javafx.collections.ListChangeListener<T>) c -> {
             renderChips();
             // Raderna uppdateras på plats, de byggs inte om.
-            uppdateraRader();
+            updateRows();
         });
         renderChips();
         renderRows();
@@ -125,8 +130,8 @@ public class MultiSelectComboBox<T> extends HBox {
         return items;
     }
 
-    public void setItems(List<T> nya) {
-        items.setAll(nya);
+    public void setItems(List<T> values) {
+        items.setAll(values);
         renderRows();
     }
 
@@ -135,9 +140,9 @@ public class MultiSelectComboBox<T> extends HBox {
         return selected;
     }
 
-    public void setSelectedItems(List<T> nya) {
+    public void setSelectedItems(List<T> values) {
         selected.clear();
-        for (T item : nya) {
+        for (T item : values) {
             // Dubbletter i indata ska inte kunna bli två val av samma sak.
             addSelectedItem(item);
         }
@@ -153,13 +158,10 @@ public class MultiSelectComboBox<T> extends HBox {
         renderChips();
     }
 
-    /**
-     * Bestämmer vad som räknas som samma post. Skicka in id:t, till exempel ServiceItem::getId,
-     * när modellen saknar equals och posterna kan komma från olika anrop.
-     */
-    public void setKeyProvider(Function<T, Object> nyckelProvider) {
-        if (nyckelProvider != null) {
-            this.nyckel = nyckelProvider;
+    /** Nyckeln per post, till exempel ServiceItem::getId. */
+    public void setKeyProvider(Function<T, Object> keyProvider) {
+        if (keyProvider != null) {
+            this.keyFunction = keyProvider;
         }
         renderChips();
         renderRows();
@@ -167,7 +169,7 @@ public class MultiSelectComboBox<T> extends HBox {
 
     /** Sant om posten redan är vald, jämfört med nyckeln. */
     public boolean isSelectedItem(T item) {
-        return ärValdNyckel(nyckel.apply(item));
+        return isSelectedKey(keyFunction.apply(item));
     }
 
     /** Lägger till posten bara om nyckeln inte redan finns bland de valda. */
@@ -181,9 +183,9 @@ public class MultiSelectComboBox<T> extends HBox {
 
     /** Tar bort posten med samma nyckel, oavsett vilken instans som ligger i listan. */
     public boolean removeSelectedItem(T item) {
-        Object ny = nyckel.apply(item);
+        Object key = keyFunction.apply(item);
         for (int i = 0; i < selected.size(); i++) {
-            if (java.util.Objects.equals(nyckel.apply(selected.get(i)), ny)) {
+            if (java.util.Objects.equals(keyFunction.apply(selected.get(i)), key)) {
                 selected.remove(i);
                 return true;
             }
@@ -198,16 +200,18 @@ public class MultiSelectComboBox<T> extends HBox {
         for (T item : selected) {
             chips.getChildren().add(chip(item));
         }
-        boolean tomt = selected.isEmpty();
-        placeholderLabel.setVisible(tomt);
-        placeholderLabel.setManaged(tomt);
-        chipScroll.setVisible(!tomt);
-        chipScroll.setManaged(!tomt);
+        boolean empty = selected.isEmpty();
+        // Chipraden stannar i layouten även när den är tom, annars växer ingenting i fältet och
+        // pilen hamnar direkt efter platshållartexten i stället för vid högerkanten.
+        placeholderLabel.setVisible(empty);
+        placeholderLabel.setManaged(empty);
+        chipScroll.setVisible(!empty);
+        chipScroll.setManaged(true);
     }
 
     private Node chip(T item) {
-        Label text = new Label(chipText(item));
-        text.getStyleClass().add("multi-select-chip-text");
+        Label theLabel = new Label(chipText(item));
+        theLabel.getStyleClass().add("multi-select-chip-text");
 
         Label close = new Label("×");
         close.getStyleClass().add("multi-select-chip-close");
@@ -216,7 +220,7 @@ public class MultiSelectComboBox<T> extends HBox {
             e.consume();
         });
 
-        HBox chip = new HBox(6, text, close);
+        HBox chip = new HBox(6, theLabel, close);
         chip.getStyleClass().add("multi-select-chip");
         chip.setAlignment(Pos.CENTER_LEFT);
         // Chipsen ska hålla sin egen höjd inuti fältet, inte töjas till fältets.
@@ -227,12 +231,12 @@ public class MultiSelectComboBox<T> extends HBox {
 
     private void renderRows() {
         rows.getChildren().clear();
-        radPerNyckel.clear();
-        kryssPerNyckel.clear();
+        rowByKey.clear();
+        checkBoxByKey.clear();
         if (items.isEmpty()) {
-            Label tom = new Label("Inga val");
-            tom.getStyleClass().add("multi-select-empty");
-            rows.getChildren().add(tom);
+            Label emptyLabel = new Label("Inga val");
+            emptyLabel.getStyleClass().add("multi-select-empty");
+            rows.getChildren().add(emptyLabel);
             return;
         }
         for (T item : items) {
@@ -246,10 +250,10 @@ public class MultiSelectComboBox<T> extends HBox {
         check.setSelected(isSelectedItem(item));
         check.setMouseTransparent(true);
 
-        Label text = new Label(text(item));
-        text.getStyleClass().add("multi-select-row-text");
+        Label theLabel = new Label(rowText(item));
+        theLabel.getStyleClass().add("multi-select-row-text");
 
-        VBox labels = new VBox(1, text);
+        VBox labels = new VBox(1, theLabel);
         HBox.setHgrow(labels, Priority.ALWAYS);
         if (subLabelProvider != null) {
             String sub = subLabelProvider.apply(item);
@@ -274,33 +278,30 @@ public class MultiSelectComboBox<T> extends HBox {
             }
             e.consume();
         });
-        radPerNyckel.put(nyckel.apply(item), row);
-        kryssPerNyckel.put(nyckel.apply(item), check);
+        rowByKey.put(keyFunction.apply(item), row);
+        checkBoxByKey.put(keyFunction.apply(item), check);
         return row;
     }
 
     /** Sant om en post med den nyckeln ligger vald. */
-    private boolean ärValdNyckel(Object ny) {
-        for (T vald : selected) {
-            if (java.util.Objects.equals(nyckel.apply(vald), ny)) {
+    private boolean isSelectedKey(Object key) {
+        for (T chosenItem : selected) {
+            if (java.util.Objects.equals(keyFunction.apply(chosenItem), key)) {
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * Uppdaterar kryssruta och markering på de rader som redan finns, i stället för att bygga om
-     * listan. Anropas vid varje val, även medan listan visas.
-     */
-    private void uppdateraRader() {
-        for (java.util.Map.Entry<Object, HBox> e : radPerNyckel.entrySet()) {
-            boolean vald = ärValdNyckel(e.getKey());
-            CheckBox kryss = kryssPerNyckel.get(e.getKey());
-            if (kryss != null) {
-                kryss.setSelected(vald);
+    /** Kryssar i de rader som redan finns i stället för att bygga om listan. */
+    private void updateRows() {
+        for (java.util.Map.Entry<Object, HBox> e : rowByKey.entrySet()) {
+            boolean chosenItem = isSelectedKey(e.getKey());
+            CheckBox box = checkBoxByKey.get(e.getKey());
+            if (box != null) {
+                box.setSelected(chosenItem);
             }
-            if (vald) {
+            if (chosenItem) {
                 if (!e.getValue().getStyleClass().contains("selected")) {
                     e.getValue().getStyleClass().add("selected");
                 }
@@ -310,7 +311,7 @@ public class MultiSelectComboBox<T> extends HBox {
         }
     }
 
-    private String text(T item) {
+    private String rowText(T item) {
         return labelProvider == null ? String.valueOf(item) : labelProvider.apply(item);
     }
 
@@ -318,47 +319,47 @@ public class MultiSelectComboBox<T> extends HBox {
         if (chipTextProvider != null) {
             return chipTextProvider.apply(item);
         }
-        return text(item);
+        return rowText(item);
     }
 
     // --- listan ---------------------------------------------------------------
 
     /** Öppnar listan om den är stängd, annars stänger den. */
-    public void toggleLista() {
-        if (öppen) {
-            döljLista();
+    public void toggleList() {
+        if (open) {
+            hideList();
         } else {
-            visaLista();
+            showList();
         }
     }
 
-    /** Öppnar listan. Gör inget om den redan är öppen. */
-    public void visaLista() {
-        if (öppen || getScene() == null) {
+    /** Öppnar listan. Gör inget om den redan är open. */
+    public void showList() {
+        if (open || getScene() == null) {
             return;
         }
         renderRows();
 
-        Scene scen = getScene();
-        StackPane lager = lager(scen);
+        Scene scene = getScene();
+        StackPane overlayLayer = overlayLayer(scene);
         overlay = new Pane();
         overlay.setPickOnBounds(false);
         overlay.setMouseTransparent(false);
-        lager.getChildren().add(overlay);
+        overlayLayer.getChildren().add(overlay);
 
         // Bredden följer det längsta innehållet, så att inget namn klipps eller trycks ihop.
         double textbredd = 0;
         for (T item : items) {
-            Text mät = new Text(text(item));
-            mät.setFont(Font.font("System", 13));
-            textbredd = Math.max(textbredd, mät.getLayoutBounds().getWidth());
+            Text measurer = new Text(rowText(item));
+            measurer.setFont(Font.font("System", 13));
+            textbredd = Math.max(textbredd, measurer.getLayoutBounds().getWidth());
         }
-        double bredd = Math.round(Math.max(300, Math.min(textbredd + 70, 620)));
-        panel.setPrefWidth(bredd);
-        panel.setMinWidth(bredd);
-        panel.setMaxWidth(bredd);
-        rowScroll.setPrefWidth(bredd);
-        rowScroll.setMaxWidth(bredd);
+        double width = Math.round(Math.max(300, Math.min(textbredd + 70, 620)));
+        panel.setPrefWidth(width);
+        panel.setMinWidth(width);
+        panel.setMaxWidth(width);
+        rowScroll.setPrefWidth(width);
+        rowScroll.setMaxWidth(width);
         rowScroll.setPrefHeight(Region.USE_COMPUTED_SIZE);
         rowScroll.setMaxHeight(280);
 
@@ -367,7 +368,7 @@ public class MultiSelectComboBox<T> extends HBox {
         }
         panel.setManaged(true);
         panel.setVisible(true);
-        öppen = true;
+        open = true;
         if (!getStyleClass().contains("showing")) {
             getStyleClass().add("showing");
         }
@@ -379,40 +380,40 @@ public class MultiSelectComboBox<T> extends HBox {
         panel.relocate(Math.round(b.getMinX()), Math.round(b.getMaxY()) + 2);
         panel.toFront();
 
-        klickUtanför = ev -> {
-            Node mål = (Node) ev.getTarget();
-            if (!ärInuti(mål, panel) && !ärInuti(mål, this)) {
-                döljLista();
+        outsideClick = ev -> {
+            Node target = (Node) ev.getTarget();
+            if (!isInside(target, panel) && !isInside(target, this)) {
+                hideList();
             }
         };
         escape = ev -> {
             if (ev.getCode() == KeyCode.ESCAPE) {
-                döljLista();
+                hideList();
             }
         };
-        scen.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, klickUtanför);
-        scen.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, escape);
+        scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, outsideClick);
+        scene.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, escape);
     }
 
-    /** Stänger listan om den är öppen. */
-    public void döljLista() {
-        if (!öppen) {
+    /** Stänger listan om den är open. */
+    public void hideList() {
+        if (!open) {
             return;
         }
-        öppen = false;
+        open = false;
         getStyleClass().remove("showing");
         if (panel.getParent() instanceof Pane) {
             ((Pane) panel.getParent()).getChildren().remove(panel);
         }
         panel.setVisible(false);
         panel.setManaged(false);
-        Scene scen = getScene();
-        if (scen != null) {
-            if (klickUtanför != null) {
-                scen.removeEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, klickUtanför);
+        Scene scene = getScene();
+        if (scene != null) {
+            if (outsideClick != null) {
+                scene.removeEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, outsideClick);
             }
             if (escape != null) {
-                scen.removeEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, escape);
+                scene.removeEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, escape);
             }
         }
         if (overlay != null) {
@@ -422,14 +423,15 @@ public class MultiSelectComboBox<T> extends HBox {
             }
             overlay = null;
         }
-        klickUtanför = null;
+        outsideClick = null;
         escape = null;
     }
 
-    private static boolean ärInuti(Node mål, Node förälder) {
-        Node n = mål;
+    /** Sant om noden eller någon av dess föräldrar har den stilmallen. */
+    private static boolean isInsideClass(Node target, String styleClass) {
+        Node n = target;
         while (n != null) {
-            if (n == förälder) {
+            if (n.getStyleClass().contains(styleClass)) {
                 return true;
             }
             n = n.getParent();
@@ -437,38 +439,46 @@ public class MultiSelectComboBox<T> extends HBox {
         return false;
     }
 
-    /**
-     * Ser till att scenens rot ligger i ett lager där listan kan ritas ovanpå vyn, utan att röra
-     * resten av layouten. Lagret skapas en gång och återanvänds av alla flervalsfält i scenen.
-     */
-    private static StackPane lager(Scene scen) {
-        Parent rot = scen.getRoot();
-        if (rot instanceof StackPane && Boolean.TRUE.equals(rot.getProperties().get(LAGER_NYCKEL))) {
-            return (StackPane) rot;
+    private static boolean isInside(Node target, Node parent) {
+        Node n = target;
+        while (n != null) {
+            if (n == parent) {
+                return true;
+            }
+            n = n.getParent();
         }
-        StackPane lager = new StackPane(rot);
-        lager.getProperties().put(LAGER_NYCKEL, Boolean.TRUE);
-        lager.setAlignment(Pos.TOP_LEFT);
-        scen.setRoot(lager);
-        return lager;
+        return false;
+    }
+
+    /** Lägger listan i ett lager ovanpå vyn. Skapas en gång och delas av scenens fält. */
+    private static StackPane overlayLayer(Scene scene) {
+        Parent root = scene.getRoot();
+        if (root instanceof StackPane && Boolean.TRUE.equals(root.getProperties().get(LAYER_KEY))) {
+            return (StackPane) root;
+        }
+        StackPane overlayLayer = new StackPane(root);
+        overlayLayer.getProperties().put(LAYER_KEY, Boolean.TRUE);
+        overlayLayer.setAlignment(Pos.TOP_LEFT);
+        scene.setRoot(overlayLayer);
+        return overlayLayer;
     }
 
     /** Öppnar listan, till exempel från en knapp eller ett test. */
     public void showPopup() {
-        visaLista();
+        showList();
     }
 
-    /** Stänger listan. Samma som döljLista. */
+    /** Stänger listan. */
     public void hidePopup() {
-        döljLista();
+        hideList();
     }
 
-    /** Sant när listan är öppen. */
+    /** Sant när listan är open. */
     public boolean isPopupShowing() {
-        return öppen;
+        return open;
     }
 
-    /** Roten i listan. Finns för att kunna mätas och granskas utifrån. */
+    /** Roten i listan, för att kunna mätas utifrån. */
     public VBox getPopupRoot() {
         return panel;
     }

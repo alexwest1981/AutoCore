@@ -1609,8 +1609,9 @@ TableView .table-row-cell:selected:focused .table-cell,
    ============================================================ */
 .multi-select {
     -fx-background-color: white;
-    -fx-border-color: #d1d5db;
-    -fx-border-width: 1;
+    /* Samma kant som appens egna ComboBoxar: -wac-line, 2 px. */
+    -fx-border-color: -wac-line;
+    -fx-border-width: 2;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-padding: 2px 6px;
@@ -1622,8 +1623,11 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-max-height: 31px;
 }
 .multi-select:hover {
-    -fx-border-color: #9ca3af;
+    -fx-border-color: -wac-ring;
 }
+/* Grön kant bara medan listan är öppen. Hover sköter JavaFX själv, och fältet har
+   medvetet inget focused-läge: det ligger kvar när man klickar i något som inte tar
+   fokus, och då ser kanten ut att ha fastnat. */
 .multi-select.showing {
     -fx-border-color: -wac-ring;
 }
@@ -1631,10 +1635,28 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-text-fill: -wac-muted;
     -fx-font-size: 13px;
 }
-.multi-select-caret {
-    -fx-text-fill: #6b7280;
-    -fx-font-size: 11px;
-    -fx-padding: 0 2 0 4;
+/* Pilen. Samma nodbygge som appens ComboBoxar: en Region med klassen arrow inuti en StackPane
+   med klassen arrow-button. Modenas egna regler gäller bara .combo-box och .choice-box, så
+   måtten upprepas här: en 9 x 5 px triangel med -fx-shape och 8,7 px luft till fältets
+   högerkant. Färgen är appens egen, #6b7280, samma som i .combo-box .arrow längre upp. */
+/* Pilknappen: luften ar appens egen, mott ur en riktig ComboBox i samma scen. */
+.multi-select .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 6.5 10.2 6.5 10.8;
+    -fx-max-height: 23;
+}
+/*
+ * Pilen. Form, luft och insets ar ordagrant JavaFX egna varden for klassen .arrow, samma stil
+ * som en vanlig ComboBox anvander. Bara fargen ar appens.
+ */
+.multi-select .arrow {
+    -fx-background-color: #6b7280;
+    -fx-shape: "M 0 0 h 7 l -3.5 4 z";
+    -fx-padding: 2.2 4.05 2.2 4.05;
+    -fx-background-insets: 1 0 -1 0, 0;
+    /* Appens pil ritar sex rader, alltsa 9 x 6 px. Utan tak blir den 10 px hog. */
+    -fx-max-height: 6;
+    -fx-pref-height: 6;
 }
 .multi-select-scroll, .multi-select-scroll > .viewport {
     -fx-background-color: transparent;

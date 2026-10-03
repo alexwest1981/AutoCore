@@ -845,29 +845,29 @@ public class MechanicKanbanCard {
         GridPane fields = new GridPane();
         fields.setHgap(10);
         fields.setVgap(6);
-        ColumnConstraints etikettKolumn = new ColumnConstraints();
-        etikettKolumn.setMinWidth(84);
-        etikettKolumn.setPrefWidth(84);
+        ColumnConstraints labelColumn = new ColumnConstraints();
+        labelColumn.setMinWidth(84);
+        labelColumn.setPrefWidth(84);
         ColumnConstraints värdeKolumn = new ColumnConstraints();
         värdeKolumn.setHgrow(Priority.ALWAYS);
-        fields.getColumnConstraints().addAll(etikettKolumn, värdeKolumn);
+        fields.getColumnConstraints().addAll(labelColumn, värdeKolumn);
 
-        String[][] rader = {
+        String[][] rows = {
                 {I18n.get("table.col.customer"), cust},
                 {I18n.get("table.col.vehicle"), reg},
                 {I18n.get("table.col.description"), desc}};
-        for (int i = 0; i < rader.length; i++) {
-            Label etikett = new Label(rader[i][0]);
-            etikett.getStyleClass().add("kanban-drawer-field");
-            etikett.setMinWidth(Region.USE_PREF_SIZE);
+        for (int i = 0; i < rows.length; i++) {
+            Label label = new Label(rows[i][0]);
+            label.getStyleClass().add("kanban-drawer-field");
+            label.setMinWidth(Region.USE_PREF_SIZE);
 
-            Label värde = new Label(rader[i][1]);
+            Label värde = new Label(rows[i][1]);
             värde.getStyleClass().add("kanban-drawer-value");
             värde.setWrapText(true);
             värde.setMaxWidth(Double.MAX_VALUE);
             GridPane.setHgrow(värde, Priority.ALWAYS);
 
-            fields.add(etikett, 0, i);
+            fields.add(label, 0, i);
             fields.add(värde, 1, i);
         }
 
