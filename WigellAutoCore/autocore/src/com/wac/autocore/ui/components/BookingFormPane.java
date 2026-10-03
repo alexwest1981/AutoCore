@@ -561,19 +561,28 @@ public class BookingFormPane extends GridPane {
 
         Runnable refreshTimeBox = () -> {
             int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            List<LocalTime> validTimes = new ArrayList<LocalTime>();
+            // Bara de tider som går att boka: de som ryms före stängning och är lediga för vald
+            // mekaniker. Upptagna tider visas inte alls, och finns det ingen kvar stängs fältet av.
+            List<LocalTime> freeTimes = new ArrayList<LocalTime>();
             for (int h = 7; h <= 16; h++) {
                 LocalTime t = LocalTime.of(h, 0);
-                if (!t.plusMinutes(duration).isAfter(BookingAvailability.CLOSING_TIME)) {
-                    validTimes.add(t);
+                if (t.plusMinutes(duration).isAfter(BookingAvailability.CLOSING_TIME)) {
+                    continue;
                 }
+                if (Boolean.TRUE.equals(isBusyFunc.apply(t))) {
+                    continue;
+                }
+                freeTimes.add(t);
             }
             LocalTime currentSel = startTimeBox.getValue();
-            startTimeBox.setItems(FXCollections.observableArrayList(validTimes));
-            if (currentSel != null && validTimes.contains(currentSel) && !Boolean.TRUE.equals(isBusyFunc.apply(currentSel))) {
+            startTimeBox.setItems(FXCollections.observableArrayList(freeTimes));
+            boolean none = freeTimes.isEmpty();
+            startTimeBox.setDisable(none);
+            startTimeBox.setPromptText(none ? I18n.get("dialog.booking.no_free_times") : null);
+            if (currentSel != null && freeTimes.contains(currentSel)) {
                 startTimeBox.getSelectionModel().select(currentSel);
             } else {
-                selectFirstAvailableTime(validTimes, isBusyFunc);
+                selectFirstAvailableTime(freeTimes, isBusyFunc);
             }
             if (startTimeBox.getButtonCell() != null) {
                 startTimeBox.getButtonCell().updateIndex(-1);
