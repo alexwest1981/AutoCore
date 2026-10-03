@@ -189,9 +189,12 @@ public final class TableFactory {
         return c;
     }
 
-    /** ID-kolumnen, samma i alla tabeller. */
+    /**
+     * ID-kolumnen, samma i alla tabeller. Den får ingen luftmarginal: ett id blir aldrig bredare än
+     * fyra siffror, så allt utrymme den tar utöver det är bortkastat och knuffar de andra kolumnerna.
+     */
     public static <S> TableColumn<S, String> idCol(Function<S, String> mapper) {
-        return sizeCol(com.wac.autocore.ui.i18n.I18n.get("table.col.id"), W_ID, mapper);
+        return textCol(com.wac.autocore.ui.i18n.I18n.get("table.col.id"), W_ID, W_ID, mapper);
     }
 
     /**
