@@ -398,7 +398,7 @@ public final class WorkOrderDialogs {
                 Label statusChip = new Label();
                 statusChip.getStyleClass().add("badge");
                 if (done) {
-                    statusChip.setText("✔ " + I18n.get("status.completed"));
+                    statusChip.setText(I18n.get("status.completed"));
                     statusChip.getStyleClass().add("green");
                 } else if ("COMPLETED".equals(workOrder.getStatus())) {
                     statusChip.setText(I18n.get("status.cancelled"));

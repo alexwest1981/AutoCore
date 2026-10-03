@@ -106,7 +106,7 @@
       "action_create": "+ Ny arbetsorder",
       "action_start": "▶ Starta order",
       "action_mark_performed": "Markera utförda arbeten",
-      "action_complete": "✔ Slutför order",
+      "action_complete": "Slutför order",
       "action_invoice": "Skapa faktura",
       "action_details": "Visa detaljer"
     },
