@@ -107,10 +107,11 @@ public class BookingFormPane extends GridPane {
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour) {
         this.garage = garage;
-        setHgap(14);
-        setVgap(14);
+        setHgap(18);
+        setVgap(16);
         setPadding(new Insets(18, 22, 18, 22));
-        setPrefWidth(640);
+        setPrefWidth(820);
+        setMinWidth(700);
 
         javafx.scene.layout.ColumnConstraints col0 = new javafx.scene.layout.ColumnConstraints();
         col0.setMinWidth(120);
@@ -718,16 +719,27 @@ public class BookingFormPane extends GridPane {
         dateTimeLbl.setPadding(new Insets(6, 0, 0, 0));
         add(dateTimeLbl, 0, rowIdx);
 
-        VBox calCol = new VBox(6, dateHeaderLabel, calendarHintLabel, calendarNode);
+        VBox calCol = new VBox(10, dateHeaderLabel, calendarHintLabel, calendarNode);
         calCol.setAlignment(Pos.TOP_LEFT);
+        calCol.getStyleClass().add("booking-card");
 
         VBox timeCol = new VBox(8);
         Label timeTitle = new Label(I18n.get("dialog.booking.time_select") + ":");
-        timeTitle.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -wac-text;");
-        timeCol.getChildren().addAll(timeTitle, this.startTimeBox, this.durationLabel);
-        timeCol.setMinWidth(170);
-        timeCol.setPrefWidth(190);
+        timeTitle.getStyleClass().add("booking-card-title");
+        // Arbetspasset hamnar längst ned i kortet, så att innehållet fördelas över hela höjden
+        // i stället för att lämna en tom yta under texten.
+        Label timeHint = new Label(I18n.get("dialog.booking.only_free_times"));
+        timeHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
+        timeHint.setWrapText(true);
+        timeCol.getChildren().addAll(timeTitle, this.startTimeBox, timeHint, this.durationLabel);
+        // Innehållet centreras i kortet, så att luften fördelas jämnt över och under i stället för
+        // att samlas i en tom yta.
+        timeCol.setAlignment(Pos.CENTER_LEFT);
+        timeCol.setMinWidth(220);
+        timeCol.setPrefWidth(240);
         HBox.setHgrow(timeCol, Priority.ALWAYS);
+        this.startTimeBox.setMaxWidth(Double.MAX_VALUE);
+        timeCol.getStyleClass().add("booking-card");
 
         HBox dateTimeRow = new HBox(16, calCol, timeCol);
         dateTimeRow.setAlignment(Pos.TOP_LEFT);

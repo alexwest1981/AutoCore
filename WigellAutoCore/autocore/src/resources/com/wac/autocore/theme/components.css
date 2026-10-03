@@ -1631,6 +1631,21 @@ TableView .table-row-cell:selected:focused .table-cell,
 .multi-select.showing {
     -fx-border-color: -wac-ring;
 }
+/* Två kort i bokningsformuläret: kalendern och tiden. Samma kant och rundning som fälten. */
+.booking-card {
+    -fx-background-color: white;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12;
+}
+.booking-card-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+
 .multi-select-placeholder {
     -fx-text-fill: -wac-muted;
     -fx-font-size: 13px;

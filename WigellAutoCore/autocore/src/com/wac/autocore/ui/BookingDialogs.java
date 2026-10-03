@@ -45,6 +45,11 @@ public final class BookingDialogs {
         dialog.setHeaderText(I18n.get("dialog.booking.create.header"));
         ActionDialogs.styleDialog(dialog);
         dialog.setResizable(true);
+        // Lite större fönster: formuläret är 820 brett, och höjden får en undre gräns så att
+        // kalendern och tiden inte kläms ihop.
+        dialog.getDialogPane().setPrefWidth(860);
+        dialog.getDialogPane().setMinWidth(760);
+        dialog.getDialogPane().setMinHeight(720);
 
         BookingFormPane form = new BookingFormPane(garage, null, defaultDate, defaultMechanic, defaultHour);
         form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
@@ -123,6 +128,11 @@ public final class BookingDialogs {
         dialog.setHeaderText(I18n.get("dialog.booking.edit.header"));
         ActionDialogs.styleDialog(dialog);
         dialog.setResizable(true);
+        // Lite större fönster: formuläret är 820 brett, och höjden får en undre gräns så att
+        // kalendern och tiden inte kläms ihop.
+        dialog.getDialogPane().setPrefWidth(860);
+        dialog.getDialogPane().setMinWidth(760);
+        dialog.getDialogPane().setMinHeight(720);
 
         BookingFormPane form = new BookingFormPane(garage, booking, booking.getDate(), null, null);
         form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));

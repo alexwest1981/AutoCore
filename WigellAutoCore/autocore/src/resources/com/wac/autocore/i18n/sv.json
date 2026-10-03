@@ -324,6 +324,7 @@
       "time_available": "Ledig",
       "time_busy": "Upptagen",
         "no_free_times": "Inga lediga tider denna dag",
+        "only_free_times": "Bara lediga tider visas",
       "slot_busy_error": "Den valda tiden är redan upptagen hos denna mekaniker. Vänligen välj en ledig tid.",
       "save_failed": "Bokningen kunde inte sparas.",
       "desc_prompt": "T.ex. Årlig service och bromsbyte",
