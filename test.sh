@@ -217,6 +217,8 @@ if [ -z "$FOUND_JDK" ]; then
         /usr/lib/jvm/*zulu*8*
 
         # macOS
+        "$HOME/Library/Java/JavaVirtualMachines"/*1.8*/Contents/Home
+        "$HOME/Library/Java/JavaVirtualMachines"/*1.8*
         /Library/Java/JavaVirtualMachines/*/Contents/Home
         /opt/homebrew/opt/openjdk@8
         /opt/homebrew/opt/openjdk@8/libexec/openjdk.jdk/Contents/Home
