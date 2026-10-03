@@ -152,16 +152,28 @@ public final class BookingAvailability {
             return false;
         }
 
+        // Ett jobb som kräver ett bestämt team behöver hela teamet ledigt. Är varken mekaniker eller
+        // team angivet räcker det att någon är ledig — annars krävdes att varenda mekaniker var ledig,
+        // och då försvann dagar som hade gott om plats.
+        boolean needsWholeTeam = mechanic != null && mechanic.getId() > 0
+                || qualifiedMechanics != null && !qualifiedMechanics.isEmpty();
+
         for (int h = 7; h <= 16; h++) {
             LocalTime start = LocalTime.of(h, 0);
             LocalTime end = start.plusMinutes(durationMinutes);
             if (end.isAfter(CLOSING_TIME)) {
                 break;
             }
-            boolean slotAvailable = true;
+            boolean slotAvailable = needsWholeTeam;
             for (Mechanic m : candidates) {
-                if (m.getId() > 0 && isRangeBooked(garage, m, date, start, end, excludeBookingId)) {
+                boolean booked = m.getId() > 0
+                        && isRangeBooked(garage, m, date, start, end, excludeBookingId);
+                if (needsWholeTeam && booked) {
                     slotAvailable = false;
+                    break;
+                }
+                if (!needsWholeTeam && !booked) {
+                    slotAvailable = true;
                     break;
                 }
             }

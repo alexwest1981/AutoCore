@@ -208,6 +208,7 @@
     "customer": "Bill to",
     "vehicle": "Vehicle",
     "workorder": "Work order",
+    "booking": "Booking",
     "col": {
       "description": "Description",
       "price": "Price",
@@ -391,10 +392,14 @@
       "create": {
         "title": "New Work Order",
         "header": "Open Work Order",
-        "desc": "Assign mechanic and services to a booking."
+        "desc": "The booking's services are distributed to the mechanics who are qualified."
       },
       "booking_select": "Select booking",
       "mechanic_select": "Select mechanic",
+      "plan_title": "Work orders to be created (one per mechanic)",
+      "no_qualified": "No mechanic is qualified for the services on this booking",
+      "create_failed": "No work orders could be created. Check that the booking has services and that the mechanics are available.",
+      "partial_failed": "Only {0} of {1} work orders were created. Mechanics who were not available got no work order.",
       "services_select": "Select services included",
       "services_from_booking": "Services on the booking",
       "no_services": "The booking has no services",
@@ -411,9 +416,9 @@
       "create": {
         "title": "Create Invoice",
         "header": "Issue Invoice",
-        "desc": "Generate invoice for a completed work order."
+        "desc": "Generate one invoice for all performed work on a booking."
       },
-      "workorder_select": "Select work order",
+      "booking_select": "Select booking",
       "discount": "Discount / Promotion (SEK)",
       "discount_prompt": "E.g. 10off, WELCOME10, SERVICE200 or amount (optional)",
       "create_failed": "The invoice could not be created.",

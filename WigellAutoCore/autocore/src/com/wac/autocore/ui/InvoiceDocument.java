@@ -147,7 +147,7 @@ public final class InvoiceDocument {
         VBox vehicleBox = block(I18n.get("invoice.vehicle"),
                 car.length() == 0 ? "-" : car.toString(),
                 extra.toString(),
-                I18n.get("invoice.workorder") + " #" + invoice.getWorkOrderId());
+                I18n.get("invoice.booking") + " #" + bookingIdFor(garage, invoice));
 
         HBox row = new HBox(40, customerBox, vehicleBox);
         row.setPadding(new Insets(18, 0, 4, 0));

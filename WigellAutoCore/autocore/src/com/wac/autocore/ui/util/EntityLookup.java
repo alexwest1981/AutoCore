@@ -178,11 +178,55 @@ public final class EntityLookup {
         return bookingCustomerName(garage, wo.getBookingId());
     }
 
+    /** Bokningen som arbetsordern hör till, eller 0 om arbetsordern inte finns. */
+    public static int bookingIdForWorkOrder(GarageSystem garage, int workOrderId) {
+        if (garage == null || workOrderId <= 0) return 0;
+        for (WorkOrder wo : garage.getWorkOrders()) {
+            if (wo.getId() == workOrderId) {
+                return wo.getBookingId();
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Fakturan som täcker arbetsordern. Fakturan gäller hela bokningen, så en arbetsorder kan vara
+     * fakturerad av en faktura som sparats på en annan arbetsorder i samma bokning.
+     */
     public static Invoice invoiceForWorkOrder(GarageSystem garage, int workOrderId) {
         if (garage == null || workOrderId <= 0) return null;
+
+        WorkOrder order = null;
+        for (WorkOrder wo : garage.getWorkOrders()) {
+            if (wo.getId() == workOrderId) {
+                order = wo;
+                break;
+            }
+        }
+        if (order == null) return null;
+
+        List<Integer> performed = order.getCompletedServiceItems();
+        if (performed.isEmpty()) {
+            performed = order.getServiceItemIds();
+        }
+
         for (Invoice inv : garage.getInvoices()) {
             if (inv.getWorkOrderId() == workOrderId) {
                 return inv;
+            }
+        }
+
+        // Fakturan kan ha sparats på en annan arbetsorder i samma bokning. Tjänstekatalogen är delad,
+        // så rader från andra bokningar får inte räknas hit.
+        for (Invoice inv : garage.getInvoices()) {
+            if (bookingIdForWorkOrder(garage, inv.getWorkOrderId()) != order.getBookingId()) {
+                continue;
+            }
+            for (InvoiceLine line : inv.getLines()) {
+                if (line.getServiceItemId() > 0
+                        && performed.contains(Integer.valueOf(line.getServiceItemId()))) {
+                    return inv;
+                }
             }
         }
         return null;

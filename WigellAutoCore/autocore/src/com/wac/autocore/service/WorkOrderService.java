@@ -10,6 +10,7 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,19 +57,52 @@ public class WorkOrderService {
             return null;
         }
 
-        List<Integer> bookingServiceIds = booking.getServiceItemIds();
-        if (bookingServiceIds.isEmpty()) {
+        // Tjänsterna som ingen arbetsorder tagit hand om än. Är alla redan tagna finns det inget
+        // kvar att göra, och då ska ingen ny order skapas — samma spärr mot dubbel fakturering som
+        // förut, men per tjänst i stället för per bokning.
+        List<Integer> remaining = new ArrayList<Integer>();
+        for (Integer serviceItemId : booking.getServiceItemIds()) {
+            if (!isClaimed(bookingId, serviceItemId)) {
+                remaining.add(serviceItemId);
+            }
+        }
+        if (remaining.isEmpty()) {
+            System.out.println("Booking with ID " + bookingId
+                    + " has no services left for a new work order.");
+            return null;
+        }
+        return createWorkOrder(bookingId, mechanicId, remaining);
+    }
+
+    /**
+     * Skapar en arbetsorder för ett urval av bokningens tjänster. En bokning med flera tjänster kan
+     * delas på flera mekaniker, och då blir det en arbetsorder per mekaniker.
+     *
+     * Spärren ligger på tjänstenivå: en tjänst får bara ligga på en arbetsorder. Annars kan samma
+     * arbete faktureras två gånger.
+     */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds) {
+        Booking booking = findBooking(bookingId);
+        if (booking == null) {
+            System.out.println("Booking with ID " + bookingId + " does not exist.");
+            return null;
+        }
+
+        if (serviceItemIds == null || serviceItemIds.isEmpty()) {
             System.out.println("Booking with ID " + bookingId + " has no services to perform.");
             return null;
         }
 
-        // En bokning ska bara kunna få en arbetsorder. Utan den här spärren kan
-        // samma bokning faktureras två gånger.
         for (WorkOrder existingOrder : getAll()) {
-            if (existingOrder.getBookingId() == bookingId) {
-                System.out.println("Booking with ID " + bookingId + " already has work order "
-                        + existingOrder.getId() + ".");
-                return null;
+            if (existingOrder.getBookingId() != bookingId) {
+                continue;
+            }
+            for (Integer serviceItemId : serviceItemIds) {
+                if (existingOrder.getServiceItemIds().contains(serviceItemId)) {
+                    System.out.println("Service " + serviceItemId + " is already on work order "
+                            + existingOrder.getId() + ".");
+                    return null;
+                }
             }
         }
 
@@ -85,9 +119,7 @@ public class WorkOrderService {
 
         WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
 
-        // SCRUM-156 (C1): arbetsordern får de tjänster som bokningen innehåller,
-        // inte ett urval som görs i stunden.
-        for (Integer serviceItemId : bookingServiceIds) {
+        for (Integer serviceItemId : serviceItemIds) {
             workOrder.addServiceItem(serviceItemId);
         }
 
@@ -106,6 +138,23 @@ public class WorkOrderService {
         System.out.println(workOrder);
 
         return workOrder;
+    }
+
+    /**
+     * True om tjänsten redan ligger på en arbetsorder för samma bokning. Tjänstekatalogen är delad
+     * mellan bokningar, så samma tjänst-id förekommer på andra bokningars ordrar utan att det säger
+     * något om den här bokningen.
+     */
+    private boolean isClaimed(int bookingId, int serviceItemId) {
+        for (WorkOrder order : getAll()) {
+            if (order.getBookingId() != bookingId) {
+                continue;
+            }
+            if (order.getServiceItemIds().contains(Integer.valueOf(serviceItemId))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean startWorkOrder(int workOrderId) {

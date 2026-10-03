@@ -39,16 +39,12 @@ public final class WorkOrderDialogs {
     }
 
     public static void showCreateWorkOrderDialog(GarageSystem garage, Booking defaultBooking, Runnable onSuccess) {
-        // En bokning som redan har en arbetsorder ska inte gå att välja igen.
-        List<Integer> bookingsWithOrder = new ArrayList<Integer>();
-        for (WorkOrder order : garage.getWorkOrders()) {
-            bookingsWithOrder.add(order.getBookingId());
-        }
-
+        // En bokning vars tjänster redan ligger på arbetsordrar ska inte gå att välja igen. En
+        // bokning som bara är delvis uppdelad (några tjänster kvar) ska däremot gå att fylla på.
         List<Booking> bookings = new ArrayList<Booking>();
         for (Booking b : garage.getBookings()) {
             if ("BOOKED".equalsIgnoreCase(b.getStatus()) || "CONFIRMED".equalsIgnoreCase(b.getStatus())) {
-                if (!bookingsWithOrder.contains(Integer.valueOf(b.getId()))) {
+                if (hasServicesLeftForAWorkOrder(garage, b)) {
                     bookings.add(b);
                 }
             }
@@ -100,55 +96,50 @@ public final class WorkOrderDialogs {
             public Booking fromString(String string) { return null; }
         });
 
-        ComboBox<Mechanic> mechanicBox = new ComboBox<Mechanic>();
-        mechanicBox.getItems().addAll(mechanics);
-        mechanicBox.setMaxWidth(Double.MAX_VALUE);
-        GridPane.setHgrow(mechanicBox, Priority.ALWAYS);
-        mechanicBox.setConverter(new StringConverter<Mechanic>() {
-            @Override
-            public String toString(Mechanic m) {
-                return m == null ? "" : m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ") - " + (m.isAvailable() ? I18n.get("table.col.available") : I18n.get("table.col.unavailable"));
-            }
-            @Override
-            public Mechanic fromString(String string) { return null; }
-        });
-
         grid.add(new Label(I18n.get("dialog.workorder.booking_select") + ":"), 0, 0);
         grid.add(bookingBox, 1, 0);
-        grid.add(new Label(I18n.get("dialog.workorder.mechanic_select") + ":"), 0, 1);
-        grid.add(mechanicBox, 1, 1);
 
-        Label servicesTitle = new Label(I18n.get("dialog.workorder.services_from_booking"));
+        Label servicesTitle = new Label(I18n.get("dialog.workorder.plan_title"));
         servicesTitle.setStyle("-fx-font-weight: bold;");
 
-        VBox serviceList = new VBox(6);
+        VBox serviceList = new VBox(8);
 
-        // Automatisk synkning: när bokning väljs förväljs bokningens mekaniker och tjänst
+        // Planen: en arbetsorder per mekaniker. Vilka tjänster som hamnar hos vem följer av
+        // behörigheten — bokningens mekaniker används när hen är behörig, annars den som är det.
+        // Nyckeln är mekaniker-id, inte objektet: mekanikerlistan kan komma från olika anrop.
+        final java.util.LinkedHashMap<Integer, List<ServiceItem>> plan =
+                new java.util.LinkedHashMap<Integer, List<ServiceItem>>();
+
         java.util.function.Consumer<Booking> syncFromBooking = b -> {
-            if (b == null) return;
-
-            // 1. Förvälj mekaniker från bokningen
-            if (b.getMechanicId() > 0) {
-                for (Mechanic m : mechanics) {
-                    if (m.getId() == b.getMechanicId()) {
-                        mechanicBox.getSelectionModel().select(m);
-                        break;
-                    }
-                }
-            } else if (mechanicBox.getValue() == null && !mechanics.isEmpty()) {
-                mechanicBox.getSelectionModel().selectFirst();
+            plan.clear();
+            serviceList.getChildren().clear();
+            if (b == null) {
+                return;
             }
 
-            // 2. Visa bokningens tjänster. Arbetsordern får dem, inget val görs här.
-            serviceList.getChildren().clear();
-            for (ServiceItem s : b.getServiceItems()) {
-                Label row = new Label(SeedText.resolve(s.getName()) + " ("
-                        + UiFormatters.formatMoney(s.getPrice()) + ", "
-                        + s.getEstimatedMinutes() + " min)");
+            plan.putAll(planWorkOrders(garage, b));
+
+            for (java.util.Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
+                Mechanic m = mechanicById(garage, entry.getKey().intValue());
+                StringBuilder names = new StringBuilder();
+                int minutes = 0;
+                double price = 0.0;
+                for (ServiceItem s : entry.getValue()) {
+                    if (names.length() > 0) {
+                        names.append(", ");
+                    }
+                    names.append(SeedText.resolve(s.getName()));
+                    minutes += s.getEstimatedMinutes();
+                    price += s.getPrice();
+                }
+                Label row = new Label((m != null ? m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ")" : "?")
+                        + ": " + names
+                        + "  ·  " + minutes + " min  ·  " + UiFormatters.formatMoney(price));
                 serviceList.getChildren().add(row);
             }
+
             if (serviceList.getChildren().isEmpty()) {
-                serviceList.getChildren().add(new Label(I18n.get("dialog.workorder.no_services")));
+                serviceList.getChildren().add(new Label(I18n.get("dialog.workorder.no_qualified")));
             }
         };
 
@@ -179,24 +170,124 @@ public final class WorkOrderDialogs {
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 Booking b = bookingBox.getValue();
-                Mechanic m = mechanicBox.getValue();
-
-                if (b == null || m == null) {
+                if (b == null) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
                     return;
                 }
-
-                if (b.getServiceItemIds().isEmpty()) {
+                if (plan.isEmpty()) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                            I18n.get("dialog.workorder.no_services"));
+                            I18n.get("dialog.workorder.no_qualified"));
                     return;
                 }
 
-                garage.createWorkOrder(b.getId(), m.getId());
+                // En arbetsorder per mekaniker, var och en med sina egna tjänster.
+                int created = 0;
+                for (java.util.Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
+                    List<Integer> ids = new ArrayList<Integer>();
+                    for (ServiceItem s : entry.getValue()) {
+                        ids.add(Integer.valueOf(s.getId()));
+                    }
+                    if (garage.createWorkOrder(b.getId(), entry.getKey().intValue(), ids) != null) {
+                        created++;
+                    }
+                }
+
+                if (created == 0) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                            I18n.get("dialog.workorder.create_failed"));
+                    return;
+                }
+                if (created < plan.size()) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                            I18n.get("dialog.workorder.partial_failed")
+                                    .replace("{0}", String.valueOf(created))
+                                    .replace("{1}", String.valueOf(plan.size())));
+                }
+
                 com.wac.autocore.service.MechanicSchedule.getInstance().syncFromDatabase();
                 if (onSuccess != null) onSuccess.run();
             }
         });
+    }
+
+    /** Sant om bokningen har minst en tjänst som ingen arbetsorder tagit hand om. */
+    private static boolean hasServicesLeftForAWorkOrder(GarageSystem garage, Booking booking) {
+        for (Integer serviceItemId : booking.getServiceItemIds()) {
+            boolean claimed = false;
+            for (WorkOrder order : garage.getWorkOrders()) {
+                if (order.getBookingId() == booking.getId()
+                        && order.getServiceItemIds().contains(serviceItemId)) {
+                    claimed = true;
+                    break;
+                }
+            }
+            if (!claimed) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Planen för hur bokningens tjänster fördelas: en post per mekaniker, med den mekanikerns
+     * tjänster. Bokningens mekaniker används när hen är behörig, annars den första behöriga — så
+     * samma person får så många av tjänsterna som möjligt. Nyckeln är mekaniker-id, inte objektet,
+     * eftersom mekanikerlistan kan komma från olika anrop.
+     */
+    public static java.util.LinkedHashMap<Integer, List<ServiceItem>> planWorkOrders(
+            GarageSystem garage, Booking booking) {
+
+        java.util.LinkedHashMap<Integer, List<ServiceItem>> plan =
+                new java.util.LinkedHashMap<Integer, List<ServiceItem>>();
+        if (booking == null) {
+            return plan;
+        }
+
+        Mechanic booked = mechanicById(garage, booking.getMechanicId());
+        for (ServiceItem service : booking.getServiceItems()) {
+            Mechanic who = mechanicForService(garage, booked, service);
+            if (who == null) {
+                continue;
+            }
+            List<ServiceItem> mine = plan.get(Integer.valueOf(who.getId()));
+            if (mine == null) {
+                mine = new ArrayList<ServiceItem>();
+                plan.put(Integer.valueOf(who.getId()), mine);
+            }
+            mine.add(service);
+        }
+        return plan;
+    }
+
+    /** Mekanikern med angivet id, eller null. */
+    private static Mechanic mechanicById(GarageSystem garage, int mechanicId) {
+        for (Mechanic m : garage.getMechanics()) {
+            if (m.getId() == mechanicId) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Mekanikern som ska utföra tjänsten: bokningens mekaniker om hen är behörig, annars den första
+     * behöriga. Ordningen är bokningens, så samma person får så många av tjänsterna som möjligt.
+     */
+    private static Mechanic mechanicForService(GarageSystem garage, Mechanic booked, ServiceItem service) {
+        List<Mechanic> qualified = garage.getQualifiedMechanics(service);
+        if (booked != null && containsId(qualified, booked.getId())) {
+            return booked;
+        }
+        return qualified.isEmpty() ? null : qualified.get(0);
+    }
+
+    private static boolean containsId(List<Mechanic> mechanics, int mechanicId) {
+        for (Mechanic m : mechanics) {
+            if (m.getId() == mechanicId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void showWorkOrderDetailsDialog(GarageSystem garage, WorkOrder workOrder) {

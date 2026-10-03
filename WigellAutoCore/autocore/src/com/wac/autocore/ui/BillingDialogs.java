@@ -1,10 +1,12 @@
 package com.wac.autocore.ui;
 
 import com.wac.autocore.model.InvoiceLine;
+import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 import com.wac.autocore.seed.SeedText;
 
@@ -34,23 +36,11 @@ public final class BillingDialogs {
     }
 
     public static void showCreateInvoiceDialog(GarageSystem garage, WorkOrder preselected, Runnable onSuccess) {
-        List<WorkOrder> completedOrders = new ArrayList<WorkOrder>();
-        for (WorkOrder wo : garage.getWorkOrders()) {
-            if ("COMPLETED".equalsIgnoreCase(wo.getStatus())) {
-                boolean alreadyInvoiced = false;
-                for (Invoice inv : garage.getInvoices()) {
-                    if (inv.getWorkOrderId() == wo.getId()) {
-                        alreadyInvoiced = true;
-                        break;
-                    }
-                }
-                if (!alreadyInvoiced) {
-                    completedOrders.add(wo);
-                }
-            }
-        }
+        // Bokningar med utfört arbete kvar att fakturera. En bokning kan ha flera arbetsordrar — en
+        // per mekaniker när tjänsterna delas upp — men kunden ska ha en faktura med allt som är gjort.
+        List<Booking> invoiceable = garage.getInvoiceableBookings();
 
-        if (completedOrders.isEmpty()) {
+        if (invoiceable.isEmpty()) {
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("overview.empty.workorders"));
             return;
         }
@@ -69,28 +59,30 @@ public final class BillingDialogs {
         col1.setHgrow(Priority.ALWAYS);
         grid.getColumnConstraints().addAll(col0, col1);
 
-        ComboBox<WorkOrder> orderBox = new ComboBox<WorkOrder>();
-        orderBox.getItems().addAll(completedOrders);
-        orderBox.setMaxWidth(Double.MAX_VALUE);
-        GridPane.setHgrow(orderBox, Priority.ALWAYS);
+        ComboBox<Booking> bookingBox = new ComboBox<Booking>();
+        bookingBox.getItems().addAll(invoiceable);
+        bookingBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(bookingBox, Priority.ALWAYS);
         if (preselected != null) {
-            for (WorkOrder wo : completedOrders) {
-                if (wo.getId() == preselected.getId()) {
-                    orderBox.getSelectionModel().select(wo);
+            for (Booking b : invoiceable) {
+                if (b.getId() == preselected.getBookingId()) {
+                    bookingBox.getSelectionModel().select(b);
                     break;
                 }
             }
         }
-        if (orderBox.getSelectionModel().getSelectedItem() == null) {
-            orderBox.getSelectionModel().selectFirst();
+        if (bookingBox.getSelectionModel().getSelectedItem() == null) {
+            bookingBox.getSelectionModel().selectFirst();
         }
-        orderBox.setConverter(new StringConverter<WorkOrder>() {
+        bookingBox.setConverter(new StringConverter<Booking>() {
             @Override
-            public String toString(WorkOrder wo) {
-                return wo == null ? "" : I18n.get("table.col.workorder") + " #" + wo.getId() + " (" + I18n.get("table.col.booking") + " #" + wo.getBookingId() + ")";
+            public String toString(Booking b) {
+                return b == null ? "" : I18n.get("table.col.booking") + " #" + b.getId() + " - "
+                        + EntityLookup.bookingVehicleReg(garage, b.getId())
+                        + " (" + b.getDate() + ")";
             }
             @Override
-            public WorkOrder fromString(String string) { return null; }
+            public Booking fromString(String string) { return null; }
         });
 
         TextField discountField = new TextField();
@@ -98,8 +90,8 @@ public final class BillingDialogs {
         discountField.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(discountField, Priority.ALWAYS);
 
-        grid.add(new Label(I18n.get("dialog.invoice.workorder_select") + ":"), 0, 0);
-        grid.add(orderBox, 1, 0);
+        grid.add(new Label(I18n.get("dialog.invoice.booking_select") + ":"), 0, 0);
+        grid.add(bookingBox, 1, 0);
         grid.add(new Label(I18n.get("dialog.invoice.discount") + ":"), 0, 1);
         grid.add(discountField, 1, 1);
 
@@ -108,9 +100,13 @@ public final class BillingDialogs {
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                WorkOrder wo = orderBox.getValue();
+                Booking booking = bookingBox.getValue();
+                if (booking == null) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                    return;
+                }
                 String code = discountField.getText().trim();
-                Invoice invoice = garage.createInvoice(wo.getId(), code);
+                Invoice invoice = garage.createInvoiceForBooking(booking.getId(), code);
                 if (invoice == null) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.invoice.create_failed"));
                     return;

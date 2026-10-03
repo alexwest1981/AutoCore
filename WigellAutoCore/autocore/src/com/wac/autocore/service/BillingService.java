@@ -74,30 +74,107 @@ public class BillingService {
             return null;
         }
 
-        List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
-        List<Integer> targetServiceIds = workOrder.getCompletedServiceItems();
-        // SCRUM-158 (C3): Utförda arbeten ligger till grund för fakturan.
-        // Om inga enskilda tjänster explicit markerats som utförda men arbetsordern är slutförd (bakåtkompatibilitet),
-        // betraktas samtliga tjänster på arbetsordern som utförda.
-        if (targetServiceIds.isEmpty() && "COMPLETED".equals(workOrder.getStatus())) {
-            targetServiceIds = workOrder.getServiceItemIds();
-        }
+        List<WorkOrder> orders = new ArrayList<WorkOrder>();
+        orders.add(workOrder);
+        return createInvoiceFrom(orders, workOrderId, discountCode);
+    }
 
-        if (targetServiceIds.isEmpty()) {
-            System.out.println("Invoice cannot be created: No performed services found on work order " + workOrderId);
+    /**
+     * Fakturerar allt utfört arbete på en bokning i en och samma faktura. En bokning kan ha flera
+     * arbetsordrar (en per mekaniker när tjänsterna delas upp), och kunden ska ha en faktura med
+     * allt som är gjort — inte en per mekaniker.
+     */
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
+        Booking booking = findBooking(bookingId);
+        if (booking == null) {
+            System.out.println("Booking with ID " + bookingId + " does not exist.");
             return null;
         }
 
-        for (Integer serviceItemId : targetServiceIds) {
-            ServiceItem serviceItem = findServiceItem(serviceItemId);
-            if (serviceItem != null) {
-                // SCRUM-160 (D2): priset som gällde när arbetet utfördes används när det finns sparat.
-                // Äldre arbetsordrar saknar det och får katalogens pris, som före D2.
-                Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
-                double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
-                lines.add(new InvoiceLine(0, 0, serviceItem.getId(),
-                        serviceItem.getName(), linePrice, 0.0));
+        List<Integer> invoiced = invoicedServiceIds(bookingId);
+        List<WorkOrder> orders = new ArrayList<WorkOrder>();
+        int primaryOrderId = 0;
+
+        for (WorkOrder order : getAllWorkOrders()) {
+            if (order.getBookingId() != bookingId) {
+                continue;
             }
+            if (!"COMPLETED".equals(order.getStatus())) {
+                continue;
+            }
+            if (performedServices(order, invoiced).isEmpty()) {
+                continue;
+            }
+            orders.add(order);
+            if (primaryOrderId == 0 || order.getId() < primaryOrderId) {
+                primaryOrderId = order.getId();
+            }
+        }
+
+        if (orders.isEmpty()) {
+            System.out.println("Booking with ID " + bookingId
+                    + " has no performed work left to invoice.");
+            return null;
+        }
+
+        return createInvoiceFrom(orders, primaryOrderId, discountCode);
+    }
+
+    /**
+     * Bokningar som har utfört arbete kvar att fakturera, en per bokning. Underlaget för
+     * fakturavalet i gränssnittet: en bokning kan ha flera arbetsordrar, men ska bli en faktura.
+     */
+    public List<Booking> getInvoiceableBookings() {
+        List<Integer> handled = new ArrayList<Integer>();
+        List<Booking> bookings = new ArrayList<Booking>();
+
+        for (WorkOrder order : getAllWorkOrders()) {
+            if (!"COMPLETED".equals(order.getStatus())) {
+                continue;
+            }
+            if (performedServices(order, invoicedServiceIds(order.getBookingId())).isEmpty()) {
+                continue;
+            }
+            if (handled.contains(Integer.valueOf(order.getBookingId()))) {
+                continue;
+            }
+            Booking booking = findBooking(order.getBookingId());
+            if (booking == null) {
+                continue;
+            }
+            handled.add(Integer.valueOf(order.getBookingId()));
+            bookings.add(booking);
+        }
+        return bookings;
+    }
+
+    /**
+     * Bygger fakturan från de utförda arbetena på en eller flera arbetsordrar. Fakturan sparas på
+     * den första arbetsordern; tjänster som redan står på en faktura hoppas över.
+     */
+    private Invoice createInvoiceFrom(List<WorkOrder> orders, int primaryOrderId, String discountCode) {
+        WorkOrder primary = findWorkOrder(primaryOrderId);
+        int bookingId = primary != null ? primary.getBookingId() : 0;
+        List<Integer> invoiced = invoicedServiceIds(bookingId);
+        List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
+
+        for (WorkOrder workOrder : orders) {
+            for (Integer serviceItemId : performedServices(workOrder, invoiced)) {
+                ServiceItem serviceItem = findServiceItem(serviceItemId);
+                if (serviceItem != null) {
+                    // SCRUM-160 (D2): priset som gällde när arbetet utfördes används när det finns sparat.
+                    // Äldre arbetsordrar saknar det och får katalogens pris, som före D2.
+                    Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
+                    double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
+                    lines.add(new InvoiceLine(0, 0, serviceItem.getId(),
+                            serviceItem.getName(), linePrice, 0.0));
+                }
+            }
+        }
+
+        if (lines.isEmpty()) {
+            System.out.println("Invoice cannot be created: No performed services found.");
+            return null;
         }
 
         double amount = 0.0;
@@ -106,7 +183,7 @@ public class BillingService {
         }
 
         double discount = 0.0;
-        Booking booking = findBooking(workOrder.getBookingId());
+        Booking booking = bookingId > 0 ? findBooking(bookingId) : null;
         if (booking != null) {
             Vehicle vehicle = findVehicle(booking.getVehicleId());
             if (vehicle != null) {
@@ -160,7 +237,7 @@ public class BillingService {
 
         distributeDiscount(lines, amount, discount);
 
-        Invoice invoice = new Invoice(0, workOrderId, LocalDate.now(), amount);
+        Invoice invoice = new Invoice(0, primaryOrderId, LocalDate.now(), amount);
         invoice.setDiscount(discount);
 
         for (InvoiceLine line : lines) {
@@ -185,6 +262,70 @@ public class BillingService {
 
         return invoice;
     }
+    /**
+     * Arbetsorderns utförda tjänster som ännu inte står på någon faktura. Är inga tjänster explicit
+     * markerade som utförda men arbetsordern är slutförd (bakåtkompatibilitet, SCRUM-158) gäller
+     * samtliga tjänster på arbetsordern.
+     */
+    private List<Integer> performedServices(WorkOrder workOrder, List<Integer> invoicedServiceIds) {
+        List<Integer> performed = workOrder.getCompletedServiceItems();
+        if (performed.isEmpty() && "COMPLETED".equals(workOrder.getStatus())) {
+            performed = workOrder.getServiceItemIds();
+        }
+
+        List<Integer> remaining = new ArrayList<Integer>();
+        for (Integer serviceItemId : performed) {
+            if (!invoicedServiceIds.contains(serviceItemId)) {
+                remaining.add(serviceItemId);
+            }
+        }
+        return remaining;
+    }
+
+    /** Tjänsterna på bokningen som redan står på en faktura. En tjänst får bara faktureras en gång. */
+    private List<Integer> invoicedServiceIds(int bookingId) {
+        List<Integer> invoiced = new ArrayList<Integer>();
+        List<Integer> bookingOrderIds = bookingOrderIds(bookingId);
+        try {
+            for (Invoice invoice : invoiceRepository.findAll()) {
+                // Tjänstekatalogen är delad, så en fakturarad med samma tjänst-id kan höra till en
+                // helt annan bokning. Bara fakturor på den här bokningens arbetsordrar räknas.
+                if (!bookingOrderIds.contains(Integer.valueOf(invoice.getWorkOrderId()))) {
+                    continue;
+                }
+                for (InvoiceLine line : invoice.getLines()) {
+                    if (line.getServiceItemId() > 0
+                            && !invoiced.contains(Integer.valueOf(line.getServiceItemId()))) {
+                        invoiced.add(Integer.valueOf(line.getServiceItemId()));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Could not read invoice lines: " + e.getMessage());
+        }
+        return invoiced;
+    }
+
+    /** Id:n för arbetsordrarna som hör till bokningen. */
+    private List<Integer> bookingOrderIds(int bookingId) {
+        List<Integer> orderIds = new ArrayList<Integer>();
+        for (WorkOrder order : getAllWorkOrders()) {
+            if (order.getBookingId() == bookingId) {
+                orderIds.add(Integer.valueOf(order.getId()));
+            }
+        }
+        return orderIds;
+    }
+
+    private List<WorkOrder> getAllWorkOrders() {
+        try {
+            return workOrderRepository.findAll();
+        } catch (SQLException e) {
+            System.out.println("Could not read work orders: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
     /**
      * Sant om arbetsordern redan har en faktura. Fakturan kan komma från vilken väg som helst,
      * så kontrollen görs mot databasen och inte mot gränssnittets urval.

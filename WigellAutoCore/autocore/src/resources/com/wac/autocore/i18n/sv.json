@@ -208,6 +208,7 @@
     "customer": "Faktureras till",
     "vehicle": "Fordon",
     "workorder": "Arbetsorder",
+    "booking": "Bokning",
     "col": {
       "description": "Beskrivning",
       "price": "Pris",
@@ -391,10 +392,14 @@
       "create": {
         "title": "Ny arbetsorder",
         "header": "Öppna arbetsorder",
-        "desc": "Tilldela mekaniker och tjänster till en bokning."
+        "desc": "Bokningens tjänster fördelas på de mekaniker som är behöriga."
       },
       "booking_select": "Välj bokning",
       "mechanic_select": "Välj mekaniker",
+      "plan_title": "Arbetsordrar som skapas (en per mekaniker)",
+      "no_qualified": "Ingen mekaniker är behörig för bokningens tjänster",
+      "create_failed": "Inga arbetsordrar kunde skapas. Kontrollera att bokningen har tjänster och att mekanikerna är tillgängliga.",
+      "partial_failed": "Bara {0} av {1} arbetsordrar skapades. Mekaniker som inte var tillgängliga blev utan arbetsorder.",
       "services_select": "Välj ingående tjänster",
       "services_from_booking": "Bokningens tjänster",
       "no_services": "Bokningen har inga tjänster",
@@ -411,9 +416,9 @@
       "create": {
         "title": "Skapa faktura",
         "header": "Utfärda faktura",
-        "desc": "Generera faktura för en slutförd arbetsorder."
+        "desc": "Generera en faktura för allt utfört arbete på en bokning."
       },
-      "workorder_select": "Välj arbetsorder",
+      "booking_select": "Välj bokning",
       "discount": "Rabatt / Kampanj (kr)",
       "discount_prompt": "T.ex. 10off, WELCOME10, SERVICE200 eller belopp (valfritt)",
       "create_failed": "Fakturan kunde inte skapas.",

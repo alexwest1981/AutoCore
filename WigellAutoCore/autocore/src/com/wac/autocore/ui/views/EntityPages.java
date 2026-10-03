@@ -259,14 +259,9 @@ public final class EntityPages {
 
             boolean canInvoice = false;
             if (sel != null && "COMPLETED".equals(sel.getStatus())) {
-                boolean alreadyInvoiced = false;
-                for (Invoice inv : garage.getInvoices()) {
-                    if (inv.getWorkOrderId() == sel.getId()) {
-                        alreadyInvoiced = true;
-                        break;
-                    }
-                }
-                canInvoice = !alreadyInvoiced;
+                // En arbetsorder kan vara fakturerad av en faktura som gäller hela bokningen, och då
+                // ligger den på en annan arbetsorder. Samma regel som i fakturavyn: en källa.
+                canInvoice = EntityLookup.invoiceForWorkOrder(garage, sel.getId()) == null;
             }
             invoiceBtn.setDisable(!canInvoice);
         });
@@ -436,7 +431,7 @@ public final class EntityPages {
         TableView<Invoice> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.workorder"), 110, c -> String.valueOf(c.getWorkOrderId())),
+                TableFactory.col(I18n.get("table.col.booking"), 110, c -> String.valueOf(EntityLookup.bookingIdForWorkOrder(garage, c.getWorkOrderId()))),
                 TableFactory.col(I18n.get("table.col.date"), 130, c -> String.valueOf(c.getInvoiceDate())),
                 TableFactory.col(I18n.get("table.col.amount"), 110, c -> UiFormatters.formatMoney(c.getAmount())),
                 TableFactory.col(I18n.get("table.col.discount"), 100, c -> UiFormatters.formatMoney(c.getDiscount())),

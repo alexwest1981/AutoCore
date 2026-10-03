@@ -14,6 +14,7 @@ import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.service.GarageSystem;
 
 import com.wac.autocore.seed.SeedText;
+import com.wac.autocore.ui.WorkOrderDialogs;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
 
@@ -198,6 +199,166 @@ public class WorkOrderServiceTest {
             }
             deleteQuietly(garage, orderId, booking.getId(), mechanic.getId());
         }
+    }
+
+    /**
+     * En bokning med flera tjänster kan delas på flera mekaniker: en arbetsorder per mekaniker, och
+     * en tjänst får bara ligga på en av dem. Annars kan samma arbete faktureras två gånger.
+     */
+    public void testBookingCanBeSplitIntoOneWorkOrderPerMechanic() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        Mechanic first = temporaryMechanic(garage, "Delprov mekaniker A");
+        Mechanic second = temporaryMechanic(garage, "Delprov mekaniker B");
+        Booking booking = bookingWithServices(garage, 4, "Delprov bokning");
+        int bookingId = booking.getId();
+        int firstOrderId = 0;
+        int secondOrderId = 0;
+
+        try {
+            List<Integer> all = booking.getServiceItemIds();
+            TestRunner.assertEquals(4, all.size(), "Bokningen ska ha fyra tjänster");
+
+            List<Integer> mine = new ArrayList<Integer>(all.subList(0, 2));
+            List<Integer> yours = new ArrayList<Integer>(all.subList(2, 4));
+
+            WorkOrder a = garage.createWorkOrder(bookingId, first.getId(), mine);
+            TestRunner.assertNotNull(a, "Första arbetsordern ska skapas");
+            firstOrderId = a.getId();
+
+            WorkOrder b = garage.createWorkOrder(bookingId, second.getId(), yours);
+            TestRunner.assertNotNull(b,
+                    "Andra arbetsordern ska skapas: samma bokning men en annan mekaniker");
+            secondOrderId = b.getId();
+
+            TestRunner.assertEquals(2, countLinks(firstOrderId),
+                    "Första arbetsordern ska ha sina två tjänster");
+            TestRunner.assertEquals(2, countLinks(secondOrderId),
+                    "Andra arbetsordern ska ha sina två tjänster");
+
+            // Spärren mot dubbel fakturering ligger nu på tjänsten, inte på bokningen.
+            TestRunner.assertTrue(garage.createWorkOrder(bookingId, second.getId(), mine) == null,
+                    "En tjänst som redan ligger på en arbetsorder får inte läggas på en till");
+
+            TestRunner.assertTrue(garage.createWorkOrder(bookingId, first.getId()) == null,
+                    "När alla bokningens tjänster är tagna finns inget kvar till en ny arbetsorder");
+
+            System.out.println("    [DELNING BEVIS] Bokning " + bookingId + " blev arbetsorder "
+                    + firstOrderId + " (2 tjänster) och " + secondOrderId + " (2 tjänster).");
+        } finally {
+            deleteQuietly(garage, firstOrderId, bookingId, first.getId());
+            deleteQuietly(garage, secondOrderId, 0, second.getId());
+        }
+    }
+
+    /** Planen fördelar bokningens tjänster på mekaniker: ingen tjänst tappas eller dubbleras. */
+    public void testWorkOrderPlanCoversEveryServiceExactlyOnce() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        Booking saved = bookingWithServices(garage, 4, "Planprov bokning");
+
+        try {
+            // Samma väg som dialogen: bokningen läses tillbaka med sina tjänster, annars är listan tom.
+            Booking booking = new BookingRepository().findById(saved.getId());
+            TestRunner.assertNotNull(booking, "Bokningen ska gå att läsa tillbaka");
+            TestRunner.assertEquals(4, booking.getServiceItems().size(),
+                    "Bokningen ska bära sina fyra tjänster");
+
+            java.util.LinkedHashMap<Integer, List<ServiceItem>> plan =
+                    WorkOrderDialogs.planWorkOrders(garage, booking);
+
+            List<Integer> planned = new ArrayList<Integer>();
+            for (List<ServiceItem> mine : plan.values()) {
+                for (ServiceItem service : mine) {
+                    planned.add(Integer.valueOf(service.getId()));
+                }
+            }
+
+            TestRunner.assertEquals(4, planned.size(),
+                    "Alla fyra tjänsterna ska hamna i planen, ingen på två ställen");
+            TestRunner.assertTrue(planned.containsAll(booking.getServiceItemIds()),
+                    "Planen ska täcka precis bokningens tjänster");
+
+            for (java.util.Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
+                Mechanic who = null;
+                for (Mechanic m : garage.getMechanics()) {
+                    if (m.getId() == entry.getKey().intValue()) {
+                        who = m;
+                    }
+                }
+                TestRunner.assertNotNull(who, "Varje post i planen ska vara en riktig mekaniker");
+            }
+
+            System.out.println("    [PLAN BEVIS] " + booking.getServiceItemIds().size()
+                    + " tjänster fördelade på " + plan.size() + " mekaniker.");
+        } finally {
+            new BookingRepository().delete(saved.getId());
+        }
+    }
+
+    /**
+     * Fakturan ska täcka allt utfört arbete på bokningen, även när arbetet ligger på flera
+     * arbetsordrar — och ingen av dem får faktureras om.
+     */
+    public void testInvoiceCoversAllPerformedWorkOrdersOnABooking() throws SQLException {
+        GarageSystem garage = new GarageSystem();
+        Mechanic first = temporaryMechanic(garage, "Fakturadel A");
+        Mechanic second = temporaryMechanic(garage, "Fakturadel B");
+        Booking booking = bookingWithServices(garage, 4, "Fakturadel bokning");
+        int bookingId = booking.getId();
+        int[] orderIds = new int[]{0, 0};
+        int invoiceId = 0;
+
+        try {
+            List<Integer> all = booking.getServiceItemIds();
+            WorkOrder a = garage.createWorkOrder(bookingId, first.getId(),
+                    new ArrayList<Integer>(all.subList(0, 2)));
+            WorkOrder b = garage.createWorkOrder(bookingId, second.getId(),
+                    new ArrayList<Integer>(all.subList(2, 4)));
+            TestRunner.assertNotNull(a, "Första arbetsordern ska skapas");
+            TestRunner.assertNotNull(b, "Andra arbetsordern ska skapas");
+            orderIds[0] = a.getId();
+            orderIds[1] = b.getId();
+
+            garage.startWorkOrder(a.getId());
+            garage.completeWorkOrder(a.getId());
+            garage.startWorkOrder(b.getId());
+            garage.completeWorkOrder(b.getId());
+
+            TestRunner.assertTrue(containsBooking(garage.getInvoiceableBookings(), bookingId),
+                    "Bokningen ska gå att fakturera när arbetet är utfört");
+
+            Invoice invoice = garage.createInvoiceForBooking(bookingId, null);
+            TestRunner.assertNotNull(invoice, "Fakturan ska skapas för hela bokningen");
+            invoiceId = invoice.getId();
+            TestRunner.assertEquals(4, invoice.getLines().size(),
+                    "Fakturan ska ha alla fyra tjänsterna, från båda arbetsordrarna");
+
+            TestRunner.assertTrue(garage.createInvoice(a.getId(), null) == null,
+                    "Första arbetsordern är redan fakturerad");
+            TestRunner.assertTrue(garage.createInvoice(b.getId(), null) == null,
+                    "Andra arbetsordern är också fakturerad");
+            TestRunner.assertTrue(garage.createInvoiceForBooking(bookingId, null) == null,
+                    "Bokningen ska inte kunna faktureras två gånger");
+            TestRunner.assertTrue(!containsBooking(garage.getInvoiceableBookings(), bookingId),
+                    "En färdigfakturerad bokning ska inte erbjudas igen");
+
+            System.out.println("    [FAKTURABEVIS] En faktura med " + invoice.getLines().size()
+                    + " rader täcker arbetsorder " + a.getId() + " och " + b.getId() + ".");
+        } finally {
+            if (invoiceId > 0) {
+                new InvoiceRepository().delete(invoiceId);
+            }
+            deleteQuietly(garage, orderIds[0], bookingId, first.getId());
+            deleteQuietly(garage, orderIds[1], 0, second.getId());
+        }
+    }
+
+    private boolean containsBooking(List<Booking> bookings, int bookingId) {
+        for (Booking booking : bookings) {
+            if (booking.getId() == bookingId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Booking bookingWithServices(GarageSystem garage, int howMany, String text) throws SQLException {

@@ -367,6 +367,14 @@ public class GarageSystem {
         return workOrderService.createWorkOrder(bookingId, mechanicId);
     }
 
+    /**
+     * Skapar en arbetsorder för ett urval av bokningens tjänster, så en bokning med flera tjänster
+     * kan delas på flera mekaniker (en arbetsorder per mekaniker).
+     */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds) {
+        return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
+    }
+
     public int getEstimatedDuration(int... serviceItemsIds) {
         return workOrderService.getTotalEstimatedMinutes(serviceItemsIds);
     }
@@ -386,6 +394,19 @@ public class GarageSystem {
 
     public Invoice createInvoice(int workOrderId, String discountCode) {
         return billingService.createInvoice(workOrderId, discountCode);
+    }
+
+    /**
+     * Fakturerar allt utfört arbete på en bokning i en faktura — även när bokningen delats på flera
+     * arbetsordrar (en per mekaniker).
+     */
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
+        return billingService.createInvoiceForBooking(bookingId, discountCode);
+    }
+
+    /** Bokningar med utfört arbete kvar att fakturera. */
+    public java.util.List<Booking> getInvoiceableBookings() {
+        return billingService.getInvoiceableBookings();
     }
 
     public Payment processPayment(int invoiceId, String paymentType) {
