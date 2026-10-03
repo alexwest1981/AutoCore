@@ -35,11 +35,11 @@ public final class EntityPages {
         FilterableTable<Customer> table = TableFactory.create(garage.getCustomers());
         TableView<Customer> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 45, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.name"), 200, Customer::getName),
-                TableFactory.col(I18n.get("table.col.phone"), 150, Customer::getPhone),
-                TableFactory.col(I18n.get("table.col.email"), 280, Customer::getEmail),
-                TableFactory.badgeCol(I18n.get("table.col.vip"), 80, c -> c.isVip() ? I18n.get("common.yes") : I18n.get("common.no")));
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.textCol(I18n.get("table.col.name"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, Customer::getName),
+                TableFactory.sizeCol(I18n.get("table.col.phone"), TableFactory.W_PHONE, Customer::getPhone),
+                TableFactory.textCol(I18n.get("table.col.email"), TableFactory.W_EMAIL_MIN, TableFactory.W_EMAIL_MAX, Customer::getEmail),
+                TableFactory.sizeBadge(I18n.get("table.col.vip"), TableFactory.W_FLAG, c -> c.isVip() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.customers.action_create"));
@@ -90,12 +90,12 @@ public final class EntityPages {
         FilterableTable<Vehicle> table = TableFactory.create(garage.getVehicles());
         TableView<Vehicle> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 45, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.reg_nr"), 120, Vehicle::getRegistrationNumber),
-                TableFactory.col(I18n.get("table.col.brand"), 140, Vehicle::getBrand),
-                TableFactory.col(I18n.get("table.col.model"), 160, Vehicle::getModel),
-                TableFactory.col(I18n.get("table.col.year"), 80, c -> String.valueOf(c.getYear())),
-                TableFactory.col(I18n.get("table.col.customer"), 220, c -> EntityLookup.customerName(garage, c.getCustomerId())));
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.sizeCol(I18n.get("table.col.reg_nr"), TableFactory.W_REG_NR, Vehicle::getRegistrationNumber),
+                TableFactory.sizeCol(I18n.get("table.col.brand"), TableFactory.W_BRAND, Vehicle::getBrand),
+                TableFactory.sizeCol(I18n.get("table.col.model"), TableFactory.W_MODEL, Vehicle::getModel),
+                TableFactory.sizeCol(I18n.get("table.col.year"), TableFactory.W_YEAR, c -> String.valueOf(c.getYear())),
+                TableFactory.textCol(I18n.get("table.col.customer"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.customerName(garage, c.getCustomerId())));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.vehicles.action_create"));
@@ -146,22 +146,22 @@ public final class EntityPages {
         FilterableTable<Booking> table = TableFactory.create(garage.getBookings());
         TableView<Booking> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 55, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.vehicle"), 110, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
-                TableFactory.col(I18n.get("table.col.date"), 100, c -> String.valueOf(c.getDate())),
-                TableFactory.col(I18n.get("table.col.time"), 70, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
-                TableFactory.col(I18n.get("table.col.services"), 190, c -> EntityLookup.bookingServices(garage, c)),
-                TableFactory.col(I18n.get("table.col.estimated_time"), 88, c -> {
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
+                TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> String.valueOf(c.getDate())),
+                TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_TIME, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
+                TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.bookingServices(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.estimated_time"), TableFactory.W_MINUTES, c -> {
                     int min = EntityLookup.bookingTotalMinutes(garage, c);
                     return min > 0 ? min + " min" : "-";
                 }),
-                TableFactory.col(I18n.get("table.col.estimated_cost"), 80, c -> {
+                TableFactory.sizeCol(I18n.get("table.col.estimated_cost"), TableFactory.W_MONEY, c -> {
                     double cost = EntityLookup.bookingTotalPrice(garage, c);
                     return cost > 0 ? UiFormatters.formatMoney(cost) : "-";
                 }),
-                TableFactory.col(I18n.get("table.col.mechanic"), 120, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
-                TableFactory.col(I18n.get("table.col.description"), 180, c -> SeedText.resolve(c.getDescription())),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 160, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
+                TableFactory.textCol(I18n.get("table.col.description"), TableFactory.W_TEXT_MIN, TableFactory.W_TEXT_MAX, c -> SeedText.resolve(c.getDescription())),
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.bookings.action_create"));
@@ -222,12 +222,12 @@ public final class EntityPages {
         FilterableTable<WorkOrder> table = TableFactory.create(garage.getWorkOrders());
         TableView<WorkOrder> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 55, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.booking"), 65, c -> String.valueOf(c.getBookingId())),
-                TableFactory.col(I18n.get("table.col.mechanic"), 150, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
-                TableFactory.col(I18n.get("table.col.services"), 270, c -> EntityLookup.workOrderServicesWithPrices(garage, c)),
-                TableFactory.col(I18n.get("table.col.total"), 90, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 160, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.sizeCol(I18n.get("table.col.booking"), TableFactory.W_REF, c -> String.valueOf(c.getBookingId())),
+                TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
+                TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.workOrderServices(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.total"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.workorders.action_create"));
@@ -320,11 +320,11 @@ public final class EntityPages {
         FilterableTable<ServiceItem> table = TableFactory.create(garage.getServiceItems());
         TableView<ServiceItem> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 45, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.name"), 220, c -> SeedText.resolve(c.getName())),
-                TableFactory.col(I18n.get("table.col.description"), 360, c -> SeedText.resolve(c.getDescription())),
-                TableFactory.col(I18n.get("table.col.price"), 120, c -> UiFormatters.formatMoney(c.getPrice())),
-                TableFactory.col(I18n.get("table.col.time"), 100, c -> c.getEstimatedMinutes() + " min"));
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.textCol(I18n.get("table.col.name"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> SeedText.resolve(c.getName())),
+                TableFactory.textCol(I18n.get("table.col.description"), TableFactory.W_TEXT_MIN, TableFactory.W_TEXT_MAX, c -> SeedText.resolve(c.getDescription())),
+                TableFactory.sizeCol(I18n.get("table.col.price"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getPrice())),
+                TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_MINUTES, c -> c.getEstimatedMinutes() + " min"));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.services.action_create"));
@@ -375,11 +375,11 @@ public final class EntityPages {
         FilterableTable<Mechanic> table = TableFactory.create(garage.getMechanics());
         TableView<Mechanic> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 45, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.name"), 220, Mechanic::getName),
-                TableFactory.col(I18n.get("table.col.phone"), 160, Mechanic::getPhone),
-                TableFactory.col(I18n.get("table.col.specialisation"), 260, c -> SeedText.resolve(c.getSpecialization())),
-                TableFactory.badgeCol(I18n.get("table.col.available"), 130, c -> c.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.textCol(I18n.get("table.col.name"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, Mechanic::getName),
+                TableFactory.sizeCol(I18n.get("table.col.phone"), TableFactory.W_PHONE, Mechanic::getPhone),
+                TableFactory.textCol(I18n.get("table.col.specialisation"), TableFactory.W_SPEC_MIN, TableFactory.W_SPEC_MAX, c -> SeedText.resolve(c.getSpecialization())),
+                TableFactory.sizeBadge(I18n.get("table.col.available"), TableFactory.W_FLAG, c -> c.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.mechanics.action_create"));
@@ -430,13 +430,14 @@ public final class EntityPages {
         FilterableTable<Invoice> table = TableFactory.create(garage.getInvoices());
         TableView<Invoice> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.booking"), 110, c -> String.valueOf(EntityLookup.bookingIdForWorkOrder(garage, c.getWorkOrderId()))),
-                TableFactory.col(I18n.get("table.col.date"), 130, c -> String.valueOf(c.getInvoiceDate())),
-                TableFactory.col(I18n.get("table.col.amount"), 110, c -> UiFormatters.formatMoney(c.getAmount())),
-                TableFactory.col(I18n.get("table.col.discount"), 100, c -> UiFormatters.formatMoney(c.getDiscount())),
-                TableFactory.col(I18n.get("table.col.total"), 110, c -> UiFormatters.formatMoney(c.getTotalAmount())),
-                TableFactory.badgeCol(I18n.get("table.col.paid"), 110, c -> c.isPaid() ? I18n.get("common.yes") : I18n.get("common.no")));
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.sizeCol(I18n.get("table.col.booking"), TableFactory.W_REF, c -> String.valueOf(EntityLookup.bookingIdForWorkOrder(garage, c.getWorkOrderId()))),
+                TableFactory.textCol(I18n.get("table.col.customer"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.invoiceCustomerName(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> String.valueOf(c.getInvoiceDate())),
+                TableFactory.sizeCol(I18n.get("table.col.amount"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getAmount())),
+                TableFactory.sizeCol(I18n.get("table.col.discount"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getDiscount())),
+                TableFactory.sizeCol(I18n.get("table.col.total"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getTotalAmount())),
+                TableFactory.sizeBadge(I18n.get("table.col.paid"), TableFactory.W_FLAG, c -> c.isPaid() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.invoices.action_create"));
@@ -497,12 +498,13 @@ public final class EntityPages {
         FilterableTable<Payment> table = TableFactory.create(garage.getPayments());
         TableView<Payment> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 45, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.invoice"), 90, c -> String.valueOf(c.getInvoiceId())),
-                TableFactory.col(I18n.get("table.col.amount"), 110, c -> UiFormatters.formatMoney(c.getAmount())),
-                TableFactory.col(I18n.get("table.col.type"), 110, c -> UiFormatters.paymentTypeWord(c.getPaymentType())),
-                TableFactory.col(I18n.get("table.col.datetime"), 140, c -> UiFormatters.formatDateTime(c.getPaymentDate())),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 110, c -> c.isSuccessful() ? I18n.get("status.successful") : I18n.get("status.failed")));
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.sizeCol(I18n.get("table.col.invoice"), TableFactory.W_REF, c -> String.valueOf(c.getInvoiceId())),
+                TableFactory.textCol(I18n.get("table.col.customer"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.paymentCustomerName(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.amount"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getAmount())),
+                TableFactory.sizeCol(I18n.get("table.col.type"), TableFactory.W_TYPE, c -> UiFormatters.paymentTypeWord(c.getPaymentType())),
+                TableFactory.sizeCol(I18n.get("table.col.datetime"), TableFactory.W_DATETIME, c -> UiFormatters.formatDateTime(c.getPaymentDate())),
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> c.isSuccessful() ? I18n.get("status.successful") : I18n.get("status.failed")));
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.payments.action_create"));

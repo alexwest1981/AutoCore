@@ -4,6 +4,7 @@ import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.Mechanic;
+import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
@@ -259,6 +260,46 @@ public final class EntityLookup {
         return 0.0;
     }
 
+    /**
+     * Tjänstenamnen på en arbetsorder, utan priser. Arbetsordervyn är till för mekanikerna, som
+     * behöver se vad som ska göras, inte vad det kostar. Namnet hämtas från fakturaraden när den
+     * finns, annars från tjänsten, precis som i workOrderServicesWithPrices.
+     */
+    public static String workOrderServices(GarageSystem garage, WorkOrder wo) {
+        if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
+            return "-";
+        }
+        Invoice invoice = invoiceForWorkOrder(garage, wo.getId());
+        StringBuilder sb = new StringBuilder();
+        for (Integer sid : wo.getServiceItemIds()) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            String name = null;
+            if (invoice != null && invoice.getLines() != null) {
+                for (InvoiceLine line : invoice.getLines()) {
+                    if (line.getServiceItemId() == sid) {
+                        name = line.getServiceName();
+                        break;
+                    }
+                }
+            }
+            if (name == null) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid) {
+                        name = s.getName();
+                        break;
+                    }
+                }
+            }
+            if (name == null) {
+                name = "Service #" + sid;
+            }
+            sb.append(SeedText.resolve(name));
+        }
+        return sb.toString();
+    }
+
     public static String workOrderServicesWithPrices(GarageSystem garage, WorkOrder wo) {
         if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
             return "-";
@@ -322,6 +363,20 @@ public final class EntityLookup {
         for (WorkOrder wo : garage.getWorkOrders()) {
             if (wo.getId() == inv.getWorkOrderId()) {
                 return workOrderCustomerName(garage, wo);
+            }
+        }
+        return "-";
+    }
+
+    /**
+     * Kunden bakom en betalning. Kedjan går betalning, faktura, arbetsorder, bokning, fordon, kund,
+     * och varje steg använder samma hjälpmetoder som fakturavyn, så samma kund visas i båda vyerna.
+     */
+    public static String paymentCustomerName(GarageSystem garage, Payment pay) {
+        if (garage == null || pay == null) return "-";
+        for (Invoice inv : garage.getInvoices()) {
+            if (inv.getId() == pay.getInvoiceId()) {
+                return invoiceCustomerName(garage, inv);
             }
         }
         return "-";

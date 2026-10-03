@@ -15,6 +15,7 @@ import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class SeedData {
 
@@ -95,29 +96,38 @@ public class SeedData {
 
             LocalDate today = LocalDate.now();
 
+            // Tiderna ligger inom verkstadens dag, 07:00 till 16:00, och varje mekaniker har
+            // bara ett jobb i taget. Sluttiden räknas ur bokningens tjänster, så den följer med
+            // om en tjänst får en annan tidsåtgång.
             Booking firstBooking = new Booking(0, volvo.getId(), today, "seed.booking.oil_change_filter.description");
             firstBooking.addServiceItem(oilChange);
+            setSchedule(firstBooking, 7, 0, johan.getId());
             bookingRepository.save(firstBooking);
 
             Booking secondBooking = new Booking(0, volkswagen.getId(), today, "seed.booking.front_brake_inspection.description");
             secondBooking.addServiceItem(brakeService);
+            setSchedule(secondBooking, 7, 0, sara.getId());
             bookingRepository.save(secondBooking);
 
             Booking thirdBooking = new Booking(0, toyota.getId(), today.plusDays(1), "seed.booking.full_brake_overhaul.description");
             thirdBooking.addServiceItem(brakeService);
             thirdBooking.addServiceItem(annualService);
+            setSchedule(thirdBooking, 7, 0, sara.getId());
             bookingRepository.save(thirdBooking);
 
             Booking fourthBooking = new Booking(0, bmw.getId(), today, "seed.booking.brake_calipers_pads.description");
             fourthBooking.addServiceItem(brakeService);
+            setSchedule(fourthBooking, 9, 0, sara.getId());
             bookingRepository.save(fourthBooking);
 
             Booking fifthBooking = new Booking(0, audi.getId(), today, "seed.booking.obd2_fault_codes.description");
             fifthBooking.addServiceItem(diagnostics);
+            setSchedule(fifthBooking, 7, 0, mikael.getId());
             bookingRepository.save(fifthBooking);
 
             Booking sixthBooking = new Booking(0, mercedes.getId(), today.plusDays(1), "seed.booking.electronic_fault_diagnosis.description");
             sixthBooking.addServiceItem(diagnostics);
+            setSchedule(sixthBooking, 7, 0, mikael.getId());
             bookingRepository.save(sixthBooking);
 
             WorkOrder firstOrder = new WorkOrder(0, firstBooking.getId(), johan.getId());
@@ -129,7 +139,7 @@ public class SeedData {
             firstBooking.setStatus("IN_PROGRESS");
             bookingRepository.save(firstBooking);
 
-            WorkOrder secondOrder = new WorkOrder(0, secondBooking.getId(), johan.getId());
+            WorkOrder secondOrder = new WorkOrder(0, secondBooking.getId(), sara.getId());
             secondOrder.addServiceItem(brakeService.getId());
             workOrderRepository.save(secondOrder);
             secondBooking.setStatus("WORK_ORDER_CREATED");
@@ -149,7 +159,7 @@ public class SeedData {
             fifthBooking.setStatus("IN_PROGRESS");
             bookingRepository.save(fifthBooking);
 
-            WorkOrder fifthOrder = new WorkOrder(0, thirdBooking.getId(), johan.getId());
+            WorkOrder fifthOrder = new WorkOrder(0, thirdBooking.getId(), sara.getId());
             fifthOrder.addServiceItem(brakeService.getId());
             fifthOrder.addServiceItem(annualService.getId());
             workOrderRepository.save(fifthOrder);
@@ -164,5 +174,16 @@ public class SeedData {
         } catch (SQLException e) {
             System.out.println("Could not seed sample data: " + e.getMessage());
         }
+    }
+
+    /**
+     * Ger bokningen en starttid, en tilldelad mekaniker och en sluttid som räknas ur bokningens
+     * tjänster, så att tiden alltid räcker för hela arbetet.
+     */
+    private static void setSchedule(Booking booking, int startHour, int startMinute, int mechanicId) {
+        LocalTime start = LocalTime.of(startHour, startMinute);
+        booking.setStartTime(start);
+        booking.setMechanicId(mechanicId);
+        booking.setEndTime(start.plusMinutes(booking.getTotalEstimatedMinutes()));
     }
 }
