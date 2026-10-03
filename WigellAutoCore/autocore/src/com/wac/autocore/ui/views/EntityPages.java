@@ -262,8 +262,27 @@ public final class EntityPages {
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
             startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
-            markBtn.setDisable(sel == null || !"IN_PROGRESS".equals(sel.getStatus()));
-            completeBtn.setDisable(sel == null || (!"IN_PROGRESS".equals(sel.getStatus()) && !"CREATED".equals(sel.getStatus())));
+
+            // DANIEL-LOGIK: Arbetsorder med fler tjänster kräver att man markerar dem utförda
+            // ett för ett via markBtn. Arbetsorder med exakt en tjänst hoppar direkt till Complete –
+            // markBtn ska då vara inaktiv.
+            boolean inProgress = sel != null && "IN_PROGRESS".equals(sel.getStatus());
+            int serviceCount = (sel != null && sel.getServiceItemIds() != null) ? sel.getServiceItemIds().size() : 0;
+            boolean multiService = serviceCount > 1;
+            boolean allMarked = sel != null
+                    && sel.getCompletedServiceItems() != null
+                    && sel.getCompletedServiceItems().containsAll(sel.getServiceItemIds());
+
+            // markBtn: aktiv bara om IN_PROGRESS och ordern har fler än 1 tjänst
+            markBtn.setDisable(!inProgress || !multiService);
+
+            // completeBtn: aktiv om rätt status, och om multi-service måste alla vara markerade
+            boolean canComplete = sel != null
+                    && ("IN_PROGRESS".equals(sel.getStatus()) || "CREATED".equals(sel.getStatus()));
+            if (canComplete && multiService && !allMarked) {
+                canComplete = false;
+            }
+            completeBtn.setDisable(!canComplete);
 
             boolean canInvoice = false;
             if (sel != null && "COMPLETED".equals(sel.getStatus())) {
