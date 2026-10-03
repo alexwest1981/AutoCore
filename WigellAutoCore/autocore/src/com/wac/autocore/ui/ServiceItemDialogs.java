@@ -49,6 +49,7 @@ public final class ServiceItemDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, nameField, priceField, timeField);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -111,6 +112,7 @@ public final class ServiceItemDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, nameField, priceField, timeField);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -185,11 +187,9 @@ public final class ServiceItemDialogs {
             return;
         }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.get("dialog.service.delete.title"));
-        alert.setHeaderText(I18n.get("dialog.service.delete.header"));
-        alert.setContentText(I18n.get("dialog.service.delete.confirm", SeedText.resolve(serviceItem.getName())));
-        ActionDialogs.styleDialog(alert);
+        Alert alert = ActionDialogs.confirm(I18n.get("dialog.service.delete.title"),
+                I18n.get("dialog.service.delete.header"),
+                I18n.get("dialog.service.delete.confirm", SeedText.resolve(serviceItem.getName())));
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {

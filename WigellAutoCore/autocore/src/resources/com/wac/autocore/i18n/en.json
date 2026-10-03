@@ -115,7 +115,8 @@
       "meta": "{0} invoices",
       "action_create": "+ Create Invoice",
       "action_pay": "Pay selected invoice",
-      "action_lines": "Show lines"
+      "action_lines": "Show lines",
+      "action_print": "Print invoice"
     },
     "payments": {
       "title": "Payments",
@@ -195,6 +196,28 @@
     "search": "Search",
     "search_placeholder": "Filter table rows...",
     "action": "Action"
+  },
+  "invoice": {
+    "title": "INVOICE",
+    "thanks_line": "Thank you for choosing us!",
+    "number": "Invoice number",
+    "date": "Invoice date",
+    "due_date": "Due date",
+    "status": "Status",
+    "customer": "Bill to",
+    "vehicle": "Vehicle",
+    "workorder": "Work order",
+    "col": {
+      "description": "Description",
+      "price": "Price",
+      "discount": "Discount",
+      "sum": "Amount"
+    },
+    "subtotal": "Subtotal",
+    "discount_total": "Discount",
+    "total": "Amount due",
+    "footer": "Thank you for your business!",
+    "footer_terms": "Payment terms: {0} days net."
   },
   "dialog": {
     "customer": {
@@ -378,7 +401,13 @@
       },
       "workorder_select": "Select work order",
       "discount": "Discount / Promotion (SEK)",
-      "discount_prompt": "E.g. WELCOME10 or SERVICE200 (optional)"
+      "discount_prompt": "E.g. WELCOME10 or SERVICE200 (optional)",
+      "create_failed": "The invoice could not be created.",
+      "print_title": "Invoice",
+      "print_header": "Invoice preview",
+      "print": "Print",
+      "no_printer": "No printer was found. Connect a printer and try again.",
+      "print_failed": "The invoice could not be printed."
     },
     "payment": {
       "create": {

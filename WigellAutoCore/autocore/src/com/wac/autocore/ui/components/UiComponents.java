@@ -77,6 +77,29 @@ public final class UiComponents {
         return l;
     }
 
+    /**
+     * AutoCore-logotypen, läst från resurserna eller från repots Logo-mapp. Null om den inte finns,
+     * så anroparen kan visa namnet i text i stället.
+     */
+    public static javafx.scene.image.Image loadLogoImage() {
+        try {
+            java.io.InputStream in = UiComponents.class.getResourceAsStream("/com/wac/autocore/images/Logo.png");
+            if (in != null) {
+                return new javafx.scene.image.Image(in);
+            }
+            java.io.File f = new java.io.File("Logo/Logo.png");
+            if (f.exists()) {
+                return new javafx.scene.image.Image(f.toURI().toString());
+            }
+            java.io.File fRes = new java.io.File("WigellAutoCore/autocore/src/resources/com/wac/autocore/images/Logo.png");
+            if (fRes.exists()) {
+                return new javafx.scene.image.Image(fRes.toURI().toString());
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
     public static VBox buildEntityPage(String title, String sub, String eyebrow,
                                        TableView<?> table, Node... actions) {
         VBox titles = pageHead(title, sub, eyebrow);

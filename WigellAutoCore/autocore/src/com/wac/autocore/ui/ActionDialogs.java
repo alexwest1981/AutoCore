@@ -12,12 +12,23 @@ import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.navigation.PageRouter;
 
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.GridPane;
 
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ObservableBooleanValue;
+
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Facade för alla modala formulärdialoger i AutoCore GUI.
@@ -73,6 +84,106 @@ public final class ActionDialogs {
         grid.setPadding(new Insets(18, 22, 18, 22));
         grid.setPrefWidth(580);
         return grid;
+    }
+
+    /**
+     * Låser OK-knappen tills varje angivet fält har ett värde, så ett halvfyllt formulär inte går
+     * att skicka och inget behöver skrivas om efteråt.
+     *
+     * Textfält räknas som ifyllda först när de innehåller något annat än blanksteg, rullistor och
+     * datumväljare när ett val är gjort. Fält som är frivilliga lämnas helt enkelt utanför anropet.
+     *
+     * Låsningen ersätter inte kontrollen som körs när man väl trycker OK — den ligger kvar som
+     * sista vakt — den bara sparar irritationen av att fylla i allt en gång till.
+     */
+    public static void requireFilled(Dialog<?> dialog, Node... fields) {
+        final List<Node> required = new ArrayList<Node>();
+        List<Observable> sources = new ArrayList<Observable>();
+        for (Node field : fields) {
+            Observable source = valueSourceOf(field);
+            if (source != null) {
+                required.add(field);
+                sources.add(source);
+            }
+        }
+        requireFilled(dialog, Bindings.createBooleanBinding(
+                () -> areAllFilled(required),
+                sources.toArray(new Observable[sources.size()])));
+    }
+
+    /**
+     * Låser OK-knappen tills ett eget villkor är sant. Används när kravet inte går att uttrycka som
+     * "fältet är ifyllt", t.ex. att en bokning måste innehålla minst en tjänst.
+     */
+    public static void requireFilled(Dialog<?> dialog, ObservableBooleanValue filled) {
+        Node ok = dialog.getDialogPane().lookupButton(ButtonType.OK);
+        if (ok != null) {
+            ok.disableProperty().bind(Bindings.not(filled));
+        }
+    }
+
+    /** Värdet som avgör om fältet är ifyllt, eller null för noder som inte går att fylla i. */
+    private static Observable valueSourceOf(Node field) {
+        if (field instanceof TextInputControl) {
+            return ((TextInputControl) field).textProperty();
+        }
+        if (field instanceof ComboBoxBase) {
+            return ((ComboBoxBase<?>) field).valueProperty();
+        }
+        return null;
+    }
+
+    private static boolean areAllFilled(List<Node> fields) {
+        for (Node field : fields) {
+            if (isBlank(field)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isBlank(Node field) {
+        if (field instanceof TextInputControl) {
+            String text = ((TextInputControl) field).getText();
+            return text == null || text.trim().isEmpty();
+        }
+        if (field instanceof ComboBoxBase) {
+            return ((ComboBoxBase<?>) field).getValue() == null;
+        }
+        return false;
+    }
+
+    /**
+     * Bekräftelseruta där texten radbryts i stället för att klippas av. Alertens egen textrad bryter
+     * inte, så en mening med ett namn i blev avklippt. Texten hålls inom en rimlig bredd så rutan
+     * inte växer över skärmen.
+     */
+    public static Alert confirm(String title, String header, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        Label messageLabel = new Label(message);
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(420);
+        alert.getDialogPane().setContent(messageLabel);
+        styleDialog(alert);
+        return alert;
+    }
+
+    /**
+     * Höjer dialogen när innehållet behöver mer plats (t.ex. fler tjänster i en bokning).
+     * Bara uppåt: en storlek användaren själv dragit fram behålls.
+     */
+    public static void growToFitContent(Dialog<?> dialog) {
+        DialogPane pane = dialog.getDialogPane();
+        if (pane.getScene() == null || pane.getScene().getWindow() == null) {
+            return;
+        }
+        javafx.stage.Window window = pane.getScene().getWindow();
+        double needed = pane.prefHeight(pane.getWidth());
+        if (window instanceof javafx.stage.Stage && needed > window.getHeight()) {
+            ((javafx.stage.Stage) window).setHeight(needed);
+        }
     }
 
     public static void showError(String title, String message) {
@@ -190,6 +301,10 @@ public final class ActionDialogs {
 
     public static void showInvoiceLinesDialog(Invoice invoice) {
         BillingDialogs.showInvoiceLinesDialog(invoice);
+    }
+
+    public static void showInvoiceDocumentDialog(GarageSystem garage, Invoice invoice) {
+        BillingDialogs.showInvoiceDocumentDialog(garage, invoice);
     }
 
 

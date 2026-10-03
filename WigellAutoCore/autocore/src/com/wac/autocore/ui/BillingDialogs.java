@@ -97,9 +97,11 @@ public final class BillingDialogs {
                 WorkOrder wo = orderBox.getValue();
                 String code = discountField.getText().trim();
                 Invoice invoice = garage.createInvoice(wo.getId(), code);
-                if (invoice != null) {
-                    showInvoiceLinesDialog(invoice);
+                if (invoice == null) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.invoice.create_failed"));
+                    return;
                 }
+                showInvoiceLinesDialog(invoice);
                 if (onSuccess != null) onSuccess.run();
             }
         });
@@ -155,6 +157,17 @@ public final class BillingDialogs {
         typeBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(typeBox, Priority.ALWAYS);
         typeBox.getSelectionModel().select("SWISH");
+        // Det sparade värdet står kvar som SWISH i databasen, men listan visar "Swish".
+        typeBox.setConverter(new StringConverter<String>() {
+            @Override
+            public String toString(String stored) {
+                return UiFormatters.paymentTypeWord(stored);
+            }
+            @Override
+            public String fromString(String text) {
+                return null;
+            }
+        });
 
         grid.add(new Label(I18n.get("dialog.payment.invoice_select") + ":"), 0, 0);
         grid.add(invoiceBox, 1, 0);
@@ -229,5 +242,69 @@ public final class BillingDialogs {
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.showAndWait();
+    }
+
+    /**
+     * Förhandsgranskar fakturan som den skrivs ut, och skickar den till skrivaren.
+     *
+     * Rutan stängs inte när man skriver ut, så samma faktura kan skrivas ut igen eller rättas först.
+     */
+    static void showInvoiceDocumentDialog(GarageSystem garage, Invoice invoice) {
+        if (invoice == null) return;
+
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.invoice.print_title") + " #" + invoice.getId());
+        dialog.setHeaderText(I18n.get("dialog.invoice.print_header"));
+        ActionDialogs.styleDialog(dialog);
+        dialog.setResizable(true);
+
+        final javafx.scene.Node document = InvoiceDocument.build(garage, invoice);
+        javafx.scene.layout.StackPane paper = new javafx.scene.layout.StackPane(document);
+        paper.setStyle("-fx-background-color: #e5e7eb; -fx-padding: 18;");
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(paper);
+        scroll.setFitToWidth(true);
+        scroll.setPrefViewportWidth(document.prefWidth(-1) + 60);
+        scroll.setPrefViewportHeight(640);
+
+        ButtonType printType = new ButtonType(I18n.get("dialog.invoice.print"),
+                javafx.scene.control.ButtonBar.ButtonData.LEFT);
+        dialog.getDialogPane().setContent(scroll);
+        dialog.getDialogPane().getButtonTypes().addAll(printType, ButtonType.CLOSE);
+        dialog.getDialogPane().lookupButton(printType).addEventFilter(javafx.event.ActionEvent.ACTION, evt -> {
+            evt.consume();
+            sendToPrinter(document, dialog);
+        });
+        dialog.showAndWait();
+    }
+
+    /** Skickar dokumentet till skrivaren. Utan skrivare blir det ett besked i stället för tystnad. */
+    private static void sendToPrinter(final javafx.scene.Node document, Dialog<?> dialog) {
+        javafx.print.PrinterJob job = javafx.print.PrinterJob.createPrinterJob();
+        if (job == null) {
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.invoice.no_printer"));
+            return;
+        }
+
+        try {
+            javafx.print.PageLayout layout = job.getPrinter().createPageLayout(
+                    javafx.print.Paper.A4, javafx.print.PageOrientation.PORTRAIT,
+                    javafx.print.Printer.MarginType.DEFAULT);
+            job.getJobSettings().setPageLayout(layout);
+        } catch (Exception ignored) {
+            // Skrivaren utan A4: skriv ut på den layout den erbjuder i stället.
+        }
+
+        javafx.stage.Window owner = dialog.getDialogPane().getScene() == null
+                ? null : dialog.getDialogPane().getScene().getWindow();
+        if (!job.showPrintDialog(owner)) {
+            job.endJob();
+            return;
+        }
+
+        boolean printed = job.printPage(document);
+        job.endJob();
+        if (!printed) {
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.invoice.print_failed"));
+        }
     }
 }

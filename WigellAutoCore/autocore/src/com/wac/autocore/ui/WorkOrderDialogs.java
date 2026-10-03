@@ -169,6 +169,13 @@ public final class WorkOrderDialogs {
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+        // OK är låst tills den valda bokningen har något att utföra — en arbetsorder utan tjänster
+        // går ändå inte att skapa.
+        javafx.beans.property.BooleanProperty bookingHasServices = new javafx.beans.property.SimpleBooleanProperty();
+        bookingHasServices.set(hasServices(bookingBox.getValue()));
+        bookingBox.valueProperty().addListener((obs, oldB, newB) -> bookingHasServices.set(hasServices(newB)));
+        ActionDialogs.requireFilled(dialog, bookingHasServices);
+
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 Booking b = bookingBox.getValue();
@@ -414,5 +421,10 @@ public final class WorkOrderDialogs {
                 }
             }
         });
+    }
+
+    /** En bokning utan tjänster kan inte bli en arbetsorder. */
+    private static boolean hasServices(Booking booking) {
+        return booking != null && !booking.getServiceItemIds().isEmpty();
     }
 }

@@ -115,7 +115,8 @@
       "meta": "{0} fakturor",
       "action_create": "+ Skapa faktura",
       "action_pay": "Betala vald faktura",
-      "action_lines": "Visa rader"
+      "action_lines": "Visa rader",
+      "action_print": "Skriv ut faktura"
     },
     "payments": {
       "title": "Betalningar",
@@ -195,6 +196,28 @@
     "search": "Sök",
     "search_placeholder": "Filtrera rader i tabellen...",
     "action": "Åtgärd"
+  },
+  "invoice": {
+    "title": "FAKTURA",
+    "thanks_line": "Tack för att du valde oss!",
+    "number": "Fakturanummer",
+    "date": "Fakturadatum",
+    "due_date": "Förfallodatum",
+    "status": "Status",
+    "customer": "Faktureras till",
+    "vehicle": "Fordon",
+    "workorder": "Arbetsorder",
+    "col": {
+      "description": "Beskrivning",
+      "price": "Pris",
+      "discount": "Rabatt",
+      "sum": "Summa"
+    },
+    "subtotal": "Delsumma",
+    "discount_total": "Rabatt",
+    "total": "Att betala",
+    "footer": "Tack för ditt förtroende!",
+    "footer_terms": "Betalningsvillkor: {0} dagar netto."
   },
   "dialog": {
     "customer": {
@@ -378,7 +401,13 @@
       },
       "workorder_select": "Välj arbetsorder",
       "discount": "Rabatt / Kampanj (kr)",
-      "discount_prompt": "T.ex. WELCOME10 eller SERVICE200 (valfritt)"
+      "discount_prompt": "T.ex. WELCOME10 eller SERVICE200 (valfritt)",
+      "create_failed": "Fakturan kunde inte skapas.",
+      "print_title": "Faktura",
+      "print_header": "Förhandsgranskning av fakturan",
+      "print": "Skriv ut",
+      "no_printer": "Ingen skrivare hittades. Koppla in en skrivare och försök igen.",
+      "print_failed": "Fakturan kunde inte skrivas ut."
     },
     "payment": {
       "create": {

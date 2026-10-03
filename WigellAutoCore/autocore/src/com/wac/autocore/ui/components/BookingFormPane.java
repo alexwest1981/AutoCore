@@ -11,6 +11,8 @@ import com.wac.autocore.ui.util.BookingAvailability;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -58,6 +60,21 @@ public class BookingFormPane extends GridPane {
     private final TextField descField;
     private final ComboBox<String> statusBox;
 
+    /**
+     * Posten "Välj ingen mekaniker" i rullistan. Ett riktigt objekt i stället för null: en null-post
+     * i listan får JavaFX att kasta IndexOutOfBoundsException när man väljer den, för väljarens
+     * markering nollas samtidigt som posten markeras (ListViewBehavior läser en ändring som redan
+     * hunnit bli inaktuell). Värdet utåt är fortfarande null — se {@link #getSelectedMechanic()}.
+     */
+    private static final Mechanic NO_MECHANIC = new Mechanic(0, "", "", "");
+
+    /** Höjden på en tjänsterad i listan (radhöjd + mellanrum) och taket för hur hög rutan får bli. */
+    private static final double SERVICE_ROW_HEIGHT = 30;
+    private static final double SERVICES_MAX_HEIGHT = 330;
+
+    /** Anropas när formuläret behöver mer plats, så att dialogen kan växa med innehållet. */
+    private Runnable onContentGrown;
+
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour) {
         setHgap(14);
@@ -79,7 +96,7 @@ public class BookingFormPane extends GridPane {
         this.servicesScroll.setFitToWidth(true);
         this.servicesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         this.servicesScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        this.servicesScroll.setMaxHeight(105);
+        // Höjden sätts i renderServices, efter hur många tjänster bokningen innehåller.
         this.servicesScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
 
         // 1. Fordon
@@ -127,6 +144,8 @@ public class BookingFormPane extends GridPane {
         if (!this.serviceBox.getItems().isEmpty()) {
             this.serviceBox.getSelectionModel().selectFirst();
         }
+        // Tjänster som redan ligger i bokningen visas gråmarkerade och går inte att välja igen.
+        this.serviceBox.setCellFactory(lv -> serviceChoiceCell());
 
         Button addServiceBtn = new Button("+ " + I18n.get("dialog.booking.add_service"));
         addServiceBtn.setMaxHeight(Double.MAX_VALUE);
@@ -209,15 +228,14 @@ public class BookingFormPane extends GridPane {
                 totalSummaryLabel.setText(I18n.get("dialog.booking.total_time", totalMin) + "  |  " + I18n.get("dialog.booking.total_price", UiFormatters.formatMoney(totalCost)));
                 totalSummaryLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent; -fx-font-size: 12px; -fx-padding: 2 0 0 2;");
             }
-            int count = selectedServices.size();
-            if (count == 0) {
-                servicesScroll.setPrefHeight(26);
-            } else if (count == 1) {
-                servicesScroll.setPrefHeight(34);
-            } else if (count == 2) {
-                servicesScroll.setPrefHeight(68);
-            } else {
-                servicesScroll.setPrefHeight(105);
+            // Rutan växer med antalet tjänster i stället för att scrolla i en liten yta. Taket gör
+            // att en lång lista fortfarande scrollar, men först när dialogen är så hög den får bli.
+            double wanted = 12 + Math.max(1, selectedServices.size()) * SERVICE_ROW_HEIGHT;
+            double height = Math.min(SERVICES_MAX_HEIGHT, wanted);
+            servicesScroll.setPrefHeight(height);
+            servicesScroll.setMaxHeight(height);
+            if (onContentGrown != null) {
+                onContentGrown.run();
             }
         };
 
@@ -238,7 +256,7 @@ public class BookingFormPane extends GridPane {
         setupComboBoxDisplay(this.mechanicBox, new StringConverter<Mechanic>() {
             @Override
             public String toString(Mechanic m) {
-                if (m == null) return I18n.get("dialog.booking.no_mechanic");
+                if (m == null || m == NO_MECHANIC) return I18n.get("dialog.booking.no_mechanic");
                 return m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ")";
             }
             @Override
@@ -247,10 +265,10 @@ public class BookingFormPane extends GridPane {
 
         Consumer<ServiceItem> updateMechanics = selService -> {
             List<Mechanic> qualified = selService != null ? garage.getQualifiedMechanics(selService) : garage.getMechanics();
-            Mechanic currentSel = mechanicBox.getValue();
+            Mechanic currentSel = getSelectedMechanic();
 
             mechanicBox.getItems().clear();
-            mechanicBox.getItems().add(null);
+            mechanicBox.getItems().add(NO_MECHANIC);
             mechanicBox.getItems().addAll(qualified);
 
             if (selService == null && selectedServices.isEmpty()) {
@@ -296,7 +314,7 @@ public class BookingFormPane extends GridPane {
         int excludeId = existingBooking != null ? existingBooking.getId() : 0;
         Function<LocalTime, Boolean> isBusyFunc = time -> {
             if (time == null) return false;
-            Mechanic m = mechanicBox.getValue();
+            Mechanic m = getSelectedMechanic();
             LocalDate d = datePicker.getValue();
             return BookingAvailability.isHourBooked(garage, m, d, time.getHour(), excludeId);
         };
@@ -365,6 +383,9 @@ public class BookingFormPane extends GridPane {
 
         selectedServices.addListener((javafx.collections.ListChangeListener<ServiceItem>) c -> {
             renderServices.run();
+            // Gråmarkeringen i tjänstelistan följer bokningens innehåll: cellerna byggs om när
+            // listan ändras, annars står en redan tillagd tjänst kvar som valbar.
+            serviceBox.setCellFactory(lv -> serviceChoiceCell());
             updateMechanics.accept(getSelectedService());
             updateDuration.run();
             if (existingBooking == null) {
@@ -481,30 +502,44 @@ public class BookingFormPane extends GridPane {
         startTimeBox.getSelectionModel().select(firstFree != null ? firstFree : LocalTime.of(8, 0));
     }
 
-    public boolean validate(GarageSystem garage, int excludeBookingId) {
-        Vehicle v = getSelectedVehicle();
-        LocalDate date = getSelectedDate();
-        String desc = getDescription();
-        List<ServiceItem> chosenServices = getSelectedServices();
-        if (desc.isEmpty() && !chosenServices.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for (ServiceItem s : chosenServices) {
-                if (sb.length() > 0) sb.append(", ");
-                sb.append(SeedText.resolve(s.getName()));
-            }
-            desc = sb.toString();
-        } else if (desc.isEmpty() && getSelectedService() != null) {
-            desc = SeedText.resolve(getSelectedService().getName());
+    /**
+     * Sant när de obligatoriska fälten är ifyllda: fordon, datum och antingen en beskrivning eller
+     * minst en tjänst. En ny bokning (excludeBookingId == 0) måste dessutom innehålla en tjänst —
+     * en bokning som redan finns får behålla sina.
+     *
+     * Delas av låsningen av OK-knappen och av validate(), så de två inte kan glida ifrån varandra.
+     */
+    private boolean requiredFieldsFilled(int excludeBookingId) {
+        boolean hasServices = !selectedServices.isEmpty();
+        if (getSelectedVehicle() == null || getSelectedDate() == null) {
+            return false;
         }
+        if (!hasServices && getDescription().isEmpty()) {
+            return false;
+        }
+        return excludeBookingId != 0 || hasServices;
+    }
 
+    /**
+     * Låsningen av OK-knappen: den är låst så länge ett obligatoriskt fält saknas och öppnas när
+     * fältet fylls i. Följer samma regel som validate(), via {@link #requiredFieldsFilled(int)}.
+     */
+    public BooleanBinding requiredFieldsFilledBinding(final int excludeBookingId) {
+        return Bindings.createBooleanBinding(
+                () -> requiredFieldsFilled(excludeBookingId),
+                this.vehicleBox.valueProperty(), this.datePicker.valueProperty(),
+                this.descField.textProperty(), this.selectedServices);
+    }
+
+    public boolean validate(GarageSystem garage, int excludeBookingId) {
         // En ny bokning måste innehålla minst en tjänst. Vid en redigering gäller inte
         // kravet, eftersom en bokning som redan finns får behålla sina tjänster.
-        if (v == null || date == null || desc.isEmpty()
-                || (excludeBookingId == 0 && chosenServices.isEmpty())) {
+        if (!requiredFieldsFilled(excludeBookingId)) {
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
             return false;
         }
 
+        LocalDate date = getSelectedDate();
         Mechanic chosenMech = getSelectedMechanic();
         LocalTime startTime = getSelectedStartTime();
         if (chosenMech != null && startTime != null) {
@@ -546,10 +581,42 @@ public class BookingFormPane extends GridPane {
         }
         return total;
     }
-    public Mechanic getSelectedMechanic() { return mechanicBox.getValue(); }
+    public Mechanic getSelectedMechanic() {
+        Mechanic m = mechanicBox.getValue();
+        return m == NO_MECHANIC ? null : m;
+    }
+
+    /** Låter dialogen veta när formuläret behöver mer plats, så att fönstret kan växa med det. */
+    public void setOnContentGrown(Runnable listener) {
+        this.onContentGrown = listener;
+    }
     public LocalTime getSelectedStartTime() { return startTimeBox.getValue(); }
     public String getDescription() { return descField.getText().trim(); }
     public String getStatus() { return statusBox != null ? statusBox.getValue() : "BOOKED"; }
+
+    /**
+     * Rad i tjänstelistan. En tjänst som redan ligger i bokningen är gråmarkerad och går inte att
+     * välja, så samma arbete inte kan bokas två gånger av misstag.
+     */
+    private ListCell<ServiceItem> serviceChoiceCell() {
+        return new ListCell<ServiceItem>() {
+            @Override
+            protected void updateItem(ServiceItem item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setDisable(false);
+                    setOpacity(1);
+                    return;
+                }
+                setText(SeedText.resolve(item.getName()) + " · " + UiFormatters.formatMoney(item.getPrice())
+                        + " (" + item.getEstimatedMinutes() + " min)");
+                boolean alreadyInBooking = selectedServices.contains(item);
+                setDisable(alreadyInBooking);
+                setOpacity(alreadyInBooking ? 0.45 : 1);
+            }
+        };
+    }
 
     private static <T> void setupComboBoxDisplay(ComboBox<T> box, StringConverter<T> converter) {
         box.setConverter(converter);

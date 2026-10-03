@@ -88,7 +88,11 @@ public final class TableFactory {
                                                 Function<S, String> mapper) {
         TableColumn<S, String> c = new TableColumn<S, String>(title);
         c.setPrefWidth(width);
-        c.setMinWidth(Math.min(width, 40));
+        // Golvet är 70px, inte 40: en kolumn som pressas ihop till 40 klipper "2013" till "20…", och
+        // det är min-bredden (inte önskad bredd) som avgör hur långt tabellens
+        // CONSTRAINED_RESIZE_POLICY får krympa en kolumn. 70 räcker för fyrsiffriga id:n och korta
+        // värden; de långa textkolumnerna får ta resten.
+        c.setMinWidth(Math.min(width, 70));
         if (width <= 70) {
             c.setMaxWidth(100);
         }
@@ -103,7 +107,9 @@ public final class TableFactory {
                                                      Function<S, String> mapper) {
         TableColumn<S, String> c = new TableColumn<S, String>(title);
         c.setPrefWidth(width);
-        c.setMinWidth(Math.min(width, 80));
+        // Samma golv som textkolumnerna, men högre: en statuschip är bredare än sitt värde
+        // ("Genomförd" klipptes till "Geno…" när kolumnen pressades ihop).
+        c.setMinWidth(Math.min(width, 95));
         c.setMaxWidth(Math.max(width * 1.5, 240));
         c.setCellValueFactory(cd -> new ReadOnlyStringWrapper(mapper.apply(cd.getValue())));
         c.setCellFactory(column -> new TableCell<S, String>() {

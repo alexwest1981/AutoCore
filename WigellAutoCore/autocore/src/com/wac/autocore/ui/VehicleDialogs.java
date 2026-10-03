@@ -73,6 +73,7 @@ public final class VehicleDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, customerBox, regField, brandField, modelField, yearField);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -143,6 +144,7 @@ public final class VehicleDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, customerBox, regField, brandField, modelField, yearField);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -184,11 +186,9 @@ public final class VehicleDialogs {
             return;
         }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.get("dialog.vehicle.delete.title"));
-        alert.setHeaderText(I18n.get("dialog.vehicle.delete.header"));
-        alert.setContentText(I18n.get("dialog.vehicle.delete.confirm", vehicle.getRegistrationNumber()));
-        ActionDialogs.styleDialog(alert);
+        Alert alert = ActionDialogs.confirm(I18n.get("dialog.vehicle.delete.title"),
+                I18n.get("dialog.vehicle.delete.header"),
+                I18n.get("dialog.vehicle.delete.confirm", vehicle.getRegistrationNumber()));
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {

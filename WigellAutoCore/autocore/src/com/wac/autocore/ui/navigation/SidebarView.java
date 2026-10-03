@@ -16,8 +16,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 
-import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,6 +31,7 @@ public class SidebarView {
     private final VBox container;
     private final List<Button> navButtons = new ArrayList<Button>();
     private final Map<String, Button> navButtonMap = new LinkedHashMap<String, Button>();
+    private final Map<String, Label> navCountLabels = new LinkedHashMap<String, Label>();
     private final List<GroupHeader> groupHeaders = new ArrayList<GroupHeader>();
     private final Consumer<String> onNavigate;
 
@@ -56,6 +55,22 @@ public class SidebarView {
                 b.getStyleClass().add("selected");
             }
         }
+    }
+
+    /**
+     * Visar antalet nya poster som en räknare på menyvalet. Noll döljer räknaren.
+     */
+    public void setNavCount(String key, int count) {
+        Label countLabel = navCountLabels.get(key);
+        if (countLabel == null) {
+            return;
+        }
+        if (count <= 0) {
+            countLabel.setVisible(false);
+            return;
+        }
+        countLabel.setText("+" + count);
+        countLabel.setVisible(true);
     }
 
     public void refreshTexts() {
@@ -106,21 +121,7 @@ public class SidebarView {
     }
 
     private Image loadLogoImage() {
-        try {
-            InputStream in = SidebarView.class.getResourceAsStream("/com/wac/autocore/images/Logo.png");
-            if (in != null) {
-                return new Image(in);
-            }
-            File f = new File("Logo/Logo.png");
-            if (f.exists()) {
-                return new Image(f.toURI().toString());
-            }
-            File fRes = new File("WigellAutoCore/autocore/src/resources/com/wac/autocore/images/Logo.png");
-            if (fRes.exists()) {
-                return new Image(fRes.toURI().toString());
-            }
-        } catch (Exception ignored) {}
-        return null;
+        return com.wac.autocore.ui.components.UiComponents.loadLogoImage();
     }
 
     private VBox buildSidebar() {
@@ -316,7 +317,19 @@ public class SidebarView {
         if (!"overview".equals(key)) {
             navButtonMap.put(key, b);
         }
-        nav.getChildren().add(b);
+
+        // Räknaren ligger som ett lager ovanpå knappen i stället för i dess innehåll: då behåller
+        // etiketten sin formatering och knappens klick- och fokusbeteende är orört.
+        Label count = new Label();
+        count.getStyleClass().addAll("badge", "info");
+        count.setMouseTransparent(true);
+        count.setVisible(false);
+        navCountLabels.put(key, count);
+
+        StackPane holder = new StackPane(b, count);
+        StackPane.setAlignment(count, Pos.CENTER_RIGHT);
+        StackPane.setMargin(count, new Insets(0, 10, 0, 0));
+        nav.getChildren().add(holder);
         return b;
     }
 

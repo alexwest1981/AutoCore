@@ -47,8 +47,10 @@ public final class BookingDialogs {
         dialog.setResizable(true);
 
         BookingFormPane form = new BookingFormPane(garage, null, defaultDate, defaultMechanic, defaultHour);
+        form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
         dialog.getDialogPane().setContent(form);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, form.requiredFieldsFilledBinding(0));
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -123,8 +125,10 @@ public final class BookingDialogs {
         dialog.setResizable(true);
 
         BookingFormPane form = new BookingFormPane(garage, booking, booking.getDate(), null, null);
+        form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
         dialog.getDialogPane().setContent(form);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, form.requiredFieldsFilledBinding(booking.getId()));
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -201,11 +205,9 @@ public final class BookingDialogs {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle(I18n.get("dialog.booking.cancel.title"));
-        confirm.setHeaderText(I18n.get("dialog.booking.cancel.header"));
-        confirm.setContentText(I18n.get("dialog.booking.cancel.confirm", booking.getId()));
-        ActionDialogs.styleDialog(confirm);
+        Alert confirm = ActionDialogs.confirm(I18n.get("dialog.booking.cancel.title"),
+                I18n.get("dialog.booking.cancel.header"),
+                I18n.get("dialog.booking.cancel.confirm", booking.getId()));
 
         confirm.showAndWait().ifPresent(res -> {
             if (res == ButtonType.OK) {
@@ -229,11 +231,9 @@ public final class BookingDialogs {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle(I18n.get("dialog.booking.delete.title"));
-        confirm.setHeaderText(I18n.get("dialog.booking.delete.header"));
-        confirm.setContentText(I18n.get("dialog.booking.delete.confirm", booking.getId()));
-        ActionDialogs.styleDialog(confirm);
+        Alert confirm = ActionDialogs.confirm(I18n.get("dialog.booking.delete.title"),
+                I18n.get("dialog.booking.delete.header"),
+                I18n.get("dialog.booking.delete.confirm", booking.getId()));
 
         confirm.showAndWait().ifPresent(res -> {
             if (res == ButtonType.OK) {

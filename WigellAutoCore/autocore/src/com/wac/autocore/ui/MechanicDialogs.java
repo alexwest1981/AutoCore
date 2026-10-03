@@ -49,6 +49,7 @@ public final class MechanicDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, nameField, phoneField);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -105,6 +106,7 @@ public final class MechanicDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, nameField, phoneField);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -226,11 +228,9 @@ public final class MechanicDialogs {
             return;
         }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.get("dialog.mechanic.delete.title"));
-        alert.setHeaderText(I18n.get("dialog.mechanic.delete.header"));
-        alert.setContentText(I18n.get("dialog.mechanic.delete.confirm", mechanic.getName()));
-        ActionDialogs.styleDialog(alert);
+        Alert alert = ActionDialogs.confirm(I18n.get("dialog.mechanic.delete.title"),
+                I18n.get("dialog.mechanic.delete.header"),
+                I18n.get("dialog.mechanic.delete.confirm", mechanic.getName()));
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
