@@ -5,14 +5,20 @@ import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.MechanicSchedule;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Hjälpklass för att kontrollera tillgänglighet och upptagna timmar för mekaniker.
  */
 public final class BookingAvailability {
+
+    public static final LocalTime OPENING_TIME = LocalTime.of(7, 0);
+    public static final LocalTime CLOSING_TIME = LocalTime.of(17, 0);
+    public static final int MAX_WORK_MINUTES_PER_DAY = 10 * 60; // 07:00 till 17:00 = 600 minuter
 
     private BookingAvailability() {}
 
@@ -80,4 +86,104 @@ public final class BookingAvailability {
 
         return false;
     }
+
+    /**
+     * Kontrollerar om en specifik starttid och tidslängd kan bokas för mekanikern den dagen.
+     * Returnerar false om arbetet slutar efter stängningstid (17:00), infaller utanför öppettider
+     * eller krockar med befintlig bokning.
+     */
+    public static boolean isSlotAvailable(GarageSystem garage, Mechanic mechanic, LocalDate date,
+                                          LocalTime startTime, int durationMinutes, int excludeBookingId) {
+        if (date == null || startTime == null || durationMinutes <= 0) {
+            return false;
+        }
+        if (date.isBefore(LocalDate.now())) {
+            return false;
+        }
+        if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            return false;
+        }
+        LocalTime endTime = startTime.plusMinutes(durationMinutes);
+        if (startTime.isBefore(OPENING_TIME) || endTime.isAfter(CLOSING_TIME)) {
+            return false;
+        }
+        if (mechanic != null && mechanic.getId() > 0) {
+            return !isRangeBooked(garage, mechanic, date, startTime, endTime, excludeBookingId);
+        }
+        return true;
+    }
+
+    /**
+     * Kontrollerar om det finns minst en ledig starttid för den angivna tidslängden ett visst datum.
+     * Tar hänsyn till stängningstid (17:00), helger, historiska datum och befintliga bokningar.
+     */
+    public static boolean hasAvailableSlotOnDate(GarageSystem garage, Mechanic mechanic,
+                                                 List<Mechanic> qualifiedMechanics,
+                                                 LocalDate date, int durationMinutes, int excludeBookingId) {
+        if (date == null || durationMinutes <= 0) {
+            return false;
+        }
+        if (date.isBefore(LocalDate.now())) {
+            return false;
+        }
+        if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            return false;
+        }
+        if (durationMinutes > MAX_WORK_MINUTES_PER_DAY) {
+            return false; // Överstiger hela arbetsdagen (10 timmar = 600 min)
+        }
+
+        List<Mechanic> candidates = new ArrayList<Mechanic>();
+        if (mechanic != null && mechanic.getId() > 0) {
+            candidates.add(mechanic);
+        } else if (qualifiedMechanics != null && !qualifiedMechanics.isEmpty()) {
+            candidates.addAll(qualifiedMechanics);
+        } else if (garage != null) {
+            candidates.addAll(garage.getMechanics());
+        }
+
+        if (candidates.isEmpty()) {
+            for (int h = 7; h <= 16; h++) {
+                LocalTime start = LocalTime.of(h, 0);
+                if (!start.plusMinutes(durationMinutes).isAfter(CLOSING_TIME)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        for (int h = 7; h <= 16; h++) {
+            LocalTime start = LocalTime.of(h, 0);
+            LocalTime end = start.plusMinutes(durationMinutes);
+            if (end.isAfter(CLOSING_TIME)) {
+                break;
+            }
+            boolean slotAvailable = true;
+            for (Mechanic m : candidates) {
+                if (m.getId() > 0 && isRangeBooked(garage, m, date, start, end, excludeBookingId)) {
+                    slotAvailable = false;
+                    break;
+                }
+            }
+            if (slotAvailable) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isTeamBooked(GarageSystem garage, List<Mechanic> team,
+                                       LocalDate date, LocalTime startTime, LocalTime endTime,
+                                       int excludeBookingId) {
+        if (team == null || team.isEmpty()) {
+            return false;
+        }
+        for (Mechanic m : team) {
+            if (m.getId() > 0 && isRangeBooked(garage, m, date, startTime, endTime, excludeBookingId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
+

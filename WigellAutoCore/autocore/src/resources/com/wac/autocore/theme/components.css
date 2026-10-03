@@ -856,8 +856,24 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-text-fill: -wac-text;
 }
 
+.date-picker-popup > .calendar-grid .day-cell:disabled,
+.date-picker-popup > .calendar-grid .day-cell.unbookable-day {
+    -fx-background-color: -wac-drift;
+    -fx-text-fill: -wac-muted;
+    -fx-opacity: 0.35;
+}
+
 .date-picker-popup > .calendar-grid .day-cell:hover {
     -fx-background-color: -wac-accent-soft;
+}
+
+/* Kalendern i bokningsformuläret. Färgerna måste stå här: -wac-* slås upp av CSS-motorn och
+   tappas tyst om de används i en inline-style. */
+.booking-calendar {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
 }
 
 .date-picker-popup > .calendar-grid .day-cell.selected {

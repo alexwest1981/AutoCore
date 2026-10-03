@@ -119,4 +119,84 @@ public class BookingOverlapTest {
             garage.deleteBooking(blocking.getId());
         }
     }
+
+    /**
+     * Stängningstidsspärr: Verkstaden stänger kl 17:00.
+     * Ett jobb på 315 minuter (5 timmar 15 minuter) som startar 12:00 slutar 17:15
+     * och får INTE kunna bokas. Samma jobb med start 11:00 slutar 16:15 och är giltigt.
+     */
+    public void testClosingTimeGuardAndDurationLimit() {
+        GarageSystem garage = new GarageSystem();
+        LocalDate weekday = FAR_AWAY; // 2027-06-15 är en tisdag
+
+        // 315 minuter från 12:00 slutar 17:15 (efter stängning 17:00) -> Nekas!
+        boolean slot1200 = BookingAvailability.isSlotAvailable(garage, null, weekday, LocalTime.of(12, 0), 315, 0);
+        TestRunner.assertFalse(slot1200, "315 min med start 12:00 slutar 17:15 (efter stängning 17:00) och måste nekas");
+
+        // 315 minuter från 11:00 slutar 16:15 (före stängning 17:00) -> Godkänns!
+        boolean slot1100 = BookingAvailability.isSlotAvailable(garage, null, weekday, LocalTime.of(11, 0), 315, 0);
+        TestRunner.assertTrue(slot1100, "315 min med start 11:00 slutar 16:15 och ska godkännas");
+
+        // Helgdag ska alltid nekas i kalendern
+        LocalDate sunday = LocalDate.of(2027, 6, 20); // söndag
+        TestRunner.assertFalse(BookingAvailability.isSlotAvailable(garage, null, sunday, LocalTime.of(10, 0), 60, 0),
+                "Helger ska nekas för tidsbokning");
+
+        // Historiska datum ska alltid nekas
+        LocalDate past = LocalDate.now().minusDays(1);
+        TestRunner.assertFalse(BookingAvailability.isSlotAvailable(garage, null, past, LocalTime.of(10, 0), 60, 0),
+                "Historiska datum ska nekas");
+    }
+
+    /**
+     * Specialiseringskontroll för flertjänstbokning:
+     * Om bromsar är en del av bokningen ska Sara Nilsson kvalificera sig, men INTE Johan Karlsson.
+     * Om en bokning kombinerar bromsar och oljebyte ska Sara kunna utföra den, men inte Johan.
+     * Om en bokning kombinerar bromsar och diagnostik finns ingen enskild mekaniker som täcker båda.
+     */
+    public void testMultiServiceMechanicQualificationAndMutualExclusion() {
+        GarageSystem garage = new GarageSystem();
+
+        Mechanic sara = new Mechanic(1, "Sara Nilsson", "070-1", "Brakes");
+        Mechanic johan = new Mechanic(2, "Johan Karlsson", "070-2", "General service");
+        Mechanic mikael = new Mechanic(3, "Mikael Berg", "070-3", "Diagnostics");
+
+        com.wac.autocore.model.ServiceItem oilChange = new com.wac.autocore.model.ServiceItem(1, "Oil change", "Oljebyte", 1295, 45);
+        com.wac.autocore.model.ServiceItem brakeService = new com.wac.autocore.model.ServiceItem(2, "Brake service", "Bromsbyte", 2495, 90);
+        com.wac.autocore.model.ServiceItem diagnostics = new com.wac.autocore.model.ServiceItem(3, "Diagnostics", "Felsökning", 995, 60);
+
+        // Enbart bromsar: Sara är kvalificerad, Johan är INTE kvalificerad
+        TestRunner.assertTrue(garage.isMechanicQualified(sara, brakeService), "Sara ska vara kvalificerad för bromsar");
+        TestRunner.assertFalse(garage.isMechanicQualified(johan, brakeService), "Johan (allmän service) får INTE bokas på bromsar");
+
+        // Enbart diagnostik: Mikael är kvalificerad, Johan och Sara är INTE kvalificerade
+        TestRunner.assertTrue(garage.isMechanicQualified(mikael, diagnostics), "Mikael ska vara kvalificerad för diagnostik");
+        TestRunner.assertFalse(garage.isMechanicQualified(johan, diagnostics), "Johan får inte bokas på diagnostik");
+        TestRunner.assertFalse(garage.isMechanicQualified(sara, diagnostics), "Sara får inte bokas på diagnostik");
+
+        // Bromsar + Oljebyte: Sara kan ta hela bokningen (bromsspecialist kan utföra service), Johan kan inte ta bromsar
+        List<com.wac.autocore.model.ServiceItem> brakeAndOil = java.util.Arrays.asList(brakeService, oilChange);
+        List<Mechanic> qualifiedBrakeAndOil = garage.getQualifiedMechanics(brakeAndOil);
+        TestRunner.assertTrue(qualifiedBrakeAndOil.stream().anyMatch(m -> m.getName().contains("Sara")),
+                "Sara ska vara kvalificerad för Bromsar + Oljebyte");
+        TestRunner.assertFalse(qualifiedBrakeAndOil.stream().anyMatch(m -> m.getName().contains("Johan")),
+                "Johan ska INTE vara kvalificerad för ett jobb som innehåller bromsar");
+
+        // Bromsar + Diagnostik: Motstridiga specialiseringar
+        List<com.wac.autocore.model.ServiceItem> conflicting = java.util.Arrays.asList(brakeService, diagnostics);
+        List<Mechanic> qualifiedConflicting = garage.getQualifiedMechanics(conflicting);
+        TestRunner.assertFalse(qualifiedConflicting.stream().anyMatch(m -> m.getName().contains("Johan")),
+                "Johan ska inte kvalificera för Bromsar + Diagnostik");
+        TestRunner.assertFalse(qualifiedConflicting.stream().anyMatch(m -> m.getName().contains("Sara")),
+                "Sara ska inte kvalificera för Diagnostik");
+        TestRunner.assertFalse(qualifiedConflicting.stream().anyMatch(m -> m.getName().contains("Mikael")),
+                "Mikael ska inte kvalificera för Bromsar");
+
+        // Team-allokering: "Vi bokar in: Sara Nilsson, Mikael Berg" vid Bromsar + Diagnostik
+        List<Mechanic> team = garage.getRequiredMechanics(conflicting);
+        TestRunner.assertTrue(team.stream().anyMatch(m -> m.getName().contains("Sara")),
+                "Teamet måste innehålla Sara för bromsar");
+        TestRunner.assertTrue(team.stream().anyMatch(m -> m.getName().contains("Mikael")),
+                "Teamet måste innehålla Mikael för diagnostik");
+    }
 }

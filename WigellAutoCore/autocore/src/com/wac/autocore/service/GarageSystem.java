@@ -20,7 +20,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,18 +65,32 @@ public class GarageSystem {
     }
 
     public List<Mechanic> getQualifiedMechanics(ServiceItem service) {
-        List<Mechanic> all = getMechanics();
         if (service == null) {
+            return getMechanics();
+        }
+        return getQualifiedMechanics(Collections.singletonList(service));
+    }
+
+    public List<Mechanic> getQualifiedMechanics(Collection<ServiceItem> services) {
+        List<Mechanic> all = getMechanics();
+        if (services == null || services.isEmpty()) {
             return all;
         }
         List<Mechanic> qualified = new ArrayList<Mechanic>();
         for (Mechanic m : all) {
-            if (isMechanicQualified(m, service)) {
+            boolean allQualified = true;
+            for (ServiceItem s : services) {
+                if (!isMechanicQualified(m, s)) {
+                    allQualified = false;
+                    break;
+                }
+            }
+            if (allQualified) {
                 qualified.add(m);
             }
         }
-        // Fallback: om ingen specifik specialist finns, erbjud allmänt behöriga mekaniker
-        if (qualified.isEmpty()) {
+        // Fallback: om ingen specifik specialist finns för de valda tjänsterna
+        if (qualified.isEmpty() && services.size() == 1) {
             for (Mechanic m : all) {
                 String resolvedSpec = SeedText.resolve(m.getSpecialization());
                 String s = resolvedSpec != null ? resolvedSpec.toLowerCase() : "";
@@ -83,7 +99,76 @@ public class GarageSystem {
                 }
             }
         }
+        // Sortera så att den bäst lämpade mekanikern visas först
+        qualified.sort(new Comparator<Mechanic>() {
+            @Override
+            public int compare(Mechanic m1, Mechanic m2) {
+                String spec1 = SeedText.resolve(m1.getSpecialization()).toLowerCase();
+                String spec2 = SeedText.resolve(m2.getSpecialization()).toLowerCase();
+                boolean g1 = spec1.contains("general") || spec1.contains("allmän");
+                boolean g2 = spec2.contains("general") || spec2.contains("allmän");
+                // Om enbart allmänna tjänster valts, sätt allmänmekaniker först
+                boolean onlyGeneral = services.stream().allMatch(s -> {
+                    String n = SeedText.resolve(s.getName()).toLowerCase();
+                    return n.contains("oil") || n.contains("olja") || n.contains("annual") || n.contains("årlig");
+                });
+                if (onlyGeneral) {
+                    if (g1 && !g2) return -1;
+                    if (!g1 && g2) return 1;
+                }
+                return m1.getName().compareToIgnoreCase(m2.getName());
+            }
+        });
         return qualified;
+    }
+
+    /**
+     * Returnerar listan av mekaniker som behövs för att bemanna samtliga valda tjänster.
+     * T.ex. för Bromsar + Diagnostik returneras [Sara Nilsson, Mikael Berg] ("Vi bokar in: Sara Nilsson, Mikael Berg").
+     */
+    public List<Mechanic> getRequiredMechanics(Collection<ServiceItem> services) {
+        List<Mechanic> result = new ArrayList<Mechanic>();
+        if (services == null || services.isEmpty()) {
+            return result;
+        }
+        List<Mechanic> all = getMechanics();
+        for (ServiceItem s : services) {
+            Mechanic best = null;
+            // 1. Kolla om någon redan i teamet kan utföra tjänsten
+            for (Mechanic m : result) {
+                if (isMechanicQualified(m, s)) {
+                    best = m;
+                    break;
+                }
+            }
+            // 2. Annars hitta bäst lämpad mekaniker bland samtliga mekaniker
+            if (best == null) {
+                for (Mechanic m : all) {
+                    if (isMechanicQualified(m, s)) {
+                        best = m;
+                        break;
+                    }
+                }
+            }
+            // 3. Fallback: allmänmekaniker
+            if (best == null) {
+                for (Mechanic m : all) {
+                    String spec = SeedText.resolve(m.getSpecialization());
+                    String specStr = spec != null ? spec.toLowerCase() : "";
+                    if (specStr.contains("general") || specStr.contains("allmän")) {
+                        best = m;
+                        break;
+                    }
+                }
+            }
+            if (best == null && !all.isEmpty()) {
+                best = all.get(0);
+            }
+            if (best != null && !result.contains(best)) {
+                result.add(best);
+            }
+        }
+        return result;
     }
 
     public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {
@@ -141,10 +226,11 @@ public class GarageSystem {
         }
 
         boolean isGeneralSpec = sSpec.contains("general") || sSpec.contains("allmän") || sSpec.equals("service");
+        boolean isAutoSpecialist = isBrakesSpec || isDiagSpec || isTyreSpec;
         boolean isGeneralService = sName.contains("oil") || sName.contains("olja")
                 || sName.contains("annual") || sName.contains("årlig")
                 || sName.contains("service") || sName.contains("underhåll");
-        if (isGeneralSpec && isGeneralService && !isBrakesService && !isDiagService && !isTyreService) {
+        if ((isGeneralSpec || isAutoSpecialist) && isGeneralService && !isBrakesService && !isDiagService && !isTyreService) {
             return true;
         }
 
