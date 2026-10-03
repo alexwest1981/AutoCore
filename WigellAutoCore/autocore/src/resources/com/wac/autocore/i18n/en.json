@@ -324,6 +324,7 @@
       "time_available": "Available",
       "time_busy": "Busy",
         "no_free_times": "No available times this day",
+        "only_free_times": "Only available times are shown",
       "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
       "save_failed": "The booking could not be saved.",
       "desc_prompt": "E.g. Annual service and brake replacement",
