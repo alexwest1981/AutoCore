@@ -397,6 +397,7 @@
         "desc": "Bokningens tjänster fördelas på de mekaniker som är behöriga."
       },
       "booking_select": "Välj bokning",
+      "not_all_completed": "Alla arbetsordrar på bokningen måste vara slutförda innan fakturan kan skapas.",
       "mechanic_select": "Välj mekaniker",
       "plan_title": "Arbetsordrar som skapas (en per mekaniker)",
       "no_qualified": "Ingen mekaniker är behörig för bokningens tjänster",
@@ -421,6 +422,7 @@
         "desc": "Generera en faktura för allt utfört arbete på en bokning."
       },
       "booking_select": "Välj bokning",
+      "not_all_completed": "Alla arbetsordrar på bokningen måste vara slutförda innan fakturan kan skapas.",
       "discount": "Rabatt / Kampanj (kr)",
       "discount_prompt": "T.ex. 10off, WELCOME10, SERVICE200 eller belopp (valfritt)",
       "create_failed": "Fakturan kunde inte skapas.",

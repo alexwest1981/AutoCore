@@ -143,7 +143,8 @@ public class PageRouter {
      * Räknarna i menyn visar vad som väntar på att bli hanterat på den sidan, inte allt som finns där:
      * 1. Arbetsordrar: bokningar som ännu inte har någon arbetsorder, alltså jobb att skapa en order för.
      * 2. Bokningar: inget märke. Sidan visar bokningar, den har inget eget arbete att göra.
-     * 3. Fakturor: slutförda arbetsordrar som ännu inte har någon faktura.
+     * 3. Fakturor: bokningar där hela arbetet är klart och ingen faktura finns. En bokning ger
+     *    ett märke, för det är en faktura som ska skapas, oavsett hur många arbetsordrar den har.
      * 4. Betalningar: fakturor som väntar på betalning (!isPaid).
      *
      * Anropas från navigate(), som är enda vägen till en ny vy, och därför följer räknaren med
@@ -157,7 +158,8 @@ public class PageRouter {
                 countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()));
         sidebar.setNavCount("bookings", 0);
         sidebar.setNavCount("invoices",
-                countCompletedOrdersWithoutInvoice(garage.getWorkOrders(), garage.getInvoices()));
+                countBookingsReadyForInvoice(garage.getBookings(), garage.getWorkOrders(),
+                        garage.getInvoices()));
         sidebar.setNavCount("payments", countUnpaidInvoices(garage.getInvoices()));
     }
 
@@ -258,23 +260,36 @@ public class PageRouter {
     }
 
     /**
-     * Slutförda arbetsordrar som ännu inte har någon faktura, alltså jobb att fakturera.
-     * Statuslösa och icke slutförda ordrar hoppas över.
+     * Bokningar där hela arbetet är klart och ingen faktura finns, alltså antalet fakturor som
+     * väntar på att skapas. En bokning ger ett märke, även om den har flera arbetsordrar, eftersom
+     * fakturan täcker hela bokningen. Samma regel som fakturavyn använder.
      */
-    public static int countCompletedOrdersWithoutInvoice(List<WorkOrder> orders, List<Invoice> invoices) {
+    public static int countBookingsReadyForInvoice(List<Booking> bookings, List<WorkOrder> orders,
+                                                   List<Invoice> invoices) {
         int count = 0;
-        for (WorkOrder order : orders) {
-            if (order.getStatus() == null || !"COMPLETED".equalsIgnoreCase(order.getStatus())) {
+        for (Booking booking : bookings) {
+            if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
                 continue;
             }
-            boolean hasInvoice = false;
-            for (Invoice invoice : invoices) {
-                if (invoice.getWorkOrderId() == order.getId()) {
-                    hasInvoice = true;
-                    break;
+            boolean hasOrder = false;
+            boolean allCompleted = true;
+            boolean invoiced = false;
+            for (WorkOrder order : orders) {
+                if (order.getBookingId() != booking.getId()) {
+                    continue;
+                }
+                hasOrder = true;
+                if (order.getStatus() == null || !"COMPLETED".equalsIgnoreCase(order.getStatus())) {
+                    allCompleted = false;
+                }
+                for (Invoice invoice : invoices) {
+                    if (invoice.getWorkOrderId() == order.getId()) {
+                        invoiced = true;
+                        break;
+                    }
                 }
             }
-            if (!hasInvoice) {
+            if (hasOrder && allCompleted && !invoiced) {
                 count++;
             }
         }

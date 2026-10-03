@@ -67,6 +67,14 @@ public class BillingService {
             return null;
         }
 
+        // Även här gäller hela bokningen: en enskild arbetsorder får inte faktureras medan
+        // syskonarbetsordrarna på samma bokning är kvar.
+        if (!allOrdersCompleted(workOrder.getBookingId())) {
+            System.out.println("Booking with ID " + workOrder.getBookingId()
+                    + " still has work orders that are not completed.");
+            return null;
+        }
+
         // Ett jobb ska bara faktureras en gång. Gränssnittet hindrar att samma bokning väljs om,
         // men anropet kan komma underifrån — och då blev det två fakturor på samma arbete.
         if (hasInvoiceFor(workOrderId)) {
@@ -88,6 +96,13 @@ public class BillingService {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
+            return null;
+        }
+
+        // En faktura täcker allt arbete på bokningen, så är något kvar att göra väntar den.
+        if (!allOrdersCompleted(bookingId)) {
+            System.out.println("Booking with ID " + bookingId
+                    + " still has work orders that are not completed.");
             return null;
         }
 
@@ -130,6 +145,9 @@ public class BillingService {
 
         for (WorkOrder order : getAllWorkOrders()) {
             if (!"COMPLETED".equals(order.getStatus())) {
+                continue;
+            }
+            if (!allOrdersCompleted(order.getBookingId())) {
                 continue;
             }
             if (performedServices(order, invoicedServiceIds(order.getBookingId())).isEmpty()) {
@@ -304,6 +322,40 @@ public class BillingService {
             System.out.println("Could not read invoice lines: " + e.getMessage());
         }
         return invoiced;
+    }
+
+    /**
+     * Sant om varje arbetsorder på bokningen är slutförd. En bokning helt utan arbetsordrar
+     * räknas inte som klar, eftersom det inte finns något arbete att fakturera.
+     */
+    private boolean allOrdersCompleted(int bookingId) {
+        boolean foundAny = false;
+        for (WorkOrder order : getAllWorkOrders()) {
+            if (order.getBookingId() != bookingId) {
+                continue;
+            }
+            foundAny = true;
+            if (!"COMPLETED".equals(order.getStatus())) {
+                return false;
+            }
+        }
+        return foundAny;
+    }
+
+    /** Sant om någon bokning har arbetsordrar som ännu inte är slutförda. */
+    public boolean hasBookingWithUnfinishedWork() {
+        List<Integer> seen = new ArrayList<Integer>();
+        for (WorkOrder order : getAllWorkOrders()) {
+            Integer bookingId = Integer.valueOf(order.getBookingId());
+            if (seen.contains(bookingId)) {
+                continue;
+            }
+            seen.add(bookingId);
+            if (!allOrdersCompleted(order.getBookingId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Id:n för arbetsordrarna som hör till bokningen. */

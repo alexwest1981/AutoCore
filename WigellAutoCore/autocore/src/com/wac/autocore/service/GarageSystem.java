@@ -409,6 +409,11 @@ public class GarageSystem {
         return billingService.getInvoiceableBookings();
     }
 
+    /** Sant om det finns bokningar med arbete som inte är slutfört än. */
+    public boolean hasBookingWithUnfinishedWork() {
+        return billingService.hasBookingWithUnfinishedWork();
+    }
+
     public Payment processPayment(int invoiceId, String paymentType) {
         return paymentService.processPayment(invoiceId, paymentType);
     }

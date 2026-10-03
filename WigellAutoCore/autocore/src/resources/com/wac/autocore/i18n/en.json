@@ -397,6 +397,7 @@
         "desc": "The booking's services are distributed to the mechanics who are qualified."
       },
       "booking_select": "Select booking",
+      "not_all_completed": "Every work order on the booking must be completed before an invoice can be created.",
       "mechanic_select": "Select mechanic",
       "plan_title": "Work orders to be created (one per mechanic)",
       "no_qualified": "No mechanic is qualified for the services on this booking",
@@ -421,6 +422,7 @@
         "desc": "Generate one invoice for all performed work on a booking."
       },
       "booking_select": "Select booking",
+      "not_all_completed": "Every work order on the booking must be completed before an invoice can be created.",
       "discount": "Discount / Promotion (SEK)",
       "discount_prompt": "E.g. 10off, WELCOME10, SERVICE200 or amount (optional)",
       "create_failed": "The invoice could not be created.",
