@@ -36,6 +36,23 @@ public class UiFormattersTest {
         TestRunner.assertEquals("Custom", UiFormatters.statusWord("Custom"), "Custom untouched");
     }
 
+    public void testFormatDateTime() {
+        TestRunner.assertEquals("2026-10-01 21:30",
+                UiFormatters.formatDateTime(java.time.LocalDateTime.of(2026, 10, 1, 21, 30, 15, 862000000)),
+                "Datum och tid ska visas utan sekunder och millisekunder");
+        TestRunner.assertEquals("-", UiFormatters.formatDateTime(null),
+                "Saknad tid ska visas som streck, inte som null");
+    }
+
+    public void testPaymentTypeWord() {
+        TestRunner.assertEquals("Swish", UiFormatters.paymentTypeWord("SWISH"), "SWISH ska visas som Swish");
+        TestRunner.assertEquals("Credit Card", UiFormatters.paymentTypeWord("CARD"), "CARD ska visas som Credit Card");
+        TestRunner.assertEquals("Cash", UiFormatters.paymentTypeWord("CASH"), "CASH ska visas som Cash");
+        TestRunner.assertEquals("KLARNA", UiFormatters.paymentTypeWord("KLARNA"),
+                "Ett betalsätt vi inte känner igen ska visas som det sparades");
+        TestRunner.assertEquals("-", UiFormatters.paymentTypeWord(null), "Saknat betalsätt ska visas som streck");
+    }
+
     public void testBadgeClass() {
         TestRunner.assertEquals("success", UiFormatters.badgeClass("Yes"), "Yes -> success");
         TestRunner.assertEquals("success", UiFormatters.badgeClass("Completed"), "Completed -> success");

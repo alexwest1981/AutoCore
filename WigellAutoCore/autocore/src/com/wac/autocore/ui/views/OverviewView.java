@@ -47,7 +47,9 @@ public final class OverviewView {
                 active++;
             }
         }
-        long revenue = 0;
+        // Summan måste vara ett decimaltal. Med heltal kapas öret bort för varje
+        // betalning, och intäkten blir lägre än det som faktiskt betalats in.
+        double revenue = 0.0;
         for (Payment p : payments) {
             if (p.isSuccessful()) {
                 revenue += p.getAmount();
@@ -195,11 +197,21 @@ public final class OverviewView {
         TableFactory.FilterableTable<WorkOrder> table = TableFactory.create(orders);
         TableView<WorkOrder> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.col(I18n.get("table.col.id"), 70, c -> String.valueOf(c.getId())),
-                TableFactory.col(I18n.get("table.col.booking"), 90, c -> String.valueOf(c.getBookingId())),
-                TableFactory.col(I18n.get("table.col.mechanic"), 180, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
-                TableFactory.col(I18n.get("table.col.services"), 300, c -> EntityLookup.serviceNames(garage, c.getServiceItemIds())),
-                TableFactory.badgeCol(I18n.get("table.col.status"), 140, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.sizeCol(I18n.get("table.col.booking"), TableFactory.W_REF, c -> String.valueOf(c.getBookingId())),
+                TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
+                TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.workOrderServices(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.total"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
+        t.setRowFactory(tv -> {
+            javafx.scene.control.TableRow<WorkOrder> row = new javafx.scene.control.TableRow<WorkOrder>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem());
+                }
+            });
+            return row;
+        });
         if (router != null) {
             router.setActiveTable(table);
         }

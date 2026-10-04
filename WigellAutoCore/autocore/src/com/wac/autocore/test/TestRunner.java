@@ -1,7 +1,10 @@
 package com.wac.autocore.test;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -14,6 +17,18 @@ public class TestRunner {
     private static int totalFailed = 0;
     private static final List<String> failures = new ArrayList<String>();
 
+    /** Modulindelning. Klasser som inte nämns här körs som "unit". */
+    private static final String[][] GROUP_OF = {
+        {"smoke", "SmokeTest"},
+        {"bevis", "EvidenceVerificationTest"},
+        {"quality", "CodeQualityTest"},
+        {"quality", "DocumentationTest"},
+        {"security", "SecurityAuditTest"},
+        {"security", "DataFlowAuditTest"},
+        {"wcag", "WcagAccessibilityTest"},
+    };
+    private static final String DEFAULT_GROUP = "unit";
+
     public static void main(String[] args) {
         com.wac.autocore.data.Db.initTables();
 
@@ -21,31 +36,20 @@ public class TestRunner {
         System.out.println("    Wigell AutoCore - Automatiserade Enhetstester");
         System.out.println("==================================================");
 
-        boolean runAll = args.length == 0 || "all".equalsIgnoreCase(args[0]);
-        boolean runUnit = runAll || "unit".equalsIgnoreCase(args[0]);
-        boolean runQuality = runAll || "quality".equalsIgnoreCase(args[0]);
-        boolean runSecurity = runAll || "security".equalsIgnoreCase(args[0]);
-        boolean runWcag = runAll || "wcag".equalsIgnoreCase(args[0]);
+        String wanted = (args.length == 0 || "all".equalsIgnoreCase(args[0]))
+                ? null
+                : args[0].toLowerCase();
+        if ("evidence".equals(wanted)) {
+            wanted = "bevis";
+        }
 
-        if (runUnit) {
-            runClass(UiFormattersTest.class);
-            runClass(EntityLookupTest.class);
-            runClass(OverviewMetricsTest.class);
-            runClass(TableFactoryTest.class);
-            runClass(GlobalSearchTest.class);
-            runClass(I18nTest.class);
-            runClass(SeedTextTest.class);
-            runClass(MechanicScheduleTest.class);
-            runClass(PersistenceRestartTest.class);
-        }
-        if (runQuality) {
-            runClass(CodeQualityTest.class);
-        }
-        if (runSecurity) {
-            runClass(SecurityAuditTest.class);
-        }
-        if (runWcag) {
-            runClass(WcagAccessibilityTest.class);
+        // Klasserna hittas i den kompilerade testkatalogen: en ny *Test.java körs
+        // automatiskt utan att den här filen behöver ändras.
+        for (Class<?> clazz : discoverTestClasses()) {
+            String group = groupOf(clazz.getSimpleName());
+            if (wanted == null || wanted.equals(group)) {
+                runClass(clazz);
+            }
         }
 
         System.out.println("--------------------------------------------------");
@@ -64,6 +68,57 @@ public class TestRunner {
             System.out.println("==================================================");
             System.exit(0);
         }
+    }
+
+
+    /**
+     * Modul för en testklass. Nya klasser hamnar i "unit" utan att listan ändras.
+     */
+    private static String groupOf(String simpleName) {
+        for (String[] entry : GROUP_OF) {
+            if (entry[1].equals(simpleName)) {
+                return entry[0];
+            }
+        }
+        return DEFAULT_GROUP;
+    }
+
+    /**
+     * Varje klass i testpaketet vars namn slutar på "Test".
+     * ponytail: läser klassfilerna från katalogen på classpath; räcker för out/ och CI,
+     * byt mot ett index om testerna någon gång paketeras i en jar.
+     */
+    private static List<Class<?>> discoverTestClasses() {
+        List<Class<?>> classes = new ArrayList<Class<?>>();
+        try {
+            File out = new File(TestRunner.class.getProtectionDomain()
+                    .getCodeSource().getLocation().toURI());
+            File[] files = new File(out, "com/wac/autocore/test").listFiles();
+            if (files == null) {
+                System.err.println("Hittade ingen testkatalog under " + out);
+                return classes;
+            }
+            for (File file : files) {
+                String name = file.getName();
+                if (!name.endsWith("Test.class") || name.contains("$")) {
+                    continue;
+                }
+                try {
+                    classes.add(Class.forName("com.wac.autocore.test."
+                            + name.substring(0, name.length() - ".class".length())));
+                } catch (Throwable ignored) {
+                    // En klass som inte går att ladda rapporteras av runClass i stället.
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Kunde inte lista testklasserna: " + e);
+        }
+        Collections.sort(classes, new Comparator<Class<?>>() {
+            public int compare(Class<?> a, Class<?> b) {
+                return a.getSimpleName().compareTo(b.getSimpleName());
+            }
+        });
+        return classes;
     }
 
     private static void runClass(Class<?> clazz) {

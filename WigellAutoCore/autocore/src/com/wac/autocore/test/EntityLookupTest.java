@@ -67,14 +67,15 @@ public class EntityLookupTest {
     public void testMechanicSpecializationQualification() {
         GarageSystem garage = new GarageSystem();
 
-        Mechanic sara = new Mechanic(101, "Sara Nilsson", "070-1", "Brakes");
+        Mechanic sara = new Mechanic(101, "Sara Nilsson", "070-1", "seed.mechanic.brakes.specialization");
         Mechanic bjorne = new Mechanic(102, "Björnes Magasin", "070-2", "Granluktare");
-        Mechanic johan = new Mechanic(103, "Johan Karlsson", "070-3", "General service");
-        Mechanic mikael = new Mechanic(104, "Mikael Berg", "070-4", "Diagnostics");
+        Mechanic johan = new Mechanic(103, "Johan Karlsson", "070-3", "seed.mechanic.general_service.specialization");
+        Mechanic mikael = new Mechanic(104, "Mikael Berg", "070-4", "seed.mechanic.diagnostics.specialization");
 
-        ServiceItem brakeService = new ServiceItem(201, "Brake service", "Inspection and replacement of front brake pads", 2000, 60);
-        ServiceItem luftaBromsar = new ServiceItem(202, "Lufta bromsar", "Luftning av bromssystemet", 800, 30);
-        ServiceItem granlukt = new ServiceItem(203, "Granlukt i kupén", "Se till att det luktar tallbarr i baksätet", 300, 15);
+        // Kravet står på tjänsten. Tomt betyder att alla får utföra den.
+        ServiceItem brakeService = new ServiceItem(201, "Brake service", "Inspection and replacement of front brake pads", 2000, 60, "seed.mechanic.brakes.specialization");
+        ServiceItem luftaBromsar = new ServiceItem(202, "Lufta bromsar", "Luftning av bromssystemet", 800, 30, "seed.mechanic.brakes.specialization");
+        ServiceItem granlukt = new ServiceItem(203, "Granlukt i kupén", "Se till att det luktar tallbarr i baksätet", 300, 15, "Granluktare");
         ServiceItem oilChange = new ServiceItem(204, "Oil change", "Motoroljebyte och filter", 1200, 45);
 
         // Sara (Brakes)
@@ -92,7 +93,7 @@ public class EntityLookupTest {
         TestRunner.assertTrue(!garage.isMechanicQualified(johan, brakeService), "Johan is not brake specialist");
 
         // Mikael (Diagnostics)
-        TestRunner.assertTrue(garage.isMechanicQualified(mikael, new ServiceItem(205, "Diagnostics", "Fault codes", 900, 30)), "Mikael qualifies for Diagnostics");
+        TestRunner.assertTrue(garage.isMechanicQualified(mikael, new ServiceItem(205, "Diagnostics", "Fault codes", 900, 30, "seed.mechanic.diagnostics.specialization")), "Mikael qualifies for Diagnostics");
 
         // Null service allows all
         TestRunner.assertTrue(garage.isMechanicQualified(bjorne, null), "All qualify when service is null");

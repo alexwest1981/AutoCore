@@ -44,10 +44,18 @@ public final class BookingDialogs {
         dialog.setTitle(I18n.get("dialog.booking.create.title"));
         dialog.setHeaderText(I18n.get("dialog.booking.create.header"));
         ActionDialogs.styleDialog(dialog);
+        dialog.setResizable(true);
+        // Lite större fönster: formuläret är 820 brett, och höjden får en undre gräns så att
+        // kalendern och tiden inte kläms ihop.
+        dialog.getDialogPane().setPrefWidth(860);
+        dialog.getDialogPane().setMinWidth(760);
+        dialog.getDialogPane().setMinHeight(720);
 
         BookingFormPane form = new BookingFormPane(garage, null, defaultDate, defaultMechanic, defaultHour);
+        form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
         dialog.getDialogPane().setContent(form);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, form.requiredFieldsFilledBinding(0));
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -57,33 +65,45 @@ public final class BookingDialogs {
 
                 Vehicle v = form.getSelectedVehicle();
                 LocalDate date = form.getSelectedDate();
+                List<ServiceItem> chosenServices = form.getSelectedServices();
                 ServiceItem chosenService = form.getSelectedService();
                 Mechanic chosenMech = form.getSelectedMechanic();
                 LocalTime startTime = form.getSelectedStartTime();
                 String desc = form.getDescription();
-                if (desc.isEmpty() && chosenService != null) {
-                    desc = chosenService.getName();
+                if (desc.isEmpty() && !chosenServices.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (ServiceItem s : chosenServices) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(com.wac.autocore.seed.SeedText.resolve(s.getName()));
+                    }
+                    desc = sb.toString();
+                } else if (desc.isEmpty() && chosenService != null) {
+                    desc = com.wac.autocore.seed.SeedText.resolve(chosenService.getName());
                 }
 
                 // Skapa ren bokning i systemet (INGEN arbetsorder skapas eller startas automatiskt)
                 Booking b = garage.createBooking(v.getId(), date, desc);
                 if (b != null) {
                     b.setStatus("BOOKED");
-                    if (chosenService != null) {
-                        b.setServiceItemId(chosenService.getId());
+                    if (!chosenServices.isEmpty()) {
+                        b.setServiceItems(chosenServices);
+                    } else if (chosenService != null && !b.addServiceItem(chosenService)) {
+                        ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                                I18n.get("dialog.booking.services_locked_work_started"));
+                        return;
                     }
                     if (chosenMech != null) {
                         b.setMechanicId(chosenMech.getId());
                     }
                     if (startTime != null) {
                         b.setStartTime(startTime);
-                        int estMin = chosenService != null ? chosenService.getEstimatedMinutes() : 60;
+                        int estMin = b.getTotalEstimatedMinutes() > 0 ? b.getTotalEstimatedMinutes() : (chosenService != null ? chosenService.getEstimatedMinutes() : 60);
                         b.setEndTime(startTime.plusMinutes(estMin));
                     }
 
-                    try {
-                        garage.updateBooking(b);
-                    } catch (Exception ignored) {}
+                    if (!saveBookingOrReport(garage, b)) {
+                        return;
+                    }
 
                     // Reservera tid i schemat om mekaniker valts (workOrderId = 0)
                     if (chosenMech != null) {
@@ -107,10 +127,18 @@ public final class BookingDialogs {
         dialog.setTitle(I18n.get("dialog.booking.edit.title"));
         dialog.setHeaderText(I18n.get("dialog.booking.edit.header"));
         ActionDialogs.styleDialog(dialog);
+        dialog.setResizable(true);
+        // Lite större fönster: formuläret är 820 brett, och höjden får en undre gräns så att
+        // kalendern och tiden inte kläms ihop.
+        dialog.getDialogPane().setPrefWidth(860);
+        dialog.getDialogPane().setMinWidth(760);
+        dialog.getDialogPane().setMinHeight(720);
 
         BookingFormPane form = new BookingFormPane(garage, booking, booking.getDate(), null, null);
+        form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
         dialog.getDialogPane().setContent(form);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, form.requiredFieldsFilledBinding(booking.getId()));
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -120,6 +148,7 @@ public final class BookingDialogs {
 
                 Vehicle v = form.getSelectedVehicle();
                 LocalDate date = form.getSelectedDate();
+                List<ServiceItem> chosenServices = form.getSelectedServices();
                 ServiceItem chosenService = form.getSelectedService();
                 Mechanic chosenMech = form.getSelectedMechanic();
                 LocalTime startTime = form.getSelectedStartTime();
@@ -132,18 +161,35 @@ public final class BookingDialogs {
                 booking.setVehicleId(v.getId());
                 booking.setDate(date);
                 booking.setDescription(desc);
+                if (!chosenServices.isEmpty()) {
+                    booking.setServiceItems(chosenServices);
+                } else if (chosenService != null && !booking.addServiceItem(chosenService)) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                            I18n.get("dialog.booking.services_locked_work_started"));
+                    return;
+                } else if (chosenServices.isEmpty() && chosenService == null) {
+                    booking.setServiceItems(java.util.Collections.emptyList());
+                }
+
+                // Statusen sätts sist, för en statusändring tillbaka till Bokad öppnar
+                // låset på tjänsterna igen. Är arbetet påbörjat får den inte gå tillbaka.
+                if (booking.isWorkStarted() && !statusTillaten(status)
+                        && !status.equalsIgnoreCase(booking.getStatus())) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                            I18n.get("dialog.booking.status_locked_work_started"));
+                    return;
+                }
                 booking.setStatus(status);
-                booking.setServiceItemId(chosenService != null ? chosenService.getId() : 0);
                 booking.setMechanicId(chosenMech != null ? chosenMech.getId() : 0);
                 if (startTime != null) {
                     booking.setStartTime(startTime);
-                    int estMin = chosenService != null ? chosenService.getEstimatedMinutes() : 60;
+                    int estMin = booking.getTotalEstimatedMinutes() > 0 ? booking.getTotalEstimatedMinutes() : (chosenService != null ? chosenService.getEstimatedMinutes() : 60);
                     booking.setEndTime(startTime.plusMinutes(estMin));
                 }
 
-                try {
-                    garage.updateBooking(booking);
-                } catch (Exception ignored) {}
+                if (!saveBookingOrReport(garage, booking)) {
+                    return;
+                }
 
                 // Återboka i schemat om mekaniker är tilldelad och bokningen ej är avbokad
                 if (chosenMech != null && !"CANCELLED".equalsIgnoreCase(status)) {
@@ -169,11 +215,9 @@ public final class BookingDialogs {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle(I18n.get("dialog.booking.cancel.title"));
-        confirm.setHeaderText(I18n.get("dialog.booking.cancel.header"));
-        confirm.setContentText(I18n.get("dialog.booking.cancel.confirm", booking.getId()));
-        ActionDialogs.styleDialog(confirm);
+        Alert confirm = ActionDialogs.confirm(I18n.get("dialog.booking.cancel.title"),
+                I18n.get("dialog.booking.cancel.header"),
+                I18n.get("dialog.booking.cancel.confirm", booking.getId()));
 
         confirm.showAndWait().ifPresent(res -> {
             if (res == ButtonType.OK) {
@@ -197,11 +241,9 @@ public final class BookingDialogs {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle(I18n.get("dialog.booking.delete.title"));
-        confirm.setHeaderText(I18n.get("dialog.booking.delete.header"));
-        confirm.setContentText(I18n.get("dialog.booking.delete.confirm", booking.getId()));
-        ActionDialogs.styleDialog(confirm);
+        Alert confirm = ActionDialogs.confirm(I18n.get("dialog.booking.delete.title"),
+                I18n.get("dialog.booking.delete.header"),
+                I18n.get("dialog.booking.delete.confirm", booking.getId()));
 
         confirm.showAndWait().ifPresent(res -> {
             if (res == ButtonType.OK) {
@@ -217,9 +259,32 @@ public final class BookingDialogs {
     }
 
     /**
+     * Sparar bokningen och visar felet i stället för att svälja det. En tyst misslyckad skrivning
+     * lämnade kvar en bokning som såg skapad ut men saknade tid och tjänster, utan att någon fick veta.
+     */
+    private static boolean saveBookingOrReport(GarageSystem garage, Booking booking) {
+        try {
+            garage.updateBooking(booking);
+            return true;
+        } catch (Exception e) {
+            String reason = e.getMessage();
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                    I18n.get("dialog.booking.save_failed")
+                            + (reason == null || reason.trim().isEmpty() ? "" : " (" + reason + ")"));
+            return false;
+        }
+    }
+
+    /**
      * Delegerar till {@link BookingAvailability#isHourBooked}.
      */
     public static boolean isHourBooked(GarageSystem garage, Mechanic mechanic, LocalDate date, int hour, int excludeBookingId) {
         return BookingAvailability.isHourBooked(garage, mechanic, date, hour, excludeBookingId);
+    }
+
+    /** Statusar som får sättas när arbetet redan har påbörjats. */
+    private static boolean statusTillaten(String status) {
+        return "IN_PROGRESS".equalsIgnoreCase(status)
+                || "COMPLETED".equalsIgnoreCase(status);
     }
 }

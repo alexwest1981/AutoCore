@@ -62,6 +62,7 @@
       "title": "Kunder",
       "subtitle": "Register över privat- och företagskunder",
       "meta": "{0} registrerade",
+      "meta.one": "{0} registrerad",
       "action_create": "+ Ny kund",
       "action_edit": "Redigera kund",
       "action_delete": "Ta bort kund"
@@ -70,6 +71,7 @@
       "title": "Fordon",
       "subtitle": "Registrerade fordon i verkstadens databas",
       "meta": "{0} registrerade",
+      "meta.one": "{0} registrerad",
       "action_create": "+ Registrera fordon",
       "action_edit": "Redigera fordon",
       "action_delete": "Ta bort fordon"
@@ -78,6 +80,7 @@
       "title": "Bokningar",
       "subtitle": "Kommande och tidigare bokade servicetillfällen",
       "meta": "{0} bokningar",
+      "meta.one": "{0} bokning",
       "action_create": "+ Ny bokning",
       "action_cancel": "Avboka",
       "action_edit": "Redigera bokning",
@@ -87,6 +90,7 @@
       "title": "Tjänster",
       "subtitle": "Tjänstekatalog och prislista",
       "meta": "{0} tjänster",
+      "meta.one": "{0} tjänst",
       "action_create": "+ Skapa tjänst",
       "action_edit": "Redigera tjänst",
       "action_delete": "Ta bort tjänst"
@@ -95,6 +99,7 @@
       "title": "Mekaniker",
       "subtitle": "Verkstadens mekaniker, kompetens och tillgänglighet",
       "meta": "{0} anställda",
+      "meta.one": "{0} anställd",
       "action_create": "+ Lägg till mekaniker",
       "action_edit": "Redigera mekaniker",
       "action_delete": "Ta bort mekaniker"
@@ -103,21 +108,29 @@
       "title": "Arbetsordrar",
       "subtitle": "Pågående och slutförda verkstadsjobb",
       "meta": "{0} arbetsordrar",
+      "meta.one": "{0} arbetsorder",
       "action_create": "+ Ny arbetsorder",
       "action_start": "▶ Starta order",
-      "action_complete": "✔ Slutför order"
+      "action_mark_performed": "Markera utförda arbeten",
+      "action_complete": "Slutför order",
+      "action_invoice": "Skapa faktura",
+      "action_details": "Visa detaljer"
     },
     "invoices": {
       "title": "Fakturor",
       "subtitle": "Utfärdade kundfakturor och betalningsstatus",
       "meta": "{0} fakturor",
+      "meta.one": "{0} faktura",
       "action_create": "+ Skapa faktura",
-      "action_pay": "Betala vald faktura"
+      "action_pay": "Betala vald faktura",
+      "action_lines": "Visa rader",
+      "action_print": "Skriv ut faktura"
     },
     "payments": {
       "title": "Betalningar",
       "subtitle": "Genomförda betalningar och transaktionskvitton",
       "meta": "{0} betalningar",
+      "meta.one": "{0} betalning",
       "action_create": "+ Registrera betalning"
     }
   },
@@ -137,6 +150,8 @@
       "date": "Datum",
       "service": "Tjänst",
       "services": "Tjänster",
+      "estimated_time": "Beräknad tid",
+      "estimated_cost": "Beräknat pris",
       "mechanic": "Mekaniker",
       "status": "Status",
       "price": "Pris",
@@ -144,6 +159,7 @@
       "due_date": "Förfallodatum",
       "discount": "Rabatt",
       "total": "Totalt",
+      "final_price": "Slutpris",
       "method": "Betalsätt",
       "specialty": "Specialitet",
       "specialisation": "Specialisering",
@@ -175,7 +191,9 @@
     "created": "Skapad",
     "work_order_created": "Arbetsorder skapad",
     "successful": "Genomförd",
-    "failed": "Misslyckad"
+    "failed": "Misslyckad",
+    "to_be_performed": "Att utföra",
+    "performed": "Utförd"
   },
   "common": {
     "yes": "Ja",
@@ -187,6 +205,30 @@
     "search": "Sök",
     "search_placeholder": "Filtrera rader i tabellen...",
     "action": "Åtgärd"
+  },
+  "invoice": {
+    "title": "FAKTURA",
+    "thanks_line": "Tack för att du valde oss!",
+    "number": "Fakturanummer",
+    "date": "Fakturadatum",
+    "due_date": "Förfallodatum",
+    "status": "Status",
+    "customer": "Faktureras till",
+    "vehicle": "Fordon",
+    "workorder": "Arbetsorder",
+    "booking": "Bokning",
+    "col": {
+      "description": "Beskrivning",
+      "price": "Pris",
+      "discount": "Rabatt",
+      "sum": "Summa"
+    },
+    "subtotal": "Delsumma",
+    "discount_total": "Rabatt",
+    "vat": "Moms (25 %)",
+    "total": "Att betala",
+    "footer": "Tack för ditt förtroende!",
+    "footer_terms": "Betalningsvillkor: {0} dagar netto."
   },
   "dialog": {
     "customer": {
@@ -204,7 +246,7 @@
         "title": "Ta bort kund",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort {0}? Alla fordon kopplade till kunden tas också bort.",
-        "has_active_orders": "Kan inte ta bort {0} eftersom kunden har fordon med aktiva bokningar eller arbetsordrar."
+        "has_active_orders": "Kan inte ta bort {0} eftersom kunden har fordon med bokningar, arbetsordrar eller fakturor."
       },
       "name": "Fullständigt namn",
       "email": "E-postadress",
@@ -229,7 +271,7 @@
         "title": "Ta bort fordon",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort fordon {0}?",
-        "has_active_orders": "Kan inte ta bort fordon {0} eftersom det har aktiva bokningar eller arbetsordrar."
+        "has_active_orders": "Kan inte ta bort fordon {0} eftersom det har bokningar, arbetsordrar eller fakturor."
       },
       "reg_nr": "Registreringsnummer (t.ex. ABC123)",
       "brand": "Märke",
@@ -256,13 +298,13 @@
         "title": "Avboka bokning",
         "header": "Bekräfta avbokning",
         "confirm": "Är du säker på att du vill avboka bokning #{0}?",
-        "has_active_orders": "Kan inte avboka bokning #{0} eftersom den har en aktiv arbetsorder."
+        "has_active_orders": "Kan inte avboka bokning #{0} eftersom den har en arbetsorder eller en faktura."
       },
       "delete": {
         "title": "Ta bort bokning",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort bokning #{0}?",
-        "has_active_orders": "Kan inte ta bort bokning #{0} eftersom den har en aktiv arbetsorder."
+        "has_active_orders": "Kan inte ta bort bokning #{0} eftersom den har en arbetsorder eller en faktura."
       },
       "vehicle_select": "Välj fordon",
       "date": "Bokningsdatum",
@@ -272,13 +314,37 @@
       "no_service": "Ingen specifik tjänst",
       "no_mechanic": "Ingen mekaniker (tilldelas senare)",
       "no_mechanic_for_spec": "Ingen mekaniker matchar specialiseringen för denna tjänst",
+      "no_mechanic_for_selected_services": "Ingen enskild mekaniker matchar alla valda tjänster",
       "mechanics_filtered_for_spec": "{0} kvalificerad(e) mekaniker för denna tjänst",
+      "mechanics_filtered_for_services": "{0} kvalificerad(e) mekaniker för valda tjänster",
+      "team_assigned": "Vi bokar in: {0}",
+      "selected_date": "Valt datum: {0}",
+      "calendar_hint": "Gråmarkerade dagar kan inte bokas för vald tidsåtgång",
+      "date_and_time": "Datum & Tid",
+      "conflicting_specializations": "Valda tjänster kräver olika specialister ({0}). Vänligen dela upp i separata bokningar.",
+      "closing_time_exceeded": "Bokningen blir klar efter stängningstid (17:00).",
+      "time_after_closing": "Efter stängning",
+      "date_past": "Tidigare datum",
+      "date_weekend": "Helg (stängt)",
+      "date_fully_booked": "Fullbokat för denna tidsåtgång",
+      "duration_too_long": "Tidsåtgången överstiger en hel arbetsdag (max 600 min).",
       "estimated_end": "Beräknad sluttid: {0} ({1} min)",
       "time_window": "Arbetspass: {0} – {1}",
       "time_available": "Ledig",
       "time_busy": "Upptagen",
+        "no_free_times": "Inga lediga tider denna dag",
+        "only_free_times": "Bara lediga tider visas",
       "slot_busy_error": "Den valda tiden är redan upptagen hos denna mekaniker. Vänligen välj en ledig tid.",
-      "desc_prompt": "T.ex. Årlig service och bromsbyte"
+      "save_failed": "Bokningen kunde inte sparas.",
+      "desc_prompt": "T.ex. Årlig service och bromsbyte",
+      "add_service": "Lägg till",
+      "selected_services": "Valda tjänster",
+      "no_services_selected": "Inga tjänster valda än",
+      "total_time": "Beräknad total arbetstid: {0} minuter",
+      "total_price": "Beräknat pris: {0}",
+      "remove_service": "Ta bort",
+      "services_locked_work_started": "Tjänster kan inte ändras eftersom arbetet har påbörjats",
+      "status_locked_work_started": "Statusen kan inte ändras tillbaka när arbetet har påbörjats."
     },
     "service": {
       "create": {
@@ -295,12 +361,14 @@
         "title": "Ta bort tjänst",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort tjänsten {0}?",
-        "has_active_orders": "Kan inte ta bort tjänsten {0} eftersom den ingår i en aktiv arbetsorder."
+        "has_active_orders": "Kan inte ta bort tjänsten {0} eftersom den ligger i en bokning eller i ett arbete som inte är klart."
       },
       "name_prompt": "Tjänstens namn (t.ex. Bromsbyte)",
       "desc_prompt": "Beskrivning av arbetet",
       "price_prompt": "Pris i kr (t.ex. 1200)",
-      "time_prompt": "Beräknad tid i minuter (t.ex. 60)"
+      "time_prompt": "Beräknad tid i minuter (t.ex. 60)",
+      "spec_label": "Specialisering",
+      "spec_any": "Ingen särskild"
     },
     "mechanic": {
       "create": {
@@ -321,7 +389,6 @@
       },
       "available": "Tillgänglig för bokningar",
       "spec_prompt": "T.ex. Däck & Hjul, Motor, AC",
-      "default_spec": "Allmän service",
       "name_prompt": "T.ex. Anders Svensson",
       "phone_prompt": "070-1234567"
     },
@@ -330,30 +397,51 @@
       "time_date": "Tid & datum:",
       "booked_status": "Bokad tid (ej påbörjad)",
       "open_order": "Öppna i arbetsordrar",
-      "create_order": "Skapa & öppna arbetsorder"
+      "create_order": "Skapa & öppna arbetsorder",
+      "estimated_time": "Beräknad arbetstid:",
+      "estimated_cost": "Beräknat pris:"
     },
     "workorder": {
       "create": {
         "title": "Ny arbetsorder",
         "header": "Öppna arbetsorder",
-        "desc": "Tilldela mekaniker och tjänster till en bokning."
+        "desc": "Bokningens tjänster fördelas på de mekaniker som är behöriga."
       },
       "booking_select": "Välj bokning",
+      "not_all_completed": "Alla arbetsordrar på bokningen måste vara slutförda innan fakturan kan skapas.",
       "mechanic_select": "Välj mekaniker",
+      "plan_title": "Arbetsordrar som skapas (en per mekaniker)",
+      "no_qualified": "Ingen mekaniker är behörig för bokningens tjänster",
+      "create_failed": "Inga arbetsordrar kunde skapas. Kontrollera att bokningen har tjänster och att mekanikerna är tillgängliga.",
+      "partial_failed": "Bara {0} av {1} arbetsordrar skapades. Mekaniker som inte var tillgängliga blev utan arbetsorder.",
       "services_select": "Välj ingående tjänster",
+      "services_from_booking": "Bokningens tjänster",
+      "no_services": "Bokningen har inga tjänster",
+      "mark_performed_title": "Markera utförda arbeten",
+      "mark_performed_header": "Vilka arbeten är utförda?",
+      "mark_performed_desc": "Priset som gäller när du markerar sparas på raden, så att en senare prisändring inte rör den här arbetsordern.",
       "status_change": "Uppdatera status på arbetsorder",
       "details_header": "Detaljer för arbetsorder #{0}",
+      "details_title": "Arbetsorderdetaljer",
+      "historical_notice": "Visar debiterade priser som gällde när arbetet utfördes.",
       "open_in_orders": "Öppna i arbetsordrar"
     },
     "invoice": {
       "create": {
         "title": "Skapa faktura",
         "header": "Utfärda faktura",
-        "desc": "Generera faktura för en slutförd arbetsorder."
+        "desc": "Generera en faktura för allt utfört arbete på en bokning."
       },
-      "workorder_select": "Välj arbetsorder",
+      "booking_select": "Välj bokning",
+      "not_all_completed": "Alla arbetsordrar på bokningen måste vara slutförda innan fakturan kan skapas.",
       "discount": "Rabatt / Kampanj (kr)",
-      "discount_prompt": "T.ex. WELCOME10 eller SERVICE200 (valfritt)"
+      "discount_prompt": "T.ex. 10off, WELCOME10, SERVICE200 eller belopp (valfritt)",
+      "create_failed": "Fakturan kunde inte skapas.",
+      "print_title": "Faktura",
+      "print_header": "Förhandsgranskning av fakturan",
+      "print": "Skriv ut",
+      "no_printer": "Ingen skrivare hittades. Koppla in en skrivare och försök igen.",
+      "print_failed": "Fakturan kunde inte skrivas ut."
     },
     "payment": {
       "create": {
@@ -366,13 +454,17 @@
       "method_card": "Kort",
       "method_swish": "Swish",
       "method_cash": "Kontant",
-      "amount": "Belopp att betala"
+      "amount": "Belopp att betala",
+      "no_unpaid_invoices": "Det finns inga obetalda fakturor att registrera betalning för."
     },
     "validation": {
       "required": "Vänligen fyll i alla obligatoriska fält.",
       "invalid_number": "Vänligen ange ett giltigt numeriskt värde.",
       "missing_fields": "Följande fält saknas: {0}",
-      "invalid_year": "Vänligen ange en giltig årsmodell (t.ex. 2022)."
+      "invalid_year": "Vänligen ange en giltig årsmodell (t.ex. 2022).",
+      "name_digits": "Namnet får inte innehålla siffror.",
+      "phone_ten_digits": "Telefonnumret måste vara exakt 10 siffror (t.ex. 070-1234567).",
+      "email_format": "Ange en giltig e-postadress (t.ex. namn@exempel.se)."
     },
     "success": {
       "saved": "Sparades framgångsrikt."
@@ -503,6 +595,16 @@
       "edit_mech": "Redigera mekaniker",
       "delete_mech": "Ta bort mekaniker",
       "next_booking": "Nästa bokning: {0} →"
+    }
+  },
+  "view": {
+    "notice": {
+      "workorders.one": "Bokning som saknar en arbetsorder",
+      "workorders.many": "Bokningar som saknar en arbetsorder",
+      "invoices.one": "Bokning som väntar på en faktura",
+      "invoices.many": "Bokningar som väntar på en faktura",
+      "payments.one": "Faktura som väntar på betalning",
+      "payments.many": "Fakturor som väntar på betalning"
     }
   }
 }

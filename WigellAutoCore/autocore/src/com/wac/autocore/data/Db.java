@@ -58,7 +58,8 @@ public class Db {
                 + "name TEXT NOT NULL, "
                 + "description TEXT, "
                 + "price REAL, "
-                + "estimated_minutes INTEGER)",
+                + "estimated_minutes INTEGER, "
+                + "specialization TEXT)",
 
             "CREATE TABLE IF NOT EXISTS bookings ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -77,9 +78,16 @@ public class Db {
                 + "mechanic_id INTEGER, "
                 + "status TEXT)",
 
+            "CREATE TABLE IF NOT EXISTS booking_service_items ("
+                + "booking_id INTEGER NOT NULL, "
+                + "service_item_id INTEGER NOT NULL, "
+                + "PRIMARY KEY (booking_id, service_item_id))",
+
             "CREATE TABLE IF NOT EXISTS work_order_service_items ("
                 + "work_order_id INTEGER NOT NULL, "
                 + "service_item_id INTEGER NOT NULL, "
+                + "completed INTEGER NOT NULL DEFAULT 0, "
+                + "price REAL, "
                 + "PRIMARY KEY (work_order_id, service_item_id))",
 
             "CREATE TABLE IF NOT EXISTS invoices ("
@@ -90,6 +98,14 @@ public class Db {
                 + "discount REAL, "
                 + "total_amount REAL, "
                 + "paid INTEGER DEFAULT 0)",
+
+            "CREATE TABLE IF NOT EXISTS invoice_lines ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "invoice_id INTEGER NOT NULL, "
+                + "service_item_id INTEGER, "
+                + "service_name TEXT NOT NULL, "
+                + "price REAL NOT NULL, "
+                + "discount REAL DEFAULT 0)",
 
             "CREATE TABLE IF NOT EXISTS payments ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -106,12 +122,105 @@ public class Db {
             for (String sql : createStatements) {
                 statement.executeUpdate(sql);
             }
+
+            // SCRUM-158 (C3): Säkerställ att kolumnen completed finns i work_order_service_items vid migrering
+            try {
+                statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN completed INTEGER NOT NULL DEFAULT 0");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // SCRUM-160 (D2): Säkerställ att kolumnen price finns, så ett utfört arbete behåller sitt pris
+            try {
+                statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN price REAL");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // Behörigheten hänger på en nyckel: tjänsten säger vilken specialisering den kräver.
+            // Tomt betyder att tjänsten kan utföras av alla.
+            try {
+                statement.executeUpdate("ALTER TABLE service_items ADD COLUMN specialization TEXT");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+            // Tjänster som skapades innan kravet fanns får sitt krav här, så en befintlig databas
+            // får samma uppsättning som en nyskapad.
+            statement.executeUpdate("UPDATE service_items SET specialization = 'seed.mechanic.brakes.specialization' "
+                    + "WHERE name = 'seed.service.brake_service.name' AND (specialization IS NULL OR specialization = '')");
+            statement.executeUpdate("UPDATE service_items SET specialization = 'seed.mechanic.diagnostics.specialization' "
+                    + "WHERE name = 'seed.service.diagnostics.name' AND (specialization IS NULL OR specialization = '')");
+
+            // SCRUM-149 (A3): Migrera befintliga bokningar från bookings.service_item_id till booking_service_items
+            String migrateSql = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id) "
+                    + "SELECT id, service_item_id FROM bookings "
+                    + "WHERE service_item_id IS NOT NULL AND service_item_id > 0";
+            statement.executeUpdate(migrateSql);
+
+
+            // SCRUM-163 (E2): Skapa fakturarader för fakturor som fanns innan tabellen.
+            // Priset tas från det frysta priset på arbetsorderns rad när det finns, annars
+            // från katalogen. Utan det får en gammal faktura dagens pris i stället för
+            // priset som gällde när arbetet utfördes.
+            String migrateInvoiceLinesSql = "INSERT INTO invoice_lines "
+                    + "(invoice_id, service_item_id, service_name, price, discount) "
+                    + "SELECT i.id, s.id, s.name, CASE WHEN w.price IS NOT NULL THEN w.price ELSE s.price END, 0 "
+                    + "FROM invoices i "
+                    + "JOIN work_order_service_items w ON w.work_order_id = i.work_order_id "
+                    + "JOIN service_items s ON s.id = w.service_item_id "
+                    + "WHERE NOT EXISTS (SELECT 1 FROM invoice_lines l WHERE l.invoice_id = i.id)";
+            statement.executeUpdate(migrateInvoiceLinesSql);
+
+            // Registreringsnummer i samma skepnad i hela registret: versaler och mellanslag mellan
+            // bokstäverna och siffrorna, så att "abc123" och "ABC 123" inte blir två olika fordon.
+            // Går inte att göra i SQL, eftersom mellanslaget sätts in på rätt plats i Java.
+            // Körs efter anslutningen ovan, på sin egen, så att ingen öppen kurs låser SQLite.
+
             System.out.println("Databas redo: " + DATABASE_PATH);
 
         } catch (SQLException e) {
             System.out.println("Kunde inte skapa tabellerna: " + e.getMessage());
         }
 
+        normalizeRegistrationNumbers();
         SeedData.seedIfEmpty();
+    }
+
+    /**
+     * Rättar registreringsnummer som sparades innan modellen började normalisera dem.
+     * Idempotent: bara rader som avviker skrivs om, så den kan köra varje gång.
+     *
+     * Öppnar sin egen anslutning och stänger läsningen innan den skriver — en öppen läskurs
+     * på samma anslutning låser SQLite, och då stannar hela sviten i nästa skrivning.
+     */
+    private static void normalizeRegistrationNumbers() {
+        java.util.List<Integer> ids = new java.util.ArrayList<Integer>();
+        java.util.List<String> numbers = new java.util.ArrayList<String>();
+
+        try (java.sql.Connection connection = getConnection()) {
+            java.sql.Statement read = connection.createStatement();
+            java.sql.ResultSet rows = read.executeQuery(
+                    "SELECT id, registration_number FROM vehicles WHERE registration_number IS NOT NULL");
+            while (rows.next()) {
+                ids.add(Integer.valueOf(rows.getInt(1)));
+                numbers.add(rows.getString(2));
+            }
+            rows.close();
+            read.close();
+
+            java.sql.PreparedStatement write = connection.prepareStatement(
+                    "UPDATE vehicles SET registration_number = ? WHERE id = ?");
+            for (int i = 0; i < ids.size(); i++) {
+                String normalized = com.wac.autocore.model.Vehicle.normalizeRegistrationNumber(numbers.get(i));
+                if (normalized != null && !normalized.equals(numbers.get(i))) {
+                    write.setString(1, normalized);
+                    write.setInt(2, ids.get(i).intValue());
+                    write.executeUpdate();
+                }
+            }
+            write.close();
+        } catch (java.sql.SQLException e) {
+            System.out.println("Kunde inte rätta registreringsnumren: " + e.getMessage());
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.wac.autocore.repository;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Invoice;
+import com.wac.autocore.model.InvoiceLine;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InvoiceRepository {
+
+    private final InvoiceLineRepository invoiceLineRepository = new InvoiceLineRepository();
 
     public void save(Invoice invoice) throws SQLException {
         if (invoice.getId() == 0 || findById(invoice.getId()) == null) {
@@ -63,6 +66,8 @@ public class InvoiceRepository {
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
+            invoiceLineRepository.deleteByInvoiceId(connection, id);
+
             statement.setInt(1, id);
             statement.executeUpdate();
         }
@@ -88,6 +93,8 @@ public class InvoiceRepository {
                     invoice.setId(generatedKeys.getInt(1));
                 }
             }
+
+            invoiceLineRepository.saveLines(connection, invoice);
         }
     }
 
@@ -129,6 +136,10 @@ public class InvoiceRepository {
 
         invoice.setDiscount(resultSet.getDouble("discount"));
         invoice.setPaid(resultSet.getBoolean("paid"));
+
+        for (InvoiceLine line : invoiceLineRepository.findByInvoiceId(invoice.getId())) {
+            invoice.addLine(line);
+        }
 
         return invoice;
     }

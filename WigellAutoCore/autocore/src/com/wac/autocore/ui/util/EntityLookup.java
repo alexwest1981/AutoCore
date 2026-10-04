@@ -2,7 +2,9 @@ package com.wac.autocore.ui.util;
 
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
+import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.Mechanic;
+import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
@@ -10,6 +12,7 @@ import com.wac.autocore.service.GarageSystem;
 
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
+import com.wac.autocore.ui.i18n.I18n;
 
 /**
  * Hjälpmetoder för att slå upp läsbara namn på relaterade entiteter via ID.
@@ -87,6 +90,61 @@ public final class EntityLookup {
         return sb.toString();
     }
 
+    public static String bookingServices(GarageSystem garage, com.wac.autocore.model.Booking b) {
+        if (b == null) return "-";
+        if (b.getServiceItems() != null && !b.getServiceItems().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (ServiceItem s : b.getServiceItems()) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(SeedText.resolve(s.getName()));
+            }
+            return sb.toString();
+        }
+        if (b.getServiceItemIds() != null && !b.getServiceItemIds().isEmpty()) {
+            return serviceNames(garage, b.getServiceItemIds());
+        }
+        if (b.getServiceItemId() > 0) {
+            return serviceName(garage, b.getServiceItemId());
+        }
+        return "-";
+    }
+
+    public static int bookingTotalMinutes(GarageSystem garage, com.wac.autocore.model.Booking b) {
+        if (b == null) return 0;
+        int min = b.getTotalEstimatedMinutes();
+        if (min > 0) return min;
+        if (garage != null && b.getServiceItemIds() != null) {
+            for (int sid : b.getServiceItemIds()) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid) {
+                        min += s.getEstimatedMinutes();
+                        break;
+                    }
+                }
+            }
+        }
+        return min;
+    }
+
+    public static double bookingTotalPrice(GarageSystem garage, com.wac.autocore.model.Booking b) {
+        if (b == null) return 0.0;
+        double cost = b.getTotalEstimatedCost();
+        if (cost > 0.0) return cost;
+        if (garage != null && b.getServiceItemIds() != null) {
+            for (int sid : b.getServiceItemIds()) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid) {
+                        cost += s.getPrice();
+                        break;
+                    }
+                }
+            }
+        }
+        return cost;
+    }
+
     public static String bookingVehicleReg(GarageSystem garage, int bookingId) {
         if (garage == null) return "Booking #" + bookingId;
         for (com.wac.autocore.model.Booking b : garage.getBookings()) {
@@ -121,16 +179,181 @@ public final class EntityLookup {
         return bookingCustomerName(garage, wo.getBookingId());
     }
 
-    public static double workOrderTotal(GarageSystem garage, WorkOrder wo) {
-        if (garage == null || wo == null || wo.getServiceItemIds() == null) return 0.0;
-        double total = 0.0;
-        for (Integer sid : wo.getServiceItemIds()) {
-            for (ServiceItem s : garage.getServiceItems()) {
-                if (s.getId() == sid) {
-                    total += s.getPrice();
-                    break;
+    /** Bokningen som arbetsordern hör till, eller 0 om arbetsordern inte finns. */
+    public static int bookingIdForWorkOrder(GarageSystem garage, int workOrderId) {
+        if (garage == null || workOrderId <= 0) return 0;
+        for (WorkOrder wo : garage.getWorkOrders()) {
+            if (wo.getId() == workOrderId) {
+                return wo.getBookingId();
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Fakturan som täcker arbetsordern. Fakturan gäller hela bokningen, så en arbetsorder kan vara
+     * fakturerad av en faktura som sparats på en annan arbetsorder i samma bokning.
+     */
+    public static Invoice invoiceForWorkOrder(GarageSystem garage, int workOrderId) {
+        if (garage == null || workOrderId <= 0) return null;
+
+        WorkOrder order = null;
+        for (WorkOrder wo : garage.getWorkOrders()) {
+            if (wo.getId() == workOrderId) {
+                order = wo;
+                break;
+            }
+        }
+        if (order == null) return null;
+
+        List<Integer> performed = order.getCompletedServiceItems();
+        if (performed.isEmpty()) {
+            performed = order.getServiceItemIds();
+        }
+
+        for (Invoice inv : garage.getInvoices()) {
+            if (inv.getWorkOrderId() == workOrderId) {
+                return inv;
+            }
+        }
+
+        // Fakturan kan ha sparats på en annan arbetsorder i samma bokning. Tjänstekatalogen är delad,
+        // så rader från andra bokningar får inte räknas hit.
+        for (Invoice inv : garage.getInvoices()) {
+            if (bookingIdForWorkOrder(garage, inv.getWorkOrderId()) != order.getBookingId()) {
+                continue;
+            }
+            for (InvoiceLine line : inv.getLines()) {
+                if (line.getServiceItemId() > 0
+                        && performed.contains(Integer.valueOf(line.getServiceItemId()))) {
+                    return inv;
                 }
             }
+        }
+        return null;
+    }
+
+    public static double workOrderServicePrice(GarageSystem garage, WorkOrder wo, int serviceItemId) {
+        if (garage == null) return 0.0;
+        if (wo != null) {
+            // Det frysta priset är priset som gällde när arbetet utfördes, och det ska
+            // visas även innan fakturan finns. Samma ordning som i detaljdialogen:
+            // fryst pris, sedan fakturaradens pris, sist katalogen.
+            Double frozenPrice = wo.getCompletedServicePrice(serviceItemId);
+            if (frozenPrice != null) {
+                return frozenPrice.doubleValue();
+            }
+            Invoice inv = invoiceForWorkOrder(garage, wo.getId());
+            if (inv != null && inv.getLines() != null) {
+                for (InvoiceLine line : inv.getLines()) {
+                    if (line.getServiceItemId() == serviceItemId) {
+                        return line.getPrice();
+                    }
+                }
+            }
+        }
+        for (ServiceItem s : garage.getServiceItems()) {
+            if (s.getId() == serviceItemId) {
+                return s.getPrice();
+            }
+        }
+        return 0.0;
+    }
+
+    /**
+     * Tjänstenamnen på en arbetsorder, utan priser. Arbetsordervyn är till för mekanikerna, som
+     * behöver se vad som ska göras, inte vad det kostar. Namnet hämtas från fakturaraden när den
+     * finns, annars från tjänsten, precis som i workOrderServicesWithPrices.
+     */
+    public static String workOrderServices(GarageSystem garage, WorkOrder wo) {
+        if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
+            return "-";
+        }
+        Invoice invoice = invoiceForWorkOrder(garage, wo.getId());
+        StringBuilder sb = new StringBuilder();
+        for (Integer sid : wo.getServiceItemIds()) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            String name = null;
+            if (invoice != null && invoice.getLines() != null) {
+                for (InvoiceLine line : invoice.getLines()) {
+                    if (line.getServiceItemId() == sid) {
+                        name = line.getServiceName();
+                        break;
+                    }
+                }
+            }
+            if (name == null) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid) {
+                        name = s.getName();
+                        break;
+                    }
+                }
+            }
+            if (name == null) {
+                name = "Service #" + sid;
+            }
+            sb.append(SeedText.resolve(name));
+        }
+        return sb.toString();
+    }
+
+    public static String workOrderServicesWithPrices(GarageSystem garage, WorkOrder wo) {
+        if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
+            return "-";
+        }
+        Invoice invoice = invoiceForWorkOrder(garage, wo.getId());
+        StringBuilder sb = new StringBuilder();
+        for (Integer sid : wo.getServiceItemIds()) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            String name = null;
+            Double frozenPrice = wo.getCompletedServicePrice(sid.intValue());
+            Double price = frozenPrice;
+            if (invoice != null && invoice.getLines() != null) {
+                for (InvoiceLine line : invoice.getLines()) {
+                    if (line.getServiceItemId() == sid) {
+                        name = line.getServiceName();
+                        if (price == null) {
+                            price = line.getPrice();
+                        }
+                        break;
+                    }
+                }
+            }
+            if (name == null) {
+                for (ServiceItem s : garage.getServiceItems()) {
+                    if (s.getId() == sid) {
+                        name = s.getName();
+                        if (price == null) {
+                            price = s.getPrice();
+                        }
+                        break;
+                    }
+                }
+            }
+            if (name == null) {
+                name = "Service #" + sid;
+            }
+            sb.append(SeedText.resolve(name));
+            if (price != null) {
+                sb.append(" (").append(UiFormatters.formatMoney(price)).append(")");
+            }
+        }
+        return sb.toString();
+    }
+
+    public static double workOrderTotal(GarageSystem garage, WorkOrder wo) {
+        if (garage == null || wo == null) return 0.0;
+        if (wo.getServiceItemIds() == null) return 0.0;
+        // Summeras per tjänst med samma ordning som workOrderServicePrice, alltså
+        // fryst pris först. Då stämmer summan med det fakturan kommer att bygga.
+        double total = 0.0;
+        for (Integer sid : wo.getServiceItemIds()) {
+            total += workOrderServicePrice(garage, wo, sid.intValue());
         }
         return total;
     }
@@ -143,5 +366,71 @@ public final class EntityLookup {
             }
         }
         return "-";
+    }
+
+    /**
+     * Kunden bakom en betalning. Kedjan går betalning, faktura, arbetsorder, bokning, fordon, kund,
+     * och varje steg använder samma hjälpmetoder som fakturavyn, så samma kund visas i båda vyerna.
+     */
+    public static String paymentCustomerName(GarageSystem garage, Payment pay) {
+        if (garage == null || pay == null) return "-";
+        for (Invoice inv : garage.getInvoices()) {
+            if (inv.getId() == pay.getInvoiceId()) {
+                return invoiceCustomerName(garage, inv);
+            }
+        }
+        return "-";
+    }
+
+    /**
+     * SCRUM-157 (C2): Total beräknad arbetstid för samtliga tjänster på arbetsordern.
+     */
+    public static int workOrderTotalMinutes(GarageSystem garage, WorkOrder wo) {
+        if (garage == null || wo == null || wo.getServiceItemIds() == null) {
+            return 0;
+        }
+        int total = 0;
+        for (Integer sid : wo.getServiceItemIds()) {
+            for (ServiceItem s : garage.getServiceItems()) {
+                if (s.getId() == sid.intValue()) {
+                    total += s.getEstimatedMinutes();
+                    break;
+                }
+            }
+        }
+        return total;
+    }
+
+    /**
+     * SCRUM-157 (C2): Formaterar arbetsorderns tjänster med status (utförd vs att utföra).
+     */
+    public static String workOrderServicesWithStatus(GarageSystem garage, WorkOrder wo) {
+        if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
+            return "-";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Integer sid : wo.getServiceItemIds()) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            String name = null;
+            for (ServiceItem s : garage.getServiceItems()) {
+                if (s.getId() == sid.intValue()) {
+                    name = SeedText.resolve(s.getName());
+                    break;
+                }
+            }
+            if (name == null) {
+                name = "Service #" + sid;
+            }
+            sb.append(name);
+            boolean done = wo.getCompletedServiceItems() != null && wo.getCompletedServiceItems().contains(sid);
+            if (done) {
+                sb.append(" [").append(I18n.get("status.completed")).append("]");
+            } else {
+                sb.append(" [").append(I18n.get("status.to_be_performed")).append("]");
+            }
+        }
+        return sb.toString();
     }
 }

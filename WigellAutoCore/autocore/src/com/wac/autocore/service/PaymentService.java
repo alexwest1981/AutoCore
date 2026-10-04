@@ -53,7 +53,23 @@ public class PaymentService {
             return null;
         }
 
-        Payment payment = new Payment(0, invoiceId, invoice.getTotalAmount(), paymentType);
+        // En faktura på noll kronor har inget att betala. Utan det här skapades en ny rad
+        // varje gång, och ingen av dem blev lyckad, så fakturan stod kvar som obetald för alltid.
+        if (invoice.getTotalAmount() <= 0.0) {
+            System.out.println("Invoice has nothing to pay.");
+            return null;
+        }
+
+        // En okänd betaltyp skapade en betalningsrad som aldrig kunde bli lyckad, och fakturan
+        // stod kvar som obetald. Typen kontrolleras därför innan raden skrivs.
+        String type = paymentType == null ? "" : paymentType.trim().toUpperCase();
+        if (!"CARD".equals(type) && !"SWISH".equals(type) && !"CASH".equals(type)) {
+            System.out.println("Unknown payment type: " + paymentType + ".");
+            return null;
+        }
+
+        // Kunden betalar hela beloppet med moms. Fakturans egna belopp är exklusive moms.
+        Payment payment = new Payment(0, invoiceId, invoice.getTotalIncludingVat(), paymentType);
 
         boolean successful = false;
 

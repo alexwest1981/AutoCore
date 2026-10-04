@@ -1,7 +1,9 @@
 package com.wac.autocore.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WorkOrder {
 
@@ -9,6 +11,8 @@ public class WorkOrder {
     private int bookingId;
     private int mechanicId;
     private List<Integer> serviceItemIds;
+    private final List<Integer> completedServiceItems = new ArrayList<Integer>();
+    private final Map<Integer, Double> completedServicePrices = new LinkedHashMap<Integer, Double>();
     private String status;
 
     public WorkOrder(int id, int bookingId, int mechanicId) {
@@ -65,6 +69,60 @@ public class WorkOrder {
 
     public void removeServiceItem(int serviceItemId) {
         serviceItemIds.remove(Integer.valueOf(serviceItemId));
+        completedServiceItems.remove(Integer.valueOf(serviceItemId));
+        completedServicePrices.remove(Integer.valueOf(serviceItemId));
+    }
+
+    public List<Integer> getCompletedServiceItems() {
+        return completedServiceItems;
+    }
+
+    public void setCompletedServiceItems(List<Integer> completed) {
+        this.completedServiceItems.clear();
+        if (completed != null) {
+            this.completedServiceItems.addAll(completed);
+        }
+    }
+
+    /** SCRUM-160 (D2): priset som gällde när tjänsten utfördes, eller null om det inte sparades. */
+    public Double getCompletedServicePrice(int serviceItemId) {
+        return completedServicePrices.get(Integer.valueOf(serviceItemId));
+    }
+
+    public Map<Integer, Double> getCompletedServicePrices() {
+        return completedServicePrices;
+    }
+
+    public void setCompletedServicePrices(Map<Integer, Double> prices) {
+        completedServicePrices.clear();
+        if (prices != null) {
+            completedServicePrices.putAll(prices);
+        }
+    }
+
+    public void markServiceAsCompleted(int serviceItemId) {
+        if (!this.serviceItemIds.contains(serviceItemId)) {
+            throw new IllegalArgumentException("Tjänsten med ID " + serviceItemId + " tillhör inte denna arbetsorder.");
+        }
+        if (!this.completedServiceItems.contains(serviceItemId)) {
+            this.completedServiceItems.add(serviceItemId);
+        }
+    }
+
+    /**
+     * SCRUM-160 (D2): markerar tjänsten utförd och fryser priset som gällde då.
+     */
+    public void markServiceAsCompleted(int serviceItemId, double frozenPrice) {
+        markServiceAsCompleted(serviceItemId);
+        completedServicePrices.put(Integer.valueOf(serviceItemId), Double.valueOf(frozenPrice));
+    }
+
+    public void markAllServicesCompleted() {
+        for (Integer id : serviceItemIds) {
+            if (!completedServiceItems.contains(id)) {
+                completedServiceItems.add(id);
+            }
+        }
     }
 
     @Override

@@ -97,30 +97,12 @@ public class WorkOrderController {
             return;
         }
 
-        String input = serviceItemIdsField.getText();
-
-        if (input == null || input.trim().isEmpty()) {
-            showAlert("Please enter at least one service ID.");
-            return;
-        }
-
-        String[] parts = input.split(",");
-        int[] serviceItemIds = new int[parts.length];
-
-        try {
-            for (int i = 0; i < parts.length; i++) {
-                serviceItemIds[i] = Integer.parseInt(parts[i].trim());
-            }
-        } catch (NumberFormatException e) {
-            showAlert("Invalid service ID. Use comma-separated numbers, e.g. 1,3,4.");
-            return;
-        }
-
-        WorkOrder workOrder = garageSystem.createWorkOrder(bookingId, mechanicId, serviceItemIds);
+        // SCRUM-156 (C1): arbetsordern får bokningens tjänster, fältet för tjänste-id används inte längre.
+        WorkOrder workOrder = garageSystem.createWorkOrder(bookingId, mechanicId);
 
         if (workOrder == null) {
             showAlert("Could not create work order. Check that the booking and mechanic exist, "
-                    + "that the mechanic is available and that all service IDs exist.");
+                    + "that the mechanic is available and that the booking has services.");
             return;
         }
 
@@ -129,7 +111,12 @@ public class WorkOrderController {
         mechanicIdField.clear();
         serviceItemIdsField.clear();
 
-        int duration = garageSystem.getEstimatedDuration(serviceItemIds);
+        // Längden räknas på det arbetsordern faktiskt fick, alltså bokningens tjänster.
+        int[] bookingServiceIds = new int[workOrder.getServiceItemIds().size()];
+        for (int i = 0; i < bookingServiceIds.length; i++) {
+            bookingServiceIds[i] = workOrder.getServiceItemIds().get(i);
+        }
+        int duration = garageSystem.getEstimatedDuration(bookingServiceIds);
         System.out.println("Estimated duration for this work order: " + duration + " minutes");
     }
 

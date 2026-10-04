@@ -62,6 +62,7 @@
       "title": "Customers",
       "subtitle": "Directory of private and corporate clients",
       "meta": "{0} registered",
+      "meta.one": "{0} registered",
       "action_create": "+ Create Customer",
       "action_edit": "Edit Customer",
       "action_delete": "Delete Customer"
@@ -70,6 +71,7 @@
       "title": "Vehicles",
       "subtitle": "Registered vehicles in the garage database",
       "meta": "{0} registered",
+      "meta.one": "{0} registered",
       "action_create": "+ Register Vehicle",
       "action_edit": "Edit Vehicle",
       "action_delete": "Delete Vehicle"
@@ -78,6 +80,7 @@
       "title": "Bookings",
       "subtitle": "Upcoming and past service appointments",
       "meta": "{0} bookings",
+      "meta.one": "{0} booking",
       "action_create": "+ Create Booking",
       "action_cancel": "Cancel Booking",
       "action_edit": "Edit Booking",
@@ -87,6 +90,7 @@
       "title": "Services",
       "subtitle": "Service catalog and price list",
       "meta": "{0} services",
+      "meta.one": "{0} service",
       "action_create": "+ Create Service",
       "action_edit": "Edit Service",
       "action_delete": "Delete Service"
@@ -95,6 +99,7 @@
       "title": "Mechanics",
       "subtitle": "Workshop staff, competence and availability",
       "meta": "{0} employees",
+      "meta.one": "{0} employee",
       "action_create": "+ Add Mechanic",
       "action_edit": "Edit Mechanic",
       "action_delete": "Delete Mechanic"
@@ -103,21 +108,29 @@
       "title": "Work Orders",
       "subtitle": "Ongoing and completed garage work orders",
       "meta": "{0} work orders",
+      "meta.one": "{0} work order",
       "action_create": "+ Create Work Order",
       "action_start": "▶ Start order",
-      "action_complete": "✔ Complete order"
+      "action_mark_performed": "Mark performed work",
+      "action_complete": "Complete order",
+      "action_invoice": "Create invoice",
+      "action_details": "View details"
     },
     "invoices": {
       "title": "Invoices",
       "subtitle": "Issued invoices and payment status",
       "meta": "{0} invoices",
+      "meta.one": "{0} invoice",
       "action_create": "+ Create Invoice",
-      "action_pay": "Pay selected invoice"
+      "action_pay": "Pay selected invoice",
+      "action_lines": "Show lines",
+      "action_print": "Print invoice"
     },
     "payments": {
       "title": "Payments",
       "subtitle": "Processed transactions and receipts",
       "meta": "{0} payments",
+      "meta.one": "{0} payment",
       "action_create": "+ Register Payment"
     }
   },
@@ -137,6 +150,8 @@
       "date": "Date",
       "service": "Service",
       "services": "Services",
+      "estimated_time": "Est. time",
+      "estimated_cost": "Est. price",
       "mechanic": "Mechanic",
       "status": "Status",
       "price": "Price",
@@ -144,6 +159,7 @@
       "due_date": "Due date",
       "discount": "Discount",
       "total": "Total",
+      "final_price": "Final price",
       "method": "Method",
       "specialty": "Specialty",
       "specialisation": "Specialisation",
@@ -175,7 +191,9 @@
     "created": "Created",
     "work_order_created": "Work order created",
     "successful": "Successful",
-    "failed": "Failed"
+    "failed": "Failed",
+    "to_be_performed": "To be performed",
+    "performed": "Performed"
   },
   "common": {
     "yes": "Yes",
@@ -187,6 +205,30 @@
     "search": "Search",
     "search_placeholder": "Filter table rows...",
     "action": "Action"
+  },
+  "invoice": {
+    "title": "INVOICE",
+    "thanks_line": "Thank you for choosing us!",
+    "number": "Invoice number",
+    "date": "Invoice date",
+    "due_date": "Due date",
+    "status": "Status",
+    "customer": "Bill to",
+    "vehicle": "Vehicle",
+    "workorder": "Work order",
+    "booking": "Booking",
+    "col": {
+      "description": "Description",
+      "price": "Price",
+      "discount": "Discount",
+      "sum": "Amount"
+    },
+    "subtotal": "Subtotal",
+    "discount_total": "Discount",
+    "vat": "VAT (25%)",
+    "total": "Amount due",
+    "footer": "Thank you for your business!",
+    "footer_terms": "Payment terms: {0} days net."
   },
   "dialog": {
     "customer": {
@@ -204,7 +246,7 @@
         "title": "Delete Customer",
         "header": "Confirm Deletion",
         "confirm": "Are you sure you want to delete {0}? All vehicles associated with this customer will also be removed.",
-        "has_active_orders": "Cannot delete {0} because the customer has vehicles with active bookings or work orders."
+        "has_active_orders": "Cannot delete {0} because the customer has vehicles with bookings, work orders or invoices."
       },
       "name": "Full name",
       "email": "Email address",
@@ -229,7 +271,7 @@
         "title": "Delete Vehicle",
         "header": "Confirm Deletion",
         "confirm": "Are you sure you want to delete vehicle {0}?",
-        "has_active_orders": "Cannot delete vehicle {0} because it has active bookings or work orders."
+        "has_active_orders": "Cannot delete vehicle {0} because it has bookings, work orders or invoices."
       },
       "reg_nr": "Registration number (e.g. ABC123)",
       "brand": "Brand",
@@ -256,13 +298,13 @@
         "title": "Cancel Booking",
         "header": "Confirm Cancellation",
         "confirm": "Are you sure you want to cancel booking #{0}?",
-        "has_active_orders": "Cannot cancel booking #{0} because it has an active work order."
+        "has_active_orders": "Cannot cancel booking #{0} because it has a work order or an invoice."
       },
       "delete": {
         "title": "Delete Booking",
         "header": "Confirm Deletion",
         "confirm": "Are you sure you want to delete booking #{0}?",
-        "has_active_orders": "Cannot delete booking #{0} because it has an active work order."
+        "has_active_orders": "Cannot delete booking #{0} because it has a work order or an invoice."
       },
       "vehicle_select": "Select vehicle",
       "date": "Booking date",
@@ -272,13 +314,37 @@
       "no_service": "No specific service",
       "no_mechanic": "No mechanic (assign later)",
       "no_mechanic_for_spec": "No mechanic matches the specialization for this service",
+      "no_mechanic_for_selected_services": "No single mechanic matches all selected services",
       "mechanics_filtered_for_spec": "{0} qualified mechanic(s) for this service",
+      "mechanics_filtered_for_services": "{0} qualified mechanic(s) for selected services",
+      "team_assigned": "We are booking: {0}",
+      "selected_date": "Selected date: {0}",
+      "calendar_hint": "Grayed out days cannot be booked for selected duration",
+      "date_and_time": "Date & Time",
+      "conflicting_specializations": "Selected services require different specialists ({0}). Please split into separate bookings.",
+      "closing_time_exceeded": "The booking finishes after closing time (17:00).",
+      "time_after_closing": "Past closing",
+      "date_past": "Past date",
+      "date_weekend": "Weekend (closed)",
+      "date_fully_booked": "Fully booked for this duration",
+      "duration_too_long": "Duration exceeds a full working day (max 600 min).",
       "estimated_end": "Estimated end time: {0} ({1} min)",
       "time_window": "Working slot: {0} – {1}",
       "time_available": "Available",
       "time_busy": "Busy",
+      "no_free_times": "No available times this day",
+        "only_free_times": "Only available times are shown",
       "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
-      "desc_prompt": "E.g. Annual service and brake replacement"
+      "save_failed": "The booking could not be saved.",
+      "desc_prompt": "E.g. Annual service and brake replacement",
+      "add_service": "Add",
+      "selected_services": "Selected services",
+      "no_services_selected": "No services selected yet",
+      "total_time": "Estimated total time: {0} minutes",
+      "total_price": "Estimated price: {0}",
+      "remove_service": "Remove",
+      "services_locked_work_started": "Services cannot be modified because work has started",
+      "status_locked_work_started": "The status cannot be changed back once work has started."
     },
     "service": {
       "create": {
@@ -295,12 +361,14 @@
         "title": "Delete Service",
         "header": "Confirm Deletion",
         "confirm": "Are you sure you want to delete service {0}?",
-        "has_active_orders": "Cannot delete service {0} because it is included in an active work order."
+        "has_active_orders": "Cannot delete service {0} because it is in a booking or in work that is not finished."
       },
       "name_prompt": "Service name (e.g. Brake replacement)",
       "desc_prompt": "Work description",
       "price_prompt": "Price in SEK (e.g. 1200)",
-      "time_prompt": "Estimated time in minutes (e.g. 60)"
+      "time_prompt": "Estimated time in minutes (e.g. 60)",
+      "spec_label": "Specialization",
+      "spec_any": "No particular"
     },
     "mechanic": {
       "create": {
@@ -321,7 +389,6 @@
       },
       "available": "Available for bookings",
       "spec_prompt": "E.g. Tyres & Wheels, Engine, AC",
-      "default_spec": "General service",
       "name_prompt": "E.g. Anders Svensson",
       "phone_prompt": "070-1234567"
     },
@@ -330,30 +397,51 @@
       "time_date": "Time & date:",
       "booked_status": "Booked (not started)",
       "open_order": "Open in Work Orders",
-      "create_order": "Create & open work order"
+      "create_order": "Create & open work order",
+      "estimated_time": "Estimated time:",
+      "estimated_cost": "Estimated price:"
     },
     "workorder": {
       "create": {
         "title": "New Work Order",
         "header": "Open Work Order",
-        "desc": "Assign mechanic and services to a booking."
+        "desc": "The booking's services are distributed to the mechanics who are qualified."
       },
       "booking_select": "Select booking",
+      "not_all_completed": "Every work order on the booking must be completed before an invoice can be created.",
       "mechanic_select": "Select mechanic",
+      "plan_title": "Work orders to be created (one per mechanic)",
+      "no_qualified": "No mechanic is qualified for the services on this booking",
+      "create_failed": "No work orders could be created. Check that the booking has services and that the mechanics are available.",
+      "partial_failed": "Only {0} of {1} work orders were created. Mechanics who were not available got no work order.",
       "services_select": "Select services included",
+      "services_from_booking": "Services on the booking",
+      "no_services": "The booking has no services",
+      "mark_performed_title": "Mark performed work",
+      "mark_performed_header": "Which work is performed?",
+      "mark_performed_desc": "The price that applies when you mark it is stored on the line, so a later price change does not touch this work order.",
       "status_change": "Update Work Order Status",
       "details_header": "Details for work order #{0}",
+      "details_title": "Work Order Details",
+      "historical_notice": "Showing charged prices in effect when work was performed.",
       "open_in_orders": "Open in Work Orders"
     },
     "invoice": {
       "create": {
         "title": "Create Invoice",
         "header": "Issue Invoice",
-        "desc": "Generate invoice for a completed work order."
+        "desc": "Generate one invoice for all performed work on a booking."
       },
-      "workorder_select": "Select work order",
+      "booking_select": "Select booking",
+      "not_all_completed": "Every work order on the booking must be completed before an invoice can be created.",
       "discount": "Discount / Promotion (SEK)",
-      "discount_prompt": "E.g. WELCOME10 or SERVICE200 (optional)"
+      "discount_prompt": "E.g. 10off, WELCOME10, SERVICE200 or amount (optional)",
+      "create_failed": "The invoice could not be created.",
+      "print_title": "Invoice",
+      "print_header": "Invoice preview",
+      "print": "Print",
+      "no_printer": "No printer was found. Connect a printer and try again.",
+      "print_failed": "The invoice could not be printed."
     },
     "payment": {
       "create": {
@@ -366,13 +454,17 @@
       "method_card": "Credit Card",
       "method_swish": "Swish",
       "method_cash": "Cash",
-      "amount": "Amount to pay"
+      "amount": "Amount to pay",
+      "no_unpaid_invoices": "There are no unpaid invoices to process payment for."
     },
     "validation": {
       "required": "Please fill in all required fields.",
       "invalid_number": "Please enter a valid numeric value.",
       "missing_fields": "The following fields are missing: {0}",
-      "invalid_year": "Please enter a valid model year (e.g. 2022)."
+      "invalid_year": "Please enter a valid model year (e.g. 2022).",
+      "name_digits": "The name cannot contain digits.",
+      "phone_ten_digits": "The phone number must be exactly 10 digits (e.g. 070-1234567).",
+      "email_format": "Enter a valid email address (e.g. name@example.com)."
     },
     "success": {
       "saved": "Saved successfully."
@@ -503,6 +595,16 @@
       "edit_mech": "Edit mechanic",
       "delete_mech": "Delete mechanic",
       "next_booking": "Next booking: {0} →"
+    }
+  },
+  "view": {
+    "notice": {
+      "workorders.one": "Booking without a work order",
+      "workorders.many": "Bookings without a work order",
+      "invoices.one": "Booking waiting to be invoiced",
+      "invoices.many": "Bookings waiting to be invoiced",
+      "payments.one": "Invoice waiting for payment",
+      "payments.many": "Invoices waiting for payment"
     }
   }
 }

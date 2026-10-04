@@ -2,6 +2,7 @@ package com.wac.autocore.repository;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
+import com.wac.autocore.model.ServiceItem;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,12 +17,15 @@ import java.util.List;
 
 public class BookingRepository {
 
+    private final BookingServiceItemRepository bookingServiceItemRepository = new BookingServiceItemRepository();
+
     public void save(Booking booking) throws SQLException {
         if (booking.getId() == 0 || findById(booking.getId()) == null) {
             insert(booking);
         } else {
             update(booking);
         }
+        bookingServiceItemRepository.save(booking);
     }
 
     public List<Booking> findAll() throws SQLException {
@@ -34,7 +38,9 @@ public class BookingRepository {
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                bookings.add(buildBooking(resultSet));
+                Booking booking = buildBooking(resultSet);
+                loadServiceItems(booking);
+                bookings.add(booking);
             }
         }
 
@@ -52,7 +58,9 @@ public class BookingRepository {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return buildBooking(resultSet);
+                    Booking booking = buildBooking(resultSet);
+                    loadServiceItems(booking);
+                    return booking;
                 }
             }
         }
@@ -65,6 +73,8 @@ public class BookingRepository {
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            bookingServiceItemRepository.deleteByBookingId(connection, id);
 
             statement.setInt(1, id);
             statement.executeUpdate();
@@ -204,5 +214,40 @@ public class BookingRepository {
         }
 
         return booking;
+    }
+
+    private void loadServiceItems(Booking booking) throws SQLException {
+        List<ServiceItem> items = bookingServiceItemRepository.findByBookingId(booking.getId());
+
+        if (!items.isEmpty()) {
+            booking.setLoadedServiceItems(items);
+        } else if (booking.getServiceItemId() > 0) {
+            ServiceItem item = findServiceItemById(booking.getServiceItemId());
+            if (item != null) {
+                List<ServiceItem> singleList = new ArrayList<ServiceItem>();
+                singleList.add(item);
+                booking.setLoadedServiceItems(singleList);
+            }
+        }
+    }
+
+    private ServiceItem findServiceItemById(int id) throws SQLException {
+        String sql = "SELECT id, name, description, price, estimated_minutes FROM service_items WHERE id = ?";
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, id);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return new ServiceItem(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("description"),
+                            rs.getDouble("price"),
+                            rs.getInt("estimated_minutes")
+                    );
+                }
+            }
+        }
+        return null;
     }
 }

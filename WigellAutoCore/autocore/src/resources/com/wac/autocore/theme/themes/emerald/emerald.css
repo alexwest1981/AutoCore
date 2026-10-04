@@ -94,9 +94,9 @@ Button.small, .button.small {
 Button.kanban-toggle-btn-compact, .button.kanban-toggle-btn-compact {
     -fx-background-color: transparent;
     -fx-text-fill: -wac-muted;
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-padding: 3px 8px;
+    -fx-padding: 4px 10px;
     -fx-border-color: transparent;
     -fx-border-width: 0;
     -fx-background-radius: 4;
@@ -117,8 +117,8 @@ Button.kanban-filter-chip, .button.kanban-filter-chip {
     -fx-border-width: 1px;
     -fx-border-radius: 999;
     -fx-background-radius: 999;
-    -fx-padding: 3px 10px;
-    -fx-font-size: 11px;
+    -fx-padding: 5px 12px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-cursor: hand;
@@ -139,8 +139,8 @@ Button.kanban-scroll-btn, .button.kanban-scroll-btn {
     -fx-border-width: 1px;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-padding: 3px 8px;
-    -fx-font-size: 11px;
+    -fx-padding: 5px 10px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-cursor: hand;
@@ -150,17 +150,95 @@ Button.kanban-scroll-btn:hover, .button.kanban-scroll-btn:hover {
     -fx-border-color: -wac-ring;
 }
 
-TextField, PasswordField, TextArea, ComboBox {
-    -fx-background-color: -wac-card;
+TextField, PasswordField, TextArea,
+.text-field, .password-field, .text-area {
+    -fx-background-color: #ffffff;
     -fx-text-fill: -wac-text;
     -fx-prompt-text-fill: -wac-muted;
     -fx-border-color: -wac-line;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    -fx-padding: 6px 10px;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 5px 9px;
 }
-TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused {
+ComboBox, .combo-box, .combo-box-base, .choice-box {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: -wac-text;
+    -fx-prompt-text-fill: -wac-muted;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 2px 6px;
+}
+.combo-box:hover, .combo-box-base:hover, .choice-box:hover {
+    -fx-background-color: #ffffff;
     -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
+}
+.combo-box:showing, .combo-box-base:showing, .choice-box:showing {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
+}
+TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused,
+.text-field:focused, .combo-box:focused, .combo-box-base:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
+}
+.combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-text;
+    -fx-padding: 4px 6px;
+    -fx-alignment: CENTER_LEFT;
+}
+.combo-box .arrow, .combo-box-base .arrow, .choice-box .arrow {
+    -fx-background-color: #6b7280;
+}
+
+/* DatePicker utan dubbla ramar */
+DatePicker, .date-picker {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 0;
+}
+DatePicker:hover, .date-picker:hover {
+    -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
+}
+DatePicker:focused, .date-picker:focused,
+.date-picker:contains-focus {
+    -fx-border-color: -wac-ring;
+    -fx-border-width: 2px;
+}
+.date-picker > .text-field,
+.date-picker > .text-field:focused,
+.date-picker:focused > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 5px 9px;
+}
+.date-picker > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0 8px 0 0;
+    -fx-cursor: hand;
+}
+.date-picker > .arrow-button .arrow {
+    -fx-background-color: #6b7280;
+}
+.date-picker:hover > .arrow-button .arrow,
+.date-picker:focused > .arrow-button .arrow {
+    -fx-background-color: -wac-text;
 }
 
 ScrollPane { -fx-background-color: transparent; }
@@ -236,7 +314,7 @@ TableView .table-view, .table-view { -fx-padding: 0; }
     -fx-background-radius: 0;
     -fx-border-color: transparent #202523 transparent transparent;
     -fx-border-width: 0 1 0 0;
-    -fx-padding: 24px 0 0 0;
+    -fx-padding: 0;
 }
 .col {
     -fx-background-color: -wac-shell;
@@ -284,26 +362,50 @@ TableView .table-view, .table-view { -fx-padding: 0; }
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-side-muted;
+    -fx-opacity: 0.70;
+    -fx-cursor: default;
 }
 
-.nav-item {
+.nav-item, Button.ghost.nav-item {
     -fx-background-color: transparent;
-    -fx-background-radius: 10;
+    -fx-background-radius: 8;
     -fx-border-color: transparent;
-    -fx-border-width: 2px;
-    -fx-border-radius: 10;
+    -fx-border-width: 0 0 0 3px;
+    -fx-border-radius: 4;
     -fx-text-fill: -wac-side-text;
-    -fx-padding: 7px 12px;
+    -fx-padding: 8px 12px;
     -fx-font-size: 13px;
     -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
 }
-.nav-item:hover {
-    -fx-background-color: -wac-side-hover;
+.nav-item:hover, Button.ghost.nav-item:hover {
+    -fx-background-color: #384c42;
+    -fx-border-color: transparent transparent transparent -wac-accent2;
+    -fx-text-fill: #ffffff;
+    -fx-cursor: hand;
 }
-.nav-item.selected {
+.nav-item.selected, Button.ghost.nav-item.selected {
     -fx-background-color: -wac-accent;
+    -fx-border-color: transparent transparent transparent -wac-accent2;
     -fx-text-fill: -wac-on-accent;
     -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.nav-item.selected:hover, Button.ghost.nav-item.selected:hover {
+    -fx-background-color: -wac-accent-hover;
+    -fx-border-color: transparent transparent transparent -wac-accent2;
+    -fx-text-fill: #ffffff;
+    -fx-cursor: hand;
+}
+
+.nav-icon {
+    -fx-fill: -wac-side-muted;
+}
+.nav-item:hover .nav-icon, Button.ghost.nav-item:hover .nav-icon {
+    -fx-fill: #ffffff;
+}
+.nav-item.selected .nav-icon, Button.ghost.nav-item.selected .nav-icon {
+    -fx-fill: -wac-on-accent;
 }
 
 .avatar {
@@ -345,7 +447,7 @@ TableView .table-view, .table-view { -fx-padding: 0; }
 }
 
 .pages {
-    -fx-padding: 22px 26px 26px 26px;
+    -fx-padding: 22px 26px 40px 26px;
     -fx-background-color: -wac-shell;
 }
 .page-title {

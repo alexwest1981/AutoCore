@@ -10,8 +10,11 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service som hanterar livscykeln för en arbetsorder (WorkOrder).
@@ -47,11 +50,60 @@ public class WorkOrderService {
         }
     }
 
-    public WorkOrder createWorkOrder(int bookingId, int mechanicId, int... serviceItemIds) {
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
             return null;
+        }
+
+        // Tjänsterna som ingen arbetsorder tagit hand om än. Är alla redan tagna finns det inget
+        // kvar att göra, och då ska ingen ny order skapas — samma spärr mot dubbel fakturering som
+        // förut, men per tjänst i stället för per bokning.
+        List<Integer> remaining = new ArrayList<Integer>();
+        for (Integer serviceItemId : booking.getServiceItemIds()) {
+            if (!isClaimed(bookingId, serviceItemId)) {
+                remaining.add(serviceItemId);
+            }
+        }
+        if (remaining.isEmpty()) {
+            System.out.println("Booking with ID " + bookingId
+                    + " has no services left for a new work order.");
+            return null;
+        }
+        return createWorkOrder(bookingId, mechanicId, remaining);
+    }
+
+    /**
+     * Skapar en arbetsorder för ett urval av bokningens tjänster. En bokning med flera tjänster kan
+     * delas på flera mekaniker, och då blir det en arbetsorder per mekaniker.
+     *
+     * Spärren ligger på tjänstenivå: en tjänst får bara ligga på en arbetsorder. Annars kan samma
+     * arbete faktureras två gånger.
+     */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds) {
+        Booking booking = findBooking(bookingId);
+        if (booking == null) {
+            System.out.println("Booking with ID " + bookingId + " does not exist.");
+            return null;
+        }
+
+        if (serviceItemIds == null || serviceItemIds.isEmpty()) {
+            System.out.println("Booking with ID " + bookingId + " has no services to perform.");
+            return null;
+        }
+
+        for (WorkOrder existingOrder : getAll()) {
+            if (existingOrder.getBookingId() != bookingId) {
+                continue;
+            }
+            for (Integer serviceItemId : serviceItemIds) {
+                if (existingOrder.getServiceItemIds().contains(serviceItemId)) {
+                    System.out.println("Service " + serviceItemId + " is already on work order "
+                            + existingOrder.getId() + ".");
+                    return null;
+                }
+            }
         }
 
         Mechanic mechanic = findMechanic(mechanicId);
@@ -65,16 +117,9 @@ public class WorkOrderService {
             return null;
         }
 
-        for (int serviceItemId : serviceItemIds) {
-            if (findServiceItem(serviceItemId) == null) {
-                System.out.println("Service item with ID " + serviceItemId + " does not exist.");
-                return null;
-            }
-        }
-
         WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
 
-        for (int serviceItemId : serviceItemIds) {
+        for (Integer serviceItemId : serviceItemIds) {
             workOrder.addServiceItem(serviceItemId);
         }
 
@@ -93,6 +138,23 @@ public class WorkOrderService {
         System.out.println(workOrder);
 
         return workOrder;
+    }
+
+    /**
+     * True om tjänsten redan ligger på en arbetsorder för samma bokning. Tjänstekatalogen är delad
+     * mellan bokningar, så samma tjänst-id förekommer på andra bokningars ordrar utan att det säger
+     * något om den här bokningen.
+     */
+    private boolean isClaimed(int bookingId, int serviceItemId) {
+        for (WorkOrder order : getAll()) {
+            if (order.getBookingId() != bookingId) {
+                continue;
+            }
+            if (order.getServiceItemIds().contains(Integer.valueOf(serviceItemId))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean startWorkOrder(int workOrderId) {
@@ -139,6 +201,20 @@ public class WorkOrderService {
             return false;
         }
 
+        // Priset frysas även när ordern slutförs utan att någon har markerat arbetena.
+        // Priset läggs på raden utan att tjänsten markeras som utförd, för fakturan ska
+        // fortfarande bara byggas på de arbeten som faktiskt markerats.
+        Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
+        for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+            if (!priser.containsKey(serviceItemId)) {
+                ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
+                if (serviceItem != null) {
+                    priser.put(serviceItemId, Double.valueOf(serviceItem.getPrice()));
+                }
+            }
+        }
+        workOrder.setCompletedServicePrices(priser);
+
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
         Booking booking = findBooking(workOrder.getBookingId());
 
@@ -156,6 +232,46 @@ public class WorkOrderService {
         }
 
         System.out.println("Work order " + workOrderId + " has been completed.");
+        return true;
+    }
+
+    /**
+     * SCRUM-160 (D2): markerar tjänster som utförda och fryser priset som gäller i det ögonblicket.
+     * Priset läses ur tjänstekatalogen här, så att en senare prisändring inte rör den här arbetsordern.
+     */
+    public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
+        WorkOrder workOrder = findById(workOrderId);
+        if (workOrder == null) {
+            System.out.println("Work order with ID " + workOrderId + " does not exist.");
+            return false;
+        }
+
+        if (!"IN_PROGRESS".equals(workOrder.getStatus())) {
+            System.out.println("Services can only be marked as performed on a work order in progress.");
+            return false;
+        }
+
+        if (serviceItemIds == null || serviceItemIds.length == 0) {
+            System.out.println("No services given for work order " + workOrderId + ".");
+            return false;
+        }
+
+        for (int serviceItemId : serviceItemIds) {
+            ServiceItem serviceItem = findServiceItem(serviceItemId);
+            if (serviceItem == null) {
+                System.out.println("Service item with ID " + serviceItemId + " does not exist.");
+                return false;
+            }
+            // Priset frysas en gång. Är tjänsten redan markerad behåller den sitt gamla pris.
+            Double alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
+            double frozenPrice = alreadyFrozen != null ? alreadyFrozen.doubleValue() : serviceItem.getPrice();
+            workOrder.markServiceAsCompleted(serviceItemId, frozenPrice);
+        }
+
+        saveWorkOrder(workOrder);
+
+        System.out.println("Services marked as performed on work order " + workOrderId
+                + ", with the price that applied now.");
         return true;
     }
 

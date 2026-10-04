@@ -7,10 +7,14 @@ import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.SVGPath;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -27,6 +31,7 @@ public class SidebarView {
     private final VBox container;
     private final List<Button> navButtons = new ArrayList<Button>();
     private final Map<String, Button> navButtonMap = new LinkedHashMap<String, Button>();
+    private final Map<String, Label> navCountLabels = new LinkedHashMap<String, Label>();
     private final List<GroupHeader> groupHeaders = new ArrayList<GroupHeader>();
     private final Consumer<String> onNavigate;
 
@@ -50,6 +55,22 @@ public class SidebarView {
                 b.getStyleClass().add("selected");
             }
         }
+    }
+
+    /**
+     * Visar antalet nya poster som en räknare på menyvalet. Noll döljer räknaren.
+     */
+    public void setNavCount(String key, int count) {
+        Label countLabel = navCountLabels.get(key);
+        if (countLabel == null) {
+            return;
+        }
+        if (count <= 0) {
+            countLabel.setVisible(false);
+            return;
+        }
+        countLabel.setText("+" + count);
+        countLabel.setVisible(true);
     }
 
     public void refreshTexts() {
@@ -99,28 +120,50 @@ public class SidebarView {
         }
     }
 
+    private Image loadLogoImage() {
+        return com.wac.autocore.ui.components.UiComponents.loadLogoImage();
+    }
+
     private VBox buildSidebar() {
-        StackPane mark = new StackPane();
-        mark.getStyleClass().add("brand-mark");
-        mark.setPrefSize(38, 38);
-        Label letter = new Label("AC");
-        letter.getStyleClass().add("letter");
-        mark.getChildren().add(letter);
+        Node brandNode;
+        Image logoImg = loadLogoImage();
+        if (logoImg != null && !logoImg.isError()) {
+            ImageView logoView = new ImageView(logoImg);
+            logoView.setPreserveRatio(true);
+            logoView.setFitWidth(170);
+            logoView.setSmooth(true);
 
-        VBox brandTitles = new VBox(2);
-        Label brand = new Label(I18n.get("nav.brand.title"));
-        brand.getStyleClass().add("brand-title");
-        brandSub = new Label(I18n.get("nav.brand.subtitle"));
-        brandSub.getStyleClass().add("brand-sub");
-        brandTitles.getChildren().addAll(brand, brandSub);
+            StackPane logoContainer = new StackPane(logoView);
+            logoContainer.setAlignment(Pos.CENTER);
+            logoContainer.setPadding(new Insets(25, 25, 30, 25));
+            logoContainer.setMinWidth(240);
+            logoContainer.setPrefWidth(240);
+            logoContainer.setMaxWidth(240);
+            brandNode = logoContainer;
+        } else {
+            StackPane mark = new StackPane();
+            mark.getStyleClass().add("brand-mark");
+            mark.setPrefSize(38, 38);
+            Label letter = new Label("AC");
+            letter.getStyleClass().add("letter");
+            mark.getChildren().add(letter);
 
-        HBox brandRow = new HBox(12, mark, brandTitles);
-        brandRow.getStyleClass().add("brand-row");
-        brandRow.setAlignment(Pos.CENTER_LEFT);
-        brandRow.setPadding(new Insets(0, 16, 0, 16));
+            VBox brandTitles = new VBox(2);
+            Label brand = new Label(I18n.get("nav.brand.title"));
+            brand.getStyleClass().add("brand-title");
+            brandSub = new Label(I18n.get("nav.brand.subtitle"));
+            brandSub.getStyleClass().add("brand-sub");
+            brandTitles.getChildren().addAll(brand, brandSub);
+
+            HBox brandRow = new HBox(12, mark, brandTitles);
+            brandRow.getStyleClass().add("brand-row");
+            brandRow.setAlignment(Pos.CENTER_LEFT);
+            brandRow.setPadding(new Insets(10, 16, 16, 16));
+            brandNode = brandRow;
+        }
 
         VBox nav = new VBox(0);
-        nav.setPadding(new Insets(14, 16, 0, 16));
+        nav.setPadding(new Insets(0, 16, 0, 16));
         overviewBtn = addNav(nav, "overview", I18n.get("nav.section.overview"));
 
         VBox groups = new VBox(22);
@@ -148,10 +191,11 @@ public class SidebarView {
 
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
+        sidebar.setStyle("-fx-padding: 0;");
         sidebar.setMinWidth(240);
         sidebar.setPrefWidth(240);
         sidebar.setMaxWidth(240);
-        sidebar.getChildren().addAll(brandRow, navScroll, langToggle);
+        sidebar.getChildren().addAll(brandNode, navScroll, langToggle);
         return sidebar;
     }
 
@@ -232,10 +276,12 @@ public class SidebarView {
     private void addGroup(VBox parent, String i18nKey, NavSpec... items) {
         Label t = new Label(I18n.get(i18nKey).toUpperCase());
         t.getStyleClass().add("side-label");
+        t.setCursor(Cursor.DEFAULT);
         groupHeaders.add(new GroupHeader(i18nKey, t));
 
         HBox head = new HBox(t);
         head.getStyleClass().add("nav-group-head");
+        head.setCursor(Cursor.DEFAULT);
         head.setPadding(new Insets(0, 14, 6, 14));
 
         VBox list = new VBox(2);
@@ -253,7 +299,15 @@ public class SidebarView {
         b.setMaxWidth(Double.MAX_VALUE);
         b.setAlignment(Pos.CENTER_LEFT);
         b.setUserData(key);
+        b.setCursor(Cursor.HAND);
         b.getStyleClass().addAll("ghost", "nav-item");
+
+        SVGPath icon = createNavIcon(key);
+        if (icon != null && icon.getContent() != null && !icon.getContent().isEmpty()) {
+            b.setGraphic(icon);
+            b.setGraphicTextGap(10);
+        }
+
         b.setOnAction(e -> {
             if (onNavigate != null) {
                 onNavigate.accept(key);
@@ -263,7 +317,68 @@ public class SidebarView {
         if (!"overview".equals(key)) {
             navButtonMap.put(key, b);
         }
-        nav.getChildren().add(b);
+
+        // Räknaren ligger som ett lager ovanpå knappen i stället för i dess innehåll: då behåller
+        // etiketten sin formatering och knappens klick- och fokusbeteende är orört.
+        Label count = new Label();
+        count.getStyleClass().addAll("badge", "info");
+        count.setMouseTransparent(true);
+        count.setVisible(false);
+        navCountLabels.put(key, count);
+
+        StackPane holder = new StackPane(b, count);
+        StackPane.setAlignment(count, Pos.CENTER_RIGHT);
+        StackPane.setMargin(count, new Insets(0, 10, 0, 0));
+        nav.getChildren().add(holder);
         return b;
+    }
+
+    private static SVGPath createNavIcon(String key) {
+        SVGPath icon = new SVGPath();
+        String path;
+        switch (key) {
+            case "overview":
+                // 4-quadrant dashboard layout
+                path = "M 1 1 h 5 v 5 h -5 Z M 8 1 h 5 v 5 h -5 Z M 1 8 h 5 v 5 h -5 Z M 8 8 h 5 v 5 h -5 Z";
+                break;
+            case "customers":
+                // User / Customer profile
+                path = "M 7 1 a 3 3 0 1 1 0 6 a 3 3 0 0 1 0 -6 Z M 2 13 c 0 -3 2.5 -4.5 5 -4.5 s 5 1.5 5 4.5 v 1 h -10 Z";
+                break;
+            case "vehicles":
+                // Vehicle / Automobile silhouette
+                path = "M 2 8 l 2 -5 h 6 l 2 5 h 2 a 1 1 0 0 1 1 1 v 3 a 1 1 0 0 1 -1 1 h -1 a 1.5 1.5 0 0 1 -3 0 h -4 a 1.5 1.5 0 0 1 -3 0 h -1 a 1 1 0 0 1 -1 -1 v -3 a 1 1 0 0 1 1 -1 Z M 4.5 4.5 l -1.2 2.5 h 7.4 l -1.2 -2.5 Z";
+                break;
+            case "bookings":
+                // Calendar with date grid
+                path = "M 1 3 a 2 2 0 0 1 2 -2 h 8 a 2 2 0 0 1 2 2 v 9 a 2 2 0 0 1 -2 2 h -8 a 2 2 0 0 1 -2 -2 Z M 2.5 5 h 9 v 7 h -9 Z M 3 0.5 h 1.5 v 2 h -1.5 Z M 9.5 0.5 h 1.5 v 2 h -1.5 Z M 4 7 h 2 v 1.8 h -2 Z M 7.5 7 h 2 v 1.8 h -2 Z M 4 9.5 h 2 v 1.8 h -2 Z M 7.5 9.5 h 2 v 1.8 h -2 Z";
+                break;
+            case "services":
+                // Service catalog / Gear
+                path = "M 6 0 h 2 v 2 h -2 Z M 6 12 h 2 v 2 h -2 Z M 0 6 h 2 v 2 h -2 Z M 12 6 h 2 v 2 h -2 Z M 2 2 h 1.8 v 1.8 h -1.8 Z M 10.2 10.2 h 1.8 v 1.8 h -1.8 Z M 2 10.2 h 1.8 v 1.8 h -1.8 Z M 10.2 2 h 1.8 v 1.8 h -1.8 Z M 7 3 a 4 4 0 1 0 0 8 a 4 4 0 0 0 0 -8 Z M 7 5.5 a 1.5 1.5 0 1 1 0 3 a 1.5 1.5 0 0 1 0 -3 Z";
+                break;
+            case "mechanics":
+                // Mechanic / Tool wrench
+                path = "M 11.5 0.5 a 3.5 3.5 0 0 0 -3.2 2.1 l -6.5 6.5 a 1.5 1.5 0 0 0 2.1 2.1 l 6.5 -6.5 a 3.5 3.5 0 0 0 2.1 -3.2 l -1.8 1.8 l -1.2 -0.4 l -0.4 -1.2 Z";
+                break;
+            case "workorders":
+                // Work order clipboard checklist
+                path = "M 3 2 a 1 1 0 0 1 1 -1 h 6 a 1 1 0 0 1 1 1 v 11 a 1 1 0 0 1 -1 1 h -6 a 1 1 0 0 1 -1 -1 Z M 4.5 4 h 5 v 1.2 h -5 Z M 4.5 6.5 h 5 v 1.2 h -5 Z M 4.5 9 h 3.5 v 1.2 h -3.5 Z M 5 0 h 4 v 1.5 h -4 Z";
+                break;
+            case "invoices":
+                // Invoice / Billing receipt
+                path = "M 2 0.5 h 10 v 13 l -1.5 -1 l -1.5 1 l -1.5 -1 l -1.5 1 l -1.5 -1 l -1.5 1 l -1 -0.7 v -12.3 Z M 4 3 h 6 v 1.2 h -6 Z M 4 5.5 h 6 v 1.2 h -6 Z M 4 8 h 4 v 1.2 h -4 Z";
+                break;
+            case "payments":
+                // Payment / Credit card
+                path = "M 1 2 a 1.5 1.5 0 0 1 1.5 -1.5 h 9 a 1.5 1.5 0 0 1 1.5 1.5 v 8 a 1.5 1.5 0 0 1 -1.5 1.5 h -9 a 1.5 1.5 0 0 1 -1.5 -1.5 Z M 2 4.5 h 10 v 2 h -10 Z M 3 8 h 2.5 v 1.5 h -2.5 Z M 7 8 h 2 v 1.5 h -2 Z";
+                break;
+            default:
+                path = "";
+                break;
+        }
+        icon.setContent(path);
+        icon.getStyleClass().add("nav-icon");
+        return icon;
     }
 }

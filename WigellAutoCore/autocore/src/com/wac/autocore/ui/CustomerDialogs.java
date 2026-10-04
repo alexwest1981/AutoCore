@@ -45,6 +45,7 @@ public final class CustomerDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, nameField, phoneField);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -52,8 +53,9 @@ public final class CustomerDialogs {
                 String phone = phoneField.getText().trim();
                 String email = emailField.getText().trim();
 
-                if (name.isEmpty() || phone.isEmpty()) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                String problem = Customer.validationProblem(name, phone, email);
+                if (problem != null) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
                     return;
                 }
 
@@ -93,6 +95,7 @@ public final class CustomerDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, nameField, phoneField);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -100,8 +103,9 @@ public final class CustomerDialogs {
                 String phone = phoneField.getText().trim();
                 String email = emailField.getText().trim();
 
-                if (name.isEmpty() || phone.isEmpty()) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                String problem = Customer.validationProblem(name, phone, email);
+                if (problem != null) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
                     return;
                 }
 
@@ -131,11 +135,9 @@ public final class CustomerDialogs {
             return;
         }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18n.get("dialog.customer.delete.title"));
-        alert.setHeaderText(I18n.get("dialog.customer.delete.header"));
-        alert.setContentText(I18n.get("dialog.customer.delete.confirm", customer.getName()));
-        ActionDialogs.styleDialog(alert);
+        Alert alert = ActionDialogs.confirm(I18n.get("dialog.customer.delete.title"),
+                I18n.get("dialog.customer.delete.header"),
+                I18n.get("dialog.customer.delete.confirm", customer.getName()));
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {

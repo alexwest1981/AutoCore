@@ -1,7 +1,11 @@
 package com.wac.autocore.ui.util;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * Hjälpmetoder för ren dataformatering och presentationslogik i gränssnittet.
@@ -9,7 +13,12 @@ import java.time.LocalDate;
  */
 public final class UiFormatters {
 
-    private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0");
+    private static final DecimalFormat MONEY_FORMAT =
+            new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.US));
+
+    /** Datum och tid utan sekunder, så en tabellrad inte domineras av millisekunder. */
+    private static final DateTimeFormatter DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private UiFormatters() {}
 
@@ -78,6 +87,35 @@ public final class UiFormatters {
             return week[d.getDayOfWeek().getValue()] + " " + d.getDayOfMonth()
                     + " " + months[d.getMonthValue()] + " " + d.getYear();
         }
+    }
+
+    /**
+     * Datum och tid som den visas i gränssnittet, utan sekunder och millisekunder:
+     * "2026-10-01 21:30" i stället för "2026-10-01T21:30:15.862".
+     */
+    public static String formatDateTime(LocalDateTime value) {
+        return value == null ? "-" : value.format(DATE_TIME_FORMAT);
+    }
+
+    /**
+     * Betalsättet som ett läsvänligt ord: det sparade värdet "SWISH" visas som "Swish". Ett okänt
+     * betalsätt visas som det sparades, så en ny typ inte blir tom i tabellen.
+     */
+    public static String paymentTypeWord(String stored) {
+        if (stored == null || stored.trim().isEmpty()) {
+            return "-";
+        }
+        String type = stored.trim().toUpperCase(Locale.US);
+        if ("SWISH".equals(type)) {
+            return com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_swish");
+        }
+        if ("CARD".equals(type)) {
+            return com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_card");
+        }
+        if ("CASH".equals(type)) {
+            return com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_cash");
+        }
+        return stored;
     }
 
     /**

@@ -4,6 +4,13 @@ setlocal enabledelayedexpansion
 set "DIR=%~dp0"
 cd /d "%DIR%"
 
+:: Om PowerShell finns på Windows, kör test.ps1 för fullständig 6-stegs audit och rapport.md
+where powershell >nul 2>&1
+if %ERRORLEVEL% equ 0 (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%DIR%test.ps1" %*
+    exit /b %ERRORLEVEL%
+)
+
 :: ==============================================================================
 :: VARFOR JAVA 8 (JDK 8)?
 :: Projektets arkitektur- och kurskriterier kraver att den befintliga Java-
@@ -12,10 +19,29 @@ cd /d "%DIR%"
 :: med inbyggd JavaFX-runtime).
 :: ==============================================================================
 
+:: ==============================================================================
+:: 0. KONFIGURATION AV JAVA 8 JDK (VIKTIGT FÖR WINDOWS)
+:: ==============================================================================
+:: Om skriptet inte hittar din Java 8 automatiskt, avkommentera och ange din sökväg:
+::
+:: set "CUSTOM_JDK=C:\Program Files\BellSoft\LibericaJDK-8-Full"
+::
+:: Du hittar troligen din JDK i mappen:
+::   C:\Program Files\BellSoft\LibericaJDK-8-Full
+::   C:\Program Files\BellSoft\LibericaJDK-8
+::   C:\Program Files\Java\jdk1.8.0_xxx
+::   C:\Program Files\Eclipse Adoptium\jdk-8.x.x
+:: ==============================================================================
+
 :: 1. Hitta Java 8 JDK på Windows
 set "FOUND_JDK="
 set "JAVA_BIN="
 set "JAVAC_BIN="
+
+if defined CUSTOM_JDK if exist "%CUSTOM_JDK%\bin\javac.exe" (
+    set "FOUND_JDK=%CUSTOM_JDK%"
+    goto :jdk_found
+)
 
 :: Kontrollera explicit miljövariabel JDK8_HOME
 if defined JDK8_HOME if exist "%JDK8_HOME%\bin\javac.exe" (
@@ -93,13 +119,26 @@ set "RES_DIR=WigellAutoCore\autocore\src\resources"
 set "OUT_DIR=out\production\Systemarkitektur"
 set "JDBC_JAR=WigellAutoCore\autocore\lib\sqlite-jdbc-3.53.4.0.jar"
 
-if not exist "%OUT_DIR%" mkdir "%OUT_DIR%"
+if exist "%OUT_DIR%" rmdir /s /q "%OUT_DIR%"
+mkdir "%OUT_DIR%"
 if exist "%RES_DIR%" xcopy /E /I /Y "%RES_DIR%\*" "%OUT_DIR%\" >nul 2>&1
 
 set "SOURCES_FILE=%OUT_DIR%\sources.txt"
+set "CP_BUILD=%JDBC_JAR%"
+set "CP_RUN=%OUT_DIR%;%JDBC_JAR%"
+if exist "WigellAutoCore\autocore\lib\tools.jar" (
+    set "CP_BUILD=%JDBC_JAR%;WigellAutoCore\autocore\lib\tools.jar"
+    set "CP_RUN=%OUT_DIR%;%JDBC_JAR%;WigellAutoCore\autocore\lib\tools.jar"
+) else if defined FOUND_JDK if exist "%FOUND_JDK%\lib\tools.jar" (
+    set "CP_BUILD=%JDBC_JAR%;%FOUND_JDK%\lib\tools.jar"
+    set "CP_RUN=%OUT_DIR%;%JDBC_JAR%;%FOUND_JDK%\lib\tools.jar"
+) else if exist "%JAVA_HOME%\lib\tools.jar" (
+    set "CP_BUILD=%JDBC_JAR%;%JAVA_HOME%\lib\tools.jar"
+    set "CP_RUN=%OUT_DIR%;%JDBC_JAR%;%JAVA_HOME%\lib\tools.jar"
+)
 dir /s /b "%SRC_DIR%\*.java" > "%SOURCES_FILE%"
 
-"%JAVAC_BIN%" -d "%OUT_DIR%" -sourcepath "%SRC_DIR%;%RES_DIR%" -cp "%JDBC_JAR%" @"%SOURCES_FILE%"
+"%JAVAC_BIN%" -encoding UTF-8 -d "%OUT_DIR%" -sourcepath "%SRC_DIR%;%RES_DIR%" -cp "%CP_BUILD%" @"%SOURCES_FILE%"
 if %ERRORLEVEL% neq 0 (
     echo Kompileringsfel!
     del "%SOURCES_FILE%" >nul 2>&1
@@ -107,5 +146,5 @@ if %ERRORLEVEL% neq 0 (
 )
 del "%SOURCES_FILE%" >nul 2>&1
 
-"%JAVA_BIN%" -cp "%OUT_DIR%;%JDBC_JAR%" com.wac.autocore.test.TestRunner %*
+"%JAVA_BIN%" -cp "%CP_RUN%" com.wac.autocore.test.TestRunner %*
 exit /b %ERRORLEVEL%

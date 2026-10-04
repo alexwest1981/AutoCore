@@ -91,22 +91,57 @@
     -fx-border-width: 1;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 12, 0.10, 0, 4);
 }
-.combo-box-popup > .list-view > .list-cell {
+/* Raderna ligger i listans VirtualFlow, inte direkt under listan — därför nedtoningsväljare
+   (mellanslag) och inte ">" hela vägen, annars matchar ingen av reglerna nedan. */
+.combo-box-popup > .list-view .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: #111827;
     -fx-padding: 7 12;
 }
-.combo-box-popup > .list-view > .list-cell:filled:hover {
-    -fx-background-color: #f3f4f6;
+.combo-box-popup > .list-view .list-cell:filled:hover {
+    -fx-background-color: -wac-accent-soft;
     -fx-text-fill: #111827;
 }
-.combo-box-popup > .list-view > .list-cell:filled:selected {
+.combo-box-popup > .list-view .list-cell:filled:selected {
     -fx-background-color: #e5e7eb;
     -fx-text-fill: #111827;
 }
-.combo-box-popup > .list-view > .list-cell:filled:hover:selected {
+.combo-box-popup > .list-view .list-cell:filled:hover:selected {
     -fx-background-color: #d1d5db;
     -fx-text-fill: #111827;
+}
+
+/* Alla ComboBoxar: ren vit bakgrund, skarp kant och neutral text */
+.combo-box, .combo-box-base, .choice-box {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 2px 6px;
+    -fx-cursor: hand;
+}
+.combo-box:hover, .combo-box-base:hover, .choice-box:hover {
+    -fx-background-color: white;
+    -fx-border-color: #9ca3af;
+}
+.combo-box:showing, .combo-box-base:showing, .choice-box:showing {
+    -fx-background-color: white;
+    -fx-border-color: -wac-ring;
+}
+.combo-box:focused, .combo-box-base:focused, .choice-box:focused {
+    -fx-background-color: white;
+    -fx-border-color: -wac-ring;
+    -fx-border-width: 1.5;
+}
+.combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: #111827;
+    -fx-padding: 4px 6px;
+    -fx-alignment: CENTER_LEFT;
+}
+.combo-box .arrow, .combo-box-base .arrow, .choice-box .arrow {
+    -fx-background-color: #6b7280;
 }
 
 /*
@@ -494,6 +529,22 @@ TableView .table-row-cell:selected:focused .table-cell,
 .primary-button:pressed, .create-button:pressed, .wide-action:pressed {
     -fx-background-color: -wac-accent-pressed;
 }
+.add-service-btn, .button.add-service-btn {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 7px 14px;
+    -fx-alignment: CENTER;
+}
+.add-service-btn:hover, .button.add-service-btn:hover {
+    -fx-background-color: -wac-accent-hover;
+}
+.add-service-btn:pressed, .button.add-service-btn:pressed {
+    -fx-background-color: -wac-accent-pressed;
+}
 .secondary-button, .filter-button, .more-button {
     -fx-background-color: -wac-surface;
     -fx-text-fill: -wac-text;
@@ -593,23 +644,49 @@ TableView .table-row-cell:selected:focused .table-cell,
 }
 .side-link, .side-overview, .side-current, .fleet-nav, .nav-item {
     -fx-background-color: transparent;
-    -fx-background-radius: 10;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3px;
+    -fx-border-radius: 4;
     -fx-text-fill: -wac-side-text;
-    -fx-padding: 9 12;
+    -fx-padding: 8px 12px;
     -fx-cursor: hand;
     -fx-alignment: CENTER_LEFT;
 }
 .side-link:hover, .side-overview:hover, .fleet-nav:hover, .nav-item:hover {
-    -fx-background-color: -wac-side-hover;
+    -fx-background-color: #384c42;
+    -fx-border-color: transparent transparent transparent #2bb88a;
+    -fx-text-fill: #ffffff;
+    -fx-cursor: hand;
 }
 .side-current, .fleet-nav-active, .nav-item.selected {
     -fx-background-color: -wac-accent;
+    -fx-border-color: transparent transparent transparent #2bb88a;
     -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.side-current:hover, .fleet-nav-active:hover, .nav-item.selected:hover {
+    -fx-background-color: -wac-accent-hover;
+    -fx-border-color: transparent transparent transparent #2bb88a;
+    -fx-text-fill: #ffffff;
+    -fx-cursor: hand;
+}
+.nav-icon {
+    -fx-fill: -wac-side-muted;
+}
+.side-link:hover .nav-icon, .side-overview:hover .nav-icon, .fleet-nav:hover .nav-icon, .nav-item:hover .nav-icon {
+    -fx-fill: #ffffff;
+}
+.side-current .nav-icon, .fleet-nav-active .nav-icon, .nav-item.selected .nav-icon {
+    -fx-fill: -wac-on-accent;
 }
 .nav-group-title, .side-label, .nav-group-head {
     -fx-text-fill: -wac-side-muted;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
+    -fx-opacity: 0.70;
+    -fx-cursor: default;
 }
 .nav-group-head {
     -fx-padding: 0 14 4 14;
@@ -779,8 +856,24 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-text-fill: -wac-text;
 }
 
+.date-picker-popup > .calendar-grid .day-cell:disabled,
+.date-picker-popup > .calendar-grid .day-cell.unbookable-day {
+    -fx-background-color: -wac-drift;
+    -fx-text-fill: -wac-muted;
+    -fx-opacity: 0.35;
+}
+
 .date-picker-popup > .calendar-grid .day-cell:hover {
     -fx-background-color: -wac-accent-soft;
+}
+
+/* Kalendern i bokningsformuläret. Färgerna måste stå här: -wac-* slås upp av CSS-motorn och
+   tappas tyst om de används i en inline-style. */
+.booking-calendar {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
 }
 
 .date-picker-popup > .calendar-grid .day-cell.selected {
@@ -793,9 +886,20 @@ TableView .table-row-cell:selected:focused .table-cell,
    15. WCAG 2.1 TILLGÄNGLIGHET: FOCUS VISIBLE (2.4.7) & KONTRAST
    ============================================================ */
 .button:focused, .nav-item:focused,
-.text-field:focused, .combo-box:focused {
+.text-field:focused, .combo-box:focused, .date-picker:focused {
     -fx-border-color: -wac-ring;
     -fx-border-width: 2px;
+}
+
+.date-picker > .text-field,
+.date-picker > .text-field:focused,
+.date-picker:focused > .text-field,
+.combo-box > .text-field,
+.combo-box > .text-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
 }
 
 .text-field, .text-area {
@@ -1045,7 +1149,7 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-background-radius: 999;
 }
 .kanban-legend-text {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-text-fill: -wac-muted;
 }
 
@@ -1097,13 +1201,13 @@ TableView .table-row-cell:selected:focused .table-cell,
 
 /* Kompakt Kanban-kort (flera mekaniker samtidigt sida vid sida) */
 .kanban-board-panel {
-    -fx-padding: 14px 16px;
-    -fx-spacing: 10px;
+    -fx-padding: 18px 20px;
+    -fx-spacing: 14px;
 }
 
 .kanban-card-compact {
-    -fx-padding: 10px 12px;
-    -fx-spacing: 8px;
+    -fx-padding: 14px 16px;
+    -fx-spacing: 12px;
     -fx-background-color: -wac-card;
     -fx-border-color: -wac-line;
     -fx-border-width: 1;
@@ -1112,10 +1216,10 @@ TableView .table-row-cell:selected:focused .table-cell,
 }
 
 .kanban-nav-arrow-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
-    -fx-padding: 2px 6px;
+    -fx-padding: 4px 8px;
     -fx-cursor: hand;
     -fx-background-radius: 4;
 }
@@ -1130,19 +1234,19 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-alignment: CENTER;
 }
 .kanban-avatar-compact .label {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-accent;
 }
 
 .kanban-mech-name-compact {
-    -fx-font-size: 13px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-text;
 }
 
 .kanban-mech-sub-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-text-fill: -wac-muted;
 }
 
@@ -1152,16 +1256,16 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-border-color: -wac-line;
     -fx-border-width: 1;
     -fx-border-radius: 6;
-    -fx-padding: 2;
+    -fx-padding: 3;
     -fx-alignment: CENTER;
 }
 
 .kanban-toggle-btn-compact {
     -fx-background-color: transparent;
     -fx-text-fill: -wac-muted;
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-padding: 2px 7px;
+    -fx-padding: 4px 10px;
     -fx-background-radius: 4;
     -fx-cursor: hand;
 }
@@ -1180,8 +1284,8 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-border-width: 1px;
     -fx-border-radius: 999;
     -fx-background-radius: 999;
-    -fx-padding: 3px 10px;
-    -fx-font-size: 11px;
+    -fx-padding: 5px 12px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-cursor: hand;
@@ -1202,8 +1306,8 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-border-width: 1px;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-padding: 3px 8px;
-    -fx-font-size: 11px;
+    -fx-padding: 5px 10px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-cursor: hand;
@@ -1214,7 +1318,7 @@ TableView .table-row-cell:selected:focused .table-cell,
 }
 
 .kanban-count-label {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-padding: 0 4px 0 0;
@@ -1267,7 +1371,7 @@ TableView .table-row-cell:selected:focused .table-cell,
 }
 
 .kanban-date-title-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-text;
 }
@@ -1278,42 +1382,44 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-border-width: 1;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-padding: 3px 8px;
-    -fx-min-height: 25px;
+    -fx-padding: 7px 12px;
+    -fx-min-height: 36px;
+    -fx-pref-height: 36px;
+    -fx-alignment: CENTER_LEFT;
 }
 .kanban-slot-row-compact.free {
     -fx-background-color: -wac-shell;
     -fx-border-style: dashed;
 }
 .kanban-time-badge-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-background-color: -wac-shell;
-    -fx-padding: 2px 6px;
+    -fx-padding: 3px 8px;
     -fx-background-radius: 4;
     -fx-alignment: CENTER;
 }
 .kanban-slot-desc-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-text-fill: -wac-muted;
 }
 .kanban-slot-free-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-text-fill: -wac-muted;
     -fx-font-style: italic;
 }
 .kanban-slot-plus-btn {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-padding: 0;
-    -fx-min-width: 24px;
-    -fx-pref-width: 24px;
-    -fx-max-width: 24px;
-    -fx-min-height: 24px;
-    -fx-pref-height: 24px;
-    -fx-max-height: 24px;
-    -fx-background-radius: 12px;
-    -fx-border-radius: 12px;
+    -fx-min-width: 20px;
+    -fx-pref-width: 20px;
+    -fx-max-width: 20px;
+    -fx-min-height: 20px;
+    -fx-pref-height: 20px;
+    -fx-max-height: 20px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
     -fx-alignment: CENTER;
     -fx-content-display: graphic-only;
     -fx-cursor: hand;
@@ -1331,41 +1437,41 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-border-width: 1;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-padding: 4px 8px;
+    -fx-padding: 8px 12px;
     -fx-cursor: hand;
 }
 .kanban-week-row-compact:hover {
     -fx-border-color: -wac-accent;
 }
 .kanban-week-day-name {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-text;
 }
 .kanban-load-pill-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-padding: 1px 5px;
+    -fx-padding: 3px 7px;
     -fx-background-radius: 3;
     -fx-alignment: CENTER;
 }
 .kanban-week-count-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-text-fill: -wac-muted;
     -fx-alignment: CENTER_RIGHT;
 }
 /* 9 timboxar i veckovyn */
 .kanban-hour-boxes {
     -fx-alignment: CENTER_LEFT;
-    -fx-spacing: 2px;
+    -fx-spacing: 3px;
 }
 .kanban-hour-box {
-    -fx-min-width: 9px;
-    -fx-pref-width: 10px;
-    -fx-max-width: 11px;
-    -fx-min-height: 14px;
-    -fx-pref-height: 14px;
-    -fx-max-height: 14px;
+    -fx-min-width: 11px;
+    -fx-pref-width: 12px;
+    -fx-max-width: 13px;
+    -fx-min-height: 17px;
+    -fx-pref-height: 18px;
+    -fx-max-height: 19px;
     -fx-background-radius: 2px;
     -fx-border-radius: 2px;
 }
@@ -1397,7 +1503,7 @@ TableView .table-row-cell:selected:focused .table-cell,
 }
 
 .kanban-month-head-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-muted;
     -fx-alignment: CENTER;
@@ -1454,7 +1560,7 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-background-color: transparent;
 }
 .kanban-month-num-compact {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -wac-text;
 }
@@ -1464,15 +1570,212 @@ TableView .table-row-cell:selected:focused .table-cell,
    ============================================================ */
 .kanban-inline-drawer {
     -fx-background-color: -wac-card;
-    -fx-background-radius: 6px;
+    -fx-background-radius: 8px;
     -fx-border-color: -wac-line -wac-line -wac-line -wac-accent;
     -fx-border-width: 1px 1px 1px 4px;
-    -fx-border-radius: 6px;
-    -fx-padding: 8px 12px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 6, 0, 0, 2);
+    -fx-border-radius: 8px;
+    -fx-padding: 14px 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.10), 8, 0, 0, 3);
 }
+/* Chipsen inuti rutan följer rutans storlek, inte den globala badge-storleken. */
+.kanban-inline-drawer .badge {
+    -fx-font-size: 12px;
+    -fx-padding: 3px 10px;
+}
+/* Rutan är uppbyggd som rubrik, avdelare, etikettrader och fot. Det här är dess egna stilar. */
+.kanban-drawer-time  { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: -wac-accent; }
+.kanban-drawer-ref   { -fx-font-size: 12px; -fx-text-fill: -wac-muted; }
+.kanban-drawer-line  { -fx-background-color: -wac-line; -fx-min-height: 1px; -fx-pref-height: 1px; -fx-max-height: 1px; }
+.kanban-drawer-field { -fx-font-size: 12px; -fx-text-fill: -wac-muted; }
+.kanban-drawer-value { -fx-font-size: 13px; -fx-text-fill: -wac-text; }
 .kanban-hour-box.expanded {
     -fx-border-color: #ffffff;
     -fx-border-width: 1.5px;
     -fx-border-radius: 2px;
+}
+
+
+/* ============================================================
+   FLERVALSFÄLT — experimentgren
+   Förebild: DJ-Raven, ComboBoxMultiSelection i Swing. Valda poster ligger som
+   chips i fältet och rullistan har en kryssruta per post.
+
+   Stilen är avsiktligt kopierad rakt av appens egna fält längre upp i filen:
+   samma vita bakgrund, samma kant #d1d5db, samma rundning 8, samma luft 2px 6px
+   och samma höjd på 31 px som .combo-box mäter i appen. Popupen följer
+   .combo-box-popup > .list-view och .list-cell exakt, rad för rad. Texten i
+   listan är #111827 av samma skäl som appens egna fält: vitt fungerar i alla
+   teman, och temat bidrar med accenten på chipsen och i kryssrutorna.
+   ============================================================ */
+.multi-select {
+    -fx-background-color: white;
+    /* Samma kant som appens egna ComboBoxar: -wac-line, 2 px. */
+    -fx-border-color: -wac-line;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 2px 6px;
+    -fx-spacing: 6;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+    -fx-min-height: 31px;
+    -fx-pref-height: 31px;
+    -fx-max-height: 31px;
+}
+.multi-select:hover {
+    -fx-border-color: -wac-ring;
+}
+/* Grön kant bara medan listan är öppen. Hover sköter JavaFX själv, och fältet har
+   medvetet inget focused-läge: det ligger kvar när man klickar i något som inte tar
+   fokus, och då ser kanten ut att ha fastnat. */
+.multi-select.showing {
+    -fx-border-color: -wac-ring;
+}
+/* Två kort i bokningsformuläret: kalendern och tiden. Samma kant och rundning som fälten. */
+.booking-card {
+    -fx-background-color: white;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12;
+}
+.booking-card-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+
+.multi-select-placeholder {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 13px;
+}
+/* Pilen. Samma nodbygge som appens ComboBoxar: en Region med klassen arrow inuti en StackPane
+   med klassen arrow-button. Modenas egna regler gäller bara .combo-box och .choice-box, så
+   måtten upprepas här: en 9 x 5 px triangel med -fx-shape och 8,7 px luft till fältets
+   högerkant. Färgen är appens egen, #6b7280, samma som i .combo-box .arrow längre upp. */
+/* Pilknappen: luften ar appens egen, mott ur en riktig ComboBox i samma scen. */
+.multi-select .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 6.5 10.2 6.5 10.8;
+    -fx-max-height: 23;
+}
+/*
+ * Pilen. Form, luft och insets ar ordagrant JavaFX egna varden for klassen .arrow, samma stil
+ * som en vanlig ComboBox anvander. Bara fargen ar appens.
+ */
+.multi-select .arrow {
+    -fx-background-color: #6b7280;
+    -fx-shape: "M 0 0 h 7 l -3.5 4 z";
+    -fx-padding: 2.2 4.05 2.2 4.05;
+    -fx-background-insets: 1 0 -1 0, 0;
+    /* Appens pil ritar sex rader, alltsa 9 x 6 px. Utan tak blir den 10 px hog. */
+    -fx-max-height: 6;
+    -fx-pref-height: 6;
+}
+.multi-select-scroll, .multi-select-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+.multi-select-scroll {
+    -fx-padding: 0;
+}
+.multi-select-scroll .scroll-bar:horizontal {
+    -fx-pref-height: 5px;
+    -fx-background-color: transparent;
+}
+.multi-select-scroll .scroll-bar:horizontal .thumb {
+    -fx-background-color: #d1d5db;
+    -fx-background-radius: 999;
+}
+.multi-select-scroll .scroll-bar:horizontal .increment-button,
+.multi-select-scroll .scroll-bar:horizontal .decrement-button {
+    -fx-padding: 0;
+    -fx-opacity: 0;
+}
+
+/* Chipsen: samma rundning och samma gröna ton som appens märken,
+   men i fältets höjd så att raden håller 31 px. */
+.multi-select-chip {
+    -fx-background-color: -wac-accent-soft;
+    -fx-background-radius: 4;
+    -fx-padding: 1px 5px 1px 7px;
+}
+.multi-select-chip-text {
+    -fx-text-fill: -wac-accent;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.multi-select-chip-close {
+    -fx-text-fill: #f87171;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 1 0 2;
+    -fx-cursor: hand;
+}
+.multi-select-chip-close:hover {
+    -fx-text-fill: -wac-danger;
+}
+
+/* Rullistan: identisk med .combo-box-popup > .list-view och .list-cell. */
+.multi-select-popup {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 12, 0.10, 0, 4);
+}
+.multi-select-popup-scroll, .multi-select-popup-scroll > .viewport {
+    -fx-background-color: white;
+}
+.multi-select-popup-scroll {
+    -fx-padding: 0;
+}
+.multi-select-popup-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+.multi-select-popup-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: #d1d5db;
+    -fx-background-radius: 999;
+}
+.multi-select-row {
+    -fx-background-color: transparent;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+}
+.multi-select-row:hover {
+    -fx-background-color: -wac-accent-soft;
+}
+.multi-select-row.selected {
+    -fx-background-color: #e5e7eb;
+}
+.multi-select-row-text {
+    -fx-text-fill: #111827;
+    -fx-font-size: 13px;
+}
+.multi-select-row-sub {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 11px;
+}
+.multi-select-empty {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+    -fx-padding: 8 12;
+}
+.multi-select-check {
+    -fx-padding: 0;
+}
+.multi-select-check .box {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 2;
+}
+.multi-select-check:selected .box {
+    -fx-background-color: -wac-accent;
+    -fx-border-color: -wac-accent;
+}
+.multi-select-check:selected .mark {
+    -fx-background-color: white;
 }

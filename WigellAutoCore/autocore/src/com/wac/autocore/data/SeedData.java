@@ -15,6 +15,7 @@ import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class SeedData {
 
@@ -69,19 +70,19 @@ public class SeedData {
             vehicleRepository.save(mercedes);
 
             ServiceItem oilChange = new ServiceItem(0, "seed.service.oil_change.name",
-                    "seed.service.oil_change.desc", 1295.0, 45);
+                    "seed.service.oil_change.desc", 1295.0, 45, "");
             serviceItemRepository.save(oilChange);
 
             ServiceItem brakeService = new ServiceItem(0, "seed.service.brake_service.name",
-                    "seed.service.brake_service.desc", 2495.0, 90);
+                    "seed.service.brake_service.desc", 2495.0, 90, "seed.mechanic.brakes.specialization");
             serviceItemRepository.save(brakeService);
 
             ServiceItem diagnostics = new ServiceItem(0, "seed.service.diagnostics.name",
-                    "seed.service.diagnostics.desc", 995.0, 60);
+                    "seed.service.diagnostics.desc", 995.0, 60, "seed.mechanic.diagnostics.specialization");
             serviceItemRepository.save(diagnostics);
 
             ServiceItem annualService = new ServiceItem(0, "seed.service.annual_service.name",
-                    "seed.service.annual_service.desc", 3495.0, 120);
+                    "seed.service.annual_service.desc", 3495.0, 120, "");
             serviceItemRepository.save(annualService);
 
             Mechanic johan = new Mechanic(0, "Johan Karlsson", "070-5551111", "seed.mechanic.general_service.specialization");
@@ -95,22 +96,38 @@ public class SeedData {
 
             LocalDate today = LocalDate.now();
 
+            // Tiderna ligger inom verkstadens dag, 07:00 till 16:00, och varje mekaniker har
+            // bara ett jobb i taget. Sluttiden räknas ur bokningens tjänster, så den följer med
+            // om en tjänst får en annan tidsåtgång.
             Booking firstBooking = new Booking(0, volvo.getId(), today, "seed.booking.oil_change_filter.description");
+            firstBooking.addServiceItem(oilChange);
+            setSchedule(firstBooking, 7, 0, johan.getId());
             bookingRepository.save(firstBooking);
 
             Booking secondBooking = new Booking(0, volkswagen.getId(), today, "seed.booking.front_brake_inspection.description");
+            secondBooking.addServiceItem(brakeService);
+            setSchedule(secondBooking, 7, 0, sara.getId());
             bookingRepository.save(secondBooking);
 
             Booking thirdBooking = new Booking(0, toyota.getId(), today.plusDays(1), "seed.booking.full_brake_overhaul.description");
+            thirdBooking.addServiceItem(brakeService);
+            thirdBooking.addServiceItem(annualService);
+            setSchedule(thirdBooking, 7, 0, sara.getId());
             bookingRepository.save(thirdBooking);
 
             Booking fourthBooking = new Booking(0, bmw.getId(), today, "seed.booking.brake_calipers_pads.description");
+            fourthBooking.addServiceItem(brakeService);
+            setSchedule(fourthBooking, 9, 0, sara.getId());
             bookingRepository.save(fourthBooking);
 
             Booking fifthBooking = new Booking(0, audi.getId(), today, "seed.booking.obd2_fault_codes.description");
+            fifthBooking.addServiceItem(diagnostics);
+            setSchedule(fifthBooking, 7, 0, mikael.getId());
             bookingRepository.save(fifthBooking);
 
             Booking sixthBooking = new Booking(0, mercedes.getId(), today.plusDays(1), "seed.booking.electronic_fault_diagnosis.description");
+            sixthBooking.addServiceItem(diagnostics);
+            setSchedule(sixthBooking, 7, 0, mikael.getId());
             bookingRepository.save(sixthBooking);
 
             WorkOrder firstOrder = new WorkOrder(0, firstBooking.getId(), johan.getId());
@@ -118,30 +135,55 @@ public class SeedData {
             firstOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(firstOrder);
 
-            WorkOrder secondOrder = new WorkOrder(0, secondBooking.getId(), johan.getId());
+            // Bokningens status ska spegla arbetsordern, annars ser startdatan motsägelsefull ut.
+            firstBooking.setStatus("IN_PROGRESS");
+            bookingRepository.save(firstBooking);
+
+            WorkOrder secondOrder = new WorkOrder(0, secondBooking.getId(), sara.getId());
             secondOrder.addServiceItem(brakeService.getId());
             workOrderRepository.save(secondOrder);
+            secondBooking.setStatus("WORK_ORDER_CREATED");
+            bookingRepository.save(secondBooking);
 
             WorkOrder thirdOrder = new WorkOrder(0, fourthBooking.getId(), sara.getId());
             thirdOrder.addServiceItem(brakeService.getId());
             thirdOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(thirdOrder);
+            fourthBooking.setStatus("IN_PROGRESS");
+            bookingRepository.save(fourthBooking);
 
             WorkOrder fourthOrder = new WorkOrder(0, fifthBooking.getId(), mikael.getId());
             fourthOrder.addServiceItem(diagnostics.getId());
             fourthOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(fourthOrder);
+            fifthBooking.setStatus("IN_PROGRESS");
+            bookingRepository.save(fifthBooking);
 
-            WorkOrder fifthOrder = new WorkOrder(0, thirdBooking.getId(), johan.getId());
+            WorkOrder fifthOrder = new WorkOrder(0, thirdBooking.getId(), sara.getId());
             fifthOrder.addServiceItem(brakeService.getId());
             fifthOrder.addServiceItem(annualService.getId());
             workOrderRepository.save(fifthOrder);
+            thirdBooking.setStatus("WORK_ORDER_CREATED");
+            bookingRepository.save(thirdBooking);
 
             WorkOrder sixthOrder = new WorkOrder(0, sixthBooking.getId(), mikael.getId());
             sixthOrder.addServiceItem(diagnostics.getId());
             workOrderRepository.save(sixthOrder);
+            sixthBooking.setStatus("WORK_ORDER_CREATED");
+            bookingRepository.save(sixthBooking);
         } catch (SQLException e) {
             System.out.println("Could not seed sample data: " + e.getMessage());
         }
+    }
+
+    /**
+     * Ger bokningen en starttid, en tilldelad mekaniker och en sluttid som räknas ur bokningens
+     * tjänster, så att tiden alltid räcker för hela arbetet.
+     */
+    private static void setSchedule(Booking booking, int startHour, int startMinute, int mechanicId) {
+        LocalTime start = LocalTime.of(startHour, startMinute);
+        booking.setStartTime(start);
+        booking.setMechanicId(mechanicId);
+        booking.setEndTime(start.plusMinutes(booking.getTotalEstimatedMinutes()));
     }
 }

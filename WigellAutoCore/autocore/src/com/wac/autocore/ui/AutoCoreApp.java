@@ -41,7 +41,7 @@ public class AutoCoreApp extends Application {
         ScrollPane scroll = new ScrollPane(pageBox);
         scroll.setFitToWidth(true);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
         // Initiera navigering och sidhanterare med SidebarView
         PageRouter router = new PageRouter(garage, pageBox);

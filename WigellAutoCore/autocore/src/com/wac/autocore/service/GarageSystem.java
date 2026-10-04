@@ -20,7 +20,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,18 +65,32 @@ public class GarageSystem {
     }
 
     public List<Mechanic> getQualifiedMechanics(ServiceItem service) {
-        List<Mechanic> all = getMechanics();
         if (service == null) {
+            return getMechanics();
+        }
+        return getQualifiedMechanics(Collections.singletonList(service));
+    }
+
+    public List<Mechanic> getQualifiedMechanics(Collection<ServiceItem> services) {
+        List<Mechanic> all = getMechanics();
+        if (services == null || services.isEmpty()) {
             return all;
         }
         List<Mechanic> qualified = new ArrayList<Mechanic>();
         for (Mechanic m : all) {
-            if (isMechanicQualified(m, service)) {
+            boolean allQualified = true;
+            for (ServiceItem s : services) {
+                if (!isMechanicQualified(m, s)) {
+                    allQualified = false;
+                    break;
+                }
+            }
+            if (allQualified) {
                 qualified.add(m);
             }
         }
-        // Fallback: om ingen specifik specialist finns, erbjud allmänt behöriga mekaniker
-        if (qualified.isEmpty()) {
+        // Fallback: om ingen specifik specialist finns för de valda tjänsterna
+        if (qualified.isEmpty() && services.size() == 1) {
             for (Mechanic m : all) {
                 String resolvedSpec = SeedText.resolve(m.getSpecialization());
                 String s = resolvedSpec != null ? resolvedSpec.toLowerCase() : "";
@@ -83,9 +99,81 @@ public class GarageSystem {
                 }
             }
         }
+        // Sortera så att den bäst lämpade mekanikern visas först
+        qualified.sort(new Comparator<Mechanic>() {
+            @Override
+            public int compare(Mechanic m1, Mechanic m2) {
+                String spec1 = SeedText.resolve(m1.getSpecialization()).toLowerCase();
+                String spec2 = SeedText.resolve(m2.getSpecialization()).toLowerCase();
+                boolean g1 = spec1.contains("general") || spec1.contains("allmän");
+                boolean g2 = spec2.contains("general") || spec2.contains("allmän");
+                // Om enbart allmänna tjänster valts, sätt allmänmekaniker först
+                boolean onlyGeneral = services.stream().allMatch(s -> {
+                    String n = SeedText.resolve(s.getName()).toLowerCase();
+                    return n.contains("oil") || n.contains("olja") || n.contains("annual") || n.contains("årlig");
+                });
+                if (onlyGeneral) {
+                    if (g1 && !g2) return -1;
+                    if (!g1 && g2) return 1;
+                }
+                return m1.getName().compareToIgnoreCase(m2.getName());
+            }
+        });
         return qualified;
     }
 
+    /**
+     * Returnerar listan av mekaniker som behövs för att bemanna samtliga valda tjänster.
+     * T.ex. för Bromsar + Diagnostik returneras [Sara Nilsson, Mikael Berg] ("Vi bokar in: Sara Nilsson, Mikael Berg").
+     */
+    public List<Mechanic> getRequiredMechanics(Collection<ServiceItem> services) {
+        List<Mechanic> result = new ArrayList<Mechanic>();
+        if (services == null || services.isEmpty()) {
+            return result;
+        }
+        List<Mechanic> all = getMechanics();
+        for (ServiceItem s : services) {
+            Mechanic best = null;
+            // 1. Kolla om någon redan i teamet kan utföra tjänsten
+            for (Mechanic m : result) {
+                if (isMechanicQualified(m, s)) {
+                    best = m;
+                    break;
+                }
+            }
+            // 2. Annars hitta bäst lämpad mekaniker bland samtliga mekaniker
+            if (best == null) {
+                for (Mechanic m : all) {
+                    if (isMechanicQualified(m, s)) {
+                        best = m;
+                        break;
+                    }
+                }
+            }
+            // 3. Fallback: en allmänmekaniker kan ta tjänsten
+            if (best == null) {
+                for (Mechanic m : all) {
+                    String spec = SeedText.resolve(m.getSpecialization());
+                    String specStr = spec != null ? spec.toLowerCase() : "";
+                    if (specStr.contains("general") || specStr.contains("allmän")) {
+                        best = m;
+                        break;
+                    }
+                }
+            }
+            // Hittas ingen behörig mekaniker lämnas tjänsten utanför teamet. Att fylla på med en
+            // mekaniker som saknar behörigheten ger ett valt fält som kontrollen sedan underkänner.
+            if (best != null && !result.contains(best)) {
+                result.add(best);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Om mekanikern får utföra tjänsten. Jämförelsen sker på nycklar: tjänsten säger vilken
+     * specialisering den kräver, och mekanikern bär sin egen. En tjänst utan krav kan utföras av alla.
+     */
     public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {
         if (service == null) {
             return true;
@@ -93,106 +181,12 @@ public class GarageSystem {
         if (mechanic == null) {
             return false;
         }
-        String spec = SeedText.resolve(mechanic.getSpecialization());
-        if (spec == null || spec.trim().isEmpty()) {
-            return false;
-        }
-        return matchesSpecialization(spec.trim(), service);
-    }
-
-    public static boolean matchesSpecialization(String spec, ServiceItem service) {
-        if (service == null || spec == null || spec.trim().isEmpty()) {
-            return false;
-        }
-
-        String resolvedName = SeedText.resolve(service.getName());
-        String resolvedDesc = SeedText.resolve(service.getDescription());
-        String sName = resolvedName != null ? resolvedName.toLowerCase() : "";
-        String sDesc = resolvedDesc != null ? resolvedDesc.toLowerCase() : "";
-        String sSpec = spec.toLowerCase();
-
-        // 1. Direkt likhet eller substring-matchning
-        if (sName.equals(sSpec) || sName.contains(sSpec) || sSpec.contains(sName)) {
+        if (service.requiresAnyMechanic()) {
             return true;
         }
-
-        // 2. Ämnesspecifika domängrupperingar
-        boolean isBrakesSpec = sSpec.contains("brake") || sSpec.contains("broms");
-        boolean isBrakesService = sName.contains("brake") || sName.contains("broms")
-                || sDesc.contains("brake") || sDesc.contains("broms")
-                || sDesc.contains("belägg") || sDesc.contains("bromsok");
-        if (isBrakesSpec && isBrakesService) {
-            return true;
-        }
-
-        boolean isDiagSpec = sSpec.contains("diagnos") || sSpec.contains("felsök") || sSpec.contains("felkod") || sSpec.contains("obd");
-        boolean isDiagService = sName.contains("diagnos") || sName.contains("felsök")
-                || sDesc.contains("diagnos") || sDesc.contains("felsök")
-                || sDesc.contains("felkod") || sDesc.contains("obd");
-        if (isDiagSpec && isDiagService) {
-            return true;
-        }
-
-        boolean isTyreSpec = sSpec.contains("däck") || sSpec.contains("hjul") || sSpec.contains("tyre") || sSpec.contains("tire") || sSpec.contains("wheel");
-        boolean isTyreService = sName.contains("däck") || sName.contains("hjul") || sName.contains("tyre") || sName.contains("tire")
-                || sDesc.contains("däck") || sDesc.contains("hjul") || sDesc.contains("tyre") || sDesc.contains("tire");
-        if (isTyreSpec && isTyreService) {
-            return true;
-        }
-
-        boolean isGeneralSpec = sSpec.contains("general") || sSpec.contains("allmän") || sSpec.equals("service");
-        boolean isGeneralService = sName.contains("oil") || sName.contains("olja")
-                || sName.contains("annual") || sName.contains("årlig")
-                || sName.contains("service") || sName.contains("underhåll");
-        if (isGeneralSpec && isGeneralService && !isBrakesService && !isDiagService && !isTyreService) {
-            return true;
-        }
-
-        // 3. Ord- och stam-matchning i båda riktningarna
-        String[] specTokens = sSpec.split("[\\s,;&/\\-]+");
-        String[] serviceTokens = (sName + " " + sDesc).split("[\\s,;&/\\-]+");
-
-        Set<String> genericWords = new HashSet<>(Arrays.asList(
-                "service", "system", "arbete", "underhåll", "reparation", "repair",
-                "byte", "kontroll", "check", "inspection", "inspektion",
-                "general", "allmän", "bil", "fordon", "auto", "car", "och", "and", "med", "with", "för", "for"
-        ));
-
-        for (String sToken : specTokens) {
-            String sc = sToken.replaceAll("[^a-zåäö0-9]", "");
-            if (sc.length() < 2 || genericWords.contains(sc)) continue;
-
-            for (String svToken : serviceTokens) {
-                String svc = svToken.replaceAll("[^a-zåäö0-9]", "");
-                if (svc.length() < 2 || genericWords.contains(svc)) continue;
-
-                // Exakt matchning för korta ord (t.ex. "ac", "ev")
-                if (sc.equals(svc)) {
-                    return true;
-                }
-
-                if (sc.length() >= 3 && svc.length() >= 3) {
-                    // Delsträng mellan orden (minst 3 tecken)
-                    if (sc.contains(svc) || svc.contains(sc)) {
-                        return true;
-                    }
-
-                    // Gemensam stam på minst 4 tecken
-                    int minLen = Math.min(sc.length(), svc.length());
-                    if (minLen >= 4) {
-                        int commonPrefix = 0;
-                        while (commonPrefix < minLen && sc.charAt(commonPrefix) == svc.charAt(commonPrefix)) {
-                            commonPrefix++;
-                        }
-                        if (commonPrefix >= 4) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-
-        return false;
+        String needed = service.getSpecialization().trim();
+        String has = mechanic.getSpecialization();
+        return has != null && needed.equals(has.trim());
     }
 
     public List<WorkOrder> getWorkOrders() {
@@ -277,9 +271,15 @@ public class GarageSystem {
                 startTime, mechanicId, serviceItemId);
     }
 
-    public WorkOrder createWorkOrder(int bookingId,
-                                     int mechanicId,
-                                     int... serviceItemIds) {
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
+        return workOrderService.createWorkOrder(bookingId, mechanicId);
+    }
+
+    /**
+     * Skapar en arbetsorder för ett urval av bokningens tjänster, så en bokning med flera tjänster
+     * kan delas på flera mekaniker (en arbetsorder per mekaniker).
+     */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds) {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
     }
 
@@ -291,6 +291,11 @@ public class GarageSystem {
         workOrderService.startWorkOrder(workOrderId);
     }
 
+    /** SCRUM-160 (D2): markerar tjänster utförda och fryser priset som gäller då. */
+    public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
+        return workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
+    }
+
     public void completeWorkOrder(int workOrderId) {
         workOrderService.completeWorkOrder(workOrderId);
     }
@@ -299,12 +304,42 @@ public class GarageSystem {
         return billingService.createInvoice(workOrderId, discountCode);
     }
 
+    /**
+     * Fakturerar allt utfört arbete på en bokning i en faktura — även när bokningen delats på flera
+     * arbetsordrar (en per mekaniker).
+     */
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
+        return billingService.createInvoiceForBooking(bookingId, discountCode);
+    }
+
+    /** Bokningar med utfört arbete kvar att fakturera. */
+    public java.util.List<Booking> getInvoiceableBookings() {
+        return billingService.getInvoiceableBookings();
+    }
+
+    /** Sant om det finns bokningar med arbete som inte är slutfört än. */
+    public boolean hasBookingWithUnfinishedWork() {
+        return billingService.hasBookingWithUnfinishedWork();
+    }
+
     public Payment processPayment(int invoiceId, String paymentType) {
         return paymentService.processPayment(invoiceId, paymentType);
     }
 
     public void updateMechanic(Mechanic mechanic) throws SQLException {
+        if (mechanic == null) {
+            return;
+        }
+        refuseUnlessStorableMechanic(mechanic.getName(), mechanic.getPhone());
         mechanicRepository.save(mechanic);
+    }
+
+    /** Samma regel som för kunden, i den väg alla skrivare av en mekanikerrad går genom. */
+    private static void refuseUnlessStorableMechanic(String name, String phone) {
+        String problem = Mechanic.validationProblem(name, phone);
+        if (problem != null) {
+            throw new IllegalArgumentException("Mechanic data rejected: " + problem);
+        }
     }
 
     public boolean canDeleteMechanic(int mechanicId) {
@@ -317,19 +352,33 @@ public class GarageSystem {
         return true;
     }
 
+    /**
+     * Nekar en borttagning som skulle lämna en rad utan förälder. Skydden fanns tidigare
+     * bara i gränssnittet, så ett anrop underifrån — en meny, ett skript, ett tangentkommando —
+     * kunde ta bort en bokning med faktura kvar och lämna fakturan pekande i tomma luften.
+     */
+    private void refuseUnless(boolean allowed, String reason) {
+        if (!allowed) {
+            throw new IllegalStateException(reason);
+        }
+    }
+
     public void deleteMechanic(int mechanicId) throws SQLException {
+        refuseUnless(canDeleteMechanic(mechanicId),
+                "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.");
         mechanicRepository.delete(mechanicId);
         MechanicSchedule.getInstance().removeSlotsForMechanic(mechanicId);
     }
 
     public Mechanic createMechanic(String name, String phone, String specialization) throws SQLException {
+        refuseUnlessStorableMechanic(name, phone);
         Mechanic mechanic = new Mechanic(0, name, phone, specialization);
         mechanicRepository.save(mechanic);
         return mechanic;
     }
 
     public void updateCustomer(Customer customer) throws SQLException {
-        customerRepository.save(customer);
+        customerService.updateCustomer(customer);
     }
 
     public boolean canDeleteCustomer(int customerId) {
@@ -344,6 +393,8 @@ public class GarageSystem {
     }
 
     public void deleteCustomer(int customerId) throws SQLException {
+        refuseUnless(canDeleteCustomer(customerId),
+                "Kunden kan inte tas bort: ett av kundens fordon har ett fakturerat jobb.");
         for (Vehicle v : getVehicles()) {
             if (v.getCustomerId() == customerId) {
                 vehicleRepository.delete(v.getId());
@@ -371,10 +422,23 @@ public class GarageSystem {
                 }
             }
         }
+        // Ett fordon vars jobb har fakturerats får inte tas bort. Fakturan pekar på arbetet,
+        // arbetet på bokningen och bokningen på fordonet. Kunden nekas via sina fordon.
+        for (Booking b : getBookings()) {
+            if (b.getVehicleId() == vehicleId) {
+                for (WorkOrder wo : getWorkOrders()) {
+                    if (wo.getBookingId() == b.getId() && hasInvoiceForWorkOrder(wo.getId())) {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
 
     public void deleteVehicle(int vehicleId) throws SQLException {
+        refuseUnless(canDeleteVehicle(vehicleId),
+                "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.");
         vehicleRepository.delete(vehicleId);
     }
 
@@ -383,10 +447,27 @@ public class GarageSystem {
         MechanicSchedule.getInstance().syncFromDatabase();
     }
 
+    /** Sant om arbetsordern har en faktura. Fakturan pekar på arbetet, arbetet på bokningen. */
+    private boolean hasInvoiceForWorkOrder(int workOrderId) {
+        for (Invoice invoice : getInvoices()) {
+            if (invoice.getWorkOrderId() == workOrderId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean canCancelOrDeleteBooking(int bookingId) {
         for (WorkOrder wo : getWorkOrders()) {
-            if (wo.getBookingId() == bookingId && !"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
-                return false;
+            if (wo.getBookingId() == bookingId) {
+                if (!"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+                    return false;
+                }
+                // En slutförd order får inte lämna en faktura som pekar på en bokning
+                // som inte finns, alltså nekas borttagningen så länge fakturan finns.
+                if (hasInvoiceForWorkOrder(wo.getId())) {
+                    return false;
+                }
             }
         }
         return true;
@@ -403,13 +484,21 @@ public class GarageSystem {
     }
 
     public void deleteBooking(int bookingId) throws SQLException {
+        refuseUnless(canCancelOrDeleteBooking(bookingId),
+                "Bokningen kan inte tas bort: den har en arbetsorder med faktura.");
         bookingRepository.delete(bookingId);
         MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
         MechanicSchedule.getInstance().syncFromDatabase();
     }
 
     public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes) throws SQLException {
-        ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes);
+        return createServiceItem(name, description, price, estimatedMinutes, "");
+    }
+
+    /** Samma som ovan, men med kravet på specialisering: en nyckel, eller tomt för vilken mekaniker som helst. */
+    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes,
+                                         String specialization) throws SQLException {
+        ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
         serviceItemRepository.save(item);
         return item;
     }
@@ -428,10 +517,23 @@ public class GarageSystem {
                 }
             }
         }
+        // Tjänsten får inte heller tas bort så länge den ligger i en bokning, oavsett
+        // arbetsorderns status. Annars pekar bokningsraden på en tjänst som inte finns.
+        for (Booking b : getBookings()) {
+            if (b.getServiceItemIds() != null) {
+                for (int id : b.getServiceItemIds()) {
+                    if (id == serviceItemId) {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
 
     public void deleteServiceItem(int serviceItemId) throws SQLException {
+        refuseUnless(canDeleteServiceItem(serviceItemId),
+                "Tjänsten kan inte tas bort: den ligger i en bokning eller en arbetsorder.");
         serviceItemRepository.delete(serviceItemId);
     }
 }

@@ -1,5 +1,7 @@
 package com.wac.autocore.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDate;
 
 public class Invoice {
@@ -11,6 +13,7 @@ public class Invoice {
     private double discount;
     private double totalAmount;
     private boolean paid;
+    private List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
 
     public Invoice(int id, int workOrderId, LocalDate invoiceDate, double amount) {
         this.id = id;
@@ -77,7 +80,37 @@ public class Invoice {
     }
 
     private void calculateTotalAmount() {
-        this.totalAmount = amount - discount;
+        this.totalAmount = Math.round((amount - discount) * 100.0) / 100.0;
+    }
+
+    /** Momsen som läggs på fakturan. Alla belopp i appen är exklusive moms förutom de som
+     *  räknas fram här. */
+    public static final double VAT_RATE = 0.25;
+
+    /** Momsen på det som ska betalas, avrundad till ören. */
+    public double getVatAmount() {
+        return Math.round(this.totalAmount * VAT_RATE * 100.0) / 100.0;
+    }
+
+    /** Att betala inklusive moms. Summan blir exakt de två raderna tillsammans. */
+    public double getTotalIncludingVat() {
+        return Math.round((this.totalAmount + getVatAmount()) * 100.0) / 100.0;
+    }
+
+    public List<InvoiceLine> getLines() {
+        return lines;
+    }
+
+    public void addLine(InvoiceLine line) {
+        lines.add(line);
+    }
+
+    public double getLinesTotal() {
+        double sum = 0.0;
+        for (InvoiceLine line : lines) {
+            sum += line.getFinalPrice();
+        }
+        return Math.round(sum * 100.0) / 100.0;
     }
 
     @Override
