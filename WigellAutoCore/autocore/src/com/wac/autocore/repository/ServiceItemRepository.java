@@ -23,7 +23,7 @@ public class ServiceItemRepository {
 
     public List<ServiceItem> findAll() throws SQLException {
         List<ServiceItem> serviceItems = new ArrayList<ServiceItem>();
-        String sql = "SELECT id, name, description, price, estimated_minutes FROM service_items";
+        String sql = "SELECT id, name, description, price, estimated_minutes, specialization FROM service_items";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -38,7 +38,7 @@ public class ServiceItemRepository {
     }
 
     public ServiceItem findById(int id) throws SQLException {
-        String sql = "SELECT id, name, description, price, estimated_minutes FROM service_items WHERE id = ?";
+        String sql = "SELECT id, name, description, price, estimated_minutes, specialization FROM service_items WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -67,7 +67,7 @@ public class ServiceItemRepository {
     }
 
     private void insert(ServiceItem serviceItem) throws SQLException {
-        String sql = "INSERT INTO service_items (name, description, price, estimated_minutes) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO service_items (name, description, price, estimated_minutes, specialization) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -76,6 +76,7 @@ public class ServiceItemRepository {
             statement.setString(2, serviceItem.getDescription());
             statement.setDouble(3, serviceItem.getPrice());
             statement.setInt(4, serviceItem.getEstimatedMinutes());
+            statement.setString(5, serviceItem.getSpecialization());
             statement.executeUpdate();
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
@@ -87,7 +88,7 @@ public class ServiceItemRepository {
     }
 
     private void update(ServiceItem serviceItem) throws SQLException {
-        String sql = "UPDATE service_items SET name = ?, description = ?, price = ?, estimated_minutes = ? WHERE id = ?";
+        String sql = "UPDATE service_items SET name = ?, description = ?, price = ?, estimated_minutes = ?, specialization = ? WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -96,7 +97,8 @@ public class ServiceItemRepository {
             statement.setString(2, serviceItem.getDescription());
             statement.setDouble(3, serviceItem.getPrice());
             statement.setInt(4, serviceItem.getEstimatedMinutes());
-            statement.setInt(5, serviceItem.getId());
+            statement.setString(5, serviceItem.getSpecialization());
+            statement.setInt(6, serviceItem.getId());
             statement.executeUpdate();
         }
     }
@@ -107,7 +109,8 @@ public class ServiceItemRepository {
                 resultSet.getString("name"),
                 resultSet.getString("description"),
                 resultSet.getDouble("price"),
-                resultSet.getInt("estimated_minutes")
+                resultSet.getInt("estimated_minutes"),
+                resultSet.getString("specialization")
         );
     }
 }

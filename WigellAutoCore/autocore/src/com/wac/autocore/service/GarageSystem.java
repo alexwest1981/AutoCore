@@ -150,7 +150,7 @@ public class GarageSystem {
                     }
                 }
             }
-            // 3. Fallback: allmänmekaniker
+            // 3. Fallback: en allmänmekaniker kan ta tjänsten
             if (best == null) {
                 for (Mechanic m : all) {
                     String spec = SeedText.resolve(m.getSpecialization());
@@ -161,9 +161,8 @@ public class GarageSystem {
                     }
                 }
             }
-            if (best == null && !all.isEmpty()) {
-                best = all.get(0);
-            }
+            // Hittas ingen behörig mekaniker lämnas tjänsten utanför teamet. Att fylla på med en
+            // mekaniker som saknar behörigheten ger ett valt fält som kontrollen sedan underkänner.
             if (best != null && !result.contains(best)) {
                 result.add(best);
             }
@@ -171,6 +170,10 @@ public class GarageSystem {
         return result;
     }
 
+    /**
+     * Om mekanikern får utföra tjänsten. Jämförelsen sker på nycklar: tjänsten säger vilken
+     * specialisering den kräver, och mekanikern bär sin egen. En tjänst utan krav kan utföras av alla.
+     */
     public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {
         if (service == null) {
             return true;
@@ -178,107 +181,12 @@ public class GarageSystem {
         if (mechanic == null) {
             return false;
         }
-        String spec = SeedText.resolve(mechanic.getSpecialization());
-        if (spec == null || spec.trim().isEmpty()) {
-            return false;
-        }
-        return matchesSpecialization(spec.trim(), service);
-    }
-
-    public static boolean matchesSpecialization(String spec, ServiceItem service) {
-        if (service == null || spec == null || spec.trim().isEmpty()) {
-            return false;
-        }
-
-        String resolvedName = SeedText.resolve(service.getName());
-        String resolvedDesc = SeedText.resolve(service.getDescription());
-        String sName = resolvedName != null ? resolvedName.toLowerCase() : "";
-        String sDesc = resolvedDesc != null ? resolvedDesc.toLowerCase() : "";
-        String sSpec = spec.toLowerCase();
-
-        // 1. Direkt likhet eller substring-matchning
-        if (sName.equals(sSpec) || sName.contains(sSpec) || sSpec.contains(sName)) {
+        if (service.requiresAnyMechanic()) {
             return true;
         }
-
-        // 2. Ämnesspecifika domängrupperingar
-        boolean isBrakesSpec = sSpec.contains("brake") || sSpec.contains("broms");
-        boolean isBrakesService = sName.contains("brake") || sName.contains("broms")
-                || sDesc.contains("brake") || sDesc.contains("broms")
-                || sDesc.contains("belägg") || sDesc.contains("bromsok");
-        if (isBrakesSpec && isBrakesService) {
-            return true;
-        }
-
-        boolean isDiagSpec = sSpec.contains("diagnos") || sSpec.contains("felsök") || sSpec.contains("felkod") || sSpec.contains("obd");
-        boolean isDiagService = sName.contains("diagnos") || sName.contains("felsök")
-                || sDesc.contains("diagnos") || sDesc.contains("felsök")
-                || sDesc.contains("felkod") || sDesc.contains("obd");
-        if (isDiagSpec && isDiagService) {
-            return true;
-        }
-
-        boolean isTyreSpec = sSpec.contains("däck") || sSpec.contains("hjul") || sSpec.contains("tyre") || sSpec.contains("tire") || sSpec.contains("wheel");
-        boolean isTyreService = sName.contains("däck") || sName.contains("hjul") || sName.contains("tyre") || sName.contains("tire")
-                || sDesc.contains("däck") || sDesc.contains("hjul") || sDesc.contains("tyre") || sDesc.contains("tire");
-        if (isTyreSpec && isTyreService) {
-            return true;
-        }
-
-        boolean isGeneralSpec = sSpec.contains("general") || sSpec.contains("allmän") || sSpec.equals("service");
-        boolean isAutoSpecialist = isBrakesSpec || isDiagSpec || isTyreSpec;
-        boolean isGeneralService = sName.contains("oil") || sName.contains("olja")
-                || sName.contains("annual") || sName.contains("årlig")
-                || sName.contains("service") || sName.contains("underhåll");
-        if ((isGeneralSpec || isAutoSpecialist) && isGeneralService && !isBrakesService && !isDiagService && !isTyreService) {
-            return true;
-        }
-
-        // 3. Ord- och stam-matchning i båda riktningarna
-        String[] specTokens = sSpec.split("[\\s,;&/\\-]+");
-        String[] serviceTokens = (sName + " " + sDesc).split("[\\s,;&/\\-]+");
-
-        Set<String> genericWords = new HashSet<>(Arrays.asList(
-                "service", "system", "arbete", "underhåll", "reparation", "repair",
-                "byte", "kontroll", "check", "inspection", "inspektion",
-                "general", "allmän", "bil", "fordon", "auto", "car", "och", "and", "med", "with", "för", "for"
-        ));
-
-        for (String sToken : specTokens) {
-            String sc = sToken.replaceAll("[^a-zåäö0-9]", "");
-            if (sc.length() < 2 || genericWords.contains(sc)) continue;
-
-            for (String svToken : serviceTokens) {
-                String svc = svToken.replaceAll("[^a-zåäö0-9]", "");
-                if (svc.length() < 2 || genericWords.contains(svc)) continue;
-
-                // Exakt matchning för korta ord (t.ex. "ac", "ev")
-                if (sc.equals(svc)) {
-                    return true;
-                }
-
-                if (sc.length() >= 3 && svc.length() >= 3) {
-                    // Delsträng mellan orden (minst 3 tecken)
-                    if (sc.contains(svc) || svc.contains(sc)) {
-                        return true;
-                    }
-
-                    // Gemensam stam på minst 4 tecken
-                    int minLen = Math.min(sc.length(), svc.length());
-                    if (minLen >= 4) {
-                        int commonPrefix = 0;
-                        while (commonPrefix < minLen && sc.charAt(commonPrefix) == svc.charAt(commonPrefix)) {
-                            commonPrefix++;
-                        }
-                        if (commonPrefix >= 4) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-
-        return false;
+        String needed = service.getSpecialization().trim();
+        String has = mechanic.getSpecialization();
+        return has != null && needed.equals(has.trim());
     }
 
     public List<WorkOrder> getWorkOrders() {
@@ -584,7 +492,13 @@ public class GarageSystem {
     }
 
     public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes) throws SQLException {
-        ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes);
+        return createServiceItem(name, description, price, estimatedMinutes, "");
+    }
+
+    /** Samma som ovan, men med kravet på specialisering: en nyckel, eller tomt för vilken mekaniker som helst. */
+    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes,
+                                         String specialization) throws SQLException {
+        ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
         serviceItemRepository.save(item);
         return item;
     }

@@ -2,12 +2,14 @@ package com.wac.autocore.ui;
 
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.MechanicDialogs;
 import com.wac.autocore.ui.i18n.I18n;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
@@ -37,6 +39,7 @@ public final class ServiceItemDialogs {
         priceField.setPromptText(I18n.get("dialog.service.price_prompt"));
         TextField timeField = new TextField();
         timeField.setPromptText(I18n.get("dialog.service.time_prompt"));
+        ComboBox<String> specBox = requirementBox(garage);
 
         grid.add(new Label(I18n.get("table.col.name") + ":"), 0, 0);
         grid.add(nameField, 1, 0);
@@ -46,6 +49,8 @@ public final class ServiceItemDialogs {
         grid.add(priceField, 1, 2);
         grid.add(new Label(I18n.get("table.col.time") + ":"), 0, 3);
         grid.add(timeField, 1, 3);
+        grid.add(new Label(I18n.get("dialog.service.spec_label") + ":"), 0, 4);
+        grid.add(specBox, 1, 4);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -71,7 +76,7 @@ public final class ServiceItemDialogs {
                 }
 
                 try {
-                    garage.createServiceItem(name, desc, price, time);
+                    garage.createServiceItem(name, desc, price, time, requirementKey(specBox));
                 } catch (SQLException e) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                     return;
@@ -100,6 +105,8 @@ public final class ServiceItemDialogs {
         priceField.setPromptText(I18n.get("dialog.service.price_prompt"));
         TextField timeField = new TextField(String.valueOf(serviceItem.getEstimatedMinutes()));
         timeField.setPromptText(I18n.get("dialog.service.time_prompt"));
+        ComboBox<String> specBox = requirementBox(garage);
+        showRequirement(specBox, serviceItem);
 
         grid.add(new Label(I18n.get("table.col.name") + ":"), 0, 0);
         grid.add(nameField, 1, 0);
@@ -109,6 +116,8 @@ public final class ServiceItemDialogs {
         grid.add(priceField, 1, 2);
         grid.add(new Label(I18n.get("table.col.time") + ":"), 0, 3);
         grid.add(timeField, 1, 3);
+        grid.add(new Label(I18n.get("dialog.service.spec_label") + ":"), 0, 4);
+        grid.add(specBox, 1, 4);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -137,6 +146,7 @@ public final class ServiceItemDialogs {
                 serviceItem.setDescription(desc);
                 serviceItem.setPrice(price);
                 serviceItem.setEstimatedMinutes(time);
+                serviceItem.setSpecialization(requirementKey(specBox));
 
                 try {
                     garage.updateServiceItem(serviceItem);
@@ -202,5 +212,45 @@ public final class ServiceItemDialogs {
                 if (onSuccess != null) onSuccess.run();
             }
         });
+    }
+
+    /**
+     * Rullistan för vilken specialisering tjänsten kräver. Första valet betyder att tjänsten kan
+     * utföras av vilken mekaniker som helst.
+     */
+    static ComboBox<String> requirementBox(GarageSystem garage) {
+        ComboBox<String> box = new ComboBox<String>();
+        box.getItems().add(I18n.get("dialog.service.spec_any"));
+        box.getItems().addAll(MechanicDialogs.suggestSpecializations(garage));
+        box.getSelectionModel().selectFirst();
+        box.setMaxWidth(Double.MAX_VALUE);
+        return box;
+    }
+
+    /** Nyckeln som ska sparas: tom när tjänsten inte kräver någon särskild specialisering. */
+    static String requirementKey(ComboBox<String> box) {
+        String chosen = box.getValue();
+        if (chosen == null || chosen.equals(I18n.get("dialog.service.spec_any"))) {
+            return "";
+        }
+        return MechanicDialogs.specializationToStore(chosen);
+    }
+
+    /** Visar tjänstens nuvarande krav i rullistan. */
+    static void showRequirement(ComboBox<String> box, ServiceItem serviceItem) {
+        String stored = serviceItem.getSpecialization();
+        if (stored == null || stored.trim().isEmpty()) {
+            box.getSelectionModel().selectFirst();
+            return;
+        }
+        String text = com.wac.autocore.seed.SeedText.resolve(stored);
+        for (String option : box.getItems()) {
+            if (option.equals(text)) {
+                box.getSelectionModel().select(option);
+                return;
+            }
+        }
+        box.getItems().add(text);
+        box.getSelectionModel().select(text);
     }
 }

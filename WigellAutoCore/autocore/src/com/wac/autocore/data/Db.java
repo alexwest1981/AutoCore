@@ -58,7 +58,8 @@ public class Db {
                 + "name TEXT NOT NULL, "
                 + "description TEXT, "
                 + "price REAL, "
-                + "estimated_minutes INTEGER)",
+                + "estimated_minutes INTEGER, "
+                + "specialization TEXT)",
 
             "CREATE TABLE IF NOT EXISTS bookings ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -135,6 +136,20 @@ public class Db {
             } catch (SQLException ignored) {
                 // Kolumnen existerar redan
             }
+
+            // Behörigheten hänger på en nyckel: tjänsten säger vilken specialisering den kräver.
+            // Tomt betyder att tjänsten kan utföras av alla.
+            try {
+                statement.executeUpdate("ALTER TABLE service_items ADD COLUMN specialization TEXT");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+            // Tjänster som skapades innan kravet fanns får sitt krav här, så en befintlig databas
+            // får samma uppsättning som en nyskapad.
+            statement.executeUpdate("UPDATE service_items SET specialization = 'seed.mechanic.brakes.specialization' "
+                    + "WHERE name = 'seed.service.brake_service.name' AND (specialization IS NULL OR specialization = '')");
+            statement.executeUpdate("UPDATE service_items SET specialization = 'seed.mechanic.diagnostics.specialization' "
+                    + "WHERE name = 'seed.service.diagnostics.name' AND (specialization IS NULL OR specialization = '')");
 
             // SCRUM-149 (A3): Migrera befintliga bokningar från bookings.service_item_id till booking_service_items
             String migrateSql = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id) "

@@ -366,7 +366,9 @@
       "name_prompt": "Tjänstens namn (t.ex. Bromsbyte)",
       "desc_prompt": "Beskrivning av arbetet",
       "price_prompt": "Pris i kr (t.ex. 1200)",
-      "time_prompt": "Beräknad tid i minuter (t.ex. 60)"
+      "time_prompt": "Beräknad tid i minuter (t.ex. 60)",
+      "spec_label": "Specialisering",
+      "spec_any": "Ingen särskild"
     },
     "mechanic": {
       "create": {
