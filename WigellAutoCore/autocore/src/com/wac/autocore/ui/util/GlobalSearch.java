@@ -11,7 +11,9 @@ import com.wac.autocore.service.GarageSystem;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import com.wac.autocore.seed.SeedText;
 
 /**
@@ -119,9 +121,56 @@ public final class GlobalSearch {
 
         final String q = query.trim().toLowerCase();
 
+        /* Registren byggs EN gång per sökning. garage.getBookings() läser från databasen varje
+           anrop (cirka 5 ms), och uppslagen i EntityLookup går igenom listan på nytt för varje rad.
+           För ett "a", som träffar allt, blev det hundratals databasanrop och två sekunder fryst
+           gränssnitt per tangenttryckning i sökfältet. En genomgång per lista räcker. */
+        final List<Customer> allCustomers = garage.getCustomers();
+        final List<Vehicle> allVehicles = garage.getVehicles();
+        final List<WorkOrder> allWorkOrders = garage.getWorkOrders();
+        final List<Booking> allBookings = garage.getBookings();
+        final List<Mechanic> allMechanics = garage.getMechanics();
+
+        final Map<Integer, String> customerNames = new HashMap<Integer, String>();
+        for (Customer c : allCustomers) {
+            if (c != null) {
+                customerNames.put(Integer.valueOf(c.getId()), c.getName());
+            }
+        }
+
+        final Map<Integer, String> vehicleRegs = new HashMap<Integer, String>();
+        final Map<Integer, Integer> vehicleOwners = new HashMap<Integer, Integer>();
+        for (Vehicle v : allVehicles) {
+            if (v != null) {
+                vehicleRegs.put(Integer.valueOf(v.getId()), v.getRegistrationNumber());
+                vehicleOwners.put(Integer.valueOf(v.getId()), Integer.valueOf(v.getCustomerId()));
+            }
+        }
+
+        final Map<Integer, Integer> bookingVehicles = new HashMap<Integer, Integer>();
+        for (Booking b : allBookings) {
+            if (b != null) {
+                bookingVehicles.put(Integer.valueOf(b.getId()), Integer.valueOf(b.getVehicleId()));
+            }
+        }
+
+        final Map<Integer, Integer> orderBookings = new HashMap<Integer, Integer>();
+        for (WorkOrder wo : allWorkOrders) {
+            if (wo != null) {
+                orderBookings.put(Integer.valueOf(wo.getId()), Integer.valueOf(wo.getBookingId()));
+            }
+        }
+
+        final Map<Integer, String> mechanicNames = new HashMap<Integer, String>();
+        for (Mechanic m : allMechanics) {
+            if (m != null) {
+                mechanicNames.put(Integer.valueOf(m.getId()), m.getName());
+            }
+        }
+
         // 1. Kunder
         List<Customer> matchingCustomers = new ArrayList<Customer>();
-        for (Customer c : garage.getCustomers()) {
+        for (Customer c : allCustomers) {
             if (c == null) continue;
             if (containsIgnoreCase(c.getName(), q)
                     || containsIgnoreCase(c.getPhone(), q)
@@ -133,9 +182,9 @@ public final class GlobalSearch {
 
         // 2. Fordon
         List<Vehicle> matchingVehicles = new ArrayList<Vehicle>();
-        for (Vehicle v : garage.getVehicles()) {
+        for (Vehicle v : allVehicles) {
             if (v == null) continue;
-            String ownerName = EntityLookup.customerName(garage, v.getCustomerId());
+            String ownerName = customerName(customerNames, v.getCustomerId());
             if (containsIgnoreCase(v.getRegistrationNumber(), q)
                     || containsIgnoreCase(v.getBrand(), q)
                     || containsIgnoreCase(v.getModel(), q)
@@ -148,12 +197,12 @@ public final class GlobalSearch {
 
         // 3. Arbetsordrar
         List<WorkOrder> matchingOrders = new ArrayList<WorkOrder>();
-        for (WorkOrder wo : garage.getWorkOrders()) {
+        for (WorkOrder wo : allWorkOrders) {
             if (wo == null) continue;
-            String custName = EntityLookup.workOrderCustomerName(garage, wo);
-            String vehReg = EntityLookup.workOrderVehicleReg(garage, wo);
-            String mechName = EntityLookup.mechanicName(garage, wo.getMechanicId());
-            String sNames = EntityLookup.serviceNames(garage, wo.getServiceItemIds());
+            String custName = bookingCustomer(bookingVehicles, vehicleOwners, customerNames, wo.getBookingId());
+            String vehReg = bookingReg(bookingVehicles, vehicleRegs, wo.getBookingId());
+            String mechName = mechanicName(mechanicNames, wo.getMechanicId());
+            String sNames = serviceNames(garage, wo.getServiceItemIds());
             if (String.valueOf(wo.getId()).equals(q)
                     || ("order #" + wo.getId()).toLowerCase().contains(q)
                     || containsIgnoreCase(vehReg, q)
@@ -167,10 +216,10 @@ public final class GlobalSearch {
 
         // 4. Bokningar
         List<Booking> matchingBookings = new ArrayList<Booking>();
-        for (Booking b : garage.getBookings()) {
+        for (Booking b : allBookings) {
             if (b == null) continue;
-            String custName = EntityLookup.bookingCustomerName(garage, b.getId());
-            String vehReg = EntityLookup.vehicleReg(garage, b.getVehicleId());
+            String custName = bookingCustomer(bookingVehicles, vehicleOwners, customerNames, b.getId());
+            String vehReg = vehicleReg(vehicleRegs, b.getVehicleId());
             if (String.valueOf(b.getId()).equals(q)
                     || ("booking #" + b.getId()).toLowerCase().contains(q)
                     || containsIgnoreCase(custName, q)
@@ -184,7 +233,7 @@ public final class GlobalSearch {
 
         // 5. Mekaniker
         List<Mechanic> matchingMechanics = new ArrayList<Mechanic>();
-        for (Mechanic m : garage.getMechanics()) {
+        for (Mechanic m : allMechanics) {
             if (m == null) continue;
             if (String.valueOf(m.getId()).equals(q)
                     || containsIgnoreCase(m.getName(), q)
@@ -198,7 +247,7 @@ public final class GlobalSearch {
         List<Invoice> matchingInvoices = new ArrayList<Invoice>();
         for (Invoice inv : garage.getInvoices()) {
             if (inv == null) continue;
-            String custName = EntityLookup.invoiceCustomerName(garage, inv);
+            String custName = invoiceCustomerName(orderBookings, bookingVehicles, vehicleOwners, customerNames, inv);
             if (String.valueOf(inv.getId()).equals(q)
                     || ("invoice #" + inv.getId()).toLowerCase().contains(q)
                     || containsIgnoreCase(custName, q)
@@ -220,10 +269,13 @@ public final class GlobalSearch {
 
         sortPrefixMatches(matchingCustomers, c -> c.getName() + " " + c.getEmail(), q);
         sortPrefixMatches(matchingVehicles, v -> v.getBrand() + " " + v.getModel() + " " + v.getRegistrationNumber(), q);
-        sortPrefixMatches(matchingOrders, wo -> EntityLookup.workOrderCustomerName(garage, wo) + " " + EntityLookup.workOrderVehicleReg(garage, wo), q);
-        sortPrefixMatches(matchingBookings, b -> SeedText.resolve(b.getDescription()) + " " + EntityLookup.bookingVehicleReg(garage, b.getId()), q);
+        sortPrefixMatches(matchingOrders, wo -> bookingCustomer(bookingVehicles, vehicleOwners, customerNames, wo.getBookingId())
+                + " " + bookingReg(bookingVehicles, vehicleRegs, wo.getBookingId()), q);
+        sortPrefixMatches(matchingBookings, b -> SeedText.resolve(b.getDescription())
+                + " " + bookingReg(bookingVehicles, vehicleRegs, b.getId()), q);
         sortPrefixMatches(matchingMechanics, m -> m.getName() + " " + SeedText.resolve(m.getSpecialization()), q);
-        sortPrefixMatches(matchingInvoices, inv -> "Invoice #" + inv.getId() + " " + EntityLookup.invoiceCustomerName(garage, inv), q);
+        sortPrefixMatches(matchingInvoices, inv -> "Invoice #" + inv.getId() + " "
+                + invoiceCustomerName(orderBookings, bookingVehicles, vehicleOwners, customerNames, inv), q);
         sortPrefixMatches(matchingServices, s -> SeedText.resolve(s.getName()), q);
 
         return new SearchResults(query,
@@ -236,15 +288,95 @@ public final class GlobalSearch {
                 matchingServices);
     }
 
+    /** Kunden bakom ett fordon. Samma text som EntityLookup.customerName. */
+    private static String customerName(Map<Integer, String> names, int id) {
+        String name = names.get(Integer.valueOf(id));
+        return name != null ? name : "Customer #" + id;
+    }
+
+    /** Registreringsnumret för ett fordon. Samma text som EntityLookup.vehicleReg. */
+    private static String vehicleReg(Map<Integer, String> regs, int id) {
+        String reg = regs.get(Integer.valueOf(id));
+        return reg != null ? reg : "Vehicle #" + id;
+    }
+
+    /** Mekanikerns namn. Samma text som EntityLookup.mechanicName. */
+    private static String mechanicName(Map<Integer, String> names, int id) {
+        String name = names.get(Integer.valueOf(id));
+        return name != null ? name : "Mechanic #" + id;
+    }
+
+    /** Registreringsnumret för en boknings fordon, som EntityLookup.bookingVehicleReg. */
+    private static String bookingReg(Map<Integer, Integer> bookingVehicles,
+                                     Map<Integer, String> regs, int bookingId) {
+        Integer vehicleId = bookingVehicles.get(Integer.valueOf(bookingId));
+        return vehicleId != null ? vehicleReg(regs, vehicleId.intValue()) : "Booking #" + bookingId;
+    }
+
+    /** Kunden bakom en bokning, via fordonet. Samma kedja som EntityLookup.bookingCustomerName. */
+    private static String bookingCustomer(Map<Integer, Integer> bookingVehicles,
+                                          Map<Integer, Integer> vehicleOwners,
+                                          Map<Integer, String> names, int bookingId) {
+        Integer vehicleId = bookingVehicles.get(Integer.valueOf(bookingId));
+        if (vehicleId == null) return "-";
+        Integer customerId = vehicleOwners.get(vehicleId);
+        if (customerId == null) return "-";
+        return customerName(names, customerId.intValue());
+    }
+
+    /** Kunden bakom en faktura: fakturan hänger på en arbetsorder, som hänger på en bokning. */
+    private static String invoiceCustomerName(Map<Integer, Integer> orderBookings,
+                                              Map<Integer, Integer> bookingVehicles,
+                                              Map<Integer, Integer> vehicleOwners,
+                                              Map<Integer, String> names, Invoice inv) {
+        if (inv == null) return "-";
+        Integer bookingId = orderBookings.get(Integer.valueOf(inv.getWorkOrderId()));
+        if (bookingId == null) return "-";
+        return bookingCustomer(bookingVehicles, vehicleOwners, names, bookingId.intValue());
+    }
+
+    /**
+     * Tjänstenamnen på en arbetsorder. Tjänstekatalogen är liten, så den slås upp direkt i stället
+     * för att byggas till ett register. Samma text som EntityLookup.serviceNames.
+     */
+    private static String serviceNames(GarageSystem garage, List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return "";
+        }
+        List<ServiceItem> services = garage.getServiceItems();
+        StringBuilder sb = new StringBuilder();
+        for (Integer sid : ids) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            String found = null;
+            for (ServiceItem s : services) {
+                if (s.getId() == sid.intValue()) {
+                    found = SeedText.resolve(s.getName());
+                    break;
+                }
+            }
+            sb.append(found != null ? found : "Service #" + sid);
+        }
+        return sb.toString();
+    }
+
     private static <T> void sortPrefixMatches(List<T> list, final java.util.function.Function<T, String> textExtractor, final String queryLower) {
         if (list == null || list.size() <= 1 || queryLower == null || queryLower.isEmpty()) return;
+
+        /* Nyckeln räknas ut en gång per rad. Förut drog jämförelsen fram texten på nytt i varje
+           jämförelse, och den texten byggs av uppslag som läser databasen - för ett "a" (som
+           träffar allt) blev det tusentals genomsökningar per tangenttryckning. */
+        final Map<T, Boolean> startarMed = new java.util.IdentityHashMap<T, Boolean>();
+        for (T item : list) {
+            startarMed.put(item, startsWithWordIgnoreCase(textExtractor.apply(item), queryLower));
+        }
+
         Collections.sort(list, new java.util.Comparator<T>() {
             @Override
             public int compare(T o1, T o2) {
-                String s1 = textExtractor.apply(o1);
-                String s2 = textExtractor.apply(o2);
-                boolean p1 = startsWithWordIgnoreCase(s1, queryLower);
-                boolean p2 = startsWithWordIgnoreCase(s2, queryLower);
+                boolean p1 = Boolean.TRUE.equals(startarMed.get(o1));
+                boolean p2 = Boolean.TRUE.equals(startarMed.get(o2));
                 if (p1 && !p2) return -1;
                 if (!p1 && p2) return 1;
                 return 0;

@@ -143,6 +143,11 @@ public final class SearchDropdown {
         }
 
         double x = screenCoords.getX();
+        if (width > searchField.getWidth()) {
+            /* Dropdownen är bredare än fältet. Håll den innanför fönstrets kant i stället för att
+               låta den sticka ut utanför fönstret. */
+            x = screenCoords.getX() + searchField.getWidth() - width;
+        }
         double y = screenCoords.getY() + 4;
 
         if (!popup.isShowing()) {
