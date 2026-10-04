@@ -5,6 +5,7 @@ import com.wac.autocore.data.Settings;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.theme.ThemeManager;
 import com.wac.autocore.ui.components.SearchDropdown;
+import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.navigation.SidebarView;
@@ -67,12 +68,10 @@ public class AutoCoreApp extends Application {
 
         mainCol.setCenter(scroll);
 
-        // Sökfältet ligger överst i huvudfönstret: samma rad oavsett vilken sida du står på.
-        // Är växeln globalSearch av byggs ingen rad, och menyn ser ut som beställaren ville.
-        VBox searchBar = buildSearchBar(garage, router);
-        if (searchBar != null) {
-            mainCol.setTop(searchBar);
-        }
+        // Sökfältet ligger i sidhuvudet, till höger i samma rad som sidtiteln (UiComponents.pageHead),
+        // så det står på samma plats var du än är utan att ligga över innehållet. Är växeln
+        // globalSearch av blir noden null, och då ser huvudet ut precis som förut.
+        UiComponents.setHeaderRight(buildSearchBar(garage, router));
 
         // Sidebar används permanent enligt beställarens önskemål
         shell.setLeft(sidebar.getView());
@@ -108,14 +107,15 @@ public class AutoCoreApp extends Application {
     }
 
     /**
-     * Sökfältet överst i huvudfönstret, med den granulära dropdownen under sig: skriver du ett
-     * tecken söks hela systemet igenom och träffarna visas kategoriserade direkt under fältet,
-     * oavsett vilken sida du står på. Enter öppnar den fullständiga sökvyn.
+     * Sökfältet med den granulära dropdownen under sig: skriver du ett tecken söks hela systemet
+     * igenom och träffarna visas kategoriserade direkt under fältet, oavsett vilken sida du står
+     * på. Enter öppnar den fullständiga sökvyn. Noden hamnar till höger i sidhuvudet, i samma rad
+     * som sidtiteln.
      *
-     * Statisk och utan Stage, så sviten kan bygga raden utan att starta ett fönster.
+     * Statisk och utan Stage, så sviten kan bygga den utan att starta ett fönster.
      * Null när funktionen är avstängd i config/features.properties.
      */
-    public static VBox buildSearchBar(GarageSystem garage, PageRouter router) {
+    public static HBox buildSearchBar(GarageSystem garage, PageRouter router) {
         if (!FeatureFlags.isEnabled("globalSearch")) {
             return null;
         }
@@ -130,12 +130,8 @@ public class AutoCoreApp extends Application {
         SearchDropdown.attach(searchField, garage, router);
 
         HBox row = new HBox(14, searchField);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setPadding(new Insets(14, 22, 10, 22));
-
-        VBox bar = new VBox(0, row);
-        bar.getStyleClass().add("topbar");
-        return bar;
+        row.setAlignment(Pos.CENTER_RIGHT);
+        return row;
     }
 
     public static void main(String[] args) {

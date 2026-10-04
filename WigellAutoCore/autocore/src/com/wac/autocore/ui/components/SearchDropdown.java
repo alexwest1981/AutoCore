@@ -208,7 +208,7 @@ public final class SearchDropdown {
                 container.getChildren().add(createItemRow(
                         I18n.get("search.badge.vehicle"), "success",
                         v.getBrand() + " " + v.getModel() + " (" + v.getYear() + ")",
-                        "Reg: " + v.getRegistrationNumber() + " • " + I18n.get("search.category.owner") + " " + owner,
+                        I18n.get("search.label.reg", v.getRegistrationNumber()) + " • " + I18n.get("search.category.owner") + " " + owner,
                         () -> {
                             hide();
                             if (router != null) {
@@ -254,7 +254,7 @@ public final class SearchDropdown {
                 String veh = EntityLookup.bookingVehicleReg(garage, b.getId());
                 container.getChildren().add(createItemRow(
                         I18n.get("search.badge.booking"), "info",
-                        "Bokning #" + b.getId() + " - " + b.getDescription(),
+                        I18n.get("search.label.booking", String.valueOf(b.getId())) + " - " + b.getDescription(),
                         b.getDate() + " • " + veh,
                         () -> {
                             hide();
@@ -278,7 +278,7 @@ public final class SearchDropdown {
                 String veh = EntityLookup.workOrderVehicleReg(garage, wo);
                 container.getChildren().add(createItemRow(
                         I18n.get("search.badge.workorder"), "accent",
-                        "Arbetsorder #" + wo.getId() + " (" + UiFormatters.statusWord(wo.getStatus()) + ")",
+                        I18n.get("search.label.workorder", String.valueOf(wo.getId())) + " (" + UiFormatters.statusWord(wo.getStatus()) + ")",
                         cust + " • " + veh,
                         () -> {
                             hide();
@@ -323,7 +323,7 @@ public final class SearchDropdown {
                 String cust = EntityLookup.invoiceCustomerName(garage, inv);
                 container.getChildren().add(createItemRow(
                         I18n.get("search.badge.invoice"), "warn",
-                        "Faktura #" + inv.getId() + " (" + UiFormatters.formatMoney(inv.getTotalAmount()) + ")",
+                        I18n.get("search.label.invoice", String.valueOf(inv.getId())) + " (" + UiFormatters.formatMoney(inv.getTotalAmount()) + ")",
                         cust + " • " + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")),
                         () -> {
                             hide();

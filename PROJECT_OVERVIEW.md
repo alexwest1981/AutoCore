@@ -148,7 +148,7 @@ Systemarkitektur/
 1. **`Main.java` (JavaFX GUI):**
    - Startar det moderna skrivbordsgränssnittet via `AutoCoreApp`.
    - Drar igång `ThemeManager` (standard: `emerald`) och `I18n` (standard: svenska, snabbt att växla).
-   - Ger dig responsiv sidonavigation (`SidebarView`), granulär sökning överst i huvudfönstret (`SearchDropdown` under sökfältet, `SearchResultsView` för hela vyn) och modala transaktionsdialoger (`ActionDialogs`). Sökfunktionen slås av och på med växeln `globalSearch` i `config/features.properties`.
+   - Ger dig responsiv sidonavigation (`SidebarView`), granulär sökning till höger i sidhuvudet — i samma rad som sidtiteln (`SearchDropdown` under fältet, `SearchResultsView` för hela vyn) — och modala transaktionsdialoger (`ActionDialogs`). Sökfunktionen slås av och på med växeln `globalSearch` i `config/features.properties`.
 2. **`ConsoleApp.java` (Textbaserat CLI):**
    - Ger terminalanvändare och automatiserad drift full funktionalitet.
    - Har en 17-vals meny som täcker hela verkstadens flöde.
