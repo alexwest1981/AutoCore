@@ -24,7 +24,7 @@ public class TestRunner {
         {"quality", "CodeQualityTest"},
         {"quality", "DocumentationTest"},
         {"security", "SecurityAuditTest"},
-        {"security", "DataFlowAuditTest"},
+        {"dataflow", "DataFlowAuditTest"},
         {"wcag", "WcagAccessibilityTest"},
     };
     private static final String DEFAULT_GROUP = "unit";
