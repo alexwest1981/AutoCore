@@ -7,7 +7,6 @@ import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -35,24 +34,12 @@ public class SidebarView {
     private final Map<String, Label> navCountLabels = new LinkedHashMap<String, Label>();
     private final List<GroupHeader> groupHeaders = new ArrayList<GroupHeader>();
     private final Consumer<String> onNavigate;
-    private final Consumer<String> onSearch;
 
     private Label brandSub;
     private Button overviewBtn;
-    private TextField searchField;
 
     public SidebarView(Consumer<String> onNavigate) {
-        this(onNavigate, null);
-    }
-
-    /**
-     * @param onNavigate tar emot sidnyckeln när ett menyval klickas
-     * @param onSearch   tar emot söktexten medan den skrivs. Null ger ett fältlöst läge; växeln
-     *                   globalSearch i config/features.properties styr det också.
-     */
-    public SidebarView(Consumer<String> onNavigate, Consumer<String> onSearch) {
         this.onNavigate = onNavigate;
-        this.onSearch = onSearch;
         this.container = buildSidebar();
         I18n.addListener(lang -> refreshTexts());
     }
@@ -89,9 +76,6 @@ public class SidebarView {
     public void refreshTexts() {
         if (brandSub != null) {
             brandSub.setText(I18n.get("nav.brand.subtitle"));
-        }
-        if (searchField != null) {
-            searchField.setPromptText(I18n.get("nav.search.prompt"));
         }
         if (overviewBtn != null) {
             overviewBtn.setText(I18n.get("nav.section.overview"));
@@ -211,32 +195,8 @@ public class SidebarView {
         sidebar.setMinWidth(240);
         sidebar.setPrefWidth(240);
         sidebar.setMaxWidth(240);
-        sidebar.getChildren().add(brandNode);
-        VBox searchBox = buildSearchBox();
-        if (searchBox != null) {
-            sidebar.getChildren().add(searchBox);
-        }
-        sidebar.getChildren().addAll(navScroll, langToggle);
+        sidebar.getChildren().addAll(brandNode, navScroll, langToggle);
         return sidebar;
-    }
-
-    /**
-     * Sökfältet överst i menyn, med klassen .search som det gamla toppfältet använde. Fältet
-     * byggs bara när funktionen är påslagen, så menyn ser ut som beställaren ville när den är av:
-     * navigation och inget annat. Texten följer språkvalet som resten av menyn.
-     */
-    private VBox buildSearchBox() {
-        if (onSearch == null || !com.wac.autocore.config.FeatureFlags.isEnabled("globalSearch")) {
-            return null;
-        }
-        searchField = new TextField();
-        searchField.getStyleClass().add("search");
-        searchField.setPromptText(I18n.get("nav.search.prompt"));
-        searchField.textProperty().addListener((obs, oldValue, newValue) -> onSearch.accept(newValue));
-
-        VBox box = new VBox(searchField);
-        box.setPadding(new Insets(0, 16, 10, 16));
-        return box;
     }
 
     private HBox buildLanguageToggle() {
