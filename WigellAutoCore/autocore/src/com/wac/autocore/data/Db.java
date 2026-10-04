@@ -113,7 +113,13 @@ public class Db {
                 + "amount REAL, "
                 + "payment_type TEXT, "
                 + "payment_date TEXT, "
-                + "successful INTEGER DEFAULT 0)"
+                + "successful INTEGER DEFAULT 0)",
+
+            // Persistent user settings (key/value). The language choice lives here so it survives
+            // a restart; see Settings and AutoCoreApp.restoreLanguage.
+            "CREATE TABLE IF NOT EXISTS settings ("
+                + "key TEXT PRIMARY KEY, "
+                + "value TEXT)"
         };
 
         try (Connection connection = getConnection();
