@@ -97,6 +97,7 @@ Systemarkitektur/
         │       │   ├── ConsolePrinter.java   # Frikopplad formaterad utskriftsmotor för CLI
         │       │   ├── components/           # Återanvändbara gränssnittskomponenter
         │       │   │   ├── UiComponents.java # Kort, badges, knappar och varningsrutor
+        │       │   │   ├── SearchDropdown.java # Granulär sökdropdown med kategoriserade träffar
         │       │   │   ├── TableFactory.java # Tabellbyggare med filter & zebramönster
         │       │   │   └── MechanicKanbanCard.java # Kanban-kort för mekanikerschema
         │       │   ├── i18n/                 # Flerspråksstöd
@@ -147,7 +148,7 @@ Systemarkitektur/
 1. **`Main.java` (JavaFX GUI):**
    - Startar det moderna skrivbordsgränssnittet via `AutoCoreApp`.
    - Drar igång `ThemeManager` (standard: `emerald`) och `I18n` (standard: svenska, snabbt att växla).
-   - Ger dig responsiv sidonavigation (`SidebarView`), global sökning (`SearchResultsView`) och modala transaktionsdialoger (`ActionDialogs`). Sökfältet ligger i menyn och slås av och på med växeln `globalSearch` i `config/features.properties`.
+   - Ger dig responsiv sidonavigation (`SidebarView`), granulär sökning överst i huvudfönstret (`SearchDropdown` under sökfältet, `SearchResultsView` för hela vyn) och modala transaktionsdialoger (`ActionDialogs`). Sökfunktionen slås av och på med växeln `globalSearch` i `config/features.properties`.
 2. **`ConsoleApp.java` (Textbaserat CLI):**
    - Ger terminalanvändare och automatiserad drift full funktionalitet.
    - Har en 17-vals meny som täcker hela verkstadens flöde.

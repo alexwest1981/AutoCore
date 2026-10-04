@@ -2,7 +2,11 @@ package com.wac.autocore.test;
 
 import com.wac.autocore.config.FeatureFlags;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.AutoCoreApp;
 import com.wac.autocore.ui.navigation.PageRouter;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 /**
@@ -46,5 +50,40 @@ public class SearchFeatureFlagTest {
         } finally {
             System.clearProperty(FLAG);
         }
+    }
+
+    /** Sökraden överst i huvudfönstret byggs bara när växeln är på, och den bär sökfältet. */
+    public void testTheSearchBarIsBuiltOnlyWhenTheFlagIsOn() {
+        GarageSystem garage = new GarageSystem();
+        PageRouter router = new PageRouter(garage, new VBox());
+
+        try {
+            System.setProperty(FLAG, "false");
+            TestRunner.assertTrue(AutoCoreApp.buildSearchBar(garage, router) == null,
+                    "Med växeln av ska ingen sökrad byggas i huvudfönstret");
+
+            System.setProperty(FLAG, "true");
+            VBox bar = AutoCoreApp.buildSearchBar(garage, router);
+            TestRunner.assertNotNull(bar, "Med växeln på ska sökraden byggas");
+            TestRunner.assertNotNull(findSearchField(bar),
+                    "Sökraden ska innehålla sökfältet som dropdownen kopplas till");
+        } finally {
+            System.clearProperty(FLAG);
+        }
+    }
+
+    private static TextField findSearchField(Node node) {
+        if (node instanceof TextField) {
+            return (TextField) node;
+        }
+        if (node instanceof Parent) {
+            for (Node child : ((Parent) node).getChildrenUnmodifiable()) {
+                TextField found = findSearchField(child);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 }
