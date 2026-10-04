@@ -2,7 +2,7 @@
 
 Här får du en fullständig och uppdaterad genomgång av **Wigell AutoCore**: arkitekturen, katalogstrukturen, domänmodellerna, servicelagret, UI-komponenterna, flerspråksmotorn och hela test- och auditsystemet. 
 
-Dokumentet är tänkt som teknisk referens och handledning i arkitekturen för oss i utvecklingsteamet (**Grupp C: Alex, Lucas, Daniel, Vivianne**).
+Dokumentet är tänkt som teknisk referens och handledning i arkitekturen för oss i utvecklingsteamet (**Grupp C: Alex, Lucas, Daniel**).
 
 ---
 
@@ -274,7 +274,7 @@ Vi kvalitetssäkrar hela systemet med `./test.sh`. Utan argument kör den appens
 | **Alex** | Systemarkitektur, Fasad, I18n flerspråksmotor, Test- & Auditsvit (`test.sh`) | **Klart & Integrerat i develop** |
 | **Daniel** | Databasintegration (SQLite-persistens via `lib/sqlite-jdbc-...`) | **Pågående arbete** |
 | **Lucas** | Domänmodeller, affärsregler för ordrar och bokningsflöden | **Klart & Integrerat i develop** |
-| **Vivianne** | JavaFX GUI-vyer, layout, styling, WCAG-anpassning & teman | **Klart & Integrerat i develop** |
+| **Alex** | JavaFX GUI-vyer, layout, styling, WCAG-anpassning & teman | **Klart & Integrerat i develop** |
 
 ### Git-rutiner & Branch-strategi:
 
