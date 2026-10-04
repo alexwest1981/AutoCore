@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.data.Settings;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.ServiceItem;
@@ -7,6 +8,8 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.AutoCoreApp;
+import com.wac.autocore.ui.i18n.I18n;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -105,6 +108,31 @@ public class PersistenceRestartTest {
             TestRunner.assertEquals(s1.getPrice() + s2.getPrice(), reloaded.getTotalEstimatedCost(), "total cost should match sum of services");
         } finally {
             repo.delete(bookingId);
+        }
+    }
+
+    /**
+     * The language chosen in the UI is stored and read back on the next start, so it survives a
+     * restart instead of falling back to the default every time.
+     */
+    public void testLanguageChoiceSurvivesRestart() {
+        String original = I18n.getLanguage();
+        // The same listener the running app registers in start(). It stays registered for the rest
+        // of the suite, exactly like in the app: every language change is written to the settings.
+        AutoCoreApp.persistLanguageChanges();
+        try {
+            I18n.setLanguage("sv");                 // as the sidebar switch does
+            AutoCoreApp.restoreLanguage();          // as the next start does
+            TestRunner.assertEquals("sv", I18n.getLanguage(),
+                    "the language chosen before a restart should be read back after it");
+
+            I18n.setLanguage("en");
+            AutoCoreApp.restoreLanguage();
+            TestRunner.assertEquals("en", I18n.getLanguage(),
+                    "a new choice should replace the previous one");
+        } finally {
+            Settings.put(AutoCoreApp.LANGUAGE_KEY, original);
+            I18n.setLanguage(original);
         }
     }
 }

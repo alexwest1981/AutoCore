@@ -1,0 +1,51 @@
+package com.wac.autocore.data;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Key/value store for user settings that must survive a restart (the language choice today).
+ *
+ * Deliberately small: one table, two operations, no model and no repository class. Reading a key
+ * that was never written — or reading before the tables exist — returns the fallback instead of
+ * failing, so a fresh install starts on the default value.
+ */
+public final class Settings {
+
+    private Settings() {}
+
+    /** Returns the stored value for {@code key}, or {@code fallback} when nothing is stored. */
+    public static String get(String key, String fallback) {
+        String sql = "SELECT value FROM settings WHERE key = ?";
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, key);
+            try (ResultSet rows = statement.executeQuery()) {
+                if (rows.next()) {
+                    String value = rows.getString(1);
+                    if (value != null) {
+                        return value;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Could not read setting '" + key + "': " + e.getMessage());
+        }
+        return fallback;
+    }
+
+    /** Stores {@code value} under {@code key}, replacing any previous value. */
+    public static void put(String key, String value) {
+        String sql = "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)";
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, key);
+            statement.setString(2, value);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Could not save setting '" + key + "': " + e.getMessage());
+        }
+    }
+}
