@@ -51,6 +51,7 @@ Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder a
 ./test.sh bevis      # acceptanskrav och beviskort
 ./test.sh --audit    # kvalitet, säkerhet och WCAG
 ./test.sh --all      # allt, plus rapport till rapport.md
+./dataflow.sh        # dataflödesanalysen (AK-15), vid sidan av sviten
 ```
 
 Windows: `.\test.ps1` eller `test.bat`.
