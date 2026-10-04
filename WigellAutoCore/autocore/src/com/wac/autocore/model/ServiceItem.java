@@ -7,14 +7,22 @@ public class ServiceItem {
     private String description;
     private double price;
     private int estimatedMinutes;
+    /** Nyckeln till den specialisering tjänsten kräver. Tom betyder att alla kan utföra den. */
+    private String specialization;
 
     public ServiceItem(int id, String name, String description,
                        double price, int estimatedMinutes) {
+        this(id, name, description, price, estimatedMinutes, "");
+    }
+
+    public ServiceItem(int id, String name, String description,
+                       double price, int estimatedMinutes, String specialization) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.estimatedMinutes = estimatedMinutes;
+        this.specialization = specialization != null ? specialization : "";
     }
 
     public int getId() {
@@ -55,6 +63,19 @@ public class ServiceItem {
 
     public void setEstimatedMinutes(int estimatedMinutes) {
         this.estimatedMinutes = estimatedMinutes;
+    }
+
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization != null ? specialization : "";
+    }
+
+    /** Sant när tjänsten inte kräver någon särskild specialisering. */
+    public boolean requiresAnyMechanic() {
+        return specialization == null || specialization.trim().isEmpty();
     }
 
     @Override

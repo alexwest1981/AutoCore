@@ -70,19 +70,19 @@ public class SeedData {
             vehicleRepository.save(mercedes);
 
             ServiceItem oilChange = new ServiceItem(0, "seed.service.oil_change.name",
-                    "seed.service.oil_change.desc", 1295.0, 45);
+                    "seed.service.oil_change.desc", 1295.0, 45, "");
             serviceItemRepository.save(oilChange);
 
             ServiceItem brakeService = new ServiceItem(0, "seed.service.brake_service.name",
-                    "seed.service.brake_service.desc", 2495.0, 90);
+                    "seed.service.brake_service.desc", 2495.0, 90, "seed.mechanic.brakes.specialization");
             serviceItemRepository.save(brakeService);
 
             ServiceItem diagnostics = new ServiceItem(0, "seed.service.diagnostics.name",
-                    "seed.service.diagnostics.desc", 995.0, 60);
+                    "seed.service.diagnostics.desc", 995.0, 60, "seed.mechanic.diagnostics.specialization");
             serviceItemRepository.save(diagnostics);
 
             ServiceItem annualService = new ServiceItem(0, "seed.service.annual_service.name",
-                    "seed.service.annual_service.desc", 3495.0, 120);
+                    "seed.service.annual_service.desc", 3495.0, 120, "");
             serviceItemRepository.save(annualService);
 
             Mechanic johan = new Mechanic(0, "Johan Karlsson", "070-5551111", "seed.mechanic.general_service.specialization");

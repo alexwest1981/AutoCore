@@ -157,13 +157,14 @@ public class BookingOverlapTest {
     public void testMultiServiceMechanicQualificationAndMutualExclusion() {
         GarageSystem garage = new GarageSystem();
 
-        Mechanic sara = new Mechanic(1, "Sara Nilsson", "070-1", "Brakes");
-        Mechanic johan = new Mechanic(2, "Johan Karlsson", "070-2", "General service");
-        Mechanic mikael = new Mechanic(3, "Mikael Berg", "070-3", "Diagnostics");
+        Mechanic sara = new Mechanic(1, "Sara Nilsson", "070-1", "seed.mechanic.brakes.specialization");
+        Mechanic johan = new Mechanic(2, "Johan Karlsson", "070-2", "seed.mechanic.general_service.specialization");
+        Mechanic mikael = new Mechanic(3, "Mikael Berg", "070-3", "seed.mechanic.diagnostics.specialization");
 
+        // Kravet står på tjänsten. Oljebyte har inget krav, så vem som helst får utföra det.
         com.wac.autocore.model.ServiceItem oilChange = new com.wac.autocore.model.ServiceItem(1, "Oil change", "Oljebyte", 1295, 45);
-        com.wac.autocore.model.ServiceItem brakeService = new com.wac.autocore.model.ServiceItem(2, "Brake service", "Bromsbyte", 2495, 90);
-        com.wac.autocore.model.ServiceItem diagnostics = new com.wac.autocore.model.ServiceItem(3, "Diagnostics", "Felsökning", 995, 60);
+        com.wac.autocore.model.ServiceItem brakeService = new com.wac.autocore.model.ServiceItem(2, "Brake service", "Bromsbyte", 2495, 90, "seed.mechanic.brakes.specialization");
+        com.wac.autocore.model.ServiceItem diagnostics = new com.wac.autocore.model.ServiceItem(3, "Diagnostics", "Felsökning", 995, 60, "seed.mechanic.diagnostics.specialization");
 
         // Enbart bromsar: Sara är kvalificerad, Johan är INTE kvalificerad
         TestRunner.assertTrue(garage.isMechanicQualified(sara, brakeService), "Sara ska vara kvalificerad för bromsar");
