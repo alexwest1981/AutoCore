@@ -513,6 +513,12 @@
       "workorder": "ORDER",
       "service": "TJÄNST",
       "invoice": "FAKTURA"
+    },
+    "label": {
+      "booking": "Bokning #{0}",
+      "workorder": "Arbetsorder #{0}",
+      "invoice": "Faktura #{0}",
+      "reg": "Reg: {0}"
     }
   },
   "kanban": {
