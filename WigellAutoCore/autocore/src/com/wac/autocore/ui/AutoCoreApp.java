@@ -20,7 +20,8 @@ import javafx.stage.Stage;
  * Sprint 2:
  * - Låst till tema Emerald (temaväljare borttagen).
  * - Enligt beställaren körs uteslutande sidebar-navigering (väljaren för top bar borttagen).
- * - Sökfältet är tills vidare bortkommenterat.
+ * - Sökfältet ligger i sidomenyn och slås av och på med växeln globalSearch i
+ *   config/features.properties.
  */
 public class AutoCoreApp extends Application {
 
@@ -53,7 +54,7 @@ public class AutoCoreApp extends Application {
 
         // Initiera navigering och sidhanterare med SidebarView
         PageRouter router = new PageRouter(garage, pageBox);
-        SidebarView sidebar = new SidebarView(router::navigate);
+        SidebarView sidebar = new SidebarView(router::navigate, router::applySearch);
         router.setSidebar(sidebar);
 
         BorderPane mainCol = new BorderPane();

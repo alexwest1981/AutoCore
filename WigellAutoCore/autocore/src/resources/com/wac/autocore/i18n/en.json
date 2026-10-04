@@ -26,6 +26,9 @@
       "toggle_label": "Language",
       "sv": "SV",
       "en": "EN"
+    },
+    "search": {
+      "prompt": "Search customers, vehicles or work orders…"
     }
   },
   "overview": {

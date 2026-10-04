@@ -61,6 +61,9 @@ Systemarkitektur/
         │   ├── DesignSelectorApp.java        # Visuell väljare för designprototyper
         │   │
         │   └── com/wac/autocore/
+        │       ├── config/
+        │       │   └── FeatureFlags.java     # Funktionsväxlar från config/features.properties
+        │       │
         │       ├── data/
         │       │   └── Database.java         # Datalager & seed data (förberett för SQLite)
         │       │
@@ -124,9 +127,11 @@ Systemarkitektur/
         │
         └── resources/
             └── com/wac/autocore/
+                ├── config/
+                │   └── features.properties   # Av/på-växlar för utveckling (globalSearch)
                 ├── i18n/
-                │   ├── sv.json               # Svensk språkordbok (396 nycklar)
-                │   └── en.json               # Engelsk språkordbok (396 nycklar)
+                │   ├── sv.json               # Svensk språkordbok (453 nycklar)
+                │   └── en.json               # Engelsk språkordbok (453 nycklar)
                 └── theme/
                     ├── components.css        # Återanvändbara komponent- och layoutstilar
                     └── themes/emerald/
@@ -142,7 +147,7 @@ Systemarkitektur/
 1. **`Main.java` (JavaFX GUI):**
    - Startar det moderna skrivbordsgränssnittet via `AutoCoreApp`.
    - Drar igång `ThemeManager` (standard: `emerald`) och `I18n` (standard: svenska, snabbt att växla).
-   - Ger dig responsiv sidonavigation (`SidebarView`), global sökning (`SearchResultsView`) och modala transaktionsdialoger (`ActionDialogs`).
+   - Ger dig responsiv sidonavigation (`SidebarView`), global sökning (`SearchResultsView`) och modala transaktionsdialoger (`ActionDialogs`). Sökfältet ligger i menyn och slås av och på med växeln `globalSearch` i `config/features.properties`.
 2. **`ConsoleApp.java` (Textbaserat CLI):**
    - Ger terminalanvändare och automatiserad drift full funktionalitet.
    - Har en 17-vals meny som täcker hela verkstadens flöde.
