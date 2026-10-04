@@ -2,7 +2,6 @@ package com.wac.autocore.ui;
 
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.ui.MechanicDialogs;
 import com.wac.autocore.ui.i18n.I18n;
 
 import javafx.scene.control.Alert;

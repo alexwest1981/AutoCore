@@ -27,7 +27,9 @@ target/
 # Lokal databas, skapas av appen och ska inte versionshanteras.
 # Snedstrecket först ankrar regeln till repo-roten, annars träffar den
 # även källkodsmappen com/wac/autocore/data/ och då försvinner nya filer där.
-/data/
+# Utan snedstreck sist träffar regeln även en länk, inte bara en mapp: databasen ligger
+# på NVMe och data är en länk dit.
+/data
 *.db
 
 # Archives & Temporary files
