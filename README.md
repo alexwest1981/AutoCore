@@ -78,7 +78,6 @@ Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord oc
 ## Dokumentation
 
 - [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md): de funktionella kraven för systemet.
-- [`STYLEGUIDE.html`](STYLEGUIDE.html): komponenter och färgteman, öppnas i en webbläsare.
 
 ## Team
 

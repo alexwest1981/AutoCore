@@ -47,7 +47,6 @@ Systemarkitektur/
 ├── run.sh                                    # Körskript för GUI och CLI
 ├── README.md                                 # Projekt-README med snabbstart och modulöversikt
 ├── PROJECT_OVERVIEW.md                       # Detta arkitektur- och översiktsdokument
-├── STYLEGUIDE.html                           # Interaktiv webbstyleguide med live-komponenter
 │
 └── WigellAutoCore/
     └── autocore/
@@ -63,8 +62,9 @@ Systemarkitektur/
         │       ├── config/
         │       │   └── FeatureFlags.java     # Funktionsväxlar från config/features.properties
         │       │
-        │       ├── data/
-        │       │   └── Database.java         # Datalager & seed data (förberett för SQLite)
+      │       ├── data/
+      │       │   ├── Db.java               # SQLite-anslutning och schemamigrering
+      │       │   ├── SeedData.java         # Grunddata för en ny databas
         │       │
         │       ├── model/                    # Domänentiteter (POJO / Beans)
         │       │   ├── Customer.java         # Kunduppgifter & VIP-status
