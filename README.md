@@ -47,7 +47,6 @@ WigellAutoCore/autocore/
 │       ├── repository/     Läsning och skrivning mot SQLite
 │       ├── service/        Affärslogik, GarageSystem som fasad
 │       ├── seed/           Ordlista för demodata, svenska och engelska
-│       ├── test/           Den automatiska sviten
 │       └── ui/             Gränssnittet: dialoger, vyer, komponenter,
 │                           i18n och teman
 └── resources/
