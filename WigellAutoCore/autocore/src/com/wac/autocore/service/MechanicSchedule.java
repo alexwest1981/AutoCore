@@ -167,24 +167,22 @@ public class MechanicSchedule {
         private final boolean inCurrentMonth;
         private final boolean isWeekend;
         private final boolean isMechanicAvailable;
-        private final boolean isFullyBooked;
         private final int bookedHours;
         private final LoadLevel level;
 
         public MonthDayStatus(LocalDate date, boolean inCurrentMonth, boolean isWeekend,
-                              boolean isMechanicAvailable, boolean isFullyBooked, int bookedHours, LoadLevel level) {
+                      boolean isMechanicAvailable, int bookedHours, LoadLevel level) {
             this.date = date;
             this.inCurrentMonth = inCurrentMonth;
             this.isWeekend = isWeekend;
             this.isMechanicAvailable = isMechanicAvailable;
-            this.isFullyBooked = isFullyBooked;
             this.bookedHours = bookedHours;
             this.level = level != null ? level : LoadLevel.FREE;
         }
 
         public MonthDayStatus(LocalDate date, boolean inCurrentMonth, boolean isWeekend,
-                              boolean isMechanicAvailable, boolean isFullyBooked, int bookedHours) {
-            this(date, inCurrentMonth, isWeekend, isMechanicAvailable, isFullyBooked, bookedHours, LoadLevel.FREE);
+                              boolean isMechanicAvailable, int bookedHours) {
+            this(date, inCurrentMonth, isWeekend, isMechanicAvailable, bookedHours, LoadLevel.FREE);
         }
 
         public LocalDate getDate() {
@@ -494,9 +492,7 @@ public class MechanicSchedule {
                     level = LoadLevel.FULL;
                 }
             }
-            boolean isFullyBooked = booked >= WORK_HOURS_PER_DAY;
-
-            result.add(new MonthDayStatus(cur, inCurrentMonth, isWeekend, mechanicAvailableFlag, isFullyBooked, booked, level));
+            result.add(new MonthDayStatus(cur, inCurrentMonth, isWeekend, mechanicAvailableFlag, booked, level));
             cur = cur.plusDays(1);
         }
 
