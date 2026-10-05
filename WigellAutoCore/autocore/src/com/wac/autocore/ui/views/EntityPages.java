@@ -29,6 +29,30 @@ import com.wac.autocore.seed.SeedText;
 @SuppressWarnings("unchecked")
 public final class EntityPages {
 
+    /**
+     * Namnen på alla mekaniker som är kopplade till bokningen, i den ordning de valdes.
+     * En bokning med tjänster som kräver olika specialister har fler än en.
+     */
+    private static String bookingMechanicNames(GarageSystem garage, Booking booking) {
+        java.util.List<Integer> ids = booking.getMechanicIds();
+        StringBuilder names = new StringBuilder();
+        for (Integer id : ids) {
+            if (id == null || id.intValue() <= 0) {
+                continue;
+            }
+            String name = EntityLookup.mechanicName(garage, id.intValue());
+            if (name == null || name.isEmpty()) {
+                continue;
+            }
+            if (names.length() > 0) {
+                names.append(", ");
+            }
+            names.append(name);
+        }
+        return names.length() == 0 ? "-" : names.toString();
+    }
+
+
     private EntityPages() {}
 
     /**
@@ -167,7 +191,7 @@ public final class EntityPages {
                     double cost = EntityLookup.bookingTotalPrice(garage, c);
                     return cost > 0 ? UiFormatters.formatMoney(cost) : "-";
                 }),
-                TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> c.getMechanicId() > 0 ? EntityLookup.mechanicName(garage, c.getMechanicId()) : "-"),
+                TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> bookingMechanicNames(garage, c)),
                 TableFactory.textCol(I18n.get("table.col.description"), TableFactory.W_TEXT_MIN, TableFactory.W_TEXT_MAX, c -> SeedText.resolve(c.getDescription())),
                 TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);

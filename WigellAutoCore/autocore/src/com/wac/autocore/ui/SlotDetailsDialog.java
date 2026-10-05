@@ -178,7 +178,27 @@ public final class SlotDetailsDialog {
                             System.out.println("Could not give the booking a service: " + ex.getMessage());
                         }
                     }
-                    WorkOrder createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId());
+                    // En arbetsorder per mekaniker, samma plan som arbetsorderdialogen använder,
+                    // så att en bokning med flera specialister får en order var även härifrån.
+                    java.util.LinkedHashMap<Integer, java.util.List<com.wac.autocore.model.ServiceItem>> plan =
+                            WorkOrderDialogs.planWorkOrders(garage, targetBooking);
+                    WorkOrder createdWo = null;
+                    for (java.util.Map.Entry<Integer, java.util.List<com.wac.autocore.model.ServiceItem>> entry : plan.entrySet()) {
+                        java.util.List<Integer> ids = new java.util.ArrayList<Integer>();
+                        for (com.wac.autocore.model.ServiceItem s : entry.getValue()) {
+                            ids.add(Integer.valueOf(s.getId()));
+                        }
+                        WorkOrder newOrder = garage.createWorkOrder(targetBooking.getId(),
+                                entry.getKey().intValue(), ids);
+                        if (newOrder != null && entry.getKey().intValue() == slot.getMechanicId()) {
+                            createdWo = newOrder;
+                        }
+                    }
+                    if (createdWo == null) {
+                        // Schemats mekaniker fick ingen egen post i planen, till exempel för att
+                        // bokningen bara har en tjänst. Då skapas ordern åt hen direkt.
+                        createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId());
+                    }
                     if (createdWo != null) {
                         slot.setWorkOrderId(createdWo.getId());
                         if (onRefresh != null) onRefresh.run();

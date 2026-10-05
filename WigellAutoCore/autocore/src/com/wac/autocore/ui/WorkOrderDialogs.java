@@ -237,9 +237,20 @@ public final class WorkOrderDialogs {
             return plan;
         }
 
-        Mechanic booked = mechanicById(garage, booking.getMechanicId());
+        // Bokningens mekaniker, i den ordning de valdes. Den första är den som gäller tiden.
+        List<Mechanic> team = new ArrayList<Mechanic>();
+        for (Integer mechanicId : booking.getMechanicIds()) {
+            Mechanic m = mechanicById(garage, mechanicId.intValue());
+            if (m != null && !team.contains(m)) {
+                team.add(m);
+            }
+        }
+        if (team.isEmpty()) {
+            team.add(null);
+        }
+
         for (ServiceItem service : booking.getServiceItems()) {
-            Mechanic who = mechanicForService(garage, booked, service);
+            Mechanic who = mechanicForService(garage, team, service);
             if (who == null) {
                 continue;
             }
@@ -267,10 +278,13 @@ public final class WorkOrderDialogs {
      * Mekanikern som ska utföra tjänsten: bokningens mekaniker om hen är behörig, annars den första
      * behöriga. Ordningen är bokningens, så samma person får så många av tjänsterna som möjligt.
      */
-    private static Mechanic mechanicForService(GarageSystem garage, Mechanic booked, ServiceItem service) {
+    private static Mechanic mechanicForService(GarageSystem garage, List<Mechanic> team, ServiceItem service) {
         List<Mechanic> qualified = garage.getQualifiedMechanics(service);
-        if (booked != null && containsId(qualified, booked.getId())) {
-            return booked;
+        // Först i tur är den mekaniker som bokningen helst vill använda, alltså den som valdes först.
+        for (Mechanic m : team) {
+            if (m != null && containsId(qualified, m.getId())) {
+                return m;
+            }
         }
         return qualified.isEmpty() ? null : qualified.get(0);
     }
