@@ -25,9 +25,7 @@ import java.util.List;
 import java.util.Map;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Dashboard-vy med KPI-kort, statusfördelning, kommande bokningar och senaste arbetsordrar.
- */
+/** Översikten: mätetal, statusfördelning och de senaste posterna. */
 public final class OverviewView {
 
     private OverviewView() {}

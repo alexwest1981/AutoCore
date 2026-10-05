@@ -11,9 +11,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-/**
- * Gemensamma UI-byggstenar och layoutkomponenter för applikationen.
- */
+/** Gemensamma byggstenar för gränssnittet. */
 public final class UiComponents {
 
     private UiComponents() {}
@@ -103,11 +101,7 @@ public final class UiComponents {
         return buildEntityPage(title, sub, eyebrow, null, table, actions);
     }
 
-    /**
-     * Samma sida, men med en notisrad överst. Raden visar samma siffra som sidebaren gör för vyn,
-     * så att man ser att det finns något att hantera även när man står i vyn. Är det inget att
-     * hantera tar raden ingen plats alls.
-     */
+/** Samma sida med en notisrad överst, med samma siffra som sidebaren visar. */
     public static VBox buildEntityPage(String title, String sub, String eyebrow, Node notice,
                                        TableView<?> table, Node... actions) {
         VBox titles = pageHead(title, sub, eyebrow);
@@ -134,8 +128,7 @@ public final class UiComponents {
         table.setPlaceholder(placeholder);
         HBox.setHgrow(table, Priority.ALWAYS);
 
-        /* Låt tabellen visa ALLA rader utan intern scroll.
-           Den yttre ScrollPane i AutoCoreApp hanterar sidscroll. */
+// Låt tabellen visa alla rader utan egen scroll, sidan scrollar själv.
         final double CELL_HEIGHT = 32;
         final double HEADER_HEIGHT = 36;
         table.setFixedCellSize(CELL_HEIGHT);
@@ -160,10 +153,7 @@ public final class UiComponents {
         return new VBox(18, topRow, notice, inner);
     }
 
-    /**
-     * Notisraden: en siffra och en rad om vad som väntar, i temats egen notisfärg. Är det inget
-     * att hantera blir raden osynlig och tar ingen plats.
-     */
+/** Notisraden: en siffra och en rad om vad som väntar. Tom tar den ingen plats. */
     public static Node viewNotice(int count, String singularKey, String pluralKey) {
         HBox row = new HBox(10);
         row.getStyleClass().add("notice");

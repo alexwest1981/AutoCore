@@ -16,9 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Hanterar arbetsorderns livscykel från skapad till klar.
- */
+/** Arbetsorderns livscykel från skapad till klar. */
 public class WorkOrderService {
 
     private final WorkOrderRepository workOrderRepository = new WorkOrderRepository();
@@ -68,13 +66,7 @@ public class WorkOrderService {
         return createWorkOrder(bookingId, mechanicId, remaining);
     }
 
-    /**
-     * Skapar en arbetsorder för ett urval av bokningens tjänster. En bokning med flera tjänster kan
-     * delas på flera mekaniker, och då blir det en arbetsorder per mekaniker.
-     *
-     * Spärren ligger på tjänstenivå: en tjänst får bara ligga på en arbetsorder. Annars kan samma
-     * arbete faktureras två gånger.
-     */
+/** Skapar en arbetsorder för ett urval av tjänsterna. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
@@ -134,11 +126,7 @@ public class WorkOrderService {
         return workOrder;
     }
 
-    /**
-     * True om tjänsten redan ligger på en arbetsorder för samma bokning. Tjänstekatalogen är delad
-     * mellan bokningar, så samma tjänst-id förekommer på andra bokningars ordrar utan att det säger
-     * något om den här bokningen.
-     */
+/** Sant om tjänsten redan ligger på en arbetsorder för samma bokning. Katalogen är delad. */
     private boolean isClaimed(int bookingId, int serviceItemId) {
         for (WorkOrder order : getAll()) {
             if (order.getBookingId() != bookingId) {
@@ -229,10 +217,7 @@ public class WorkOrderService {
         return true;
     }
 
-    /**
-    * Markerar tjänster som utförda och sparar priset i det ögonblicket.
-     * Priset läses ur tjänstekatalogen här, så att en senare prisändring inte rör den här arbetsordern.
-     */
+/** Markerar tjänsterna utförda och sparar priset just nu. */
     public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {

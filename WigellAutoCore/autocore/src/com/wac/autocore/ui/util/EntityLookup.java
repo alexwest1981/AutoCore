@@ -13,9 +13,7 @@ import com.wac.autocore.service.GarageSystem;
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Hjälpmetoder för att slå upp läsbara namn på relaterade entiteter via ID.
- */
+/** Läsbara namn på relaterade poster, via id. */
 public final class EntityLookup {
 
     private EntityLookup() {}
@@ -207,10 +205,7 @@ public final class EntityLookup {
         return 0;
     }
 
-    /**
-     * Fakturan som täcker arbetsordern. Fakturan gäller hela bokningen, så en arbetsorder kan vara
-     * fakturerad av en faktura som sparats på en annan arbetsorder i samma bokning.
-     */
+/** Fakturan som täcker arbetsordern. Den hör till bokningen, inte till en order. */
     public static Invoice invoiceForWorkOrder(GarageSystem garage, int workOrderId) {
         if (garage == null || workOrderId <= 0) return null;
 
@@ -234,7 +229,7 @@ public final class EntityLookup {
             }
         }
 
-        // Fakturan kan ha sparats på en annan arbetsorder i samma bokning. Tjänstekatalogen är delad,
+// Fakturan kan ligga på en annan arbetsorder i samma bokning.
         // så rader från andra bokningar får inte räknas hit.
         for (Invoice inv : garage.getInvoices()) {
             if (bookingIdForWorkOrder(garage, inv.getWorkOrderId()) != order.getBookingId()) {
@@ -277,11 +272,7 @@ public final class EntityLookup {
         return 0.0;
     }
 
-    /**
-     * Tjänstenamnen på en arbetsorder, utan priser. Arbetsordervyn är till för mekanikerna, som
-     * behöver se vad som ska göras, inte vad det kostar. Namnet hämtas från fakturaraden när den
-     * finns, annars från tjänsten, precis som i workOrderServicesWithPrices.
-     */
+/** Tjänstenamnen på en arbetsorder, utan priser. Vyn är för mekanikerna. */
     public static String workOrderServices(GarageSystem garage, WorkOrder wo) {
         if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
             return "-";
@@ -385,10 +376,7 @@ public final class EntityLookup {
         return "-";
     }
 
-    /**
-     * Kunden bakom en betalning. Kedjan går betalning, faktura, arbetsorder, bokning, fordon, kund,
-     * och varje steg använder samma hjälpmetoder som fakturavyn, så samma kund visas i båda vyerna.
-     */
+/** Kunden bakom en betalning, via faktura, arbetsorder, bokning och fordon. */
     public static String paymentCustomerName(GarageSystem garage, Payment pay) {
         if (garage == null || pay == null) return "-";
         for (Invoice inv : garage.getInvoices()) {
@@ -399,9 +387,7 @@ public final class EntityLookup {
         return "-";
     }
 
-    /**
-     *  (C2): Total beräknad arbetstid för samtliga tjänster på arbetsordern.
-     */
+/** Total beräknad arbetstid för tjänsterna på arbetsordern. */
     public static int workOrderTotalMinutes(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null || wo.getServiceItemIds() == null) {
             return 0;

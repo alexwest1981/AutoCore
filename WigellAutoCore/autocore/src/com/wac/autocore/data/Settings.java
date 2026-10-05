@@ -5,13 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- * Key/value store for user settings that must survive a restart (the language choice today).
- *
- * Deliberately small: one table, two operations, no model and no repository class. Reading a key
- * that was never written — or reading before the tables exist — returns the fallback instead of
- * failing, so a fresh install starts on the default value.
- */
+/** Inställningar som ska överleva en omstart. En tabell och två operationer, med flit. */
 public final class Settings {
 
     private Settings() {}

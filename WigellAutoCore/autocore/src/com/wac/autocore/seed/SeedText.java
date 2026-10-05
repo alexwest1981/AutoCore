@@ -12,19 +12,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Dictionary for the seeded demo data.
- *
- * The interface texts live in {@code com/wac/autocore/i18n/<lang>.json} and belong to the widgets.
- * The demo data has its own dictionary, one flat file per language, in
- * {@code com/wac/autocore/seed/<lang>.json}. Rows written by {@link com.wac.autocore.data.SeedData}
- * and by the demo schedule store a key from that dictionary rather than a finished sentence, so the
- * same row can be read in Swedish or English without ever being rewritten.
- *
- * {@link #resolve(String)} turns a stored key into text in the active language and returns every
- * value that is not a key untouched. That pass-through is what lets a description the user typed
- * live in the same column as a seeded one: only values that start with {@link #PREFIX} are looked up.
- */
+/** Texterna i demodata. Gränssnittets texter ligger i i18n. */
 public final class SeedText {
 
     public static final String LANG_EN = "en";
@@ -54,10 +42,7 @@ public final class SeedText {
 
     private SeedText() {}
 
-    /**
-     * Text to show for a stored value: the translation when the value is a key in this dictionary,
-     * otherwise the value itself.
-     */
+/** Texten för ett värde: översättningen om värdet är en nyckel, annars värdet självt. */
     public static String resolve(String value) {
         if (value == null) {
             return null;
@@ -68,10 +53,7 @@ public final class SeedText {
         return get(value);
     }
 
-    /**
-     * Translation for a key in the active language, falling back to English and finally to the key
-     * itself so a missing entry is visible instead of empty.
-     */
+/** Översättningen för nyckeln. Saknas den visas nyckeln. */
     public static String get(String key) {
         if (key == null) {
             return "";
@@ -94,10 +76,7 @@ public final class SeedText {
         return value != null && value.startsWith(PREFIX);
     }
 
-    /**
-     * Sets the language of the demo data. Called by {@code I18n} whenever the interface language
-     * changes, so the two dictionaries can never point at different languages.
-     */
+/** Sätter språket för demodatan. Anropas av I18n, så ordlistorna följs åt. */
     public static synchronized void setLanguage(String lang) {
         String normalized = lang == null ? DEFAULT_LANG : lang.trim().toLowerCase();
         if (!LANG_SV.equals(normalized) && !LANG_EN.equals(normalized)) {
@@ -139,9 +118,7 @@ public final class SeedText {
         }
     }
 
-    /**
-     * Reads one {@code "key": "value"} line. The seed files are flat, so no nesting is handled.
-     */
+/** Läser en rad med nyckel och värde. Filerna är platta. */
     private static void parseEntry(String line, Map<String, String> target) {
         if (line == null) {
             return;

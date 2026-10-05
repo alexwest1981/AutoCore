@@ -24,9 +24,7 @@ import javafx.util.StringConverter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Modala dialoger för fakturering och betalningar (skapa faktura, genomföra betalning).
- */
+/** Dialoger för fakturering och betalningar. */
 public final class BillingDialogs {
 
     private BillingDialogs() {}
@@ -37,7 +35,7 @@ public final class BillingDialogs {
 
     public static void showCreateInvoiceDialog(GarageSystem garage, WorkOrder preselected, Runnable onSuccess) {
         // Bokningar med utfört arbete kvar att fakturera. En bokning kan ha flera arbetsordrar — en
-        // per mekaniker när tjänsterna delas upp — men kunden ska ha en faktura med allt som är gjort.
+/** Kunden ska ha en faktura med allt som är gjort. */
         List<Booking> invoiceable = garage.getInvoiceableBookings();
 
         if (invoiceable.isEmpty()) {
@@ -257,11 +255,7 @@ public final class BillingDialogs {
         dialog.showAndWait();
     }
 
-    /**
-     * Förhandsgranskar fakturan som den skrivs ut, och skickar den till skrivaren.
-     *
-     * Rutan stängs inte när man skriver ut, så samma faktura kan skrivas ut igen eller rättas först.
-     */
+/** Förhandsgranskar fakturan och skickar den till skrivaren. Rutan stängs inte. */
     static void showInvoiceDocumentDialog(GarageSystem garage, Invoice invoice) {
         if (invoice == null) return;
 
@@ -290,7 +284,7 @@ public final class BillingDialogs {
         dialog.showAndWait();
     }
 
-    /** Skickar dokumentet till skrivaren. Utan skrivare blir det ett besked i stället för tystnad. */
+/** Skickar dokumentet till skrivaren. Utan skrivare blir det ett besked. */
     private static void sendToPrinter(final javafx.scene.Node document, Dialog<?> dialog) {
         javafx.print.PrinterJob job = javafx.print.PrinterJob.createPrinterJob();
         if (job == null) {

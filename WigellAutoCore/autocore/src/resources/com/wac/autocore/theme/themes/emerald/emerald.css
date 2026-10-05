@@ -1,13 +1,4 @@
-/* ============================================================
- * Theme : Emerald
- * Source: auto-core (3).zip (app/globals.css)
- * Mode  : light
- * Refined for Wigell AutoCore:
- * - Edge-to-edge layout, 100% height sidebar flush to left
- * - Graphite gray sidebar (#282d2b)
- * - Subtle hint of green across shell, cards, lines and interactions
- * - Sturdy and stylish AutoCore brand typography
- * ============================================================ */
+/* Tema Emerald. Byggt ur auto-core (3).zip. */
 
 .root {
     -wac-page: #edf3ef;

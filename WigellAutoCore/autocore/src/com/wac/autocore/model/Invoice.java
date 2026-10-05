@@ -76,8 +76,7 @@ public class Invoice {
         this.totalAmount = Math.round((amount - discount) * 100.0) / 100.0;
     }
 
-    /** Momsen som läggs på fakturan. Alla belopp i appen är exklusive moms förutom de som
-     *  räknas fram här. */
+/** Momsen läggs bara på fakturan, inte i tabellerna. */
     public static final double VAT_RATE = 0.25;
 
     /** Momsen på det som ska betalas, avrundad till ören. */

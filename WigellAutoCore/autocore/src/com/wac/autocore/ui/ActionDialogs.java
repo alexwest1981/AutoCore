@@ -7,6 +7,7 @@ import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.navigation.PageRouter;
@@ -31,9 +32,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Hjälpare för att öppna dialoger. Anropar den rätt dialogklassen för varje entitet.
- */
+/** Öppnar rätt dialog för varje entitet. */
 public final class ActionDialogs {
 
     private ActionDialogs() {}
@@ -84,16 +83,7 @@ public final class ActionDialogs {
         return grid;
     }
 
-    /**
-     * Låser OK-knappen tills varje angivet fält har ett värde, så ett halvfyllt formulär inte går
-     * att skicka och inget behöver skrivas om efteråt.
-     *
-     * Textfält räknas som ifyllda först när de innehåller något annat än blanksteg, rullistor och
-     * datumväljare när ett val är gjort. Fält som är frivilliga lämnas helt enkelt utanför anropet.
-     *
-     * Låsningen ersätter inte kontrollen som körs när man väl trycker OK — den ligger kvar som
-     * sista vakt — den bara sparar irritationen av att fylla i allt en gång till.
-     */
+/** Låser OK-knappen tills varje fält har ett värde. */
     public static void requireFilled(Dialog<?> dialog, Node... fields) {
         final List<Node> required = new ArrayList<Node>();
         List<Observable> sources = new ArrayList<Observable>();
@@ -109,10 +99,7 @@ public final class ActionDialogs {
                 sources.toArray(new Observable[sources.size()])));
     }
 
-    /**
-     * Låser OK-knappen tills ett eget villkor är sant. Används när kravet inte går att uttrycka som
-     * "fältet är ifyllt", t.ex. att en bokning måste innehålla minst en tjänst.
-     */
+/** Låser OK-knappen tills ett eget villkor är sant. */
     public static void requireFilled(Dialog<?> dialog, ObservableBooleanValue filled) {
         Node ok = dialog.getDialogPane().lookupButton(ButtonType.OK);
         if (ok != null) {
@@ -151,11 +138,7 @@ public final class ActionDialogs {
         return false;
     }
 
-    /**
-     * Bekräftelseruta där texten radbryts i stället för att klippas av. Alertens egen textrad bryter
-     * inte, så en mening med ett namn i blev avklippt. Texten hålls inom en rimlig bredd så rutan
-     * inte växer över skärmen.
-     */
+/** Bekräftelseruta med radbrytning, för Alertens textrad klipper av. */
     public static Alert confirm(String title, String header, String message) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
@@ -168,10 +151,7 @@ public final class ActionDialogs {
         return alert;
     }
 
-    /**
-     * Höjer dialogen när innehållet behöver mer plats (t.ex. fler tjänster i en bokning).
-     * Bara uppåt: en storlek användaren själv dragit fram behålls.
-     */
+/** Höjer dialogen när innehållet behöver mer plats. Bara uppåt. */
     public static void growToFitContent(Dialog<?> dialog) {
         DialogPane pane = dialog.getDialogPane();
         if (pane.getScene() == null || pane.getScene().getWindow() == null) {
@@ -347,7 +327,7 @@ public final class ActionDialogs {
     // =========================================================================
 
     public static void showSlotDetailsDialog(GarageSystem garage,
-                                             MechanicSchedule.TimeSlot slot,
+                                             TimeSlot slot,
                                              PageRouter router,
                                              Runnable onRefresh) {
         SlotDetailsDialog.showSlotDetailsDialog(garage, slot, router, onRefresh);

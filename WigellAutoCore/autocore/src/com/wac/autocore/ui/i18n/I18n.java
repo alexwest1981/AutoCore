@@ -14,12 +14,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
-/**
- * Internationalisering (i18n) för AutoCore.
- *
- * Hanterar inläsning av hierarkiska JSON-språkfiler utan externa beroenden (ren Java 8).
- * Stödjer dynamisk språkväxling mellan svenska och engelska med aviseringslyssnare.
- */
+/** Översättningarna. Läser egna JSON-filer, inga externa beroenden. */
 public final class I18n {
 
     public static final String LANG_EN = "en";
@@ -43,10 +38,7 @@ public final class I18n {
 
     private I18n() {}
 
-    /**
-     * Hämtar översatt text för angiven nyckel.
-     * Faller tillbaka på engelska, och därefter nyckelnamnet självt om översättning saknas.
-     */
+/** Texten för nyckeln. Saknas den visas nyckeln själv, så ett hål syns. */
     public static String get(String key) {
         if (key == null) return "";
         synchronized (activeDictionary) {
@@ -58,9 +50,7 @@ public final class I18n {
         return key;
     }
 
-    /**
-     * Hämtar översatt text och formaterar med MessageFormat ({0}, {1}, etc.).
-     */
+/** Texten med MessageFormat, för {0}, {1} och så vidare. */
     public static String get(String key, Object... args) {
         String pattern = get(key);
         if (args == null || args.length == 0) {
@@ -73,9 +63,7 @@ public final class I18n {
         }
     }
 
-    /**
-     * Byter aktivt språk ("sv" eller "en") och aviserar alla registrerade lyssnare.
-     */
+/** Byter språk och säger till lyssnarna. */
     public static synchronized void setLanguage(String lang) {
         if (lang == null || lang.trim().isEmpty()) {
             lang = DEFAULT_LANG;
@@ -169,10 +157,7 @@ public final class I18n {
         return null;
     }
 
-    /**
-     * Enkel rekursiv tolkare som extraherar hierarkiska JSON-objekt till punktnoterade nycklar.
-     * T.ex. {"nav": {"overview": "Översikt"}} -> "nav.overview"="Översikt".
-     */
+/** Läser en platt JSON till punktnoterade nycklar: nav.overview. */
     static void parseJsonObject(String prefix, String json, Map<String, String> out) {
         if (json == null) return;
         json = json.trim();

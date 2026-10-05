@@ -14,9 +14,7 @@ import javafx.scene.layout.GridPane;
 
 import java.sql.SQLException;
 
-/**
- * Modala dialoger för kundhantering (skapa, redigera, ta bort).
- */
+/** Dialoger för kundhantering. */
 public final class CustomerDialogs {
 
     private CustomerDialogs() {}
