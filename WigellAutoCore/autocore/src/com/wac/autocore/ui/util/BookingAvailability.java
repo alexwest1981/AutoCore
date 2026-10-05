@@ -16,19 +16,11 @@ import java.util.List;
  */
 public final class BookingAvailability {
 
-    public static final LocalTime OPENING_TIME = LocalTime.of(7, 0);
     public static final LocalTime CLOSING_TIME = LocalTime.of(17, 0);
     public static final int MAX_WORK_MINUTES_PER_DAY = 10 * 60; // 07:00 till 17:00 = 600 minuter
 
     private BookingAvailability() {}
 
-    /**
-     * Kontrollerar om en specifik timme är upptagen för en mekaniker ett visst datum.
-     */
-    public static boolean isHourBooked(GarageSystem garage, Mechanic mechanic, LocalDate date, int hour, int excludeBookingId) {
-        LocalTime slotStart = LocalTime.of(hour, 0);
-        return isRangeBooked(garage, mechanic, date, slotStart, slotStart.plusHours(1), excludeBookingId);
-    }
 
     /**
      * True när intervallet [start, end) rör en tid som redan är bokad för mekanikern den dagen.
@@ -87,31 +79,6 @@ public final class BookingAvailability {
         return false;
     }
 
-    /**
-     * Kontrollerar om en specifik starttid och tidslängd kan bokas för mekanikern den dagen.
-     * Returnerar false om arbetet slutar efter stängningstid (17:00), infaller utanför öppettider
-     * eller krockar med befintlig bokning.
-     */
-    public static boolean isSlotAvailable(GarageSystem garage, Mechanic mechanic, LocalDate date,
-                                          LocalTime startTime, int durationMinutes, int excludeBookingId) {
-        if (date == null || startTime == null || durationMinutes <= 0) {
-            return false;
-        }
-        if (date.isBefore(LocalDate.now())) {
-            return false;
-        }
-        if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            return false;
-        }
-        LocalTime endTime = startTime.plusMinutes(durationMinutes);
-        if (startTime.isBefore(OPENING_TIME) || endTime.isAfter(CLOSING_TIME)) {
-            return false;
-        }
-        if (mechanic != null && mechanic.getId() > 0) {
-            return !isRangeBooked(garage, mechanic, date, startTime, endTime, excludeBookingId);
-        }
-        return true;
-    }
 
     /**
      * Kontrollerar om det finns minst en ledig starttid för den angivna tidslängden ett visst datum.

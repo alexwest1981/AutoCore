@@ -278,12 +278,6 @@ public final class BookingDialogs {
         }
     }
 
-    /**
-     * Delegerar till {@link BookingAvailability#isHourBooked}.
-     */
-    public static boolean isHourBooked(GarageSystem garage, Mechanic mechanic, LocalDate date, int hour, int excludeBookingId) {
-        return BookingAvailability.isHourBooked(garage, mechanic, date, hour, excludeBookingId);
-    }
 
     /** Statusar som får sättas när arbetet redan har påbörjats. */
     private static boolean statusTillaten(String status) {

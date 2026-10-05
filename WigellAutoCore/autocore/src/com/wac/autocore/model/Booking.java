@@ -234,39 +234,6 @@ public class Booking {
         return true;
     }
 
-    public boolean removeServiceItem(ServiceItem item) {
-        if (!canModifyServices()) {
-            return false;
-        }
-        if (item == null) return false;
-        boolean removed = this.serviceItems.remove(item);
-        this.serviceItemIds.remove(Integer.valueOf(item.getId()));
-        if (this.serviceItemId == item.getId()) {
-            this.serviceItemId = this.serviceItemIds.isEmpty() ? 0 : this.serviceItemIds.get(0);
-        }
-        return removed;
-    }
-
-    public boolean removeServiceItemById(int serviceId) {
-        if (!canModifyServices()) {
-            return false;
-        }
-        boolean removedId = this.serviceItemIds.remove(Integer.valueOf(serviceId));
-        ServiceItem toRemove = null;
-        for (ServiceItem s : this.serviceItems) {
-            if (s.getId() == serviceId) {
-                toRemove = s;
-                break;
-            }
-        }
-        if (toRemove != null) {
-            this.serviceItems.remove(toRemove);
-        }
-        if (this.serviceItemId == serviceId) {
-            this.serviceItemId = this.serviceItemIds.isEmpty() ? 0 : this.serviceItemIds.get(0);
-        }
-        return removedId || toRemove != null;
-    }
 
     /**
      * Alla mekaniker som är valda för bokningen. Den första är bokningens huvudsakliga mekaniker,
@@ -297,9 +264,6 @@ public class Booking {
         }
     }
 
-    public boolean hasMechanic(int id) {
-        return getMechanicIds().contains(Integer.valueOf(id));
-    }
 
     public List<Integer> getServiceItemIds() {
         if (!serviceItemIds.isEmpty()) {

@@ -12,7 +12,6 @@ import com.wac.autocore.service.GarageSystem;
 
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
-import com.wac.autocore.ui.i18n.I18n;
 
 /**
  * Hjälpmetoder för att slå upp läsbara namn på relaterade entiteter via ID.
@@ -419,36 +418,4 @@ public final class EntityLookup {
         return total;
     }
 
-    /**
-     *  (C2): Formaterar arbetsorderns tjänster med status (utförd vs att utföra).
-     */
-    public static String workOrderServicesWithStatus(GarageSystem garage, WorkOrder wo) {
-        if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
-            return "-";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (Integer sid : wo.getServiceItemIds()) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-            String name = null;
-            for (ServiceItem s : garage.getServiceItems()) {
-                if (s.getId() == sid.intValue()) {
-                    name = SeedText.resolve(s.getName());
-                    break;
-                }
-            }
-            if (name == null) {
-                name = "Service #" + sid;
-            }
-            sb.append(name);
-            boolean done = wo.getCompletedServiceItems() != null && wo.getCompletedServiceItems().contains(sid);
-            if (done) {
-                sb.append(" [").append(I18n.get("status.completed")).append("]");
-            } else {
-                sb.append(" [").append(I18n.get("status.to_be_performed")).append("]");
-            }
-        }
-        return sb.toString();
-    }
 }
