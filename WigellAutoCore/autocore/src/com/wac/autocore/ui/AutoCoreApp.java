@@ -89,19 +89,12 @@ public class AutoCoreApp extends Application {
         router.navigate("overview");
     }
 
-    /**
-     * Restores the language chosen on a previous run. Public and JavaFX-free so the test suite can
-     * exercise the restore path without starting a toolkit.
-     */
+    /** Läser det senast valda språket från inställningarna. */
     public static void restoreLanguage() {
         I18n.setLanguage(Settings.get(LANGUAGE_KEY, I18n.DEFAULT_LANG));
     }
 
-    /**
-     * Saves the language to the settings table every time it changes, so the choice made with the
-     * sidebar switch is still there after a restart. A listener rather than a call in the switch
-     * itself, so every writer is covered and not only the one button.
-     */
+    /** Sparar språkbyten så att valet finns kvar vid nästa start. */
     public static void persistLanguageChanges() {
         I18n.addListener(lang -> Settings.put(LANGUAGE_KEY, lang));
     }

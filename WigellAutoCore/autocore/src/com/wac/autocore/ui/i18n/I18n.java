@@ -116,9 +116,7 @@ public final class I18n {
         listeners.remove(listener);
     }
 
-    /**
-     * Läser in ordlistan för ett givet språk (används även vid enhetstester).
-     */
+    /** Läser in ordlistan för ett språk. */
     public static Map<String, String> loadDictionary(String lang) {
         Map<String, String> result = new HashMap<>();
         String resourcePath = "/com/wac/autocore/i18n/" + lang + ".json";

@@ -308,7 +308,7 @@ public class MechanicSchedule {
                 }
             }
         } catch (Exception ignored) {
-            // Ignorera om databas ej är initierad under isolerade tester
+            // Schemat kan användas innan databasen hunnit bli klar.
         }
     }
 
@@ -331,9 +331,7 @@ public class MechanicSchedule {
         return nextDate;
     }
 
-    /**
-     * Initialiserar realistisk testdata för innevarande vecka och dag.
-     */
+    /** Lägger in exempelbokningar i schemat första gången vyn används. */
     public synchronized void initDefaultSeedData() {
         if (seeded) return;
         seeded = true;
@@ -556,9 +554,7 @@ public class MechanicSchedule {
         }
     }
 
-    /**
-     * Återställer alla tidsbokningar (för enhetstester).
-     */
+    /** Tömmer schemat och stänger av databassynkronisering. */
     public synchronized void resetForTest() {
         databaseSyncEnabled = false;
         slots.clear();

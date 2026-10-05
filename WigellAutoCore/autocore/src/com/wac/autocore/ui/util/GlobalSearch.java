@@ -16,10 +16,7 @@ import java.util.List;
 import java.util.Map;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Ren söklogik för att söka igenom hela AutoCore-systemet över alla domänentiteter.
- * Frikopplad från JavaFX så att all sök- och matchningslogik kan enhetstestas.
- */
+/** Söker och grupperar träffar från systemets olika delar. */
 public final class GlobalSearch {
 
     private GlobalSearch() {}
