@@ -83,6 +83,11 @@ public class Db {
                 + "service_item_id INTEGER NOT NULL, "
                 + "PRIMARY KEY (booking_id, service_item_id))",
 
+            "CREATE TABLE IF NOT EXISTS booking_mechanics ("
+                + "booking_id INTEGER NOT NULL, "
+                + "mechanic_id INTEGER NOT NULL, "
+                + "PRIMARY KEY (booking_id, mechanic_id))",
+
             "CREATE TABLE IF NOT EXISTS work_order_service_items ("
                 + "work_order_id INTEGER NOT NULL, "
                 + "service_item_id INTEGER NOT NULL, "
@@ -162,6 +167,11 @@ public class Db {
                     + "SELECT id, service_item_id FROM bookings "
                     + "WHERE service_item_id IS NOT NULL AND service_item_id > 0";
             statement.executeUpdate(migrateSql);
+
+            // Migrera bokningens mekaniker till kopplingstabellen. Äldre bokningar har bara den ena.
+            statement.executeUpdate("INSERT OR IGNORE INTO booking_mechanics (booking_id, mechanic_id) "
+                    + "SELECT id, mechanic_id FROM bookings "
+                    + "WHERE mechanic_id IS NOT NULL AND mechanic_id > 0");
 
 
             // SCRUM-163 (E2): Skapa fakturarader för fakturor som fanns innan tabellen.

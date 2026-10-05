@@ -18,6 +18,7 @@ import javafx.scene.control.Dialog;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Modala dialoger för att skapa, redigera, avboka och ta bort bokningar.
@@ -94,6 +95,7 @@ public final class BookingDialogs {
                     }
                     if (chosenMech != null) {
                         b.setMechanicId(chosenMech.getId());
+                        b.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
                     }
                     if (startTime != null) {
                         b.setStartTime(startTime);
@@ -181,6 +183,7 @@ public final class BookingDialogs {
                 }
                 booking.setStatus(status);
                 booking.setMechanicId(chosenMech != null ? chosenMech.getId() : 0);
+                booking.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
                 if (startTime != null) {
                     booking.setStartTime(startTime);
                     int estMin = booking.getTotalEstimatedMinutes() > 0 ? booking.getTotalEstimatedMinutes() : (chosenService != null ? chosenService.getEstimatedMinutes() : 60);
@@ -286,5 +289,21 @@ public final class BookingDialogs {
     private static boolean statusTillaten(String status) {
         return "IN_PROGRESS".equalsIgnoreCase(status)
                 || "COMPLETED".equalsIgnoreCase(status);
+    }
+
+    /** Id på de mekaniker som är valda i formuläret, i den ordning de valdes. */
+    private static List<Integer> mechanicIdsFrom(List<Mechanic> chosen) {
+        List<Integer> ids = new ArrayList<Integer>();
+        if (chosen != null) {
+            for (Mechanic m : chosen) {
+                if (m != null && m.getId() > 0) {
+                    Integer id = Integer.valueOf(m.getId());
+                    if (!ids.contains(id)) {
+                        ids.add(id);
+                    }
+                }
+            }
+        }
+        return ids;
     }
 }
