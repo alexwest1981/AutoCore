@@ -8,9 +8,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Hanterar fordon och kopplingen till deras ägare.
- */
+/** Fordon och kopplingen till deras ägare. */
 public class VehicleService {
 
     private final CustomerService customerService;

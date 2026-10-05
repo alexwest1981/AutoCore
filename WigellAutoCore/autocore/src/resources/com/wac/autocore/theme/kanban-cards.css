@@ -1,0 +1,27 @@
+/* 20. Kanban-drawern, bokningen utfälld under dagen. */
+.kanban-inline-drawer {
+    -fx-background-color: -wac-card;
+    -fx-background-radius: 8px;
+    -fx-border-color: -wac-line -wac-line -wac-line -wac-accent;
+    -fx-border-width: 1px 1px 1px 4px;
+    -fx-border-radius: 8px;
+    -fx-padding: 14px 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.10), 8, 0, 0, 3);
+}
+/* Chipsen inuti rutan följer rutans storlek, inte den globala badge-storleken. */
+.kanban-inline-drawer .badge {
+    -fx-font-size: 12px;
+    -fx-padding: 3px 10px;
+}
+/* Rutan är uppbyggd som rubrik, avdelare, etikettrader och fot. Det här är dess egna stilar. */
+.kanban-drawer-time  { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: -wac-accent; }
+.kanban-drawer-ref   { -fx-font-size: 12px; -fx-text-fill: -wac-muted; }
+.kanban-drawer-line  { -fx-background-color: -wac-line; -fx-min-height: 1px; -fx-pref-height: 1px; -fx-max-height: 1px; }
+.kanban-drawer-field { -fx-font-size: 12px; -fx-text-fill: -wac-muted; }
+.kanban-drawer-value { -fx-font-size: 13px; -fx-text-fill: -wac-text; }
+.kanban-hour-box.expanded {
+    -fx-border-color: #ffffff;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 2px;
+}
+

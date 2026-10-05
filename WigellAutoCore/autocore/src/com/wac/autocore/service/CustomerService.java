@@ -7,9 +7,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Hanterar kundregistret: läsning, uppslag och validering.
- */
+/** Kunder: läsning, uppslag och validering. */
 public class CustomerService {
 
     private final CustomerRepository customerRepository = new CustomerRepository();
@@ -50,10 +48,7 @@ public class CustomerService {
         return customer;
     }
 
-    /**
-     * Sparar en ändrad kund. Ändringen går genom samma regel som skapandet, annars kunde en ogiltig
-     * rad skrivas in via redigera-dialogen i stället för via skapa-dialogen.
-     */
+/** Sparar ändringen genom samma regel som skapandet. */
     public void updateCustomer(Customer customer) throws SQLException {
         if (customer == null) {
             return;
@@ -62,10 +57,7 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
-    /**
-     * The rule is enforced here, not in the form, so every writer of a customer row is covered.
-     * The message names the broken rule; the form turns it into text in the active language.
-     */
+/** Regeln ligger här och inte i formuläret, så varje väg till en kundradering kontrolleras. */
     private static void refuseUnlessStorable(String name, String phone, String email) {
         String problem = Customer.validationProblem(name, phone, email);
         if (problem != null) {

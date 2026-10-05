@@ -7,207 +7,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.wac.autocore.model.LoadLevel;
+import com.wac.autocore.model.TimeSlot;
+import com.wac.autocore.model.DayLoad;
+import com.wac.autocore.model.MonthDayStatus;
 
-/**
- * Håller reda på mekanikernas bokade timmar.
- */
+/** Mekanikernas bokade timmar. */
 public class MechanicSchedule {
 
     public static final int START_HOUR = 7;
     public static final int END_HOUR = 16;
     public static final int WORK_HOURS_PER_DAY = END_HOUR - START_HOUR; // 9 timmar (7-16)
 
-    public enum LoadLevel {
-        FREE("free"),        // 0-2 timmar
-        MODERATE("moderate"),  // 3-4 timmar
-        BUSY("busy"),       // 5-6 timmar
-        FULL("full");          // 7+ timmar
-
-        private final String code;
-
-        LoadLevel(String code) {
-            this.code = code;
-        }
-
-        public String getCode() {
-            return code;
-        }
-    }
-
-    public static class TimeSlot {
-        private final int mechanicId;
-        private final LocalDate date;
-        private final int hour; // 7 till 15
-        private int bookingId;
-        private int workOrderId;
-        private String customerName;
-        private String vehicleReg;
-        private String description;
-        private boolean booked;
-
-        public TimeSlot(int mechanicId, LocalDate date, int hour) {
-            this.mechanicId = mechanicId;
-            this.date = date;
-            this.hour = hour;
-            this.booked = false;
-        }
-
-        public int getMechanicId() {
-            return mechanicId;
-        }
-
-        public LocalDate getDate() {
-            return date;
-        }
-
-        public int getHour() {
-            return hour;
-        }
-
-        public String getTimeRange() {
-            return String.format("%02d:00 - %02d:00", hour, hour + 1);
-        }
-
-        public boolean isBooked() {
-            return booked;
-        }
-
-        public void setBooked(boolean booked) {
-            this.booked = booked;
-        }
-
-        public int getBookingId() {
-            return bookingId;
-        }
-
-        public void setBookingId(int bookingId) {
-            this.bookingId = bookingId;
-        }
-
-        public int getWorkOrderId() {
-            return workOrderId;
-        }
-
-        public void setWorkOrderId(int workOrderId) {
-            this.workOrderId = workOrderId;
-        }
-
-        public String getCustomerName() {
-            return customerName;
-        }
-
-        public void setCustomerName(String customerName) {
-            this.customerName = customerName;
-        }
-
-        public String getVehicleReg() {
-            return vehicleReg;
-        }
-
-        public void setVehicleReg(String vehicleReg) {
-            this.vehicleReg = vehicleReg;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-    }
-
-    public static class DayLoad {
-        private final LocalDate date;
-        private final int mechanicId;
-        private final int bookedHours;
-        private final int totalHours;
-        private final LoadLevel level;
-        private final List<TimeSlot> slots;
-
-        public DayLoad(LocalDate date, int mechanicId, int bookedHours, int totalHours, LoadLevel level, List<TimeSlot> slots) {
-            this.date = date;
-            this.mechanicId = mechanicId;
-            this.bookedHours = bookedHours;
-            this.totalHours = totalHours;
-            this.level = level;
-            this.slots = slots;
-        }
-
-        public LocalDate getDate() {
-            return date;
-        }
-
-        public int getMechanicId() {
-            return mechanicId;
-        }
-
-        public int getBookedHours() {
-            return bookedHours;
-        }
-
-        public int getTotalHours() {
-            return totalHours;
-        }
 
 
-        public LoadLevel getLevel() {
-            return level;
-        }
 
-        public List<TimeSlot> getSlots() {
-            return slots;
-        }
-    }
-
-    public static class MonthDayStatus {
-        private final LocalDate date;
-        private final boolean inCurrentMonth;
-        private final boolean isWeekend;
-        private final boolean isMechanicAvailable;
-        private final int bookedHours;
-        private final LoadLevel level;
-
-        public MonthDayStatus(LocalDate date, boolean inCurrentMonth, boolean isWeekend,
-                      boolean isMechanicAvailable, int bookedHours, LoadLevel level) {
-            this.date = date;
-            this.inCurrentMonth = inCurrentMonth;
-            this.isWeekend = isWeekend;
-            this.isMechanicAvailable = isMechanicAvailable;
-            this.bookedHours = bookedHours;
-            this.level = level != null ? level : LoadLevel.FREE;
-        }
-
-        public MonthDayStatus(LocalDate date, boolean inCurrentMonth, boolean isWeekend,
-                              boolean isMechanicAvailable, int bookedHours) {
-            this(date, inCurrentMonth, isWeekend, isMechanicAvailable, bookedHours, LoadLevel.FREE);
-        }
-
-        public LocalDate getDate() {
-            return date;
-        }
-
-        public LoadLevel getLevel() {
-            return level;
-        }
-
-        public boolean isInCurrentMonth() {
-            return inCurrentMonth;
-        }
-
-        public boolean isWeekend() {
-            return isWeekend;
-        }
-
-
-        public boolean isMechanicAvailable() {
-            return isMechanicAvailable;
-        }
-
-        public int getBookedHours() {
-            return bookedHours;
-        }
-    }
 
     // Singleton instance för delat tillstånd i UI
     private static final MechanicSchedule INSTANCE = new MechanicSchedule();
@@ -229,9 +43,7 @@ public class MechanicSchedule {
         return mechanicId + ":" + date.toString() + ":" + hour;
     }
 
-    /**
-     * Läser in tilldelade arbetsordrar från databasen och mappar dem till lediga timluckor.
-     */
+/** Läser in arbetsordrarna från databasen och mappar dem till timluckor. */
     public synchronized void syncFromDatabase() {
         if (!databaseSyncEnabled) return;
         String sql = "SELECT wo.id AS wo_id, wo.mechanic_id, wo.status AS wo_status, "
@@ -286,9 +98,7 @@ public class MechanicSchedule {
         }
     }
 
-    /**
-     * Hittar nästa datum efter afterDate då mekanikern har minst en bokad timme.
-     */
+/** Nästa datum efter afterDate då mekanikern har minst en bokad timme. */
     public synchronized LocalDate getNextBookingDate(int mechanicId, LocalDate afterDate) {
         syncFromDatabase();
         LocalDate nextDate = null;
@@ -313,7 +123,7 @@ public class MechanicSchedule {
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);
 
-        // Mekaniker 1 (Johan Karlsson): Idag 08-10 (Service) och 13-14 (Inspektion) -> 3h bokade (Gul)
+// Exempel: mekaniker 1 har 08-10 och 13-14 i dag, alltså 3 timmar bokade.
         bookSlotInternal(1, today, 8, 1, 1, "Anna Andersson", "ABC123", "seed.booking.oil_change_filter.description");
         bookSlotInternal(1, today, 9, 1, 1, "Anna Andersson", "ABC123", "seed.schedule.oil_change_continued.description");
         bookSlotInternal(1, today, 13, 2, 2, "Erik Eriksson", "DEF456", "seed.booking.front_brake_inspection.description");
@@ -359,9 +169,7 @@ public class MechanicSchedule {
         slots.put(slotKey(mechanicId, date, hour), slot);
     }
 
-    /**
-     * Hämtar alla tidsslottar för en specifik mekaniker och dag (07:00 till 16:00).
-     */
+/** Alla tidsslottar för en mekaniker en dag, 07:00 till 16:00. */
     public synchronized List<TimeSlot> getSlotsForDay(int mechanicId, LocalDate date) {
         syncFromDatabase();
         List<TimeSlot> result = new ArrayList<TimeSlot>();
@@ -376,9 +184,7 @@ public class MechanicSchedule {
         return result;
     }
 
-    /**
-     * Boka en specifik timme för en mekaniker med valfritt workOrderId.
-     */
+/** Bokar en timme för en mekaniker. */
     public synchronized boolean bookSlot(int mechanicId, LocalDate date, int hour, int bookingId, int workOrderId,
                                          String customer, String vehicleReg, String desc) {
         if (hour < START_HOUR || hour >= END_HOUR) {
@@ -401,9 +207,7 @@ public class MechanicSchedule {
         return true;
     }
 
-    /**
-     * Avboka alla tidsslottar kopplade till ett specifikt boknings-ID.
-     */
+/** Avbokar alla timmar som hör till en bokning. */
     public synchronized boolean cancelSlotForBooking(int bookingId) {
         if (bookingId <= 0) return false;
         boolean removed = false;
@@ -418,9 +222,7 @@ public class MechanicSchedule {
         return removed;
     }
 
-    /**
-     * Beräknar belastningsgrad för en dag (0-9 timmar).
-     */
+/** Belastningen en dag, 0 till 9 timmar. */
     public synchronized DayLoad getDayLoad(int mechanicId, LocalDate date) {
         List<TimeSlot> daySlots = getSlotsForDay(mechanicId, date);
         int booked = 0;
@@ -444,9 +246,7 @@ public class MechanicSchedule {
         return new DayLoad(date, mechanicId, booked, WORK_HOURS_PER_DAY, level, daySlots);
     }
 
-    /**
-     * Hämtar dagsbelastning för en hel vecka (Måndag till Söndag).
-     */
+/** Belastningen per dag en hel vecka. */
     public synchronized List<DayLoad> getWeekLoads(int mechanicId, LocalDate weekStartDate) {
         LocalDate monday = weekStartDate.with(DayOfWeek.MONDAY);
         List<DayLoad> result = new ArrayList<DayLoad>();
@@ -457,9 +257,7 @@ public class MechanicSchedule {
         return result;
     }
 
-    /**
-     * Hämtar månadsdagar och deras tillgänglighetsstatus för en hel månad.
-     */
+/** Månadens dagar med tillgänglighet. */
     public synchronized List<MonthDayStatus> getMonthDays(int mechanicId, YearMonth yearMonth, boolean mechanicAvailableFlag) {
         List<MonthDayStatus> result = new ArrayList<MonthDayStatus>();
         LocalDate firstOfMonth = yearMonth.atDay(1);
@@ -497,9 +295,7 @@ public class MechanicSchedule {
         return result;
     }
 
-    /**
-     * Rensar alla schemalagda tidsluckor för en mekaniker som tagits bort.
-     */
+/** Rensar en borttagen mekanikers timmar. */
     public synchronized void removeSlotsForMechanic(int mechanicId) {
         java.util.Iterator<Map.Entry<String, TimeSlot>> it = slots.entrySet().iterator();
         while (it.hasNext()) {

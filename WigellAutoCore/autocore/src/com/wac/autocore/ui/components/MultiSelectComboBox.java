@@ -24,10 +24,7 @@ import javafx.scene.text.Text;
 import java.util.List;
 import java.util.function.Function;
 
-/**
- * Flervalsfält: valda poster som chips i fältet, en kryssruta per rad i listan. Listan ritas i ett
- * lager ovanpå vyn, inte i ett popup-fönster, som blir suddigt i den här skrivbordsmiljön.
- */
+/** Flervalsfält med chips och kryssrutor. Listan ritas ovanpå vyn, inte i ett popup. */
 public class MultiSelectComboBox<T> extends HBox {
 
     /** Nyckel på det lager vi lagt in i scenen, så att flera fält kan dela samma lager. */

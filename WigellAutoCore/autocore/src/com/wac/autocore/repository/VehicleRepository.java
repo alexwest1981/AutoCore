@@ -12,15 +12,7 @@ import java.util.List;
 
 public class VehicleRepository {
 
-    /**
-     * Sparar fordonet. Numret är redan normaliserat i modellen (versaler, mellanslag mellan
-     * bokstäver och siffror), och här hålls den regel som gränssnittet inte kan hålla själv:
-     * ett registreringsnummer tillhör ett fordon. Både skapandet och uppdateringen går genom
-     * den här metoden, så regeln gäller varifrån anropet än kommer.
-     *
-     * Krockkontrollen görs på samma anslutning som skrivningen och stängs innan den skriver,
-     * så att en öppen läskurs inte låser SQLite.
-     */
+/** Sparar fordonet. Numret är redan normaliserat i modellen. */
     public void save(Vehicle vehicle) throws SQLException {
         String registrationNumber = vehicle.getRegistrationNumber();
         if (registrationNumber == null || registrationNumber.trim().isEmpty()) {

@@ -11,12 +11,7 @@ import com.wac.autocore.model.WorkOrder;
 
 import java.util.List;
 
-/**
- * Hanterar all presentation och formatering för konsolgränssnittet (CLI).
- *
- * Genom att samla System.out-utskrifter här renodlas servicelagret (GarageSystem m.fl.)
- * så att det uppfyller Single Responsibility Principle (SRP) och frikopplas från UI.
- */
+/** All utskrift för textversionen. Samlad här så servicelagret slipper skriva till konsolen. */
 public class ConsolePrinter {
 
     public void printCustomers(List<Customer> customers) {

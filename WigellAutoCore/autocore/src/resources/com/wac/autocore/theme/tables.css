@@ -1,0 +1,179 @@
+/* 5. Listor och tabeller. */
+.status-row, .booking-row, .activity-row, .activity-item, .srow {
+    -fx-padding: 10;
+    -fx-background-radius: 10;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 10;
+}
+.status-row:hover, .booking-row:hover, .activity-row:hover,
+.activity-item:hover, .srow:hover {
+    -fx-background-color: -wac-surface;
+}
+.srow-title, .row-title {
+    -fx-text-fill: -wac-text;
+}
+.srow-sub, .row-sub, .booking-row-sub {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+}
+.activity-list {
+    -fx-spacing: 2;
+}
+
+.activity-icon {
+    -fx-background-color: -wac-surface;
+    -fx-background-radius: 999;
+    -fx-min-width: 30;
+    -fx-min-height: 30;
+    -fx-max-width: 30;
+    -fx-max-height: 30;
+    -fx-alignment: CENTER;
+    -fx-text-fill: -wac-muted;
+}
+.activity-icon-positive { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
+
+/* Statusprickar — både temats namn (.sdot) och designernas (.status-dot) */
+.status-dot, .sdot, .notification-dot {
+    -fx-background-radius: 999;
+    -fx-min-width: 8;
+    -fx-min-height: 8;
+    -fx-max-width: 8;
+    -fx-max-height: 8;
+    -fx-background-color: -wac-muted;
+}
+.status-dot.success, .sdot.success { -fx-background-color: -wac-success; }
+.status-dot.info,    .sdot.info    { -fx-background-color: -wac-info; }
+.status-dot.warn,    .sdot.warn    { -fx-background-color: -wac-warn; }
+.status-dot.danger,  .sdot.danger  { -fx-background-color: -wac-danger; }
+.notification-dot { -fx-background-color: -wac-danger; }
+
+/* Tabell (temats TableView + v2:s orders-table) */
+.orders-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.orders-table .column-header-background,
+.orders-table .filler,
+.orders-table .corner {
+    -fx-background-color: #282d2b;
+    -fx-background-radius: 4 4 0 0;
+}
+.orders-table .column-header {
+    -fx-background-color: #282d2b;
+    -fx-border-color: transparent #3d4642 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 8 8;
+    -fx-alignment: CENTER_LEFT;
+}
+.orders-table .column-header:hover {
+    -fx-background-color: #353c39;
+}
+.orders-table .column-header .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+.orders-table .column-header .arrow {
+    -fx-background-color: #ffffff;
+}
+.orders-table .table-cell {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 9 6;
+}
+.orders-table .table-row-cell:filled:even {
+    -fx-background-color: transparent;
+}
+.orders-table .table-row-cell:filled:odd {
+    -fx-background-color: -wac-row-alt;
+}
+.orders-table .table-row-cell:filled:hover,
+.orders-table .table-row-cell:filled:odd:hover,
+.orders-table .table-row-cell:filled:even:hover {
+    -fx-background-color: -wac-side-hover;
+}
+.orders-table .table-row-cell .table-cell-split { -fx-background-color: transparent; }
+.orders-table .table-row-cell:selected .table-cell { -fx-text-fill: -wac-on-accent; }
+.cell-sub { -fx-text-fill: -wac-muted; -fx-font-size: 11px; }
+
+/* Tabellhuvud: Tydlig mörkgrå list med vit text som en distinkt början på alla tabeller */
+TableView .column-header-background,
+.table-view .column-header-background {
+    -fx-background-color: #282d2b;
+    -fx-background-radius: 4 4 0 0;
+}
+TableView .filler,
+.table-view .filler,
+TableView .corner,
+.table-view .corner {
+    -fx-background-color: #282d2b;
+    -fx-border-color: transparent;
+}
+TableView .show-hide-columns-button,
+.table-view .show-hide-columns-button {
+    -fx-background-color: #282d2b;
+}
+TableView .column-header,
+.table-view .column-header {
+    -fx-background-color: #282d2b;
+    -fx-border-color: transparent #3d4642 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 8 8;
+    -fx-alignment: CENTER_LEFT;
+}
+TableView .column-header:hover,
+.table-view .column-header:hover {
+    -fx-background-color: #353c39;
+}
+TableView .column-header .label,
+.table-view .column-header .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+TableView .column-header .arrow,
+.table-view .column-header .arrow {
+    -fx-background-color: #ffffff;
+}
+
+/* Tabellceller: padding 8 8 och vänsterjustering som matchar kolumnhuvudet. */
+TableColumn,
+TableView .table-cell,
+.table-view .table-cell {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: transparent transparent -wac-line transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 8;
+    -fx-alignment: CENTER_LEFT;
+}
+TableView .table-row-cell:filled:even,
+.table-view .table-row-cell:filled:even { -fx-background-color: transparent; }
+TableView .table-row-cell:filled:odd,
+.table-view .table-row-cell:filled:odd { -fx-background-color: -wac-row-alt; }
+TableView .table-row-cell:filled:hover,
+TableView .table-row-cell:filled:odd:hover,
+TableView .table-row-cell:filled:even:hover,
+.table-view .table-row-cell:filled:hover,
+.table-view .table-row-cell:filled:odd:hover,
+.table-view .table-row-cell:filled:even:hover { -fx-background-color: -wac-side-hover; }
+TableView .table-row-cell:selected,
+TableView .table-row-cell:filled:selected,
+TableView .table-row-cell:filled:odd:selected,
+TableView .table-row-cell:filled:even:selected,
+.table-view .table-row-cell:selected,
+.table-view .table-row-cell:filled:selected,
+.table-view .table-row-cell:filled:odd:selected,
+.table-view .table-row-cell:filled:even:selected { -fx-background-color: -wac-accent-soft; }
+TableView .table-row-cell:selected .table-cell,
+.table-view .table-row-cell:selected .table-cell { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }
+TableView .table-row-cell:selected:focused .table-cell,
+.table-view .table-row-cell:selected:focused .table-cell { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }
+
+/* Modenas list-cell sätter en textfärg som inte alltid finns, så -wac-text tvingas fram. */
+.list-cell { -fx-text-fill: -wac-text; -fx-background-color: transparent; }
+.list-cell:filled:hover { -fx-background-color: -wac-surface; -fx-text-fill: -wac-text; }
+.list-cell:selected { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }
+.list-cell:filled:hover:selected { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }

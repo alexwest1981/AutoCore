@@ -221,7 +221,7 @@ public class BookingRepository {
         return booking;
     }
 
-    /** Bokningens mekaniker. Kolumnen i bookings är den första, resten ligger i kopplingstabellen. */
+// Den första mekanikern ligger i bookings, resten i kopplingstabellen.
     private void loadMechanics(Booking booking) throws SQLException {
         List<Integer> ids = bookingMechanicRepository.findMechanicIds(booking.getId());
         if (ids.isEmpty() && booking.getMechanicId() > 0) {

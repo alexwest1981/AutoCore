@@ -202,13 +202,7 @@ public class Db {
         SeedData.seedIfEmpty();
     }
 
-    /**
-     * Rättar registreringsnummer som sparades innan modellen började normalisera dem.
-     * Idempotent: bara rader som avviker skrivs om, så den kan köra varje gång.
-     *
-     * Öppnar sin egen anslutning och stänger läsningen innan den skriver — en öppen läskurs
-     * på samma anslutning låser SQLite, och då stannar hela sviten i nästa skrivning.
-     */
+/** Rättar registreringsnummer som sparades innan modellen normaliserade dem. */
     private static void normalizeRegistrationNumbers() {
         java.util.List<Integer> ids = new java.util.ArrayList<Integer>();
         java.util.List<String> numbers = new java.util.ArrayList<String>();

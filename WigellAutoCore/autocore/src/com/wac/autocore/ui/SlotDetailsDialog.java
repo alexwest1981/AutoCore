@@ -3,6 +3,7 @@ package com.wac.autocore.ui;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.i18n.I18n;
@@ -16,15 +17,13 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Modala dialoger för att inspektera schemalagda tidsluckor och detaljer kring arbetsordrar.
- */
+/** Dialoger för tidsluckor och arbetsorderdetaljer. */
 public final class SlotDetailsDialog {
 
     private SlotDetailsDialog() {}
 
     public static void showSlotDetailsDialog(GarageSystem garage,
-                                             MechanicSchedule.TimeSlot slot,
+                                             TimeSlot slot,
                                              PageRouter router,
                                              Runnable onRefresh) {
         if (slot == null || !slot.isBooked()) {

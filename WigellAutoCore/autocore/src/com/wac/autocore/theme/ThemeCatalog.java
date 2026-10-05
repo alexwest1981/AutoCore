@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Generated theme catalogue. Regenerate with themer.py convert.
- * Each Theme knows where its JavaFX stylesheet lives on the classpath.
- */
+/** Temakatalogen. Byggs om med themer.py convert. */
 public final class ThemeCatalog {
 
     public static final String DEFAULT_SLUG = "emerald";

@@ -12,9 +12,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Owns the invoice_lines table: the frozen rows a sent invoice is built from.
- */
+/** Tabellen invoice_lines: raderna en skickad faktura är byggd av. */
 public class InvoiceLineRepository {
 
     public List<InvoiceLine> findByInvoiceId(int invoiceId) throws SQLException {
@@ -44,10 +42,7 @@ public class InvoiceLineRepository {
         return lines;
     }
 
-    /**
-     * Writes the invoice's rows on an open connection, so the caller can keep the
-     * invoice row and its rows in one transaction.
-     */
+/** Sparar raderna på en öppen anslutning, så allt går i samma transaktion. */
     public void saveLines(Connection connection, Invoice invoice) throws SQLException {
         String sql = "INSERT INTO invoice_lines (invoice_id, service_item_id, service_name, price, discount) " +
                 "VALUES (?, ?, ?, ?, ?)";

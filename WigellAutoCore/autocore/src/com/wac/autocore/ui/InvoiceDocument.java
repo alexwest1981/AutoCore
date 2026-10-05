@@ -27,13 +27,7 @@ import javafx.scene.text.FontWeight;
 
 import java.time.LocalDate;
 
-/**
- * Fakturan som den skrivs ut: ett papper att förhandsgranska och skriva ut, med företagets namn och
- * logotyp, kundens och fordonets uppgifter, alla utförda arbeten med priser och fakturans summa.
- *
- * Färgerna sätts här och inte av temat — pappret är vitt även när programmet körs i mörkt tema, och
- * det som skrivs ut ska se likadant ut som förhandsgranskningen.
- */
+/** Fakturan som den skrivs ut, med företaget, kunden, fordonet och arbetena. */
 public final class InvoiceDocument {
 
     /** Företagsuppgifterna i fakturahuvudet. Ändra här när verkstadens adress ändras. */

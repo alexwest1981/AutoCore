@@ -15,9 +15,7 @@ import javafx.scene.layout.GridPane;
 import java.sql.SQLException;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Modala dialoger för tjänstehantering (skapa, redigera, ta bort).
- */
+/** Dialoger för tjänstehantering. */
 public final class ServiceItemDialogs {
 
     private ServiceItemDialogs() {}
@@ -213,10 +211,7 @@ public final class ServiceItemDialogs {
         });
     }
 
-    /**
-     * Rullistan för vilken specialisering tjänsten kräver. Första valet betyder att tjänsten kan
-     * utföras av vilken mekaniker som helst.
-     */
+/** Specialiseringen tjänsten kräver. Första valet betyder alla mekaniker. */
     static ComboBox<String> requirementBox(GarageSystem garage) {
         ComboBox<String> box = new ComboBox<String>();
         box.getItems().add(I18n.get("dialog.service.spec_any"));

@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Skapar fakturor från slutförda arbetsordrar, med rabatter och betalningskopplingar.
- */
+/** Fakturor från slutförda arbetsordrar, med rabatt. */
 public class BillingService {
 
     private final InvoiceRepository invoiceRepository = new InvoiceRepository();
@@ -82,11 +80,7 @@ public class BillingService {
         return createInvoiceFrom(orders, workOrderId, discountCode);
     }
 
-    /**
-     * Fakturerar allt utfört arbete på en bokning i en och samma faktura. En bokning kan ha flera
-     * arbetsordrar (en per mekaniker när tjänsterna delas upp), och kunden ska ha en faktura med
-     * allt som är gjort — inte en per mekaniker.
-     */
+/** Fakturerar allt utfört arbete på en bokning i en faktura. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
@@ -130,10 +124,7 @@ public class BillingService {
         return createInvoiceFrom(orders, primaryOrderId, discountCode);
     }
 
-    /**
-     * Bokningar som har utfört arbete kvar att fakturera, en per bokning. Underlaget för
-     * fakturavalet i gränssnittet: en bokning kan ha flera arbetsordrar, men ska bli en faktura.
-     */
+/** Bokningar med utfört arbete kvar att fakturera, en rad per bokning. */
     public List<Booking> getInvoiceableBookings() {
         List<Integer> handled = new ArrayList<Integer>();
         List<Booking> bookings = new ArrayList<Booking>();
@@ -161,10 +152,7 @@ public class BillingService {
         return bookings;
     }
 
-    /**
-     * Bygger fakturan från de utförda arbetena på en eller flera arbetsordrar. Fakturan sparas på
-     * den första arbetsordern; tjänster som redan står på en faktura hoppas över.
-     */
+/** Bygger fakturan av de utförda tjänsterna. Redan fakturerade rader hoppas över. */
     private Invoice createInvoiceFrom(List<WorkOrder> orders, int primaryOrderId, String discountCode) {
         WorkOrder primary = findWorkOrder(primaryOrderId);
         int bookingId = primary != null ? primary.getBookingId() : 0;
@@ -202,53 +190,20 @@ public class BillingService {
             if (vehicle != null) {
                 Customer customer = findCustomer(vehicle.getCustomerId());
                 if (customer != null && customer.isVip()) {
-                    discount += amount * 0.10;
+                    discount += amount * (DiscountRules.VIP_PERCENT / 100.0);
                     System.out.println("VIP discount applied: 10%");
                 }
             }
         }
 
-        if (discountCode != null && !discountCode.trim().isEmpty()) {
-            String code = discountCode.trim();
-            if (code.equalsIgnoreCase("WELCOME10") || code.equalsIgnoreCase("10off") || code.equalsIgnoreCase("10%")) {
-                discount += amount * 0.10;
-                System.out.println("Discount code " + code + " applied: 10%");
-            } else if (code.equalsIgnoreCase("SERVICE200")) {
-                discount += 200.0;
-                System.out.println("Discount code SERVICE200 applied.");
-            } else {
-                try {
-                    if (code.endsWith("%")) {
-                        double pct = Double.parseDouble(code.substring(0, code.length() - 1).trim());
-                        discount += amount * (pct / 100.0);
-                        System.out.println("Discount code " + pct + "% applied.");
-                    } else if (code.toLowerCase().endsWith("off")) {
-                        double val = Double.parseDouble(code.substring(0, code.length() - 3).trim());
-                        if (val <= 100 && val > 0) {
-                            discount += amount * (val / 100.0);
-                        } else {
-                            discount += val;
-                        }
-                        System.out.println("Discount code " + code + " applied.");
-                    } else {
-                        double val = Double.parseDouble(code);
-                        if (val > 0) {
-                            discount += val;
-                            System.out.println("Discount " + val + " SEK applied.");
-                        }
-                    }
-                } catch (NumberFormatException ignored) {
-                    System.out.println("Unknown discount code. No code discount applied.");
-                }
-            }
-        }
+        discount += DiscountRules.forCode(discountCode, amount);
 
         if (discount > amount) {
             discount = amount;
         }
-        discount = roundToOre(discount);
+        discount = DiscountRules.roundToOre(discount);
 
-        distributeDiscount(lines, amount, discount);
+        DiscountRules.distributeDiscount(lines, amount, discount);
 
         Invoice invoice = new Invoice(0, primaryOrderId, LocalDate.now(), amount);
         invoice.setDiscount(discount);
@@ -275,11 +230,7 @@ public class BillingService {
 
         return invoice;
     }
-    /**
-     * Arbetsorderns utförda tjänster som ännu inte står på någon faktura. Är inga tjänster explicit
-    * markerade som utförda men arbetsordern är slutförd gäller
-     * samtliga tjänster på arbetsordern.
-     */
+/** Utförda tjänster som inte fakturerats. Är ingen markerad men ordern slutförd gäller alla. */
     private List<Integer> performedServices(WorkOrder workOrder, List<Integer> invoicedServiceIds) {
         List<Integer> performed = workOrder.getCompletedServiceItems();
         if (performed.isEmpty() && "COMPLETED".equals(workOrder.getStatus())) {
@@ -295,7 +246,7 @@ public class BillingService {
         return remaining;
     }
 
-    /** Tjänsterna på bokningen som redan står på en faktura. En tjänst får bara faktureras en gång. */
+/** Tjänsterna som redan står på en faktura. En tjänst faktureras en gång. */
     private List<Integer> invoicedServiceIds(int bookingId) {
         List<Integer> invoiced = new ArrayList<Integer>();
         List<Integer> bookingOrderIds = bookingOrderIds(bookingId);
@@ -319,10 +270,7 @@ public class BillingService {
         return invoiced;
     }
 
-    /**
-     * Sant om varje arbetsorder på bokningen är slutförd. En bokning helt utan arbetsordrar
-     * räknas inte som klar, eftersom det inte finns något arbete att fakturera.
-     */
+/** Sant om varje arbetsorder är slutförd. En bokning utan arbetsordrar räknas inte som klar. */
     private boolean allOrdersCompleted(int bookingId) {
         boolean foundAny = false;
         for (WorkOrder order : getAllWorkOrders()) {
@@ -373,10 +321,7 @@ public class BillingService {
         }
     }
 
-    /**
-     * Sant om arbetsordern redan har en faktura. Fakturan kan komma från vilken väg som helst,
-     * så kontrollen görs mot databasen och inte mot gränssnittets urval.
-     */
+/** Sant om arbetsordern redan har en faktura. Kontrollen går mot databasen, inte mot vyn. */
     private boolean hasInvoiceFor(int workOrderId) {
         try {
             List<Invoice> invoices = invoiceRepository.findAll();
@@ -389,35 +334,6 @@ public class BillingService {
             System.out.println("Could not check for existing invoices: " + e.getMessage());
         }
         return false;
-    }
-
-    /**
-    * Fördelar fakturans rabatt på raderna i proportion till radens pris.
-     * Varje del avrundas till hela ören. Avrundningsresten läggs på den dyraste raden,
-     * så att radernas rabatter alltid summerar exakt till fakturans rabatt.
-     */
-    private void distributeDiscount(List<InvoiceLine> lines, double amount, double discount) {
-        if (lines.isEmpty() || amount <= 0 || discount <= 0) {
-            return;
-        }
-
-        double distributed = 0.0;
-        InvoiceLine mostExpensive = lines.get(0);
-        for (InvoiceLine line : lines) {
-            double share = roundToOre(discount * line.getPrice() / amount);
-            line.setDiscount(share);
-            distributed += share;
-            if (line.getPrice() > mostExpensive.getPrice()) {
-                mostExpensive = line;
-            }
-        }
-
-        double rest = discount - distributed;
-        mostExpensive.setDiscount(roundToOre(mostExpensive.getDiscount() + rest));
-    }
-
-    private double roundToOre(double value) {
-        return Math.round(value * 100.0) / 100.0;
     }
 
     private WorkOrder findWorkOrder(int id) {

@@ -18,9 +18,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Modala dialoger för fordonshantering (skapa, redigera, ta bort).
- */
+/** Dialoger för fordonshantering. */
 public final class VehicleDialogs {
 
     private VehicleDialogs() {}

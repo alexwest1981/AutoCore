@@ -9,9 +9,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Registrerar betalningar och markerar fakturan som betald.
- */
+/** Registrerar betalningar och markerar fakturan betald. */
 public class PaymentService {
 
     private final PaymentRepository paymentRepository = new PaymentRepository();

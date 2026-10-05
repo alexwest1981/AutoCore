@@ -1,0 +1,172 @@
+/* 6. Knappar, länkar, filter och notiser. */
+.primary-button, .create-button, .new-button, .wide-action, .quick-action {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-background-radius: 10;
+    -fx-padding: 9 16;
+    -fx-cursor: hand;
+}
+.primary-button:hover, .create-button:hover, .new-button:hover,
+.wide-action:hover, .quick-action:hover {
+    -fx-background-color: -wac-accent-hover;
+}
+.primary-button:pressed, .create-button:pressed, .wide-action:pressed {
+    -fx-background-color: -wac-accent-pressed;
+}
+.add-service-btn, .button.add-service-btn {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 7px 14px;
+    -fx-alignment: CENTER;
+}
+.add-service-btn:hover, .button.add-service-btn:hover {
+    -fx-background-color: -wac-accent-hover;
+}
+.add-service-btn:pressed, .button.add-service-btn:pressed {
+    -fx-background-color: -wac-accent-pressed;
+}
+.secondary-button {
+    -fx-background-color: -wac-surface;
+    -fx-text-fill: -wac-text;
+    -fx-background-radius: 10;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 8 14;
+    -fx-cursor: hand;
+}
+.secondary-button:hover {
+    -fx-background-color: -wac-accent-soft;
+    -fx-border-color: -wac-accent;
+}
+.text-link {
+    -fx-text-fill: -wac-accent;
+    -fx-cursor: hand;
+}
+.text-link:hover { -fx-underline: true; }
+
+.notice, .hero-note {
+    -fx-background-color: -wac-accent-soft;
+    -fx-background-radius: 10;
+    -fx-padding: 10 14;
+    -fx-text-fill: -wac-accent;
+    -fx-font-size: 12px;
+}
+
+/* 7. Ikonrutor, chips och profil. */
+.profile-chip, .year-select, .small-select {
+    -fx-background-color: -wac-surface;
+    -fx-background-radius: 999;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-padding: 6 12;
+    -fx-text-fill: -wac-text;
+}
+.header-icon, .top-icon, .side-icon, .quick-arrow {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 15px;
+}
+.side-icon-active { -fx-text-fill: -wac-accent; }
+.avatar, .side-avatar, .rail-avatar {
+    -fx-background-color: -wac-accent;
+    -fx-background-radius: 999;
+    -fx-text-fill: -wac-on-accent;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 32;
+    -fx-max-height: 32;
+    -fx-alignment: CENTER;
+}
+.avatar-letter, .letter {
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+/* 8. Flikar. */
+.tabs {
+    -fx-spacing: 6;
+    -fx-background-color: -wac-surface;
+    -fx-background-radius: 999;
+    -fx-padding: 4;
+}
+.tabs button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-muted;
+    -fx-background-radius: 999;
+    -fx-padding: 7 14;
+    -fx-cursor: hand;
+}
+.tabs .tab-active {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+/* 9. Sidofält och navigering. */
+.bg-rail, .bg-sidebar, .sidebar-rail { -fx-background-color: -wac-sidebar; }
+.sidebar-logo, .brand-mark {
+    -fx-background-color: -wac-accent;
+    -fx-background-radius: 10;
+    -fx-text-fill: -wac-on-accent;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-max-width: 34;
+    -fx-max-height: 34;
+    -fx-alignment: CENTER;
+    -fx-font-weight: bold;
+}
+.side-link, .side-overview, .side-current, .fleet-nav, .nav-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3px;
+    -fx-border-radius: 4;
+    -fx-text-fill: -wac-side-text;
+    -fx-padding: 8px 12px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_LEFT;
+}
+.side-link:hover, .side-overview:hover, .fleet-nav:hover, .nav-item:hover {
+    -fx-background-color: #384c42;
+    -fx-border-color: transparent transparent transparent #2bb88a;
+    -fx-text-fill: #ffffff;
+    -fx-cursor: hand;
+}
+.side-current, .fleet-nav-active, .nav-item.selected {
+    -fx-background-color: -wac-accent;
+    -fx-border-color: transparent transparent transparent #2bb88a;
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.side-current:hover, .fleet-nav-active:hover, .nav-item.selected:hover {
+    -fx-background-color: -wac-accent-hover;
+    -fx-border-color: transparent transparent transparent #2bb88a;
+    -fx-text-fill: #ffffff;
+    -fx-cursor: hand;
+}
+.nav-icon {
+    -fx-fill: -wac-side-muted;
+}
+.side-link:hover .nav-icon, .side-overview:hover .nav-icon, .fleet-nav:hover .nav-icon, .nav-item:hover .nav-icon {
+    -fx-fill: #ffffff;
+}
+.side-current .nav-icon, .fleet-nav-active .nav-icon, .nav-item.selected .nav-icon {
+    -fx-fill: -wac-on-accent;
+}
+.nav-group-title, .side-label, .nav-group-head {
+    -fx-text-fill: -wac-side-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-opacity: 0.70;
+    -fx-cursor: default;
+}
+.nav-group-head {
+    -fx-padding: 0 14 4 14;
+    -fx-background-color: transparent;
+}

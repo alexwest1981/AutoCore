@@ -43,25 +43,21 @@ import java.util.List;
 import java.util.function.Function;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Återanvändbar formulärpanel för bokningar (används i både skapa- och redigeringsdialoger).
- * Ansvarar för UI-komponenter, händelselyssnare och validering.
- */
+/** Formuläret för att skapa och ändra en bokning. */
 public class BookingFormPane extends GridPane {
 
     private final ComboBox<Vehicle> vehicleBox;
     private final DatePicker datePicker;
+    private final BookingScheduleField scheduleField;
     private final ComboBox<ServiceItem> serviceBox;
     private MultiSelectComboBox<ServiceItem> serviceMulti;
     private final ObservableList<ServiceItem> selectedServices = FXCollections.observableArrayList();
-    private final VBox selectedServicesContainer = new VBox(4);
+    private final VBox selectedServicesContainer;
+    private final BookingServicesField servicesField;
     private final ScrollPane servicesScroll;
-    private final Label totalSummaryLabel = new Label();
+    private final Label totalSummaryLabel;
     private final ComboBox<Mechanic> mechanicBox;
     private MultiSelectComboBox<Mechanic> mechanicMulti;
-    private final java.util.Set<Integer> removedMechanics = new java.util.HashSet<Integer>();
-    private final java.util.Set<Integer> manuallyAddedMechanics = new java.util.HashSet<Integer>();
-    private boolean updatingMechanicField;
     private final Label mechanicFilterHint;
     private final ComboBox<LocalTime> startTimeBox;
     private final Label durationLabel;
@@ -70,18 +66,10 @@ public class BookingFormPane extends GridPane {
 
     private final int excludeId;
     private final GarageSystem garage;
-    private final List<BookingDayCell> dayCells = new ArrayList<BookingDayCell>();
 
-    /**
-     * Posten "Välj ingen mekaniker" i rullistan. Ett riktigt objekt i stället för null: en null-post
-     * i listan får JavaFX att kasta IndexOutOfBoundsException när man väljer den, för väljarens
-     * markering nollas samtidigt som posten markeras (ListViewBehavior läser en ändring som redan
-     * hunnit bli inaktuell). Värdet utåt är fortfarande null — se {@link #getSelectedMechanic()}.
-     */
-    private static final Mechanic NO_MECHANIC = new Mechanic(0, "", "", "");
+/** Riktig post i stället för null, som får JavaFX att kasta när den väljs. */
+    static final Mechanic NO_MECHANIC = new Mechanic(0, "", "", "");
 
-    private static final double SERVICE_ROW_HEIGHT = 30;
-    private static final double SERVICES_MAX_HEIGHT = 330;
     private Runnable onContentGrown;
 
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
@@ -100,14 +88,7 @@ public class BookingFormPane extends GridPane {
         col1.setHgrow(Priority.ALWAYS);
         getColumnConstraints().addAll(col0, col1);
 
-        this.totalSummaryLabel.setWrapText(true);
-        this.totalSummaryLabel.setMaxWidth(Double.MAX_VALUE);
 
-        this.servicesScroll = new ScrollPane(this.selectedServicesContainer);
-        this.servicesScroll.setFitToWidth(true);
-        this.servicesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        this.servicesScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        this.servicesScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
 
         this.vehicleBox = new ComboBox<Vehicle>();
         this.vehicleBox.getItems().addAll(garage.getVehicles());
@@ -170,6 +151,11 @@ public class BookingFormPane extends GridPane {
             addServiceBtn.setStyle(baseStyle + " -fx-opacity: 0.5;");
         }
 
+        this.servicesField = new BookingServicesField(this, isServicesLocked);
+        this.selectedServicesContainer = servicesField.getContainer();
+        this.servicesScroll = servicesField.getScroll();
+        this.totalSummaryLabel = servicesField.getSummary();
+
         if (existingBooking != null) {
             if (existingBooking.getServiceItems() != null && !existingBooking.getServiceItems().isEmpty()) {
                 this.selectedServices.addAll(existingBooking.getServiceItems());
@@ -192,55 +178,6 @@ public class BookingFormPane extends GridPane {
             }
         }
 
-        Runnable renderServices = () -> {
-            selectedServicesContainer.getChildren().clear();
-            if (selectedServices.isEmpty()) {
-                Label emptyLbl = new Label(I18n.get("dialog.booking.no_services_selected"));
-                emptyLbl.setStyle("-fx-text-fill: -wac-muted; -fx-font-size: 11px; -fx-font-style: italic; -fx-padding: 2 0;");
-                selectedServicesContainer.getChildren().add(emptyLbl);
-                totalSummaryLabel.setText("");
-            } else {
-                int totalMin = 0;
-                double totalCost = 0.0;
-                for (ServiceItem item : selectedServices) {
-                    totalMin += item.getEstimatedMinutes();
-                    totalCost += item.getPrice();
-
-                    HBox row = new HBox(8);
-                    row.setStyle("-fx-background-color: -wac-card; -fx-border-color: -wac-line; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 4 8; -fx-alignment: center-left;");
-
-                    Label nameLbl = new Label(SeedText.resolve(item.getName()));
-                    nameLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-text; -fx-font-size: 12px;");
-
-                    Label detailLbl = new Label(UiFormatters.formatMoney(item.getPrice()) + " · " + item.getEstimatedMinutes() + " min");
-                    detailLbl.setStyle("-fx-text-fill: -wac-muted; -fx-font-size: 11px;");
-
-                    Region spacer = new Region();
-                    HBox.setHgrow(spacer, Priority.ALWAYS);
-
-                    if (!isServicesLocked) {
-                        Button removeBtn = new Button("✕");
-                        removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f87171; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4; -fx-font-weight: bold;");
-                        removeBtn.setOnAction(ev -> selectedServices.remove(item));
-                        row.getChildren().addAll(nameLbl, detailLbl, spacer, removeBtn);
-                    } else {
-                        row.getChildren().addAll(nameLbl, detailLbl, spacer);
-                    }
-                    selectedServicesContainer.getChildren().add(row);
-                }
-                totalSummaryLabel.setText(I18n.get("dialog.booking.total_time", totalMin) + "  |  " + I18n.get("dialog.booking.total_price", UiFormatters.formatMoney(totalCost)));
-                totalSummaryLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent; -fx-font-size: 12px; -fx-padding: 2 0 0 2;");
-            }
-            // Rutan växer med antalet tjänster i stället för att scrolla i en liten yta. Taket gör
-            // att en lång lista fortfarande scrollar, men först när dialogen är så hög den får bli.
-            double wanted = 12 + Math.max(1, selectedServices.size()) * SERVICE_ROW_HEIGHT;
-            double height = Math.min(SERVICES_MAX_HEIGHT, wanted);
-            servicesScroll.setPrefHeight(height);
-            servicesScroll.setMaxHeight(height);
-            if (onContentGrown != null) {
-                onContentGrown.run();
-            }
-        };
 
         addServiceBtn.setOnAction(e -> {
             if (isServicesLocked) return;
@@ -265,315 +202,23 @@ public class BookingFormPane extends GridPane {
         this.serviceMulti.getSelectedItems().addListener(
                 (javafx.collections.ListChangeListener<ServiceItem>) c -> {
                     this.selectedServices.setAll(this.serviceMulti.getSelectedItems());
-                    renderServices.run();
+                    servicesField.render();
                 });
         if (isServicesLocked) {
             this.serviceMulti.setDisable(true);
         }
-        this.mechanicFilterHint = new Label();
-        this.mechanicFilterHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
-
-        this.mechanicBox = new ComboBox<Mechanic>();
-        this.mechanicBox.setMaxWidth(Double.MAX_VALUE);
-        setupComboBoxDisplay(this.mechanicBox, new StringConverter<Mechanic>() {
-            @Override
-            public String toString(Mechanic m) {
-                if (m == null || m == NO_MECHANIC) return I18n.get("dialog.booking.no_mechanic");
-                return m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ")";
-            }
-            @Override
-            public Mechanic fromString(String string) { return null; }
-        });
+        BookingMechanicsField mechanics = new BookingMechanicsField(garage, this);
+        this.mechanicFilterHint = mechanics.getHint();
+        this.mechanicBox = mechanics.getBox();
+        this.mechanicMulti = mechanics.getMulti();
 
         this.excludeId = existingBooking != null ? existingBooking.getId() : 0;
 
-        // Specialiseringen står i listan men inte i chipset.
-        // chipset i fältet visar bara namnet.
-        this.mechanicMulti = new MultiSelectComboBox<Mechanic>(
-                I18n.get("dialog.booking.mechanic_select"),
-                m -> m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ")");
-        this.mechanicMulti.setChipTextProvider(m -> m.getName());
-        this.mechanicMulti.setItems(garage.getMechanics());
-        this.mechanicMulti.setKeyProvider(m -> m.getId());
-        this.mechanicMulti.getSelectedItems().addListener(
-                (javafx.collections.ListChangeListener<Mechanic>) c -> {
-                    if (updatingMechanicField) {
-                        return;
-                    }
-                    // Teamets mekaniker som han tagit bort kommer ihåg som borttagna.
-                    java.util.List<Integer> remaining = new java.util.ArrayList<Integer>();
-                    for (Mechanic m : mechanicMulti.getSelectedItems()) {
-                        remaining.add(m.getId());
-                    }
-                    java.util.List<Integer> inTeam = new java.util.ArrayList<Integer>();
-                    for (Mechanic m : garage.getRequiredMechanics(selectedServices)) {
-                        inTeam.add(m.getId());
-                        if (remaining.contains(m.getId())) {
-                            removedMechanics.remove(m.getId());
-                        } else {
-                            removedMechanics.add(m.getId());
-                        }
-                    }
-                    // Egna tillägg utanför teamet hålls isär: de ligger kvar när tjänsterna ändras.
-                    for (Mechanic m : garage.getMechanics()) {
-                        if (inTeam.contains(m.getId())) {
-                            continue;
-                        }
-                        if (remaining.contains(m.getId())) {
-                            manuallyAddedMechanics.add(m.getId());
-                        } else {
-                            manuallyAddedMechanics.remove(m.getId());
-                        }
-                    }
-                });
-
-        Runnable updateMechanics = () -> {
-            List<Mechanic> team = garage.getRequiredMechanics(selectedServices);
-            List<Mechanic> qualified = garage.getQualifiedMechanics(selectedServices);
-
-            mechanicBox.getItems().clear();
-            mechanicBox.getItems().add(NO_MECHANIC);
-            if (!team.isEmpty()) {
-                mechanicBox.getItems().addAll(team);
-                for (Mechanic m : qualified) {
-                    if (!mechanicBox.getItems().contains(m)) {
-                        mechanicBox.getItems().add(m);
-                    }
-                }
-            } else {
-                mechanicBox.getItems().addAll(garage.getMechanics());
-            }
-
-            // Teamet följer tjänsterna. Egna tillägg ligger kvar, bortvalda läggs inte tillbaka.
-            java.util.List<Mechanic> chosen = new java.util.ArrayList<Mechanic>();
-            java.util.List<Integer> inTeam = new java.util.ArrayList<Integer>();
-            for (Mechanic m : team) {
-                inTeam.add(m.getId());
-                if (!removedMechanics.contains(m.getId())) {
-                    chosen.add(m);
-                }
-            }
-            // Bortval utanför teamet glöms, så att tjänsten kan komma tillbaka.
-            java.util.Iterator<Integer> removedIterator = removedMechanics.iterator();
-            while (removedIterator.hasNext()) {
-                if (!inTeam.contains(removedIterator.next())) {
-                    removedIterator.remove();
-                }
-            }
-            for (Mechanic m : garage.getMechanics()) {
-                if (!manuallyAddedMechanics.contains(m.getId())) {
-                    continue;
-                }
-                boolean redan = false;
-                for (Mechanic v : chosen) {
-                    if (v.getId() == m.getId()) {
-                        redan = true;
-                        break;
-                    }
-                }
-                if (!redan) {
-                    chosen.add(m);
-                }
-            }
-            updatingMechanicField = true;
-            mechanicMulti.setSelectedItems(chosen);
-            updatingMechanicField = false;
-
-            // Tipset behövs bara när tjänsterna inte går att bemanna.
-            if (!selectedServices.isEmpty() && team.isEmpty()) {
-                mechanicFilterHint.setText(I18n.get("dialog.booking.no_mechanic_for_selected_services"));
-                mechanicFilterHint.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171;");
-            } else {
-                mechanicFilterHint.setText("");
-            }
-
-            // Combon hålls i takt med fältet. Den är den som sparandet och tidskontrollerna läser.
-            java.util.List<Mechanic> chosenNow = getSelectedMechanics();
-            if (!chosenNow.isEmpty()) {
-                int firstId = chosenNow.get(0).getId();
-                boolean found = false;
-                for (Mechanic m : mechanicBox.getItems()) {
-                    if (m.getId() == firstId) {
-                        mechanicBox.getSelectionModel().select(m);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found && !team.isEmpty()) {
-                    mechanicBox.getSelectionModel().select(team.get(0));
-                }
-            } else if (!team.isEmpty()) {
-                mechanicBox.getSelectionModel().select(team.get(0));
-            } else if (!mechanicBox.getItems().isEmpty()) {
-                mechanicBox.getSelectionModel().selectFirst();
-            }
-        };
-
-        // 4. Bokningsdatum (visas som kalender där otillgängliga datum gråmarkeras)
-        LocalDate initialDateVal = existingBooking != null && existingBooking.getDate() != null
-                ? existingBooking.getDate()
-                : (initialDate != null ? initialDate : LocalDate.now().plusDays(1));
-        this.datePicker = new DatePicker(initialDateVal);
-        this.datePicker.setVisible(false);
-        this.datePicker.setManaged(false);
-
-        // Kalenderns dagar. Fabriken sätts en gång och cellerna läser aktuella tjänster och tider
-        // varje gång de ritas, så de kan uppdateras med refresh() när valet ändras.
-        this.datePicker.setDayCellFactory(picker -> {
-            BookingDayCell cell = new BookingDayCell();
-            dayCells.add(cell);
-            return cell;
-        });
-
-        com.sun.javafx.scene.control.skin.DatePickerSkin dateSkin =
-                new com.sun.javafx.scene.control.skin.DatePickerSkin(this.datePicker);
-        Node calendarNode = dateSkin.getPopupContent();
-        // Temafärgerna sätts i stilmallen (.booking-calendar): en inline-style kan inte slå upp
-        // -wac-card/-wac-line, så de föll tyst bort och kalendern blev genomskinlig.
-        calendarNode.getStyleClass().add("booking-calendar");
-
-        Label dateHeaderLabel = new Label();
-        dateHeaderLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -wac-text;");
-        Label calendarHintLabel = new Label(I18n.get("dialog.booking.calendar_hint"));
-        calendarHintLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: -wac-muted;");
-        calendarHintLabel.setWrapText(true);
-        calendarHintLabel.setMaxWidth(230);
-
-        Runnable updateDateHeader = () -> {
-            LocalDate d = datePicker.getValue();
-            if (d != null) {
-                dateHeaderLabel.setText("📅 " + I18n.get("dialog.booking.selected_date", UiFormatters.formatDate(d)));
-            } else {
-                dateHeaderLabel.setText("");
-            }
-        };
-        this.datePicker.valueProperty().addListener((obs, o, n) -> updateDateHeader.run());
-        updateDateHeader.run();
-
-        // Ritar om kalenderns dagar när tjänster, mekaniker eller datum ändrats. Cellerna behåller
-        // annars den bedömning de gjorde när de skapades, och en dag som inte längre rymmer hela
-        // jobbet stod kvar som bokningsbar.
-        Runnable setupDatePickerCells = () -> {
-            for (BookingDayCell cell : dayCells) {
-                cell.refresh();
-            }
-        };
-
-        Runnable ensureValidDate = () -> {
-            int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            List<Mechanic> team = getSelectedMechanics();   // de mekaniker som är valda i fältet
-            Mechanic m = getSelectedMechanic();
-            LocalDate current = datePicker.getValue();
-            if (current == null || !BookingAvailability.hasAvailableSlotOnDate(garage, m, team, current, duration, excludeId)) {
-                LocalDate check = LocalDate.now().plusDays(1);
-                for (int i = 0; i < 60; i++) {
-                    if (BookingAvailability.hasAvailableSlotOnDate(garage, m, team, check, duration, excludeId)) {
-                        datePicker.setValue(check);
-                        break;
-                    }
-                    check = check.plusDays(1);
-                }
-            }
-        };
-
-        // 5. Starttid med stängningsspärr (17:00) och tillgänglighetsindikering
-        this.startTimeBox = new ComboBox<LocalTime>();
-
-        Function<LocalTime, Boolean> isBusyFunc = time -> {
-            if (time == null) return false;
-            int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            LocalTime end = time.plusMinutes(duration);
-            if (end.isAfter(BookingAvailability.CLOSING_TIME)) {
-                return true;
-            }
-            LocalDate d = datePicker.getValue();
-            List<Mechanic> team = getSelectedMechanics();   // de mekaniker som är valda i fältet
-            if (team != null && !team.isEmpty()) {
-                return BookingAvailability.isTeamBooked(garage, team, d, time, end, excludeId);
-            }
-            Mechanic m = getSelectedMechanic();
-            return BookingAvailability.isRangeBooked(garage, m, d, time, end, excludeId);
-        };
-
-        this.startTimeBox.setCellFactory(lv -> new TimeSlotCell(isBusyFunc, true));
-        this.startTimeBox.setButtonCell(new TimeSlotCell(isBusyFunc, false));
-        this.startTimeBox.setConverter(new StringConverter<LocalTime>() {
-            @Override
-            public String toString(LocalTime t) {
-                return t == null ? "" : t.format(TimeSlotCell.TIME_FMT);
-            }
-            @Override
-            public LocalTime fromString(String string) { return null; }
-        });
-
-        // 6. Dynamisk sluttidsberäkning
-        this.durationLabel = new Label();
-        this.durationLabel.setStyle("-fx-text-fill: -wac-accent; -fx-font-weight: bold;");
-
-        Runnable updateDuration = () -> {
-            LocalTime start = startTimeBox.getValue();
-            int totalMin = getTotalEstimatedMinutes();
-            if (start != null && totalMin > 0) {
-                LocalTime end = start.plusMinutes(totalMin);
-                if (end.isAfter(BookingAvailability.CLOSING_TIME)) {
-                    durationLabel.setText("⚠️ " + I18n.get("dialog.booking.time_window",
-                            start.format(TimeSlotCell.TIME_FMT), end.format(TimeSlotCell.TIME_FMT))
-                            + " (" + totalMin + " min) – " + I18n.get("dialog.booking.closing_time_exceeded"));
-                    durationLabel.setStyle("-fx-text-fill: #f87171; -fx-font-weight: bold;");
-                } else {
-                    durationLabel.setText(I18n.get("dialog.booking.time_window",
-                            start.format(TimeSlotCell.TIME_FMT), end.format(TimeSlotCell.TIME_FMT))
-                            + " (" + totalMin + " min)");
-                    durationLabel.setStyle("-fx-text-fill: -wac-accent; -fx-font-weight: bold;");
-                }
-            } else if (start != null) {
-                LocalTime end = start.plusHours(1);
-                durationLabel.setText(I18n.get("dialog.booking.time_window",
-                        start.format(TimeSlotCell.TIME_FMT), end.format(TimeSlotCell.TIME_FMT)) + " (60 min)");
-                durationLabel.setStyle("-fx-text-fill: -wac-accent; -fx-font-weight: bold;");
-            } else {
-                durationLabel.setText("");
-            }
-        };
-
-        Runnable refreshTimeBox = () -> {
-            int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            // Bara de tider som går att boka: de som ryms före stängning och är lediga för vald
-            // mekaniker. Upptagna tider visas inte alls, och finns det ingen kvar stängs fältet av.
-            List<LocalTime> freeTimes = new ArrayList<LocalTime>();
-            for (int h = 7; h <= 16; h++) {
-                LocalTime t = LocalTime.of(h, 0);
-                if (t.plusMinutes(duration).isAfter(BookingAvailability.CLOSING_TIME)) {
-                    continue;
-                }
-                if (Boolean.TRUE.equals(isBusyFunc.apply(t))) {
-                    continue;
-                }
-                freeTimes.add(t);
-            }
-            LocalTime currentSel = startTimeBox.getValue();
-            startTimeBox.setItems(FXCollections.observableArrayList(freeTimes));
-            boolean none = freeTimes.isEmpty();
-            startTimeBox.setDisable(none);
-            startTimeBox.setPromptText(none ? I18n.get("dialog.booking.no_free_times") : null);
-            if (currentSel != null && freeTimes.contains(currentSel)) {
-                startTimeBox.getSelectionModel().select(currentSel);
-            } else {
-                selectFirstAvailableTime(freeTimes, isBusyFunc);
-            }
-            if (startTimeBox.getButtonCell() != null) {
-                startTimeBox.getButtonCell().updateIndex(-1);
-            }
-            updateDuration.run();
-        };
-
-        // Koppla lyssnare
-        this.datePicker.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
-        this.mechanicBox.valueProperty().addListener((obs, o, n) -> {
-            setupDatePickerCells.run();
-            refreshTimeBox.run();
-        });
-        this.startTimeBox.valueProperty().addListener((obs, o, n) -> updateDuration.run());
+        this.scheduleField = new BookingScheduleField(garage, this, mechanics.getBox(), excludeId,
+                existingBooking, initialDate);
+        this.datePicker = scheduleField.getDatePicker();
+        this.startTimeBox = scheduleField.getStartTimeBox();
+        this.durationLabel = scheduleField.getDurationLabel();
 
         // 7. Beskrivning
         String initialDesc = existingBooking != null && existingBooking.getDescription() != null
@@ -582,15 +227,13 @@ public class BookingFormPane extends GridPane {
         this.descField.setPromptText(I18n.get("dialog.booking.desc_prompt"));
 
         selectedServices.addListener((javafx.collections.ListChangeListener<ServiceItem>) c -> {
-            renderServices.run();
+            servicesField.render();
             // Gråmarkeringen i tjänstelistan följer bokningens innehåll: cellerna byggs om när
             // listan ändras, annars står en redan tillagd tjänst kvar som valbar.
             serviceBox.setCellFactory(lv -> serviceChoiceCell());
-            updateMechanics.run();
-            setupDatePickerCells.run();
-            ensureValidDate.run();
-            refreshTimeBox.run();
-            updateDuration.run();
+            mechanics.update();
+            scheduleField.refresh();
+            scheduleField.refresh();
             if (existingBooking == null) {
                 StringBuilder sb = new StringBuilder();
                 for (ServiceItem s : selectedServices) {
@@ -602,17 +245,15 @@ public class BookingFormPane extends GridPane {
         });
 
         // Initial körning
-        renderServices.run();
-        updateMechanics.run();
-        setupDatePickerCells.run();
-        ensureValidDate.run();
+        servicesField.render();
+        mechanics.update();
+        scheduleField.refreshDate();
         if (existingBooking != null && existingBooking.getStartTime() != null) {
             this.startTimeBox.getSelectionModel().select(existingBooking.getStartTime());
         } else if (defaultHour != null && defaultHour >= 7 && defaultHour <= 16) {
             this.startTimeBox.getSelectionModel().select(LocalTime.of(defaultHour, 0));
         }
-        refreshTimeBox.run();
-        updateDuration.run();
+        scheduleField.refreshTimes();
 
         // 8. Status (endast vid redigering)
         if (existingBooking != null) {
@@ -695,7 +336,7 @@ public class BookingFormPane extends GridPane {
         dateTimeLbl.setPadding(new Insets(6, 0, 0, 0));
         add(dateTimeLbl, 0, rowIdx);
 
-        VBox calCol = new VBox(10, dateHeaderLabel, calendarHintLabel, calendarNode);
+        VBox calCol = new VBox(10, scheduleField.getDateHeader(), scheduleField.getCalendarHint(), scheduleField.getCalendarNode());
         calCol.setAlignment(Pos.TOP_LEFT);
         calCol.getStyleClass().add("booking-card");
 
@@ -740,24 +381,7 @@ public class BookingFormPane extends GridPane {
         }
     }
 
-    private void selectFirstAvailableTime(List<LocalTime> timeOptions, Function<LocalTime, Boolean> isBusyFunc) {
-        LocalTime firstFree = null;
-        for (LocalTime t : timeOptions) {
-            if (!Boolean.TRUE.equals(isBusyFunc.apply(t))) {
-                firstFree = t;
-                break;
-            }
-        }
-        startTimeBox.getSelectionModel().select(firstFree != null ? firstFree : LocalTime.of(8, 0));
-    }
-
-    /**
-     * Sant när de obligatoriska fälten är ifyllda: fordon, datum och antingen en beskrivning eller
-     * minst en tjänst. En ny bokning (excludeBookingId == 0) måste dessutom innehålla en tjänst —
-     * en bokning som redan finns får behålla sina.
-     *
-     * Delas av låsningen av OK-knappen och av validate(), så de två inte kan glida ifrån varandra.
-     */
+/** Fordon, datum och antingen en beskrivning eller en tjänst. Ny bokning kräver en tjänst. */
     private boolean requiredFieldsFilled(int excludeBookingId) {
         boolean hasServices = !selectedServices.isEmpty();
         if (getSelectedVehicle() == null || getSelectedDate() == null) {
@@ -776,10 +400,7 @@ public class BookingFormPane extends GridPane {
         return excludeBookingId != 0 || hasServices;
     }
 
-    /**
-     * Låsningen av OK-knappen: den är låst så länge ett obligatoriskt fält saknas och öppnas när
-     * fältet fylls i. Följer samma regel som validate(), via {@link #requiredFieldsFilled(int)}.
-     */
+/** Låser OK-knappen tills fälten är ifyllda, samma regel som validate(). */
     public BooleanBinding requiredFieldsFilledBinding(final int excludeBookingId) {
         return Bindings.createBooleanBinding(
                 () -> requiredFieldsFilled(excludeBookingId),
@@ -830,7 +451,7 @@ public class BookingFormPane extends GridPane {
             }
         }
 
-        // 3. Kontroll mot upptagna tider: hela bokningens intervall kontrolleras för de behövliga mekanikerna
+// Hela bokningens intervall kontrolleras mot de behövliga mekanikernas upptagna tider.
         if (startTime != null) {
             if (BookingAvailability.isTeamBooked(garage, team, date, startTime,
                     startTime.plusMinutes(minutes), excludeBookingId)) {
@@ -845,10 +466,7 @@ public class BookingFormPane extends GridPane {
     public Vehicle getSelectedVehicle() { return vehicleBox.getValue(); }
     public LocalDate getSelectedDate() { return datePicker.getValue(); }
     public List<ServiceItem> getSelectedServices() { return new ArrayList<ServiceItem>(selectedServices); }
-    /**
-     * Den första tjänst som lagts till i bokningen, eller null när ingen är vald.
-     * Rullistans värde räknas inte, för det är bara ett förslag som står förvalt.
-     */
+/** Första valda tjänsten, eller null. Rullistans värde räknas inte, det är bara ett förslag. */
     public ServiceItem getSelectedService() {
         return selectedServices.isEmpty() ? null : selectedServices.get(0);
     }
@@ -865,10 +483,7 @@ public class BookingFormPane extends GridPane {
         return chosen.isEmpty() ? null : chosen.get(0);
     }
 
-    /**
-     * Mekanikerna som är valda i fältet, i den ordning de valdes. Auto-tilldelningen lägger in dem
-     * och användaren kan ta bort och lägga till. Tidskontrollerna använder hela listan.
-     */
+/** Mekanikerna i den ordning de valdes. */
     public List<Mechanic> getSelectedMechanics() {
         List<Mechanic> ut = new ArrayList<Mechanic>();
         if (mechanicMulti != null) {
@@ -882,6 +497,13 @@ public class BookingFormPane extends GridPane {
         return ut;
     }
 
+    /** Kör lyssnaren som låter dialogen växa med innehållet. */
+    void contentGrown() {
+        if (onContentGrown != null) {
+            onContentGrown.run();
+        }
+    }
+
     /** Låter dialogen veta när formuläret behöver mer plats, så att fönstret kan växa med det. */
     public void setOnContentGrown(Runnable listener) {
         this.onContentGrown = listener;
@@ -890,10 +512,7 @@ public class BookingFormPane extends GridPane {
     public String getDescription() { return descField.getText().trim(); }
     public String getStatus() { return statusBox != null ? statusBox.getValue() : "BOOKED"; }
 
-    /**
-     * Rad i tjänstelistan. En tjänst som redan ligger i bokningen är gråmarkerad och går inte att
-     * välja, så samma arbete inte kan bokas två gånger av misstag.
-     */
+/** Gråmarkerar tjänster som redan ligger i bokningen. */
     private ListCell<ServiceItem> serviceChoiceCell() {
         return new ListCell<ServiceItem>() {
             @Override
@@ -914,7 +533,7 @@ public class BookingFormPane extends GridPane {
         };
     }
 
-    private static <T> void setupComboBoxDisplay(ComboBox<T> box, StringConverter<T> converter) {
+    static <T> void setupComboBoxDisplay(ComboBox<T> box, StringConverter<T> converter) {
         box.setConverter(converter);
         box.setCellFactory(lv -> new ListCell<T>() {
             @Override
@@ -944,61 +563,5 @@ public class BookingFormPane extends GridPane {
                 }
             }
         });
-    }
-
-    /**
-     * En dag i kalendern. Reglerna läses vid varje ritning i stället för att låsas när cellen
-     * skapades: annars står en dag kvar som bokningsbar sedan tjänsterna ändrats till ett jobb som
-     * inte längre får plats inom öppettiderna (t.ex. 315 minuter mot en dag med bara en sen timme kvar).
-     */
-    private final class BookingDayCell extends DateCell {
-
-        @Override
-        public void updateItem(LocalDate date, boolean empty) {
-            super.updateItem(date, empty);
-            if (empty || date == null) {
-                return;
-            }
-            if (date.isBefore(LocalDate.now())) {
-                unbookable("-fx-background-color: #f1f5f9; -fx-text-fill: #94a3b8; -fx-opacity: 0.45;",
-                        "dialog.booking.date_past");
-                return;
-            }
-            if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
-                unbookable("-fx-background-color: #f1f5f9; -fx-text-fill: #94a3b8; -fx-opacity: 0.45;",
-                        "dialog.booking.date_weekend");
-                return;
-            }
-            int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            if (duration > BookingAvailability.MAX_WORK_MINUTES_PER_DAY) {
-                unbookable("-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-opacity: 0.50;",
-                        "dialog.booking.duration_too_long");
-                return;
-            }
-            List<Mechanic> team = getSelectedMechanics();   // de mekaniker som är valda i fältet
-            if (!BookingAvailability.hasAvailableSlotOnDate(garage, getSelectedMechanic(), team, date, duration, excludeId)) {
-                unbookable("-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-opacity: 0.50;",
-                        "dialog.booking.date_fully_booked");
-                return;
-            }
-            setDisable(false);
-            getStyleClass().remove("unbookable-day");
-            setStyle("");
-            setTooltip(null);
-        }
-
-        /** Ritar om cellen med de val som gäller nu. */
-        void refresh() {
-            updateItem(getItem(), isEmpty());
-        }
-
-        private void unbookable(String style, String messageKey) {
-            setDisable(true);
-            if (!getStyleClass().contains("unbookable-day")) {
-                getStyleClass().add("unbookable-day");
-            }
-            setStyle(style);
-            setTooltip(new Tooltip(I18n.get(messageKey)));
-        }
     }
 }

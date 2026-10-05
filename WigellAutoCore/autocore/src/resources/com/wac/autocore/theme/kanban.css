@@ -1,0 +1,598 @@
+/* 19. Mekaniker-kanban: dag, vecka och månad. */
+.kanban-card {
+    -fx-padding: 18px 20px;
+    -fx-spacing: 14px;
+}
+
+.kanban-nav-arrow {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-padding: 4px 10px;
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+}
+.kanban-nav-arrow:hover {
+    -fx-text-fill: -wac-accent;
+    -fx-background-color: -wac-accent-soft;
+}
+
+.kanban-avatar {
+    -fx-background-color: -wac-accent-soft;
+    -fx-background-radius: 999;
+    -fx-alignment: CENTER;
+}
+.kanban-avatar .label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-accent;
+}
+
+.kanban-mech-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+
+.kanban-mech-sub {
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-muted;
+}
+
+.kanban-toggle-group {
+    -fx-background-color: -wac-shell;
+    -fx-background-radius: 8;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 3;
+    -fx-alignment: CENTER;
+}
+
+.kanban-toggle-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 14;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+.kanban-toggle-btn:hover {
+    -fx-text-fill: -wac-text;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+.kanban-toggle-btn.active {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+.kanban-date-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+
+.kanban-workday-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+}
+
+.kanban-time-badge {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-background-color: -wac-shell;
+    -fx-padding: 5 10;
+    -fx-background-radius: 6;
+    -fx-alignment: CENTER;
+}
+
+.kanban-slot-row {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 14;
+}
+.kanban-slot-row.free {
+    -fx-background-color: -wac-shell;
+    -fx-border-style: dashed;
+    -fx-border-color: -wac-line;
+}
+.kanban-slot-customer {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+.kanban-slot-desc {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+}
+.kanban-slot-free-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+    -fx-font-style: italic;
+}
+
+/* Veckovy */
+.kanban-week-col {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+.kanban-week-col:hover {
+    -fx-border-color: -wac-accent;
+}
+.kanban-week-day-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+    -fx-alignment: CENTER;
+}
+.kanban-week-hours {
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-muted;
+    -fx-alignment: CENTER;
+}
+.kanban-progress-track {
+    -fx-background-color: -wac-shell;
+    -fx-background-radius: 3;
+}
+.kanban-progress-fill {
+    -fx-background-radius: 3;
+}
+.kanban-load-pill {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 6;
+    -fx-background-radius: 4;
+    -fx-alignment: CENTER;
+}
+
+/* Belastningsfärger (Grön -> Gul -> Orange -> Röd) */
+.load-free {
+    -fx-background-color: #10b981;
+    -fx-text-fill: #ffffff;
+}
+.load-moderate {
+    -fx-background-color: #eab308;
+    -fx-text-fill: #ffffff;
+}
+.load-busy {
+    -fx-background-color: #f97316;
+    -fx-text-fill: #ffffff;
+}
+.load-full {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: #ffffff;
+}
+
+.kanban-week-snippet {
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-text;
+}
+
+.kanban-legend-dot {
+    -fx-background-radius: 999;
+}
+.kanban-legend-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+}
+
+/* Månadsvy */
+.kanban-month-head {
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-muted;
+    -fx-alignment: CENTER;
+}
+.kanban-month-cell {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.kanban-month-cell:hover {
+    -fx-border-color: -wac-accent;
+}
+.kanban-month-cell.out-of-month {
+    -fx-opacity: 0.3;
+    -fx-background-color: transparent;
+}
+.kanban-month-cell.weekend {
+    -fx-background-color: -wac-shell;
+    -fx-opacity: 0.65;
+}
+.kanban-month-cell.available {
+    -fx-border-color: rgba(16, 185, 129, 0.4);
+}
+.kanban-month-cell.full {
+    -fx-border-color: rgba(239, 68, 68, 0.5);
+    -fx-background-color: rgba(239, 68, 68, 0.08);
+}
+.kanban-month-cell.unavailable {
+    -fx-border-color: rgba(113, 113, 122, 0.4);
+    -fx-opacity: 0.6;
+}
+.kanban-month-num {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-text;
+}
+.kanban-month-status {
+    -fx-font-size: 11px;
+    -fx-text-fill: -wac-muted;
+}
+
+/* Kompakt Kanban-kort (flera mekaniker samtidigt sida vid sida) */
+.kanban-board-panel {
+    -fx-padding: 18px 20px;
+    -fx-spacing: 14px;
+}
+
+.kanban-card-compact {
+    -fx-padding: 14px 16px;
+    -fx-spacing: 12px;
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.kanban-nav-arrow-compact {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-padding: 4px 8px;
+    -fx-cursor: hand;
+    -fx-background-radius: 4;
+}
+.kanban-nav-arrow-compact:hover {
+    -fx-text-fill: -wac-accent;
+    -fx-background-color: -wac-accent-soft;
+}
+
+.kanban-avatar-compact {
+    -fx-background-color: -wac-accent-soft;
+    -fx-background-radius: 999;
+    -fx-alignment: CENTER;
+}
+.kanban-avatar-compact .label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-accent;
+}
+
+.kanban-mech-name-compact {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+
+.kanban-mech-sub-compact {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+}
+
+.kanban-toggle-group-compact {
+    -fx-background-color: -wac-shell;
+    -fx-background-radius: 6;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-padding: 3;
+    -fx-alignment: CENTER;
+}
+
+.kanban-toggle-btn-compact {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 10px;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+.kanban-toggle-btn-compact:hover {
+    -fx-text-fill: -wac-text;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+.kanban-toggle-btn-compact.active {
+    -fx-background-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+.kanban-filter-chip {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 5px 12px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-cursor: hand;
+}
+.kanban-filter-chip:hover {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-ring;
+}
+.kanban-filter-chip.active {
+    -fx-background-color: -wac-accent;
+    -fx-border-color: -wac-accent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+.kanban-scroll-btn {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 5px 10px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-cursor: hand;
+}
+.kanban-scroll-btn:hover {
+    -fx-text-fill: -wac-text;
+    -fx-border-color: -wac-ring;
+}
+
+.kanban-count-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-padding: 0 4px 0 0;
+}
+
+.kanban-options-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 2px 4px;
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+}
+.kanban-options-btn:hover {
+    -fx-background-color: -wac-line;
+}
+.kanban-options-icon {
+    -fx-fill: #59635e;
+}
+.kanban-options-btn:hover .kanban-options-icon {
+    -fx-fill: -wac-text;
+}
+
+.context-menu {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 3);
+}
+.context-menu .menu-item {
+    -fx-padding: 6px 12px;
+    -fx-background-radius: 4;
+}
+.context-menu .menu-item .label {
+    -fx-text-fill: -wac-text;
+    -fx-font-size: 12px;
+}
+.context-menu .menu-item:focused,
+.context-menu .menu-item:hover {
+    -fx-background-color: -wac-surface;
+}
+.context-menu .menu-item-danger .label {
+    -fx-text-fill: -wac-danger;
+}
+.context-menu .menu-item-danger:focused,
+.context-menu .menu-item-danger:hover {
+    -fx-background-color: -wac-danger-soft;
+}
+
+.kanban-date-title-compact {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+
+.kanban-slot-row-compact {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 7px 12px;
+    -fx-min-height: 36px;
+    -fx-pref-height: 36px;
+    -fx-alignment: CENTER_LEFT;
+}
+.kanban-slot-row-compact.free {
+    -fx-background-color: -wac-shell;
+    -fx-border-style: dashed;
+}
+.kanban-time-badge-compact {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-background-color: -wac-shell;
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 4;
+    -fx-alignment: CENTER;
+}
+.kanban-slot-desc-compact {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+}
+.kanban-slot-free-compact {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+    -fx-font-style: italic;
+}
+.kanban-slot-plus-btn {
+    -fx-font-size: 12px;
+    -fx-padding: 0;
+    -fx-min-width: 20px;
+    -fx-pref-width: 20px;
+    -fx-max-width: 20px;
+    -fx-min-height: 20px;
+    -fx-pref-height: 20px;
+    -fx-max-height: 20px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-alignment: CENTER;
+    -fx-content-display: graphic-only;
+    -fx-cursor: hand;
+}
+.kanban-slot-plus-btn:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.35), 3, 0, 0, 1);
+}
+.kanban-slot-plus-icon {
+    -fx-fill: -wac-on-accent;
+}
+
+.kanban-week-row-compact {
+    -fx-background-color: -wac-surface;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8px 12px;
+    -fx-cursor: hand;
+}
+.kanban-week-row-compact:hover {
+    -fx-border-color: -wac-accent;
+}
+.kanban-week-day-name {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
+.kanban-load-pill-compact {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 3px 7px;
+    -fx-background-radius: 3;
+    -fx-alignment: CENTER;
+}
+.kanban-week-count-compact {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+    -fx-alignment: CENTER_RIGHT;
+}
+/* 9 timboxar i veckovyn */
+.kanban-hour-boxes {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 3px;
+}
+.kanban-hour-box {
+    -fx-min-width: 11px;
+    -fx-pref-width: 12px;
+    -fx-max-width: 13px;
+    -fx-min-height: 17px;
+    -fx-pref-height: 18px;
+    -fx-max-height: 19px;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+}
+.kanban-hour-box.free {
+    -fx-background-color: -wac-shell;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1px;
+}
+.kanban-hour-box.free:hover {
+    -fx-border-color: -wac-accent;
+}
+.kanban-hour-box.booked {
+    -fx-border-width: 0;
+}
+.kanban-hour-box.booked.load-free {
+    -fx-background-color: #10b981;
+}
+.kanban-hour-box.booked.load-moderate {
+    -fx-background-color: #eab308;
+}
+.kanban-hour-box.booked.load-busy {
+    -fx-background-color: #f97316;
+}
+.kanban-hour-box.booked.load-full {
+    -fx-background-color: #ef4444;
+}
+.kanban-hour-box.booked:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 3, 0, 0, 1);
+}
+
+.kanban-month-head-compact {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-muted;
+    -fx-alignment: CENTER;
+}
+.kanban-month-cell-compact {
+    -fx-background-color: -wac-card;
+    -fx-border-color: -wac-line;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-alignment: CENTER;
+}
+.kanban-month-cell-compact:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.35), 3, 0, 0, 1);
+}
+.kanban-month-cell-compact.load-free {
+    -fx-border-color: rgba(16, 185, 129, 0.45);
+    -fx-background-color: rgba(16, 185, 129, 0.12);
+}
+.kanban-month-cell-compact.load-free .kanban-month-num-compact {
+    -fx-text-fill: #10b981;
+}
+.kanban-month-cell-compact.load-moderate {
+    -fx-border-color: rgba(234, 179, 8, 0.55);
+    -fx-background-color: rgba(234, 179, 8, 0.18);
+}
+.kanban-month-cell-compact.load-moderate .kanban-month-num-compact {
+    -fx-text-fill: #eab308;
+}
+.kanban-month-cell-compact.load-busy {
+    -fx-border-color: rgba(249, 115, 22, 0.65);
+    -fx-background-color: rgba(249, 115, 22, 0.22);
+}
+.kanban-month-cell-compact.load-busy .kanban-month-num-compact {
+    -fx-text-fill: #f97316;
+}
+.kanban-month-cell-compact.load-full {
+    -fx-border-color: rgba(239, 68, 68, 0.75);
+    -fx-background-color: rgba(239, 68, 68, 0.26);
+}
+.kanban-month-cell-compact.load-full .kanban-month-num-compact {
+    -fx-text-fill: #ef4444;
+}
+.kanban-month-cell-compact.unavailable {
+    -fx-border-color: rgba(113, 113, 122, 0.3);
+    -fx-opacity: 0.5;
+}
+.kanban-month-cell-compact.weekend {
+    -fx-background-color: -wac-shell;
+    -fx-opacity: 0.6;
+}
+.kanban-month-cell-compact.out-of-month {
+    -fx-opacity: 0.2;
+    -fx-background-color: transparent;
+}
+.kanban-month-num-compact {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+}
