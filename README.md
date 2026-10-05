@@ -74,10 +74,6 @@ Mekanikerns behörighet hänger på en nyckel. Tjänsten anger vilken specialise
 
 Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord och valutor följer språket. Kvalitetskontrollen kräver att språkfilerna har exakt samma uppsättning nycklar.
 
-## Dokumentation
-
-- [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md): de funktionella kraven för systemet.
-
 ## Team
 
 Grupp C: Alex, Lucas, Daniel.
