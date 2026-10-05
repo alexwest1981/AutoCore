@@ -97,7 +97,7 @@ public class WorkOrderController {
             return;
         }
 
-        // SCRUM-156 (C1): arbetsordern får bokningens tjänster, fältet för tjänste-id används inte längre.
+        // Arbetsordern får bokningens tjänster.
         WorkOrder workOrder = garageSystem.createWorkOrder(bookingId, mechanicId);
 
         if (workOrder == null) {

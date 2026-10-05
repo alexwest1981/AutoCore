@@ -44,7 +44,6 @@ Projektet följer en ren skiktad arkitektur (**Layered Architecture**) under `Wi
 
 ```
 Systemarkitektur/
-├── test.sh                                   # Testkörning: appens tester, --audit, --all
 ├── run.sh                                    # Körskript för GUI och CLI
 ├── README.md                                 # Projekt-README med snabbstart och modulöversikt
 ├── PROJECT_OVERVIEW.md                       # Detta arkitektur- och översiktsdokument
@@ -114,17 +113,6 @@ Systemarkitektur/
         │       │       └── EntityPages.java  # Vyer för Kunder, Fordon, Ordrar, etc.
         │       │
         │       └── test/                     # Komplett automatiserad test- och auditsvit
-        │           ├── TestRunner.java       # Fristående testmotor (körs utan externa ramverk)
-        │           ├── EntityLookupTest.java # Tester för relations- och ID-uppslagning
-        │           ├── GlobalSearchTest.java # Tester för granulär sökning och prefix
-        │           ├── I18nTest.java         # Tester för realtidsöversättning och paritet
-        │           ├── MechanicScheduleTest.java # Tester för schemaläggning och kapacitet
-        │           ├── OverviewMetricsTest.java # Tester för KPI-beräkningar och intäkter
-        │           ├── TableFactoryTest.java # Tester för tabellfilter och indexintegritet
-        │           ├── UiFormattersTest.java # Tester för valuta, datum och statusord
-        │           ├── CodeQualityTest.java  # Kodkvalitet, arkitekturgränser & språkparitet
-        │           ├── SecurityAuditTest.java# Sårbarhetsscanning (SQLi, hemligheter, PII)
-        │           └── WcagAccessibilityTest.java # WCAG 2.1 AAA kontrast- och tillgänglighetstest
         │
         └── resources/
             └── com/wac/autocore/
@@ -174,18 +162,16 @@ Systemet använder **Facade Pattern** genom klassen `com.wac.autocore.service.Ga
 - **Klass:** `com.wac.autocore.ui.i18n.I18n`
 - **Resursfiler:** `resources/com/wac/autocore/i18n/sv.json` och `en.json`.
 - **Egenskaper:**
-  - **100 % nyckelparitet:** Båda filerna har exakt 396 språknycklar, vilket `CodeQualityTest` och `I18nTest` kollar automatiskt.
+   - **Samma nycklar:** Svenska och engelska språkfilerna hålls synkade.
   - **Realtidsväxling utan omstart:** När du klickar på språkknappen i sidomenyn uppdateras gränssnittet direkt, via lyssnare (`I18n.addListener()`).
   - **Parameterstöd:** Metoden `I18n.t("key", arg1, arg2)` stoppar in dynamiska parametrar (`{0}`, `{1}`) på plats.
   - **Robust felhantering:** Saknas en nyckel returneras nyckeln själv som fallback, utan att appen kraschar.
 
 ### 3.4 Datalager & Databasintegration (SQLite)
 
-- **Nuläge:** `Database.java` håller in-memory-samlingar med standardiserad testdata för kunder, bilar, mekaniker, ordrar och fakturor.
-- **Pågående databasarbete:** 
-  - JDBC-drivrutinen `sqlite-jdbc-3.53.4.0.jar` är redan på plats under `lib/`.
-  - Daniel leder arbetet med SQLite-lagret, som ska flytta systemet från in-memory-listorna till persistent lokal lagring.
-  - Servicelagret och fasaden är byggda så att databasbytet kan ske utan att det märks i presentationslagret.
+   - SQLite används för lokal lagring via JDBC.
+   - `Db` skapar tabeller och seedar databasen när appen startar.
+   - Repositoryklasserna sköter läsning och skrivning mot databasen.
 
 ### 3.5 Domänmodeller
 
@@ -210,9 +196,9 @@ När projektet startade hade koden flera typiska "Code Smells" som vi nu har ref
 | **Monolitisk "God Class"** (`GarageSystem` hade 400+ rader och skötte allt från utskrifter till rabattregler). | **Fasadmönstret implementerat:** `GarageSystem` delegerar nu till 7 specialiserade tjänster (`BillingService`, `CustomerService`, etc.). |
 | **UI sammanflätat med affärslogik** (`System.out.println` spridda i domänmetoder). | **Skiktseparation:** All utskriftslogik flyttad till `ConsolePrinter`. Alla servicemetoder returnerar rena domänobjekt eller felkoder. |
 | **Hårdkodad och duplicerad sökning** i linjära for-loopar. | **Granulär sökmotor:** `GlobalSearch` och `EntityLookup` indexerar och söker över alla entiteter med prefixstöd och skiftlägesokänslighet. |
-| **Frånvaro av tester:** Inga automatiserade tester existerade i startpaketet. | **Omfattande test- och audit-svit:** automatiserade tester för enhet, kvalitet, säkerhet och WCAG 2.1 AAA, med grönt utfall i alla områden. |
+| **Frånvaro av tester:** Startpaketet innehöll inga automatiska tester. | **Manuell kontroll:** Funktionerna körs genom applikationens GUI och konsolflöde. |
 | **Hårdkodat språk och texter:** Svenska texter hårdkodade i Java-strängar. | **Full I18n-motor:** Extern ordbok i JSON med 396 nycklar och momentan språkväxling mellan svenska och engelska. |
-| **Ingen tillgänglighetsstandard:** Konsolfönster utan kontrastkrav. | **WCAG 2.1 AAA certifiering:** Färgkontrast $\ge 7.0:1$ för all löpande text, tangentbordsfokus (`:focused`), zebramönstrade tabeller och dynamisk layout. |
+| **Enkel standardlayout:** Startpaketet saknade en samlad visuell riktning. | **Eget tema:** Emerald-temat använder tydliga färger, fokusstilar och läsbara textstorlekar. |
 
 ---
 
@@ -232,42 +218,16 @@ När projektet startade hade koden flera typiska "Code Smells" som vi nu har ref
 
 ---
 
-## 6. Kvalitetssäkring, Säkerhetsanalys & WCAG 2.1 AAA
+## 6. Kvalitet och tillgänglighet
 
-Vi kvalitetssäkrar hela systemet med `./test.sh`. Utan argument kör den appens egna tester, med `--audit` granskningarna, och med `--all` allt:
+Projektet använder Java 8, SQLite och JavaFX. Koden är uppdelad i modeller,
+repository, service och UI. Det gör det lättare att följa ett flöde från en vy
+via fasaden och servicen till databasen.
 
-```bash
-./test.sh --audit   # Granskningarna (kvalitet, säkerhet, WCAG)
-./test.sh --unit   # Endast enhetstesterna
-./test.sh --wcag   # Endast WCAG 2.1 AAA
-```
-
-### De fyra modulerna:
-
-1. **Modul 1: Enhetstester (37 tester – 100% godkända)**
-   - `UiFormattersTest` (8 tester): Valutaformatering, datum, trunkering och CSS-badgeklasser.
-   - `EntityLookupTest` (4 tester): ID-till-namn-uppslagning för kund, fordon, mekaniker och tjänster.
-   - `OverviewMetricsTest` (3 tester): KPI-mätetal (aktiva ordrar, omsättning, lediga mekaniker).
-   - `TableFactoryTest` (2 tester): Filtrering och regressionsskydd mot indexförskjutningar.
-   - `GlobalSearchTest` (8 tester): Granulär sökning, prefix, skiftläge och cross-entity-matchning.
-   - `I18nTest` (7 tester): Växling, engelska/svenska, fallback, parameterersättning och nyckelparitet.
-   - `MechanicScheduleTest` (5 tester): Timme-för-timme slots, färgprogression och skydd mot dubbelbokningar.
-2. **Modul 2: Kodkvalitet & Arkitektur (4 kontroller – 100% godkända)**
-   - Språkordböckernas integritet och 100% nyckelparitet (396 nycklar).
-   - Temaintegritet för det officiella temat i `ThemeCatalog`.
-   - Frikoppling av servicelager från GUI-beroenden.
-   - Maxgränser för källkodsfilers komplexitet samt 0 aktiva TODO/FIXME-noteringar.
-3. **Modul 3: Säkerhetsgranskning (4 kontroller – 100% godkända)**
-   - Scanning mot hårdkodade lösenord, tokens och hemligheter.
-   - SQL-injektionsskydd: Kollar att framtida SQL-anrop förbereds för parameterized queries (`PreparedStatement`).
-   - Förbud mot farliga processkörningar (`Runtime.getRuntime().exec`).
-   - Skydd mot loggning av känsliga personuppgifter (PII).
-4. **Modul 4: WCAG 2.1 AAA Tillgänglighet (5 kontroller – 100% godkända)**
-   - Färgkontrast på text och dämpad text mot kort- och sidbakgrunder $\ge 7.0:1$ (WCAG 1.4.6 Contrast Enhanced Level AAA: upp till 16.5:1).
-   - Färgkontrast på accentknappar $\ge 7.0:1$ (8.37:1 i temat Emerald).
-   - Färgkontrast i sidonavigationen $\ge 7.0:1$ (12.86:1 aktiv text, 8.00:1 dämpad text).
-   - Tydliga fokusindikatorer (`:focused`) på alla interaktiva kontroller (WCAG 2.4.7).
-   - Minsta tillåtna teckenstorlek ($\ge 11$ px på all löpande text, WCAG 1.4.4).
+Emerald-temat är anpassat för god läsbarhet. Text, bakgrunder och knappar har
+tydliga kontraster, interaktiva komponenter har fokusstilar och textstorleken
+hålls på en nivå som fungerar i programmets vyer. Detta är projektets praktiska
+WCAG-anpassning, inte en formell certifiering.
 
 ---
 
@@ -277,7 +237,7 @@ Vi kvalitetssäkrar hela systemet med `./test.sh`. Utan argument kör den appens
 
 | Gruppmedlem | Huvudfokus & Arbetsområde | Aktuell status |
 | :--- | :--- | :--- |
-| **Alex** | Systemarkitektur, Fasad, I18n flerspråksmotor, Test- & Auditsvit (`test.sh`) | **Klart & Integrerat i develop** |
+| **Alex** | Systemarkitektur, fasad och flerspråksmotor | **Klart & Integrerat i develop** |
 | **Daniel** | Databasintegration (SQLite-persistens via `lib/sqlite-jdbc-...`) | **Pågående arbete** |
 | **Lucas** | Domänmodeller, affärsregler för ordrar och bokningsflöden | **Klart & Integrerat i develop** |
 | **Alex** | JavaFX GUI-vyer, layout, styling, WCAG-anpassning & teman | **Klart & Integrerat i develop** |
@@ -297,8 +257,7 @@ git checkout develop
 # Hämta in det senaste från teamet
 git pull origin develop
 
-# Kör granskningarna innan du pushar nya ändringar
-./test.sh --audit
+# Kompilera och kör relevanta delar från IntelliJ innan du pushar nya ändringar
 ```
 
 När alla 50 kontroller är gröna är det säkert att pusha koden till `origin/develop`.

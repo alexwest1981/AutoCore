@@ -18,45 +18,18 @@ Siffrorna i menyn visar vad som väntar på hantering. Bilden är ett exempel.
 
 ![Räknare i menyn](WigellAutoCore/docs/autocore-menu-counters.png)
 
-## Teknik
+## Bygg och kör
 
-Java 8 (BellSoft Liberica Full, JavaFX ingår), JavaFX för gränssnittet, en textbaserad konsolversion, och SQLite via JDBC (`sqlite-jdbc-3.53.4.0.jar`).
-
-## Kom igång
-
-```bash
-git checkout develop
-git pull origin develop
-```
-
-Jobbar du i en egen gren, hämta det senaste innan du fortsätter:
-
+Projektet använder Java 8 med JavaFX. Starta appen med `./start.sh`, eller kör
+`Main.java` från IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
 ```bash
 git checkout din-gren
 git merge develop
 ```
 
-Starta appen med `./start.sh`, eller kör `Main.java` i IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
-
-Enskilda moduler går att köra var för sig, till exempel `com.wac.autocore.gui.customers.TestCustomer` för kunder eller `...gui.booking.TestBookingApp` för bokningar. Resten ligger under samma paket: `vehicle`, `workorder`, `invoice`, `payment`, `mechanic` och `serviceItem`.
-
 ### Får du "No suitable driver found for jdbc:sqlite"?
 
 Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder att IntelliJ kör en gammal projektmodell: välj **File → Reload All from Disk**, eller stäng och öppna projektet. Går det inte, lägg till `WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar` under **File → Project Structure → Modules → Dependencies**. `./start.sh` behöver inget av det.
-
-## Tester
-
-```bash
-./test.sh            # appens egna tester
-./test.sh bevis      # acceptanskrav och beviskort
-./test.sh --audit    # kvalitet, säkerhet och WCAG
-./test.sh --all      # allt, plus rapport till rapport.md
-./dataflow.sh        # dataflödesanalysen (AK-15), vid sidan av sviten
-```
-
-Windows: `.\test.ps1` eller `test.bat`.
-
-Sviten täcker affärslogik, bokningar, scheman, sökning, språkparitet, säkerhet, WCAG 2.1 AAA och GitHub Actions CI. Hur många tester den innehåller står i [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md), och sviten kontrollerar själv att siffran stämmer.
 
 Körningen behöver en bildskärm. Saknas den, sätt `GDK_BACKEND=x11` och en `DISPLAY`, annars stannar JavaFX.
 
@@ -104,9 +77,7 @@ Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord oc
 
 ## Dokumentation
 
-- [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md): de mätbara kraven, tröskelvärden och vilket test som bevisar varje.
-- [`Audit_Readme.md`](Audit_Readme.md): hur testskriptet fungerar, steg för steg.
-- [`KONTROLLER.md`](KONTROLLER.md): säkerhetsåtgärderna i koden, område för område, med resultat och datum.
+- [`ACCEPTANSKRAV.md`](ACCEPTANSKRAV.md): de funktionella kraven för systemet.
 - [`STYLEGUIDE.html`](STYLEGUIDE.html): komponenter och färgteman, öppnas i en webbläsare.
 
 ## Team

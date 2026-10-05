@@ -457,7 +457,7 @@ public final class WorkOrderDialogs {
     }
 
     /**
-     * SCRUM-160 (D2) och SCRUM-158 (C3): markerar vilka arbeten på arbetsordern som är utförda.
+     *  (D2) och  (C3): markerar vilka arbeten på arbetsordern som är utförda.
      * Priset som gäller i det ögonblicket frysas på raden.
      */
     public static void showMarkPerformedDialog(GarageSystem garage, WorkOrder workOrder, Runnable onSuccess) {

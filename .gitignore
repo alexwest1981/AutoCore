@@ -36,7 +36,6 @@ target/
 *.zip
 *.pdf
 RetrospektDagbok.md
-JiraAnalys_Sprint3_Flaskhalsar.md
 
 # Personliga testrapporter och lokala resultat
 rapport.md

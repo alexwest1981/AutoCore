@@ -180,7 +180,7 @@ public class BillingService {
             for (Integer serviceItemId : performedServices(workOrder, invoiced)) {
                 ServiceItem serviceItem = findServiceItem(serviceItemId);
                 if (serviceItem != null) {
-                    // SCRUM-160 (D2): priset som gällde när arbetet utfördes används när det finns sparat.
+                    // Använd det sparade priset när det finns ett.
                     // Äldre arbetsordrar saknar det och får katalogens pris, som före D2.
                     Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
                     double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
@@ -282,7 +282,7 @@ public class BillingService {
     }
     /**
      * Arbetsorderns utförda tjänster som ännu inte står på någon faktura. Är inga tjänster explicit
-     * markerade som utförda men arbetsordern är slutförd (bakåtkompatibilitet, SCRUM-158) gäller
+    * markerade som utförda men arbetsordern är slutförd gäller
      * samtliga tjänster på arbetsordern.
      */
     private List<Integer> performedServices(WorkOrder workOrder, List<Integer> invoicedServiceIds) {
@@ -397,7 +397,7 @@ public class BillingService {
     }
 
     /**
-     * SCRUM-166 (E5): fördelar fakturans rabatt på raderna i proportion till radens pris.
+    * Fördelar fakturans rabatt på raderna i proportion till radens pris.
      * Varje del avrundas till hela ören. Avrundningsresten läggs på den dyraste raden,
      * så att radernas rabatter alltid summerar exakt till fakturans rabatt.
      */

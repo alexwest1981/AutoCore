@@ -84,7 +84,7 @@ public class WorkOrder {
         }
     }
 
-    /** SCRUM-160 (D2): priset som gällde när tjänsten utfördes, eller null om det inte sparades. */
+    /** Returnerar priset som gällde när tjänsten utfördes. */
     public Double getCompletedServicePrice(int serviceItemId) {
         return completedServicePrices.get(Integer.valueOf(serviceItemId));
     }
@@ -109,9 +109,7 @@ public class WorkOrder {
         }
     }
 
-    /**
-     * SCRUM-160 (D2): markerar tjänsten utförd och fryser priset som gällde då.
-     */
+    /** Markerar tjänsten som utförd och sparar priset som gällde då. */
     public void markServiceAsCompleted(int serviceItemId, double frozenPrice) {
         markServiceAsCompleted(serviceItemId);
         completedServicePrices.put(Integer.valueOf(serviceItemId), Double.valueOf(frozenPrice));

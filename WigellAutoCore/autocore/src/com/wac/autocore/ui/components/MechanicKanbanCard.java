@@ -919,7 +919,7 @@ public class MechanicKanbanCard {
                     slot.setBookingId(targetBooking.getId());
                 }
                 if (targetBooking != null && targetBooking.getServiceItemIds().isEmpty()) {
-                    // Bokningen saknar tjänster. Ge den en, så arbetsordern har något att utföra (SCRUM-156).
+                    // Bokningen saknar tjänster. Ge den en, så arbetsordern har något att utföra ().
                     try {
                         targetBooking.addServiceItem(garage.getServiceItems().get(0));
                         garage.updateBooking(targetBooking);

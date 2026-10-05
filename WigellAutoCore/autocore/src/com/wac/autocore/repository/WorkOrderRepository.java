@@ -129,7 +129,7 @@ public class WorkOrderRepository {
                 insert.setInt(2, serviceItemId);
                 insert.setInt(3, isCompleted);
 
-                // SCRUM-160 (D2): priset som gällde när arbetet utfördes följer med raden.
+                // Spara priset som gällde när arbetet utfördes.
                 Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
                 if (frozenPrice == null) {
                     insert.setNull(4, Types.REAL);

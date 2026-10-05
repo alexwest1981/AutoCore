@@ -401,7 +401,7 @@ public final class EntityLookup {
     }
 
     /**
-     * SCRUM-157 (C2): Total beräknad arbetstid för samtliga tjänster på arbetsordern.
+     *  (C2): Total beräknad arbetstid för samtliga tjänster på arbetsordern.
      */
     public static int workOrderTotalMinutes(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null || wo.getServiceItemIds() == null) {
@@ -420,7 +420,7 @@ public final class EntityLookup {
     }
 
     /**
-     * SCRUM-157 (C2): Formaterar arbetsorderns tjänster med status (utförd vs att utföra).
+     *  (C2): Formaterar arbetsorderns tjänster med status (utförd vs att utföra).
      */
     public static String workOrderServicesWithStatus(GarageSystem garage, WorkOrder wo) {
         if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {

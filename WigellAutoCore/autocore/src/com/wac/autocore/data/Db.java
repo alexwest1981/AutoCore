@@ -134,14 +134,14 @@ public class Db {
                 statement.executeUpdate(sql);
             }
 
-            // SCRUM-158 (C3): Säkerställ att kolumnen completed finns i work_order_service_items vid migrering
+            // Säkerställ att kolumnen completed finns vid migrering.
             try {
                 statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN completed INTEGER NOT NULL DEFAULT 0");
             } catch (SQLException ignored) {
                 // Kolumnen existerar redan
             }
 
-            // SCRUM-160 (D2): Säkerställ att kolumnen price finns, så ett utfört arbete behåller sitt pris
+            // Säkerställ att kolumnen price finns, så ett utfört arbete behåller sitt pris.
             try {
                 statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN price REAL");
             } catch (SQLException ignored) {
@@ -162,7 +162,7 @@ public class Db {
             statement.executeUpdate("UPDATE service_items SET specialization = 'seed.mechanic.diagnostics.specialization' "
                     + "WHERE name = 'seed.service.diagnostics.name' AND (specialization IS NULL OR specialization = '')");
 
-            // SCRUM-149 (A3): Migrera befintliga bokningar från bookings.service_item_id till booking_service_items
+            // Migrera äldre bokningar till kopplingstabellen.
             String migrateSql = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id) "
                     + "SELECT id, service_item_id FROM bookings "
                     + "WHERE service_item_id IS NOT NULL AND service_item_id > 0";
@@ -174,7 +174,7 @@ public class Db {
                     + "WHERE mechanic_id IS NOT NULL AND mechanic_id > 0");
 
 
-            // SCRUM-163 (E2): Skapa fakturarader för fakturor som fanns innan tabellen.
+            // Skapa fakturarader för äldre fakturor.
             // Priset tas från det frysta priset på arbetsorderns rad när det finns, annars
             // från katalogen. Utan det får en gammal faktura dagens pris i stället för
             // priset som gällde när arbetet utfördes.
