@@ -40,17 +40,11 @@ public class Payment {
         return amount;
     }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
 
     public String getPaymentType() {
         return paymentType;
     }
 
-    public void setPaymentType(String paymentType) {
-        this.paymentType = paymentType;
-    }
 
     public LocalDateTime getPaymentDate() {
         return paymentDate;

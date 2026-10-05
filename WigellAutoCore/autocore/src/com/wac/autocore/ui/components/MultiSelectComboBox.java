@@ -125,10 +125,6 @@ public class MultiSelectComboBox<T> extends HBox {
 
     // --- data -----------------------------------------------------------------
 
-    /** Posterna som går att välja. */
-    public ObservableList<T> getItems() {
-        return items;
-    }
 
     public void setItems(List<T> values) {
         items.setAll(values);
@@ -148,9 +144,6 @@ public class MultiSelectComboBox<T> extends HBox {
         }
     }
 
-    public void clearSelectedItems() {
-        selected.clear();
-    }
 
     /** Texten i chipset i fältet. Utan egen provider används radtexten. */
     public void setChipTextProvider(Function<T, String> provider) {
@@ -463,23 +456,5 @@ public class MultiSelectComboBox<T> extends HBox {
         return overlayLayer;
     }
 
-    /** Öppnar listan. */
-    public void showPopup() {
-        showList();
-    }
 
-    /** Stänger listan. */
-    public void hidePopup() {
-        hideList();
-    }
-
-    /** Sant när listan är open. */
-    public boolean isPopupShowing() {
-        return open;
-    }
-
-    /** Roten i listan, för att kunna mätas utifrån. */
-    public VBox getPopupRoot() {
-        return panel;
-    }
 }

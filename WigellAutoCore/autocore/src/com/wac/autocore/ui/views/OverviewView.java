@@ -32,9 +32,6 @@ public final class OverviewView {
 
     private OverviewView() {}
 
-    public static VBox build(GarageSystem garage, Runnable onRefresh) {
-        return build(garage, onRefresh, null);
-    }
 
     public static VBox build(GarageSystem garage, Runnable onRefresh, com.wac.autocore.ui.navigation.PageRouter router) {
         List<Booking> bookings = garage.getBookings();

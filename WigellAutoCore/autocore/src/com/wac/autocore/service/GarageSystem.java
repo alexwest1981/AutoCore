@@ -274,10 +274,6 @@ public class GarageSystem {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
     }
 
-    public int getEstimatedDuration(int... serviceItemsIds) {
-        return workOrderService.getTotalEstimatedMinutes(serviceItemsIds);
-    }
-
     public void startWorkOrder(int workOrderId) {
         workOrderService.startWorkOrder(workOrderId);
     }

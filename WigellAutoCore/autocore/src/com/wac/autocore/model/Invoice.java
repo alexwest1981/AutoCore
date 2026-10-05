@@ -45,18 +45,11 @@ public class Invoice {
         return invoiceDate;
     }
 
-    public void setInvoiceDate(LocalDate invoiceDate) {
-        this.invoiceDate = invoiceDate;
-    }
 
     public double getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
-        calculateTotalAmount();
-    }
 
     public double getDiscount() {
         return discount;
@@ -105,13 +98,6 @@ public class Invoice {
         lines.add(line);
     }
 
-    public double getLinesTotal() {
-        double sum = 0.0;
-        for (InvoiceLine line : lines) {
-            sum += line.getFinalPrice();
-        }
-        return Math.round(sum * 100.0) / 100.0;
-    }
 
     @Override
     public String toString() {

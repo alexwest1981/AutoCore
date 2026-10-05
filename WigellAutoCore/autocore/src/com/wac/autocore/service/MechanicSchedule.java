@@ -20,31 +20,19 @@ public class MechanicSchedule {
     public static final int WORK_HOURS_PER_DAY = END_HOUR - START_HOUR; // 9 timmar (7-16)
 
     public enum LoadLevel {
-        FREE("free", "#10b981", "Grön"),        // 0-2 timmar
-        MODERATE("moderate", "#eab308", "Gul"),  // 3-4 timmar
-        BUSY("busy", "#f97316", "Orange"),       // 5-6 timmar
-        FULL("full", "#ef4444", "Röd");          // 7+ timmar
+        FREE("free"),        // 0-2 timmar
+        MODERATE("moderate"),  // 3-4 timmar
+        BUSY("busy"),       // 5-6 timmar
+        FULL("full");          // 7+ timmar
 
         private final String code;
-        private final String colorHex;
-        private final String swedishName;
 
-        LoadLevel(String code, String colorHex, String swedishName) {
+        LoadLevel(String code) {
             this.code = code;
-            this.colorHex = colorHex;
-            this.swedishName = swedishName;
         }
 
         public String getCode() {
             return code;
-        }
-
-        public String getColorHex() {
-            return colorHex;
-        }
-
-        public String getSwedishName() {
-            return swedishName;
         }
     }
 
@@ -164,9 +152,6 @@ public class MechanicSchedule {
             return totalHours;
         }
 
-        public double getLoadPercentage() {
-            return totalHours == 0 ? 0 : (double) bookedHours / totalHours;
-        }
 
         public LoadLevel getLevel() {
             return level;
@@ -218,13 +203,6 @@ public class MechanicSchedule {
             return isWeekend;
         }
 
-        public boolean isAvailableForBooking() {
-            return inCurrentMonth && !isWeekend && isMechanicAvailable && !isFullyBooked;
-        }
-
-        public boolean isFullyBooked() {
-            return isFullyBooked;
-        }
 
         public boolean isMechanicAvailable() {
             return isMechanicAvailable;
@@ -428,23 +406,6 @@ public class MechanicSchedule {
     }
 
     /**
-     * Boka en specifik timme för en mekaniker.
-     */
-    public synchronized boolean bookSlot(int mechanicId, LocalDate date, int hour, int bookingId,
-                                         String customer, String vehicleReg, String desc) {
-        return bookSlot(mechanicId, date, hour, bookingId, 0, customer, vehicleReg, desc);
-    }
-
-    /**
-     * Avboka en tidsslott.
-     */
-    public synchronized boolean cancelSlot(int mechanicId, LocalDate date, int hour) {
-        String key = slotKey(mechanicId, date, hour);
-        TimeSlot slot = slots.remove(key);
-        return slot != null;
-    }
-
-    /**
      * Avboka alla tidsslottar kopplade till ett specifikt boknings-ID.
      */
     public synchronized boolean cancelSlotForBooking(int bookingId) {
@@ -554,10 +515,4 @@ public class MechanicSchedule {
         }
     }
 
-    /** Tömmer schemat och stänger av databassynkronisering. */
-    public synchronized void resetForTest() {
-        databaseSyncEnabled = false;
-        slots.clear();
-        seeded = false;
-    }
 }

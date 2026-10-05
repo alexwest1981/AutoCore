@@ -860,13 +860,6 @@ public class BookingFormPane extends GridPane {
         }
         return total;
     }
-    public double getTotalEstimatedPrice() {
-        double total = 0.0;
-        for (ServiceItem s : selectedServices) {
-            if (s != null) total += s.getPrice();
-        }
-        return total;
-    }
     public Mechanic getSelectedMechanic() {
         List<Mechanic> chosen = getSelectedMechanics();
         return chosen.isEmpty() ? null : chosen.get(0);

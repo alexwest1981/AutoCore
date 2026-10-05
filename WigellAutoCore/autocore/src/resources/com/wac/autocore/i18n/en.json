@@ -23,9 +23,6 @@
       "payments": "Show payments"
     },
     "lang": {
-      "toggle_label": "Language",
-      "sv": "SV",
-      "en": "EN"
     }
   },
   "overview": {
@@ -53,8 +50,7 @@
     },
     "empty": {
       "workorders": "No work orders yet",
-      "bookings": "No upcoming bookings",
-      "table": "No content in table"
+      "bookings": "No upcoming bookings"
     }
   },
   "entity": {
@@ -156,18 +152,14 @@
       "status": "Status",
       "price": "Price",
       "amount": "Amount",
-      "due_date": "Due date",
       "discount": "Discount",
       "total": "Total",
       "final_price": "Final price",
-      "method": "Method",
-      "specialty": "Specialty",
       "specialisation": "Specialisation",
       "available": "Available",
       "unavailable": "Busy",
       "workorder": "Work Order",
       "booking": "Booking",
-      "actions": "Actions",
       "vip": "VIP",
       "description": "Description",
       "time": "Time",
@@ -179,32 +171,22 @@
   },
   "status": {
     "booked": "Booked",
-    "confirmed": "Confirmed",
     "in_progress": "In progress",
     "completed": "Completed",
     "cancelled": "Cancelled",
     "paid": "Paid",
     "unpaid": "Unpaid",
-    "pending": "Pending",
-    "active": "Active",
-    "inactive": "Inactive",
     "created": "Created",
     "work_order_created": "Work order created",
     "successful": "Successful",
     "failed": "Failed",
-    "to_be_performed": "To be performed",
-    "performed": "Performed"
+    "to_be_performed": "To be performed"
   },
   "common": {
     "yes": "Yes",
     "no": "No",
-    "currency": "kr",
-    "save": "Save",
-    "cancel": "Cancel",
-    "close": "Close",
     "search": "Search",
-    "search_placeholder": "Filter table rows...",
-    "action": "Action"
+    "search_placeholder": "Filter table rows..."
   },
   "invoice": {
     "title": "INVOICE",
@@ -215,7 +197,6 @@
     "status": "Status",
     "customer": "Bill to",
     "vehicle": "Vehicle",
-    "workorder": "Work order",
     "booking": "Booking",
     "col": {
       "description": "Description",
@@ -234,13 +215,11 @@
     "customer": {
       "create": {
         "title": "New Customer",
-        "header": "Register Customer",
-        "desc": "Fill in customer contact details below."
+        "header": "Register Customer"
       },
       "edit": {
         "title": "Edit Customer",
-        "header": "Update Customer Details",
-        "desc": "Modify customer contact details or VIP status."
+        "header": "Update Customer Details"
       },
       "delete": {
         "title": "Delete Customer",
@@ -251,7 +230,6 @@
       "name": "Full name",
       "email": "Email address",
       "phone": "Phone number",
-      "is_business": "Business customer (company)",
       "name_prompt": "First and last name",
       "phone_prompt": "555-1234567",
       "email_prompt": "name@example.com"
@@ -259,13 +237,11 @@
     "vehicle": {
       "create": {
         "title": "Register Vehicle",
-        "header": "New Vehicle",
-        "desc": "Link a vehicle to a customer in the database."
+        "header": "New Vehicle"
       },
       "edit": {
         "title": "Edit Vehicle",
-        "header": "Update Vehicle",
-        "desc": "Modify vehicle details or owner link."
+        "header": "Update Vehicle"
       },
       "delete": {
         "title": "Delete Vehicle",
@@ -286,13 +262,11 @@
     "booking": {
       "create": {
         "title": "New Booking",
-        "header": "Schedule Booking",
-        "desc": "Create a service booking for a registered vehicle."
+        "header": "Schedule Booking"
       },
       "edit": {
         "title": "Edit Booking",
-        "header": "Update Booking",
-        "desc": "Modify vehicle, date, description or status for the booking."
+        "header": "Update Booking"
       },
       "cancel": {
         "title": "Cancel Booking",
@@ -307,7 +281,6 @@
         "has_active_orders": "Cannot delete booking #{0} because it has a work order or an invoice."
       },
       "vehicle_select": "Select vehicle",
-      "date": "Booking date",
       "service_select": "Select service",
       "mechanic_select": "Select mechanic",
       "time_select": "Select start time",
@@ -315,20 +288,14 @@
       "no_mechanic": "No mechanic (assign later)",
       "no_mechanic_for_spec": "No mechanic matches the specialization for this service",
       "no_mechanic_for_selected_services": "No single mechanic matches all selected services",
-      "mechanics_filtered_for_spec": "{0} qualified mechanic(s) for this service",
-      "mechanics_filtered_for_services": "{0} qualified mechanic(s) for selected services",
-      "team_assigned": "We are booking: {0}",
       "selected_date": "Selected date: {0}",
       "calendar_hint": "Grayed out days cannot be booked for selected duration",
       "date_and_time": "Date & Time",
-      "conflicting_specializations": "Selected services require different specialists ({0}). Please split into separate bookings.",
       "closing_time_exceeded": "The booking finishes after closing time (17:00).",
-      "time_after_closing": "Past closing",
       "date_past": "Past date",
       "date_weekend": "Weekend (closed)",
       "date_fully_booked": "Fully booked for this duration",
       "duration_too_long": "Duration exceeds a full working day (max 600 min).",
-      "estimated_end": "Estimated end time: {0} ({1} min)",
       "time_window": "Working slot: {0} – {1}",
       "time_available": "Available",
       "time_busy": "Busy",
@@ -338,24 +305,20 @@
       "save_failed": "The booking could not be saved.",
       "desc_prompt": "E.g. Annual service and brake replacement",
       "add_service": "Add",
-      "selected_services": "Selected services",
       "no_services_selected": "No services selected yet",
       "total_time": "Estimated total time: {0} minutes",
       "total_price": "Estimated price: {0}",
-      "remove_service": "Remove",
       "services_locked_work_started": "Services cannot be modified because work has started",
       "status_locked_work_started": "The status cannot be changed back once work has started."
     },
     "service": {
       "create": {
         "title": "New Service",
-        "header": "Create Service",
-        "desc": "Add a new service to the workshop service catalog."
+        "header": "Create Service"
       },
       "edit": {
         "title": "Edit Service",
-        "header": "Update Service",
-        "desc": "Modify name, description, price or estimated duration."
+        "header": "Update Service"
       },
       "delete": {
         "title": "Delete Service",
@@ -373,13 +336,11 @@
     "mechanic": {
       "create": {
         "title": "New Mechanic",
-        "header": "Register New Mechanic",
-        "desc": "Add a new mechanic to the workshop team."
+        "header": "Register New Mechanic"
       },
       "edit": {
         "title": "Edit Mechanic",
-        "header": "Update Mechanic Details",
-        "desc": "Modify information or availability for the mechanic."
+        "header": "Update Mechanic Details"
       },
       "delete": {
         "title": "Delete Mechanic",
@@ -404,23 +365,16 @@
     "workorder": {
       "create": {
         "title": "New Work Order",
-        "header": "Open Work Order",
-        "desc": "The booking's services are distributed to the mechanics who are qualified."
+        "header": "Open Work Order"
       },
       "booking_select": "Select booking",
-      "not_all_completed": "Every work order on the booking must be completed before an invoice can be created.",
-      "mechanic_select": "Select mechanic",
       "plan_title": "Work orders to be created (one per mechanic)",
       "no_qualified": "No mechanic is qualified for the services on this booking",
       "create_failed": "No work orders could be created. Check that the booking has services and that the mechanics are available.",
       "partial_failed": "Only {0} of {1} work orders were created. Mechanics who were not available got no work order.",
-      "services_select": "Select services included",
-      "services_from_booking": "Services on the booking",
-      "no_services": "The booking has no services",
       "mark_performed_title": "Mark performed work",
       "mark_performed_header": "Which work is performed?",
       "mark_performed_desc": "The price that applies when you mark it is stored on the line, so a later price change does not touch this work order.",
-      "status_change": "Update Work Order Status",
       "details_header": "Details for work order #{0}",
       "details_title": "Work Order Details",
       "historical_notice": "Showing charged prices in effect when work was performed.",
@@ -429,8 +383,7 @@
     "invoice": {
       "create": {
         "title": "Create Invoice",
-        "header": "Issue Invoice",
-        "desc": "Generate one invoice for all performed work on a booking."
+        "header": "Issue Invoice"
       },
       "booking_select": "Select booking",
       "not_all_completed": "Every work order on the booking must be completed before an invoice can be created.",
@@ -446,15 +399,13 @@
     "payment": {
       "create": {
         "title": "Register Payment",
-        "header": "Process Payment",
-        "desc": "Record payment for an unpaid invoice."
+        "header": "Process Payment"
       },
       "invoice_select": "Select invoice",
       "method": "Payment method",
       "method_card": "Credit Card",
       "method_swish": "Swish",
       "method_cash": "Cash",
-      "amount": "Amount to pay",
       "no_unpaid_invoices": "There are no unpaid invoices to process payment for."
     },
     "validation": {
@@ -467,7 +418,6 @@
       "email_format": "Enter a valid email address (e.g. name@example.com)."
     },
     "success": {
-      "saved": "Saved successfully."
     },
     "confirm": {
       "title": "Confirm"
@@ -538,32 +488,15 @@
       "month": "Month"
     },
     "nav": {
-      "prev": "Previous mechanic",
-      "next": "Next mechanic",
-      "counter": "Mechanic {0} of {1}",
       "today": "Today"
     },
     "day": {
-      "title": "Daily Schedule",
-      "workday": "Work hours: 07:00 – 16:00",
-      "available": "Available for booking",
-      "booked": "Booked",
-      "book_button": "+ Book slot",
-      "empty_notice": "No bookings scheduled for this day."
+      "available": "Available for booking"
     },
     "week": {
-      "title": "Week {0}",
-      "hours_booked": "{0} of {1} h ({2}%)",
-      "fully_booked": "Fully booked",
-      "switch_to_day": "Click to open day view"
+      "title": "Week {0}"
     },
     "month": {
-      "title": "Monthly Overview",
-      "available_day": "Available",
-      "unavailable_day": "Unavailable",
-      "weekend": "Weekend",
-      "full_day": "Fully booked",
-      "hint": "Click a day to view detailed schedule"
     },
     "slot": {
       "booked": "Booked",

@@ -112,9 +112,6 @@ public final class I18n {
         }
     }
 
-    public static void removeListener(Consumer<String> listener) {
-        listeners.remove(listener);
-    }
 
     /** Läser in ordlistan för ett språk. */
     public static Map<String, String> loadDictionary(String lang) {

@@ -19,12 +19,6 @@ public final class UiFormatters {
 
     private UiFormatters() {}
 
-    /**
-     * Formaterar ett belopp med tusentalsavgränsare och valutatillägg, t.ex. "1,500 kr".
-     */
-    public static String formatMoney(long amount) {
-        return MONEY_FORMAT.format(amount) + " kr";
-    }
 
     /**
      * Formaterar ett double-belopp med tusentalsavgränsare och valutatillägg, t.ex. "1,500 kr".
@@ -33,19 +27,6 @@ public final class UiFormatters {
         return MONEY_FORMAT.format(amount) + " kr";
     }
 
-    /**
-     * Formaterar ett belopp med tusentalsavgränsare utan enhet, t.ex. "1,500".
-     */
-    public static String formatMoneyRaw(long amount) {
-        return MONEY_FORMAT.format(amount);
-    }
-
-    /**
-     * Formaterar ett double-belopp med tusentalsavgränsare utan enhet, t.ex. "1,500".
-     */
-    public static String formatMoneyRaw(double amount) {
-        return MONEY_FORMAT.format(amount);
-    }
 
     /**
      * Trunkerar en sträng till maxtecken och lägger till "…" om den klipps.
