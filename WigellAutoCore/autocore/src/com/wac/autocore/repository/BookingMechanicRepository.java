@@ -59,18 +59,4 @@ public class BookingMechanicRepository {
         return ids;
     }
 
-    /** Lägger in bokningens mekaniker från bookings-tabellen om kopplingen saknas. */
-    public void ensureLinked(int bookingId) throws SQLException {
-        if (!findMechanicIds(bookingId).isEmpty()) {
-            return;
-        }
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "INSERT OR IGNORE INTO booking_mechanics (booking_id, mechanic_id) "
-                             + "SELECT id, mechanic_id FROM bookings "
-                             + "WHERE id = ? AND mechanic_id IS NOT NULL AND mechanic_id > 0")) {
-            statement.setInt(1, bookingId);
-            statement.executeUpdate();
-        }
-    }
 }

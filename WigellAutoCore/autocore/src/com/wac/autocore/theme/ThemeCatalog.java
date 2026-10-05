@@ -30,9 +30,6 @@ public final class ThemeCatalog {
             new Theme("emerald", "Emerald", "/com/wac/autocore/theme/themes/emerald/emerald.css", false, "#025941"));
     }
 
-    public static List<Theme> all() {
-        return Collections.unmodifiableList(THEMES);
-    }
 
     public static Theme bySlug(String slug) {
         for (Theme t : THEMES) {

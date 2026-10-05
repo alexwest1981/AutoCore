@@ -43,13 +43,6 @@ public final class TableFactory {
             return tableView;
         }
 
-        public ObservableList<S> getBaseList() {
-            return baseList;
-        }
-
-        public FilteredList<S> getFilteredList() {
-            return filteredList;
-        }
 
         /**
          * Applicerar ett sökfilter över alla tabellens kolumner.

@@ -67,11 +67,6 @@ public class WorkOrder {
         serviceItemIds.add(serviceItemId);
     }
 
-    public void removeServiceItem(int serviceItemId) {
-        serviceItemIds.remove(Integer.valueOf(serviceItemId));
-        completedServiceItems.remove(Integer.valueOf(serviceItemId));
-        completedServicePrices.remove(Integer.valueOf(serviceItemId));
-    }
 
     public List<Integer> getCompletedServiceItems() {
         return completedServiceItems;
@@ -115,13 +110,6 @@ public class WorkOrder {
         completedServicePrices.put(Integer.valueOf(serviceItemId), Double.valueOf(frozenPrice));
     }
 
-    public void markAllServicesCompleted() {
-        for (Integer id : serviceItemIds) {
-            if (!completedServiceItems.contains(id)) {
-                completedServiceItems.add(id);
-            }
-        }
-    }
 
     @Override
     public String toString() {

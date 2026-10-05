@@ -172,24 +172,6 @@ public class WorkOrderRepository {
         }
     }
 
-    public List<Integer> findServiceItemIds(int workOrderId) throws SQLException {
-        List<Integer> serviceItemIds = new ArrayList<Integer>();
-        String sql = "SELECT service_item_id FROM work_order_service_items WHERE work_order_id = ?";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, workOrderId);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    serviceItemIds.add(resultSet.getInt("service_item_id"));
-                }
-            }
-        }
-
-        return serviceItemIds;
-    }
 
     private WorkOrder buildWorkOrder(ResultSet resultSet) throws SQLException {
         WorkOrder workOrder = new WorkOrder(

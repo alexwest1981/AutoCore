@@ -2,7 +2,6 @@ package com.wac.autocore.ui.navigation;
 
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Invoice;
-import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
@@ -82,17 +81,11 @@ public class PageRouter {
         }
     }
 
-    public String getCurrentSearchQuery() {
-        return currentSearchQuery;
-    }
 
     public void smartNavigateForSearch(String query) {
         applySearch(query);
     }
 
-    public String getCurrentPageKey() {
-        return currentPageKey;
-    }
 
     public void navigateToWorkOrder(int workOrderId) {
         navigate("workorders");
@@ -180,66 +173,6 @@ public class PageRouter {
         return count;
     }
 
-    /** Betalda fakturor ger +1 i betalningsmenyn. */
-    public static int countPaidInvoices(List<Invoice> invoices) {
-        int count = 0;
-        for (Invoice invoice : invoices) {
-            if (invoice.isPaid()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    /** En betalning som gått igenom / betald faktura ger +1 i betalningsmenyn. */
-    public static int countPaidPayments(List<Payment> payments) {
-        int count = 0;
-        for (Payment payment : payments) {
-            if (payment.isSuccessful()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    /** Bakåtkompatibilitet: betalningar som inte gick igenom. */
-    public static int countFailedPayments(List<Payment> payments) {
-        int count = 0;
-        for (Payment payment : payments) {
-            if (!payment.isSuccessful()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    /**
-     * Räknar aktiva arbetsordrar som är under arbete eller väntar på att slutföras
-     * (status CREATED eller IN_PROGRESS). Slutförd arbetsorder (COMPLETED) lämnar räknaren.
-     */
-    public static int countNewWorkOrders(List<WorkOrder> orders) {
-        int count = 0;
-        for (WorkOrder order : orders) {
-            if (order.getStatus() != null && ("CREATED".equalsIgnoreCase(order.getStatus()) || "IN_PROGRESS".equalsIgnoreCase(order.getStatus()))) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    /**
-     * Räknar bokningar som väntar på en arbetsorder (status BOOKED).
-     * När bokningen får en arbetsorder (WORK_ORDER_CREATED) flyttas den vidare till arbetsordermenyn.
-     */
-    public static int countNewBookings(List<Booking> bookings) {
-        int count = 0;
-        for (Booking booking : bookings) {
-            if ("BOOKED".equalsIgnoreCase(booking.getStatus())) {
-                count++;
-            }
-        }
-        return count;
-    }
 
     /**
      * Bokningar som ännu inte har någon arbetsorder, alltså jobb att skapa en order för.

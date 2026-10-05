@@ -117,13 +117,6 @@ public class ConsolePrinter {
         }
     }
 
-    public void printMessage(String message) {
-        System.out.println(message);
-    }
-
-    public void printError(String error) {
-        System.out.println("Error: " + error);
-    }
 
     private void printHeader(String title) {
         System.out.println();

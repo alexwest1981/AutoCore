@@ -60,12 +60,6 @@ public class MechanicKanbanCard {
         DAY, WEEK, MONTH
     }
 
-    /**
-     * Bygger hela Kanban-sektionen med alla mekaniker synliga samtidigt sida vid sida.
-     */
-    public static VBox buildBoard(GarageSystem garage, Runnable onRefresh) {
-        return buildBoard(garage, null, onRefresh);
-    }
 
     public static VBox buildBoard(GarageSystem garage, com.wac.autocore.ui.navigation.PageRouter router, Runnable onRefresh) {
         List<Mechanic> mechanics = garage.getMechanics();
@@ -963,7 +957,6 @@ public class MechanicKanbanCard {
         drawer.getChildren().addAll(head, line1, fields, line2, actionRow);
         return drawer;
     }
-
 
 
     // =========================================================================

@@ -33,18 +33,6 @@ public final class ThemeManager {
         return currentScene;
     }
 
-    public static String getCurrentSlug() {
-        return currentSlug;
-    }
-
-    public static boolean isCurrentDark() {
-        ThemeCatalog.Theme t = ThemeCatalog.bySlug(currentSlug);
-        return t != null && t.dark;
-    }
-
-    public static void applyDefault(Scene scene) {
-        apply(scene, ThemeCatalog.DEFAULT_SLUG);
-    }
 
     /**
      * The shared component layer. The colour file (azure.css etc.) sets tokens
