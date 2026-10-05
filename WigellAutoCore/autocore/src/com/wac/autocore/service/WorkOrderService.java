@@ -236,7 +236,7 @@ public class WorkOrderService {
     }
 
     /**
-     * SCRUM-160 (D2): markerar tjänster som utförda och fryser priset som gäller i det ögonblicket.
+    * Markerar tjänster som utförda och sparar priset i det ögonblicket.
      * Priset läses ur tjänstekatalogen här, så att en senare prisändring inte rör den här arbetsordern.
      */
     public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {

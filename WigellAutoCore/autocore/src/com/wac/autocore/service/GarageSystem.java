@@ -86,7 +86,6 @@ public class GarageSystem {
                 qualified.add(m);
             }
         }
-        // Fallback: om ingen specifik specialist finns för de valda tjänsterna
         if (qualified.isEmpty() && services.size() == 1) {
             for (Mechanic m : all) {
                 String resolvedSpec = SeedText.resolve(m.getSpecialization());
@@ -96,7 +95,6 @@ public class GarageSystem {
                 }
             }
         }
-        // Sortera så att den bäst lämpade mekanikern visas först
         qualified.sort(new Comparator<Mechanic>() {
             @Override
             public int compare(Mechanic m1, Mechanic m2) {
@@ -104,7 +102,6 @@ public class GarageSystem {
                 String spec2 = SeedText.resolve(m2.getSpecialization()).toLowerCase();
                 boolean g1 = spec1.contains("general") || spec1.contains("allmän");
                 boolean g2 = spec2.contains("general") || spec2.contains("allmän");
-                // Om enbart allmänna tjänster valts, sätt allmänmekaniker först
                 boolean onlyGeneral = services.stream().allMatch(s -> {
                     String n = SeedText.resolve(s.getName()).toLowerCase();
                     return n.contains("oil") || n.contains("olja") || n.contains("annual") || n.contains("årlig");
@@ -131,14 +128,12 @@ public class GarageSystem {
         List<Mechanic> all = getMechanics();
         for (ServiceItem s : services) {
             Mechanic best = null;
-            // 1. Kolla om någon redan i teamet kan utföra tjänsten
             for (Mechanic m : result) {
                 if (isMechanicQualified(m, s)) {
                     best = m;
                     break;
                 }
             }
-            // 2. Annars hitta bäst lämpad mekaniker bland samtliga mekaniker
             if (best == null) {
                 for (Mechanic m : all) {
                     if (isMechanicQualified(m, s)) {
@@ -147,7 +142,6 @@ public class GarageSystem {
                     }
                 }
             }
-            // 3. Fallback: en allmänmekaniker kan ta tjänsten
             if (best == null) {
                 for (Mechanic m : all) {
                     String spec = SeedText.resolve(m.getSpecialization());
@@ -288,7 +282,7 @@ public class GarageSystem {
         workOrderService.startWorkOrder(workOrderId);
     }
 
-    /** SCRUM-160 (D2): markerar tjänster utförda och fryser priset som gäller då. */
+    /** Markerar tjänster som utförda och sparar deras aktuella priser. */
     public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
         return workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
     }

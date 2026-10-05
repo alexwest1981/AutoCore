@@ -111,9 +111,7 @@ public final class SeedText {
         return currentLanguage;
     }
 
-    /**
-     * Reads the dictionary for one language. Public so the tests can compare the two files.
-     */
+    /** Läser ordlistan för ett språk. */
     public static Map<String, String> loadDictionary(String lang) {
         Map<String, String> result = new HashMap<String, String>();
         String path = RESOURCE_PATH + lang + ".json";

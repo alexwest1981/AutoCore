@@ -222,7 +222,7 @@ public class ConsoleApp {
         garageSystem.showMechanics();
         int mechanicId = readInt("Mechanic ID: ");
 
-        // Arbetsordern får bokningens tjänster (SCRUM-156).
+        // Arbetsordern får bokningens tjänster.
         garageSystem.createWorkOrder(bookingId, mechanicId);
     }
 

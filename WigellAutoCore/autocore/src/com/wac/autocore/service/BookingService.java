@@ -1,6 +1,5 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.data.Database;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
@@ -14,14 +13,7 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Service som hanterar tidsbokningar för service och reparation i verkstaden.
- *
- * Ansvarar för:
- * - Validering av fordon
- * - Skapande och registrering av nya bokningar
- * - Uppslagning av bokningar baserat på ID
- */
+/** Hanterar bokningar och validerar deras fordon och tider. */
 public class BookingService {
 
     private final BookingRepository bookingRepository = new BookingRepository();
@@ -63,11 +55,9 @@ public class BookingService {
         try {
             bookingRepository.save(booking);
         } catch (SQLException e) {
-            int id = Database.getBookings().size() + 1;
-            booking = new Booking(id, vehicleId, date, description);
+            System.out.println("Could not save booking: " + e.getMessage());
+            return null;
         }
-
-        Database.getBookings().add(booking);
 
         System.out.println("Booking created successfully.");
         System.out.println(booking);
@@ -111,14 +101,11 @@ public class BookingService {
     private Vehicle findVehicle(int id) {
         try {
             Vehicle v = vehicleRepository.findById(id);
-            if (v != null) return v;
-        } catch (SQLException ignored) {}
-        for (Vehicle vehicle : Database.getVehicles()) {
-            if (vehicle.getId() == id) {
-                return vehicle;
-            }
+            return v;
+        } catch (SQLException e) {
+            System.out.println("Could not read vehicle: " + e.getMessage());
+            return null;
         }
-        return null;
     }
     private boolean isMechanicOccupied(int mechanicId, LocalDate date, LocalTime newStart, LocalTime newEnd) throws SQLException {
 

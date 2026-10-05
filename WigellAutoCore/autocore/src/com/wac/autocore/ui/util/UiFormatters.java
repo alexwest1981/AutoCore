@@ -7,10 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/**
- * Hjälpmetoder för ren dataformatering och presentationslogik i gränssnittet.
- * Frikopplad från JavaFX-fönsterkontexten för enkel enhetstestning.
- */
+/** Hjälpmetoder för dataformatering i gränssnittet. */
 public final class UiFormatters {
 
     private static final DecimalFormat MONEY_FORMAT =

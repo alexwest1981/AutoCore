@@ -21,17 +21,7 @@ public class Vehicle {
         this.customerId = customerId;
     }
 
-    /**
-     * Registreringsnumret sparas alltid i versaler, utan lösa mellanslag, och med ett mellanslag
-     * mellan bokstäverna och siffrorna så att plåten går att läsa: "abc 123" blir "ABC 123".
-     *
-     * Mellanslaget sätts bara in när numret börjar med minst två bokstäver följt av en siffra,
-     * så udda nummer som redan finns i systemet (till exempel testplåten G2V001) lämnas orörda.
-     *
-     * Normaliseringen ligger i modellen eftersom varje väg in — gränssnittet, tjänsten, seeddatan,
-     * testen och uppläsningen ur databasen — går genom den här klassen. Låg den i ett formulär
-     * skulle nästa väg in kringgå den, vilket är precis vad som hände med skydden för borttagning.
-     */
+    /** Normaliserar registreringsnumret till versaler och ett läsbart mellanrum. */
     public static String normalizeRegistrationNumber(String registrationNumber) {
         if (registrationNumber == null) {
             return null;

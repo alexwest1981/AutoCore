@@ -463,7 +463,7 @@ public class MultiSelectComboBox<T> extends HBox {
         return overlayLayer;
     }
 
-    /** Öppnar listan, till exempel från en knapp eller ett test. */
+    /** Öppnar listan. */
     public void showPopup() {
         showList();
     }

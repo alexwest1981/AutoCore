@@ -1,6 +1,6 @@
 # AutoCore: JavaFX-gränssnittet
 
-Hur paketen under `com.wac.autocore.ui` hänger ihop. Start och tester står i [README.md](../README.md).
+Hur paketen under `com.wac.autocore.ui` hänger ihop. Startinstruktioner finns i [README.md](../README.md).
 
 ## Huvudklassen
 
@@ -38,15 +38,6 @@ Ingen av dem rör fönstret, så de går att testa utan att starta JavaFX.
 ## Sökning
 
 Sökfältet i toppbaren söker igenom kunder, fordon, arbetsordrar, bokningar, mekaniker, fakturor och tjänster via `GlobalSearch`. Träffarna hamnar i egna paneler per sektion, med antal och en knapp som öppnar rätt sida. Paneler utan träffar visas inte. Tömmer du fältet går vyn tillbaka till sidan du kom från.
-
-## Tester
-
-Testerna körs av `com.wac.autocore.test.TestRunner`, som hittar alla klasser i paketet som slutar på `Test` och kör dem mot JDK 8 utan byggverktyg. Hur många de är, och vad varje bevisar, står i [ACCEPTANSKRAV.md](../ACCEPTANSKRAV.md).
-
-```bash
-./test.sh          # appens egna tester
-./test.sh --audit  # kvalitet, säkerhet och WCAG
-```
 
 ## Tema och CSS
 

@@ -47,10 +47,6 @@ public final class ActionDialogs {
 
     private ActionDialogs() {}
 
-    // =========================================================================
-    // Delade UI-hjälpmetoder för dialoger (används av domändialogerna)
-    // =========================================================================
-
     public static void styleDialog(Dialog<?> dialog) {
         DialogPane pane = dialog.getDialogPane();
         if (!pane.getStyleClass().contains("root")) {

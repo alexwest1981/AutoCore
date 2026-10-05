@@ -52,27 +52,15 @@ public class BookingFormPane extends GridPane {
     private final ComboBox<Vehicle> vehicleBox;
     private final DatePicker datePicker;
     private final ComboBox<ServiceItem> serviceBox;
-    /**
-     * Flervalsfältet för tjänster. Det äger valet; serviceBox finns kvar för äldre kodvägar men
-     * ritas inte längre ut. selectedServices är formulärets egen lista och speglas från fältet.
-     */
     private MultiSelectComboBox<ServiceItem> serviceMulti;
     private final ObservableList<ServiceItem> selectedServices = FXCollections.observableArrayList();
     private final VBox selectedServicesContainer = new VBox(4);
     private final ScrollPane servicesScroll;
     private final Label totalSummaryLabel = new Label();
     private final ComboBox<Mechanic> mechanicBox;
-    /**
-     * Flervalsfältet för mekaniker. Auto-tilldelningen väljer mekanikerna i det, precis som
-     * tjänsterna ligger som chips. mechanicBox behålls som den som sparandet och tidskontrollerna
-     * läser, och hålls i takt med fältet.
-     */
     private MultiSelectComboBox<Mechanic> mechanicMulti;
-    /** Id:n som användaren själv tagit bort ur auto-tilldelningen. De läggs inte tillbaka. */
     private final java.util.Set<Integer> removedMechanics = new java.util.HashSet<Integer>();
-    /** Id:n som användaren själv lagt till utöver auto-tilldelningen. De ligger kvar när tjänsterna ändras. */
     private final java.util.Set<Integer> manuallyAddedMechanics = new java.util.HashSet<Integer>();
-    /** Sant medan fältet fylls av auto-tilldelningen, så att det inte tolkas som ett användarval. */
     private boolean updatingMechanicField;
     private final Label mechanicFilterHint;
     private final ComboBox<LocalTime> startTimeBox;
@@ -80,13 +68,8 @@ public class BookingFormPane extends GridPane {
     private final TextField descField;
     private final ComboBox<String> statusBox;
 
-    /** Id för bokningen som redigeras, så dess egen tid inte räknas som upptagen. 0 = ny bokning. */
     private final int excludeId;
-
-    /** Verkstaden som bokningen gäller — kalendern behöver den för att kunna sålla dagar. */
     private final GarageSystem garage;
-
-    /** Kalenderns dagceller, så de kan ritas om när tjänster eller mekaniker ändras. */
     private final List<BookingDayCell> dayCells = new ArrayList<BookingDayCell>();
 
     /**
@@ -97,11 +80,8 @@ public class BookingFormPane extends GridPane {
      */
     private static final Mechanic NO_MECHANIC = new Mechanic(0, "", "", "");
 
-    /** Höjden på en tjänsterad i listan (radhöjd + mellanrum) och taket för hur hög rutan får bli. */
     private static final double SERVICE_ROW_HEIGHT = 30;
     private static final double SERVICES_MAX_HEIGHT = 330;
-
-    /** Anropas när formuläret behöver mer plats, så att dialogen kan växa med innehållet. */
     private Runnable onContentGrown;
 
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
@@ -127,10 +107,8 @@ public class BookingFormPane extends GridPane {
         this.servicesScroll.setFitToWidth(true);
         this.servicesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         this.servicesScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        // Höjden sätts i renderServices, efter hur många tjänster bokningen innehåller.
         this.servicesScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
 
-        // 1. Fordon
         this.vehicleBox = new ComboBox<Vehicle>();
         this.vehicleBox.getItems().addAll(garage.getVehicles());
         this.vehicleBox.setMaxWidth(Double.MAX_VALUE);
@@ -155,7 +133,6 @@ public class BookingFormPane extends GridPane {
             this.vehicleBox.getSelectionModel().selectFirst();
         }
 
-        // 2. Tjänster (stöd för flera val i samma bokning)
         this.serviceBox = new ComboBox<ServiceItem>();
         this.serviceBox.getItems().addAll(garage.getServiceItems());
         this.serviceBox.setMaxWidth(Double.MAX_VALUE);
@@ -171,7 +148,6 @@ public class BookingFormPane extends GridPane {
         if (!this.serviceBox.getItems().isEmpty()) {
             this.serviceBox.getSelectionModel().selectFirst();
         }
-        // Tjänster som redan ligger i bokningen visas gråmarkerade och går inte att välja igen.
         this.serviceBox.setCellFactory(lv -> serviceChoiceCell());
 
         Button addServiceBtn = new Button("+ " + I18n.get("dialog.booking.add_service"));
