@@ -182,10 +182,23 @@ public class WorkOrderService {
             saveBooking(booking);
         }
 
+        // SCRUM-160 (D2): priset fryses redan när arbetet startar, inte först när det är klart.
+        // En prisändring mitt i ett pågående arbete ska inte nå den här arbetsordern.
+        Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
+        for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+            if (!priser.containsKey(serviceItemId)) {
+                ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
+                if (serviceItem != null) {
+                    priser.put(serviceItemId, Double.valueOf(serviceItem.getPrice()));
+                }
+            }
+        }
+        workOrder.setCompletedServicePrices(priser);
+
         workOrder.setStatus("IN_PROGRESS");
         saveWorkOrder(workOrder);
 
-        System.out.println("Work order " + workOrderId + " has been started.");
+        System.out.println("Work order " + workOrderId + " has been started. Prices frozen at the price that applied now.");
         return true;
     }
 

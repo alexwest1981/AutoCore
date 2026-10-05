@@ -787,5 +787,64 @@ public class EvidenceVerificationTest {
         }
         return 0;
     }
-}
 
+    /**
+     * SCRUM-160 (D2): priset ska frysas redan när arbetsordern startas, inte först när den slutförs.
+     * En prisändring mitt i ett pågående arbete ska inte nå den arbetsordern.
+     */
+    public void testScrum160PriceFrozenWhenWorkStarts() throws SQLException {
+        List<ServiceItem> services = garage.getServiceItems();
+        TestRunner.assertTrue(!services.isEmpty(), "Databasen ska innehålla tjänster");
+        ServiceItem target = services.get(0);
+        double startPrice = target.getPrice();
+        double increasedPrice = startPrice + 500.0;
+
+        int vehicleId = garage.getVehicles().get(0).getId();
+        int mechanicId = garage.getMechanics().get(0).getId();
+
+        Booking booking = garage.createBooking(vehicleId, LocalDate.now().plusDays(2), "Pågående arbete vid prisändring");
+        WorkOrder workOrder = new WorkOrder(0, booking.getId(), mechanicId);
+        workOrder.addServiceItem(target.getId());
+        new WorkOrderRepository().save(workOrder);
+
+        // 1. Arbetet startas medan priset är det ursprungliga
+        garage.startWorkOrder(workOrder.getId());
+
+        // 2. Priset i katalogen höjs medan arbetet pågår
+        target.setPrice(increasedPrice);
+        garage.updateServiceItem(target);
+
+        // 3. Arbetet slutförs efter prisändringen
+        garage.completeWorkOrder(workOrder.getId());
+
+        Invoice invoice = garage.createInvoice(workOrder.getId(), null);
+        TestRunner.assertNotNull(invoice, "Fakturan ska ha skapats");
+
+        Invoice readBack = new InvoiceRepository().findById(invoice.getId());
+        TestRunner.assertEquals(startPrice, readBack.getLines().get(0).getPrice(),
+                "SCRUM-160: Priset ska vara fruset vid start, inte vid slutförandet");
+        TestRunner.assertEquals(startPrice, readBack.getTotalAmount(),
+                "SCRUM-160: Fakturans belopp ska vara startpriset");
+        System.out.println("Bevis SCRUM-160: arbetsorder " + workOrder.getId() + " startades för pris "
+                + startPrice + ", priset höjdes till " + increasedPrice + ", faktura "
+                + invoice.getId() + " blev ändå " + readBack.getTotalAmount());
+
+        // 4. En arbetsorder som skapas efter prisändringen får det nya priset
+        Booking laterBooking = garage.createBooking(vehicleId, LocalDate.now().plusDays(4), "Arbete efter prisändring");
+        WorkOrder laterOrder = new WorkOrder(0, laterBooking.getId(), mechanicId);
+        laterOrder.addServiceItem(target.getId());
+        new WorkOrderRepository().save(laterOrder);
+        garage.startWorkOrder(laterOrder.getId());
+        garage.completeWorkOrder(laterOrder.getId());
+
+        Invoice laterInvoice = garage.createInvoice(laterOrder.getId(), null);
+        TestRunner.assertNotNull(laterInvoice, "Den senare fakturan ska ha skapats");
+        Invoice readBackLater = new InvoiceRepository().findById(laterInvoice.getId());
+        TestRunner.assertEquals(increasedPrice, readBackLater.getTotalAmount(),
+                "En arbetsorder som startas efter prisändringen ska få det nya priset");
+
+        // Katalogen lämnas som den var, annars påverkas andra prov som räknar på priserna.
+        target.setPrice(startPrice);
+        garage.updateServiceItem(target);
+    }
+}
