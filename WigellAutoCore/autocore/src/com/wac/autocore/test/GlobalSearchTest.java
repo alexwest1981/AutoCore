@@ -88,6 +88,29 @@ public class GlobalSearchTest {
                 "Volvo V70 should match prefix 'v'");
     }
 
+    /**
+     * Sökningen ska läsa varje lista en gång, inte en gång per rad. Varje garage.getBookings() är en
+     * databasfråga (cirka 5 ms), och när sökningen gjorde det per rad tog ett enda "a" två sekunder
+     * och frös gränssnittet för varje tangenttryckning i sökfältet.
+     */
+    public void testTheSearchReadsEachListOnlyOnce() {
+        final int[] bookingsReads = {0};
+        GarageSystem counting = new GarageSystem() {
+            @Override
+            public java.util.List<com.wac.autocore.model.Booking> getBookings() {
+                bookingsReads[0]++;
+                return super.getBookings();
+            }
+        };
+
+        SearchResults res = GlobalSearch.search(counting, "a");
+
+        assertCondition(!res.isEmpty(), "Sokningen ska ge traffar aven med ett raknande garage");
+        assertCondition(bookingsReads[0] <= 2,
+                "Bokningslistan ska las hogst ett par ganger, inte en gang per rad (blev "
+                        + bookingsReads[0] + ")");
+    }
+
     private static void assertCondition(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError("Test misslyckades: " + message);

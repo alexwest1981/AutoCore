@@ -18,6 +18,7 @@ import java.util.List;
 public class BookingRepository {
 
     private final BookingServiceItemRepository bookingServiceItemRepository = new BookingServiceItemRepository();
+    private final BookingMechanicRepository bookingMechanicRepository = new BookingMechanicRepository();
 
     public void save(Booking booking) throws SQLException {
         if (booking.getId() == 0 || findById(booking.getId()) == null) {
@@ -26,6 +27,8 @@ public class BookingRepository {
             update(booking);
         }
         bookingServiceItemRepository.save(booking);
+        // Mekanikerna sparas i samma svep, så att en bokning med flera specialister behåller dem.
+        bookingMechanicRepository.saveForBooking(booking.getId(), booking.getMechanicIds());
     }
 
     public List<Booking> findAll() throws SQLException {
@@ -40,6 +43,7 @@ public class BookingRepository {
             while (resultSet.next()) {
                 Booking booking = buildBooking(resultSet);
                 loadServiceItems(booking);
+        loadMechanics(booking);
                 bookings.add(booking);
             }
         }
@@ -60,6 +64,7 @@ public class BookingRepository {
                 if (resultSet.next()) {
                     Booking booking = buildBooking(resultSet);
                     loadServiceItems(booking);
+        loadMechanics(booking);
                     return booking;
                 }
             }
@@ -216,6 +221,16 @@ public class BookingRepository {
         return booking;
     }
 
+    /** Bokningens mekaniker. Kolumnen i bookings är den första, resten ligger i kopplingstabellen. */
+    private void loadMechanics(Booking booking) throws SQLException {
+        List<Integer> ids = bookingMechanicRepository.findMechanicIds(booking.getId());
+        if (ids.isEmpty() && booking.getMechanicId() > 0) {
+            ids = new ArrayList<Integer>();
+            ids.add(Integer.valueOf(booking.getMechanicId()));
+        }
+        booking.setMechanicIds(ids);
+    }
+
     private void loadServiceItems(Booking booking) throws SQLException {
         List<ServiceItem> items = bookingServiceItemRepository.findByBookingId(booking.getId());
 
@@ -232,19 +247,22 @@ public class BookingRepository {
     }
 
     private ServiceItem findServiceItemById(int id) throws SQLException {
-        String sql = "SELECT id, name, description, price, estimated_minutes FROM service_items WHERE id = ?";
+        String sql = "SELECT id, name, description, price, estimated_minutes, specialization FROM service_items WHERE id = ?";
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, id);
             try (ResultSet rs = statement.executeQuery()) {
                 if (rs.next()) {
-                    return new ServiceItem(
+                    ServiceItem item = new ServiceItem(
                             rs.getInt("id"),
                             rs.getString("name"),
                             rs.getString("description"),
                             rs.getDouble("price"),
                             rs.getInt("estimated_minutes")
                     );
+                    // Kravet måste med, annars ser tjänsten kravlös ut och alla mekaniker blir behöriga.
+                    item.setSpecialization(rs.getString("specialization"));
+                    return item;
                 }
             }
         }

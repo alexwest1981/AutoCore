@@ -169,6 +169,24 @@ public final class EntityLookup {
         return "-";
     }
 
+    /** Registreringsnumret på bilen som fakturan gäller. Fakturan hör till en arbetsorder. */
+    public static String invoiceVehicleReg(GarageSystem garage, Invoice invoice) {
+        if (garage == null || invoice == null) return "-";
+        int bookingId = bookingIdForWorkOrder(garage, invoice.getWorkOrderId());
+        return bookingId > 0 ? bookingVehicleReg(garage, bookingId) : "-";
+    }
+
+    /** Registreringsnumret på bilen som betalningen gäller, via fakturan. */
+    public static String paymentVehicleReg(GarageSystem garage, Payment payment) {
+        if (garage == null || payment == null) return "-";
+        for (Invoice invoice : garage.getInvoices()) {
+            if (invoice.getId() == payment.getInvoiceId()) {
+                return invoiceVehicleReg(garage, invoice);
+            }
+        }
+        return "-";
+    }
+
     public static String workOrderVehicleReg(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null) return "-";
         return bookingVehicleReg(garage, wo.getBookingId());

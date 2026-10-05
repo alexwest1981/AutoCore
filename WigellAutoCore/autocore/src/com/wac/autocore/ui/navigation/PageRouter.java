@@ -53,6 +53,12 @@ public class PageRouter {
     }
 
     public void applySearch(String query) {
+        // Funktionen styrs av växeln globalSearch i config/features.properties. Är den av finns
+        // inget fält i menyn som kan anropa den här, men spärren ligger i den här flaskhalsen
+        // så att ingen annan väg in heller går förbi den.
+        if (!com.wac.autocore.config.FeatureFlags.isEnabled("globalSearch")) {
+            return;
+        }
         this.currentSearchQuery = query == null ? "" : query;
         String trimmed = this.currentSearchQuery.trim();
 

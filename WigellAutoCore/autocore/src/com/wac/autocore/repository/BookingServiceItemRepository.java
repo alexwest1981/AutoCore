@@ -17,7 +17,7 @@ import java.util.List;
 public class BookingServiceItemRepository {
 
     public List<ServiceItem> findByBookingId(int bookingId) throws SQLException {
-        String sql = "SELECT s.id, s.name, s.description, s.price, s.estimated_minutes " +
+        String sql = "SELECT s.id, s.name, s.description, s.price, s.estimated_minutes, s.specialization " +
                 "FROM booking_service_items bsi " +
                 "JOIN service_items s ON bsi.service_item_id = s.id " +
                 "WHERE bsi.booking_id = ? " +
@@ -32,12 +32,15 @@ public class BookingServiceItemRepository {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    items.add(new ServiceItem(
+                    ServiceItem item = new ServiceItem(
                             resultSet.getInt("id"),
                             resultSet.getString("name"),
                             resultSet.getString("description"),
                             resultSet.getDouble("price"),
-                            resultSet.getInt("estimated_minutes")));
+                            resultSet.getInt("estimated_minutes"));
+                    // Kravet måste med, annars ser varje tjänst kravlös ut och alla mekaniker blir behöriga.
+                    item.setSpecialization(resultSet.getString("specialization"));
+                    items.add(item);
                 }
             }
         }

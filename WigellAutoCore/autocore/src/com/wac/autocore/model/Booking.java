@@ -18,6 +18,7 @@ public class Booking {
     private int serviceItemId;
     private final List<ServiceItem> serviceItems = new ArrayList<ServiceItem>();
     private final List<Integer> serviceItemIds = new ArrayList<Integer>();
+    private final List<Integer> mechanicIds = new ArrayList<Integer>();
 
     public Booking(int vehicleId, LocalDate date, String description) {
         this.vehicleId = vehicleId;
@@ -265,6 +266,39 @@ public class Booking {
             this.serviceItemId = this.serviceItemIds.isEmpty() ? 0 : this.serviceItemIds.get(0);
         }
         return removedId || toRemove != null;
+    }
+
+    /**
+     * Alla mekaniker som är valda för bokningen. Den första är bokningens huvudsakliga mekaniker,
+     * och den som kolumnen mechanic_id i bookings håller. Äldre bokningar har bara den ena.
+     */
+    public List<Integer> getMechanicIds() {
+        if (!mechanicIds.isEmpty()) {
+            return new ArrayList<Integer>(mechanicIds);
+        }
+        List<Integer> ids = new ArrayList<Integer>();
+        if (mechanicId > 0) {
+            ids.add(Integer.valueOf(mechanicId));
+        }
+        return ids;
+    }
+
+    public void setMechanicIds(List<Integer> ids) {
+        this.mechanicIds.clear();
+        if (ids != null) {
+            for (Integer id : ids) {
+                if (id != null && id.intValue() > 0 && !this.mechanicIds.contains(id)) {
+                    this.mechanicIds.add(id);
+                }
+            }
+        }
+        if (!this.mechanicIds.isEmpty()) {
+            this.mechanicId = this.mechanicIds.get(0).intValue();
+        }
+    }
+
+    public boolean hasMechanic(int id) {
+        return getMechanicIds().contains(Integer.valueOf(id));
     }
 
     public List<Integer> getServiceItemIds() {

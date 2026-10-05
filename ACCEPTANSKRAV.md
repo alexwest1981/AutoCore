@@ -16,7 +16,7 @@ Vem som helst kan verifiera och mäta samtliga krav automatiskt via testskripten
 Vi mäter varje acceptanskrav på tre nivåer:
 1. **Deterministiskt testfall:** Ett eller flera automatiserade Java-testfall som kör exakt den affärslogik eller databasoperation som kravet pekar på.
 2. **Mätbart utfall (Kvantitativt kriterium):** Exakta värden (t.ex. radantal före vs efter, tidsåtgång i minuter, belopp i kronor och ören, kontrastkvot >= 7.0:1) som ska stämma ända ned på decimalen.
-3. **Auditstatus:** Alla 147 tester (144 i sviten och 3 i dataflödesanalysen `./dataflow.sh`) måste passera med 100% grönt utfall innan systemet räknas som godkänt för release.
+3. **Auditstatus:** Alla 152 tester (149 i sviten och 3 i dataflödesanalysen `./dataflow.sh`) måste passera med 100% grönt utfall innan systemet räknas som godkänt för release.
 
 ---
 
@@ -299,7 +299,7 @@ Vill du bara köra acceptanskraven och beviskorten:
 ./test.sh bevis
 ```
 
-Alla 147 tester körs automatiskt och verifierar varje mätpunkt: 144 i sviten och 3 i dataflödesanalysen (`./dataflow.sh`). Du behöver varken externa verktyg eller Jira-inloggning.
+Alla 152 tester körs automatiskt och verifierar varje mätpunkt: 149 i sviten och 3 i dataflödesanalysen (`./dataflow.sh`). Du behöver varken externa verktyg eller Jira-inloggning.
 
 ---
 
