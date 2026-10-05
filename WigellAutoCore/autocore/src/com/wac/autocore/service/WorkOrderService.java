@@ -17,13 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service som hanterar livscykeln för en arbetsorder (WorkOrder).
- *
- * Ansvarar för:
- * - Validering av koppling till bokning, mekaniker och tjänster
- * - Skapande av arbetsorder
- * - Tilldelning och låsning/upplåsning av mekanikerns tillgänglighet
- * - Tillståndsövergångar (CREATED -> IN_PROGRESS -> COMPLETED)
+ * Hanterar arbetsorderns livscykel från skapad till klar.
  */
 public class WorkOrderService {
 

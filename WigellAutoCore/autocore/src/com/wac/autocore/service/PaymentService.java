@@ -10,13 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Service som hanterar genomförande och registrering av betalningar.
- *
- * Ansvarar för:
- * - Validering av fakturastatus (att fakturan finns och är obetald)
- * - Behandling av betalning via olika betalsätt
- * - Uppdatering av fakturans status till betald (paid = true)
- * - Registrering i betalningsjournalen
+ * Registrerar betalningar och markerar fakturan som betald.
  */
 public class PaymentService {
 

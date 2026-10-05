@@ -21,12 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Service som hanterar fakturering och rabattberäkning i verkstadssystemet.
- *
- * Ansvarar för:
- * - Summering av priser för utförda tjänster på en slutförd arbetsorder
- * - Tillämpning av VIP-rabatt och kampanjkoder
- * - Skapande och registrering av fakturor
+ * Skapar fakturor från slutförda arbetsordrar, med rabatter och betalningskopplingar.
  */
 public class BillingService {
 

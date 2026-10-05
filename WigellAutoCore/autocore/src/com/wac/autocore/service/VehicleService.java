@@ -9,13 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Service som hanterar fordonsadministration i AutoCore.
- *
- * Ansvarar för:
- * - Validering av fordonets ägare (att kund existerar)
- * - Skapande av nya fordon
- * - Uppslag av fordon baserat på ID
- * - Tillhandahållande av vy över fordonsregistret
+ * Hanterar fordon och kopplingen till deras ägare.
  */
 public class VehicleService {
 

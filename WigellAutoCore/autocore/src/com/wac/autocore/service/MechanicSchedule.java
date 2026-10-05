@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Tjänst som hanterar mekanikers schemaläggning och tidsbokningar (07:00 - 16:00).
- * Beräknar arbetsbelastning (grön -> gul -> orange -> röd) och tillgänglighet för
- * dag-, vecko- och månadsvyer.
+ * Håller reda på mekanikernas bokade timmar.
  */
 public class MechanicSchedule {
 

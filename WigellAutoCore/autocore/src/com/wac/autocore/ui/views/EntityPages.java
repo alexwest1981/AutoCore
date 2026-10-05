@@ -20,7 +20,7 @@ import javafx.scene.layout.VBox;
 import com.wac.autocore.seed.SeedText;
 
 /**
- * Fabrik för att bygga enhetliga sidor och tabeller för varje domänentitet med i18n-stöd.
+ * Samlingspunkt för sidorna i GUI:t. Varje sida har en egen liten klass.
  */
 @SuppressWarnings("unchecked")
 public final class EntityPages {

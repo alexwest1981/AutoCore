@@ -32,16 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Facade för alla modala formulärdialoger i AutoCore GUI.
- * Delegerar till fokuserade, domänspecifika dialogklasser:
- * - {@link CustomerDialogs}
- * - {@link VehicleDialogs}
- * - {@link BookingDialogs}
- * - {@link WorkOrderDialogs}
- * - {@link BillingDialogs}
- * - {@link MechanicDialogs}
- * - {@link ServiceItemDialogs}
- * - {@link SlotDetailsDialog}
+ * Hjälpare för att öppna dialoger. Anropar den rätt dialogklassen för varje entitet.
  */
 public final class ActionDialogs {
 

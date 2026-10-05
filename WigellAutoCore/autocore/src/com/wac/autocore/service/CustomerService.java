@@ -8,12 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Service som hanterar kundadministration i AutoCore.
- *
- * Ansvarar för:
- * - Skapande av nya kunder
- * - Uppslag av kund baserat på ID
- * - Tillhandahållande av vy över kundregistret
+ * Hanterar kundregistret: läsning, uppslag och validering.
  */
 public class CustomerService {
 

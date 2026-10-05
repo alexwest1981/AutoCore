@@ -116,10 +116,7 @@ public class GarageSystem {
         return qualified;
     }
 
-    /**
-     * Returnerar listan av mekaniker som behövs för att bemanna samtliga valda tjänster.
-     * T.ex. för Bromsar + Diagnostik returneras [Sara Nilsson, Mikael Berg] ("Vi bokar in: Sara Nilsson, Mikael Berg").
-     */
+    /** Returnerar mekanikerna som kan utföra de valda tjänsterna. */
     public List<Mechanic> getRequiredMechanics(Collection<ServiceItem> services) {
         List<Mechanic> result = new ArrayList<Mechanic>();
         if (services == null || services.isEmpty()) {
