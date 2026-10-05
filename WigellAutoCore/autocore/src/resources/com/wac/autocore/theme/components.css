@@ -62,26 +62,6 @@
    Selektorn .combo-box-popup gäller popup-fönstrets rotnode.
    ============================================================ */
 
-/* ============================================================
-   TEMAVÄLJAREN (.theme-pick) — fast neutral stil
-   Vit bakgrund + svart text fungerar alltid oavsett valt tema
-   och ser aldrig konstigt ut (undviker vit-på-vit-problem).
-   ============================================================ */
-
-/* Knappen i topbaren */
-.theme-pick {
-    -fx-background-color: white;
-    -fx-border-color: #d1d5db;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-border-width: 1;
-    -fx-padding: 4px 10px;
-    -fx-cursor: hand;
-}
-.theme-pick .label { -fx-text-fill: #111827; }
-.theme-pick .arrow { -fx-background-color: #6b7280; }
-.theme-pick:hover { -fx-background-color: #f3f4f6; }
-
 /* Popup-listan: fast vit bakgrund, svart text */
 .combo-box-popup > .list-view {
     -fx-background-color: white;
@@ -175,7 +155,7 @@
    1. KORT — designernas namn på samma sak
    ============================================================ */
 .metric-card, .kpi-card, .main-card, .activity-card, .chart-card,
-.occupancy-card, .feature-card, .quick-card, .panel {
+.occupancy-card, .panel {
     -fx-background-color: -wac-card;
     -fx-background-radius: 12;
     -fx-border-color: -wac-line;
@@ -213,7 +193,7 @@
 }
 
 /* Ikonrutan: rundad ruta med accentfärgad glasyta */
-.kpi-icon, .metric-icon, .icon-tile, .feature-icon, .quick-icon {
+.kpi-icon, .metric-icon, .icon-tile {
     -fx-background-color: -wac-accent-soft;
     -fx-background-radius: 10;
     -fx-min-width: 38;
@@ -545,7 +525,7 @@ TableView .table-row-cell:selected:focused .table-cell,
 .add-service-btn:pressed, .button.add-service-btn:pressed {
     -fx-background-color: -wac-accent-pressed;
 }
-.secondary-button, .filter-button, .more-button {
+.secondary-button {
     -fx-background-color: -wac-surface;
     -fx-text-fill: -wac-text;
     -fx-background-radius: 10;
@@ -555,7 +535,7 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-padding: 8 14;
     -fx-cursor: hand;
 }
-.secondary-button:hover, .filter-button:hover, .more-button:hover {
+.secondary-button:hover {
     -fx-background-color: -wac-accent-soft;
     -fx-border-color: -wac-accent;
 }
@@ -702,13 +682,13 @@ TableView .table-row-cell:selected:focused .table-cell,
 .shadow-panel, .shadow-shell {
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 24, 0.12, 0, 8);
 }
-.section-head, .card-heading { -fx-padding: 0 0 12 0; }
-.section-title, .panel-title, .section-heading, .card-heading-title {
+.section-head { -fx-padding: 0 0 12 0; }
+.section-title, .panel-title, .section-heading {
     -fx-text-fill: -wac-text;
     -fx-font-size: 19px;
     -fx-font-weight: bold;
 }
-.section-subtitle, .card-heading-sub, .header-sub {
+.section-subtitle, .header-sub {
     -fx-text-fill: -wac-muted;
     -fx-font-size: 12px;
 }
@@ -740,12 +720,7 @@ TableView .table-row-cell:selected:focused .table-cell,
 
 .chart-dark  { -fx-background-color: -wac-drift; }
 .chart-lime  { -fx-background-color: -wac-accent; }
-.metric-top, .hero-row, .feature-copy, .card-heading, .occupancy-head {
-    -fx-spacing: 8;
-    -fx-alignment: CENTER_LEFT;
-}
-.quick-card-title, .card-heading-title { -fx-text-fill: -wac-text; -fx-font-weight: bold; }
-.quick-card-sub, .card-heading-sub, .metric-card-sub {
+.metric-card-sub {
     -fx-text-fill: -wac-muted;
     -fx-font-size: 12px;
 }
@@ -906,13 +881,7 @@ TableView .table-row-cell:selected:focused .table-cell,
     -fx-prompt-text-fill: -wac-muted;
 }
 
-.search {
-    -fx-prompt-text-fill: -wac-muted;
-}
-.search:focused {
-    -fx-border-color: -wac-ring;
-    -fx-border-width: 1.5px;
-}/* ============================================================
+/* ============================================================
    18. I18N FYSISK TOGGLE SWITCH I SIDEBAR
    ============================================================ */
 .sidebar-lang-container {

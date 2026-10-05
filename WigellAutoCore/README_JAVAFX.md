@@ -4,20 +4,20 @@ Hur paketen under `com.wac.autocore.ui` hänger ihop. Startinstruktioner finns i
 
 ## Huvudklassen
 
-`AutoCoreApp.java` är en tunn koordinator på omkring 80 rader. Den sätter upp `Stage` och `Scene` (1280x800), en root-`BorderPane`, temat, sidonavigeringen, toppbaren och sidroutern.
+`AutoCoreApp.java` sätter upp `Stage` och `Scene`, temat, sidonavigeringen och sidroutern.
 
 ## Navigering (`navigation/`)
 
 - `SidebarView.java` bygger vänstermenyn med varumärkesbadge och grupper: Customers, Vehicles, Bookings, Workshop, Finance. Håller reda på vilken post som är markerad.
 - `TopNavView.java` är samma navigering i toppläge, med direktknappar och sektioner.
-- `PageRouter.java` byter sida, markerar rätt post i båda menyerna, och kopplar den aktiva sidans tabell till toppbarens sökfält.
+- `PageRouter.java` byter sida och markerar rätt post i menyn.
 
 ## Komponenter (`components/`)
 
 - `BookingFormPane.java` är formuläret för tidsbokning. Validering medan man skriver, tjänster och mekaniker, och beräkning av tidsåtgång.
 - `TimeSlotCell.java` visar i tidslistan om mekanikern är ledig eller upptagen.
 - `MechanicKanbanCard.java` är Kanban-kortet för mekanikerschemat, med dag, vecka och månad, direktbokning på lediga timmar, en utfällbar detaljlåda och en meny för att redigera eller ta bort mekanikern.
-- `TableFactory.java` bygger tabeller kopplade till `FilteredList`, med hjälpare för textkolumner, statusbadges och sökning över flera kolumner.
+- `TableFactory.java` bygger tabeller med hjälpare för textkolumner och statusbadges.
 - `UiComponents.java` har knappar, KPI-kort, informationspaneler och de återkommande sidhuvudena.
 
 Toppbaren ligger med flit i `AutoCoreApp.java`, så att den är lätt att ändra. Den växlar mellan sidomeny och toppmeny utan att tappa aktiv sida.
@@ -34,10 +34,6 @@ Toppbaren ligger med flit i `AutoCoreApp.java`, så att den är lätt att ändra
 - `EntityLookup.java` slår upp namn på kund, fordon, mekaniker och tjänst via id.
 
 Ingen av dem rör fönstret, så de går att testa utan att starta JavaFX.
-
-## Sökning
-
-Sökfältet i toppbaren söker igenom kunder, fordon, arbetsordrar, bokningar, mekaniker, fakturor och tjänster via `GlobalSearch`. Träffarna hamnar i egna paneler per sektion, med antal och en knapp som öppnar rätt sida. Paneler utan träffar visas inte. Tömmer du fältet går vyn tillbaka till sidan du kom från.
 
 ## Tema och CSS
 

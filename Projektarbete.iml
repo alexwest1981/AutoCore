@@ -10,7 +10,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="sqlite-jdbc-3.53.4.0" level="project" />
-    <orderEntry type="library" name="tools" level="project" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

@@ -7,7 +7,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -17,14 +16,7 @@ import javafx.scene.layout.VBox;
  */
 public final class UiComponents {
 
-    /** Sökfältet som appen placerar till höger i sidhuvudet. Null när växeln globalSearch är av. */
-    private static Node headerRight;
-
     private UiComponents() {}
-
-    public static void setHeaderRight(Node node) {
-        headerRight = node;
-    }
 
     public static VBox pageHead(String title, String sub, String eyebrow) {
         Label eyebrowLabel = null;
@@ -43,14 +35,6 @@ public final class UiComponents {
         HBox row = new HBox(12, titles);
         HBox.setHgrow(titles, Priority.ALWAYS);
         row.setAlignment(Pos.CENTER_LEFT);
-        if (headerRight != null) {
-            /* Sökfältet bor i samma rad som sidtiteln, högerställt. Sidan byggs om vid varje sidbyte,
-               så fältet flyttas tillbaka från sin förra förälder innan det får en ny. */
-            if (headerRight.getParent() instanceof Pane) {
-                ((Pane) headerRight.getParent()).getChildren().remove(headerRight);
-            }
-            row.getChildren().add(headerRight);
-        }
         return new VBox(row);
     }
 

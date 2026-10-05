@@ -185,8 +185,11 @@
   "common": {
     "yes": "Ja",
     "no": "Nej",
-    "search": "Sök",
-    "search_placeholder": "Filtrera rader i tabellen..."
+    "currency": "kr",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "close": "Stäng",
+    "action": "Åtgärd"
   },
   "invoice": {
     "title": "FAKTURA",
@@ -421,54 +424,6 @@
     },
     "confirm": {
       "title": "Bekräfta"
-    }
-  },
-  "search": {
-    "placeholder": "Sök arbetsordrar, kunder eller fordon…",
-    "results": {
-      "title": "Sökresultat",
-      "subtitle": "Träffar som matchar \"{0}\"",
-      "empty": "Inga träffar hittades för \"{0}\"",
-      "empty_title": "Inga träffar hittades för \"{0}\"",
-      "empty_desc": "Inga kunder, fordon, arbetsordrar, bokningar eller mekaniker matchade din sökning.",
-      "empty_tips": "Tips: Prova att söka på kundnamn (t.ex. Anna), registreringsnummer (t.ex. ABC 123), bilmärke (t.ex. Volvo) eller mekanikernamn."
-    },
-    "category": {
-      "customers": "Kunder",
-      "vehicles": "Fordon",
-      "bookings": "Bokningar",
-      "workorders": "Arbetsordrar",
-      "mechanics": "Mekaniker",
-      "services": "Tjänster",
-      "invoices": "Fakturor",
-      "owner": "Ägare:",
-      "empty_query": "Inga träffar för \"{0}\"",
-      "view_all_matches": "Visa alla {0} träffar i fullständig översikt →"
-    },
-    "global": {
-      "title": "Global sökning",
-      "query_title": "Sökresultat för \"{0}\"",
-      "hint": "Skriv i sökfältet för att söka över hela systemet",
-      "no_matches": "Inga träffar hittades i någon sektion",
-      "matches_found": "{0} träffar hittades över {1} {2}",
-      "section": "sektion",
-      "sections": "sektioner"
-    },
-    "view_all": "Visa alla resultat...",
-    "badge": {
-      "customer": "KUND",
-      "vehicle": "FORDON",
-      "mechanic": "MEK",
-      "booking": "BOKNING",
-      "workorder": "ORDER",
-      "service": "TJÄNST",
-      "invoice": "FAKTURA"
-    },
-    "label": {
-      "booking": "Bokning #{0}",
-      "workorder": "Arbetsorder #{0}",
-      "invoice": "Faktura #{0}",
-      "reg": "Reg: {0}"
     }
   },
   "kanban": {

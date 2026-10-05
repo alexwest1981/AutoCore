@@ -4,7 +4,6 @@ import com.wac.autocore.ui.util.UiFormatters;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -14,24 +13,22 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Fabriksmetoder för att skapa konsekvent stylade och sökbara JavaFX-tabeller.
+ * Fabriksmetoder för konsekvent stylade JavaFX-tabeller.
  */
 public final class TableFactory {
 
     private TableFactory() {}
 
     /**
-     * Behållare för en TableView kopplad till en ObservableList och en FilteredList.
+    * Behållare för en TableView och dess data.
      */
     public static class FilterableTable<S> {
         private final TableView<S> tableView;
         private final ObservableList<S> baseList;
-        private final FilteredList<S> filteredList;
 
         public FilterableTable(List<S> data) {
             this.baseList = FXCollections.observableArrayList(data);
-            this.filteredList = new FilteredList<S>(this.baseList);
-            this.tableView = new TableView<S>(this.filteredList);
+            this.tableView = new TableView<S>(this.baseList);
             this.tableView.getStyleClass().add("orders-table");
             this.tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
             Label placeholder = new Label(com.wac.autocore.ui.i18n.I18n.get("table.empty"));
@@ -43,30 +40,8 @@ public final class TableFactory {
             return tableView;
         }
 
-
-        /**
-         * Applicerar ett sökfilter över alla tabellens kolumner.
-         */
-        public void applySearch(String query) {
-            final String q = query == null ? "" : query.trim().toLowerCase();
-            filteredList.setPredicate(row -> {
-                if (q.isEmpty()) {
-                    return true;
-                }
-                if (row == null) {
-                    return false;
-                }
-                for (TableColumn<S, ?> col : tableView.getColumns()) {
-                    if (col == null) {
-                        continue;
-                    }
-                    Object val = col.getCellData(row);
-                    if (val != null && val.toString().toLowerCase().contains(q)) {
-                        return true;
-                    }
-                }
-                return false;
-            });
+        public ObservableList<S> getBaseList() {
+            return baseList;
         }
     }
 

@@ -320,13 +320,6 @@ TableView .table-view, .table-view { -fx-padding: 0; }
     -fx-background-color: -wac-shell;
     -fx-background-radius: 0;
 }
-.topbar {
-    -fx-background-color: -wac-header;
-    -fx-background-radius: 0;
-    -fx-border-color: transparent transparent -wac-line transparent;
-    -fx-padding: 10px 22px;
-}
-
 .brand-row {
     -fx-alignment: CENTER_LEFT;
 }
@@ -434,16 +427,6 @@ TableView .table-view, .table-view { -fx-padding: 0; }
 .drift-fill {
     -fx-background-color: -wac-accent2;
     -fx-background-radius: 999;
-}
-
-.search {
-    -fx-background-radius: 999;
-    -fx-background-color: derive(-wac-header, -4%);
-    -fx-padding: 8px 16px;
-    -fx-border-color: transparent;
-}
-.search:focused {
-    -fx-border-color: -wac-ring;
 }
 
 .pages {

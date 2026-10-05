@@ -185,8 +185,11 @@
   "common": {
     "yes": "Yes",
     "no": "No",
-    "search": "Search",
-    "search_placeholder": "Filter table rows..."
+    "currency": "kr",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "action": "Action"
   },
   "invoice": {
     "title": "INVOICE",
@@ -421,54 +424,6 @@
     },
     "confirm": {
       "title": "Confirm"
-    }
-  },
-  "search": {
-    "placeholder": "Search work orders, customers or vehicles…",
-    "results": {
-      "title": "Search Results",
-      "subtitle": "Results matching \"{0}\"",
-      "empty": "No matching results found for \"{0}\"",
-      "empty_title": "No matches found for \"{0}\"",
-      "empty_desc": "No customers, vehicles, work orders, bookings or mechanics matched your query.",
-      "empty_tips": "Tips: Try searching for a customer name (e.g. Anna), vehicle registration number (e.g. ABC 123), car brand (e.g. Volvo), or mechanic name."
-    },
-    "category": {
-      "customers": "Customers",
-      "vehicles": "Vehicles",
-      "bookings": "Bookings",
-      "workorders": "Work Orders",
-      "mechanics": "Mechanics",
-      "services": "Services",
-      "invoices": "Invoices",
-      "owner": "Owner:",
-      "empty_query": "No matches found for \"{0}\"",
-      "view_all_matches": "View all {0} matches in full overview →"
-    },
-    "global": {
-      "title": "Global Search",
-      "query_title": "Search results for \"{0}\"",
-      "hint": "Type in the top search bar to search across all system records",
-      "no_matches": "No matches found across any section",
-      "matches_found": "{0} matches found across {1} {2}",
-      "section": "section",
-      "sections": "sections"
-    },
-    "view_all": "View all results...",
-    "badge": {
-      "customer": "CUSTOMER",
-      "vehicle": "VEHICLE",
-      "mechanic": "MECHANIC",
-      "booking": "BOOKING",
-      "workorder": "ORDER",
-      "service": "SERVICE",
-      "invoice": "INVOICE"
-    },
-    "label": {
-      "booking": "Booking #{0}",
-      "workorder": "Work order #{0}",
-      "invoice": "Invoice #{0}",
-      "reg": "Reg: {0}"
     }
   },
   "kanban": {

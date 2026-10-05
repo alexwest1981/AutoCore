@@ -11,9 +11,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.List;
 
-/**
- * Hanterar sidnavigering och kopplar samman aktiva tabeller med sökfiltret.
- */
+/** Hanterar sidnavigering och håller reda på den aktiva tabellen. */
 public class PageRouter {
 
     private final GarageSystem garage;
@@ -22,8 +20,6 @@ public class PageRouter {
 
     private FilterableTable<?> activeTable;
     private String currentPageKey;
-    private String lastNonSearchPage = "overview";
-    private String currentSearchQuery = "";
 
     public PageRouter(GarageSystem garage, VBox pageBox) {
         this(garage, pageBox, null);
@@ -46,51 +42,12 @@ public class PageRouter {
 
     public void setActiveTable(FilterableTable<?> table) {
         this.activeTable = table;
-        if (this.activeTable != null && currentSearchQuery != null && !currentSearchQuery.isEmpty() && !"search".equals(currentPageKey)) {
-            this.activeTable.applySearch(currentSearchQuery);
-        }
-    }
-
-    public void applySearch(String query) {
-        // Funktionen styrs av växeln globalSearch i config/features.properties. Är den av finns
-        // inget fält i menyn som kan anropa den här, men spärren ligger i den här flaskhalsen
-        // så att ingen annan väg in heller går förbi den.
-        if (!com.wac.autocore.config.FeatureFlags.isEnabled("globalSearch")) {
-            return;
-        }
-        this.currentSearchQuery = query == null ? "" : query;
-        String trimmed = this.currentSearchQuery.trim();
-
-        if (trimmed.isEmpty()) {
-            if ("search".equals(currentPageKey)) {
-                navigate(lastNonSearchPage != null && !"search".equals(lastNonSearchPage) ? lastNonSearchPage : "overview");
-            } else if (activeTable != null) {
-                activeTable.applySearch("");
-            }
-            return;
-        }
-
-        if (!"search".equals(currentPageKey)) {
-            this.lastNonSearchPage = currentPageKey != null ? currentPageKey : "overview";
-            navigate("search");
-        } else {
-            // Redan på söksidan – uppdatera vyn i realtid
-            activeTable = null;
-            pageBox.getChildren().clear();
-            pageBox.getChildren().add(com.wac.autocore.ui.views.SearchResultsView.build(garage, this, trimmed));
-        }
-    }
-
-
-    public void smartNavigateForSearch(String query) {
-        applySearch(query);
     }
 
 
     public void navigateToWorkOrder(int workOrderId) {
         navigate("workorders");
         if (workOrderId > 0 && activeTable != null) {
-            activeTable.applySearch(String.valueOf(workOrderId));
             javafx.scene.control.TableView<?> tv = activeTable.getTableView();
             int idx = 0;
             for (Object item : tv.getItems()) {
@@ -105,9 +62,6 @@ public class PageRouter {
 
     public void navigate(String key) {
         this.currentPageKey = key;
-        if (!"search".equals(key)) {
-            this.lastNonSearchPage = key;
-        }
         if (sidebar != null) {
             sidebar.setSelectedPage(key);
             updateNavCounts();
@@ -133,8 +87,6 @@ public class PageRouter {
             pageBox.getChildren().add(EntityPages.buildInvoicesPage(garage, this));
         } else if ("payments".equals(key)) {
             pageBox.getChildren().add(EntityPages.buildPaymentsPage(garage, this));
-        } else if ("search".equals(key)) {
-            pageBox.getChildren().add(com.wac.autocore.ui.views.SearchResultsView.build(garage, this, currentSearchQuery));
         }
     }
 

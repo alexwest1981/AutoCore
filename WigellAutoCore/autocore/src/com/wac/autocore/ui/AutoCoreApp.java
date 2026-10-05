@@ -1,34 +1,20 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.config.FeatureFlags;
 import com.wac.autocore.data.Settings;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.theme.ThemeManager;
-import com.wac.autocore.ui.components.SearchDropdown;
-import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.navigation.SidebarView;
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-/**
- * JavaFX GUI for Wigell AutoCore.
- *
- * Sprint 2:
- * - Låst till tema Emerald (temaväljare borttagen).
- * - Enligt beställaren körs uteslutande sidebar-navigering (väljaren för top bar borttagen).
- * - Sökfältet ligger överst i huvudfönstret tillsammans med den granulära dropdownen, och slås
- *   av och på med växeln globalSearch i config/features.properties.
- */
+/** JavaFX-gränssnittet för Wigell AutoCore. */
 public class AutoCoreApp extends Application {
 
     /** Key the language choice is stored under in the settings table. */
@@ -68,12 +54,6 @@ public class AutoCoreApp extends Application {
 
         mainCol.setCenter(scroll);
 
-        // Sökfältet ligger i sidhuvudet, till höger i samma rad som sidtiteln (UiComponents.pageHead),
-        // så det står på samma plats var du än är utan att ligga över innehållet. Är växeln
-        // globalSearch av blir noden null, och då ser huvudet ut precis som förut.
-        UiComponents.setHeaderRight(buildSearchBar(garage, router));
-
-        // Sidebar används permanent enligt beställarens önskemål
         shell.setLeft(sidebar.getView());
         shell.setCenter(mainCol);
         stage.setCenter(shell);
@@ -97,34 +77,6 @@ public class AutoCoreApp extends Application {
     /** Sparar språkbyten så att valet finns kvar vid nästa start. */
     public static void persistLanguageChanges() {
         I18n.addListener(lang -> Settings.put(LANGUAGE_KEY, lang));
-    }
-
-    /**
-     * Sökfältet med den granulära dropdownen under sig: skriver du ett tecken söks hela systemet
-     * igenom och träffarna visas kategoriserade direkt under fältet, oavsett vilken sida du står
-     * på. Enter öppnar den fullständiga sökvyn. Noden hamnar till höger i sidhuvudet, i samma rad
-     * som sidtiteln.
-     *
-     * Statisk och utan Stage, så sviten kan bygga den utan att starta ett fönster.
-     * Null när funktionen är avstängd i config/features.properties.
-     */
-    public static HBox buildSearchBar(GarageSystem garage, PageRouter router) {
-        if (!FeatureFlags.isEnabled("globalSearch")) {
-            return null;
-        }
-
-        TextField searchField = new TextField();
-        searchField.getStyleClass().add("search");
-        searchField.setPromptText(I18n.get("search.placeholder"));
-        searchField.setPrefWidth(320);
-        searchField.setOnAction(e -> router.smartNavigateForSearch(searchField.getText()));
-        I18n.addListener(lang -> searchField.setPromptText(I18n.get("search.placeholder")));
-
-        SearchDropdown.attach(searchField, garage, router);
-
-        HBox row = new HBox(14, searchField);
-        row.setAlignment(Pos.CENTER_RIGHT);
-        return row;
     }
 
     public static void main(String[] args) {
