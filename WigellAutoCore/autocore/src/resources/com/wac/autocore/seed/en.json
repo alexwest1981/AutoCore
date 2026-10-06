@@ -1,5 +1,6 @@
 {
   "seed.booking.brake_calipers_pads.description": "Brake calipers and pads",
+  "seed.booking.drop_in.description": "Drop-in without a booking",
   "seed.booking.electronic_fault_diagnosis.description": "Electronic fault diagnosis",
   "seed.booking.front_brake_inspection.description": "Front brake inspection",
   "seed.booking.full_brake_overhaul.description": "Full brake overhaul",

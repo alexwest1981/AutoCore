@@ -22,13 +22,16 @@ import java.time.LocalTime;
 /**
  * Radlayouten i bokningsformuläret:
  * Fordon -> Tjänster -> Mekaniker -> Datum & Tid -> Beskrivning -> Status.
+ * I drop-in-läget hoppas Datum & Tid över: där finns ingen tid att välja.
  */
 class BookingFormLayout {
 
     private final GridPane grid;
+    private final boolean dropIn;
 
-    BookingFormLayout(GridPane grid) {
+    BookingFormLayout(GridPane grid, boolean dropIn) {
         this.grid = grid;
+        this.dropIn = dropIn;
     }
 
     void layout(ComboBox<Vehicle> vehicleBox,
@@ -81,38 +84,41 @@ class BookingFormLayout {
         GridPane.setHgrow(mechCol, Priority.ALWAYS);
         grid.add(mechCol, 1, rowIdx++);
 
-        // Datum & Tid (kalendern synlig med starttiden bredvid)
-        Label dateTimeLbl = new Label(I18n.get("dialog.booking.date_and_time") + ":");
-        GridPane.setValignment(dateTimeLbl, VPos.TOP);
-        dateTimeLbl.setPadding(new Insets(6, 0, 0, 0));
-        grid.add(dateTimeLbl, 0, rowIdx);
+        // Datum & Tid (kalendern synlig med starttiden bredvid). En drop-in bokas när kunden
+        // kommer in, så det finns inget att välja och raden lämnas borta.
+        if (!dropIn) {
+            Label dateTimeLbl = new Label(I18n.get("dialog.booking.date_and_time") + ":");
+            GridPane.setValignment(dateTimeLbl, VPos.TOP);
+            dateTimeLbl.setPadding(new Insets(6, 0, 0, 0));
+            grid.add(dateTimeLbl, 0, rowIdx);
 
-        VBox calCol = new VBox(10, scheduleField.getDateHeader(), scheduleField.getCalendarHint(), scheduleField.getCalendarNode());
-        calCol.setAlignment(Pos.TOP_LEFT);
-        calCol.getStyleClass().add("booking-card");
+            VBox calCol = new VBox(10, scheduleField.getDateHeader(), scheduleField.getCalendarHint(), scheduleField.getCalendarNode());
+            calCol.setAlignment(Pos.TOP_LEFT);
+            calCol.getStyleClass().add("booking-card");
 
-        Label timeTitle = new Label(I18n.get("dialog.booking.time_select") + ":");
-        timeTitle.getStyleClass().add("booking-card-title");
-        Label timeHint = new Label(I18n.get("dialog.booking.only_free_times"));
-        timeHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
-        timeHint.setWrapText(true);
-        VBox timeCol = new VBox(8, timeTitle, startTimeBox, timeHint, durationLabel);
-        timeCol.setAlignment(Pos.CENTER_LEFT);
-        timeCol.setMinWidth(220);
-        timeCol.setPrefWidth(240);
-        HBox.setHgrow(timeCol, Priority.ALWAYS);
-        startTimeBox.setMaxWidth(Double.MAX_VALUE);
-        timeCol.getStyleClass().add("booking-card");
+            Label timeTitle = new Label(I18n.get("dialog.booking.time_select") + ":");
+            timeTitle.getStyleClass().add("booking-card-title");
+            Label timeHint = new Label(I18n.get("dialog.booking.only_free_times"));
+            timeHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
+            timeHint.setWrapText(true);
+            VBox timeCol = new VBox(8, timeTitle, startTimeBox, timeHint, durationLabel);
+            timeCol.setAlignment(Pos.CENTER_LEFT);
+            timeCol.setMinWidth(220);
+            timeCol.setPrefWidth(240);
+            HBox.setHgrow(timeCol, Priority.ALWAYS);
+            startTimeBox.setMaxWidth(Double.MAX_VALUE);
+            timeCol.getStyleClass().add("booking-card");
 
-        HBox dateTimeRow = new HBox(16, calCol, timeCol);
-        dateTimeRow.setAlignment(Pos.TOP_LEFT);
+            HBox dateTimeRow = new HBox(16, calCol, timeCol);
+            dateTimeRow.setAlignment(Pos.TOP_LEFT);
 
-        // Datumväljaren själv läggs inte i layouten: kalendern ovan är byggd från ett eget
-        // skinn, och lägger man ändå kontrollen i scenen skapar JavaFX ett andra skinn —
-        // då kastar DatePickerSkin "duplicate children added" och formuläret dör vid klick.
-        VBox dateTimeContainer = new VBox(4, dateTimeRow);
-        GridPane.setHgrow(dateTimeContainer, Priority.ALWAYS);
-        grid.add(dateTimeContainer, 1, rowIdx++);
+            // Datumväljaren själv läggs inte i layouten: kalendern ovan är byggd från ett eget
+            // skinn, och lägger man ändå kontrollen i scenen skapar JavaFX ett andra skinn —
+            // då kastar DatePickerSkin "duplicate children added" och formuläret dör vid klick.
+            VBox dateTimeContainer = new VBox(4, dateTimeRow);
+            GridPane.setHgrow(dateTimeContainer, Priority.ALWAYS);
+            grid.add(dateTimeContainer, 1, rowIdx++);
+        }
 
         // Beskrivning
         grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);

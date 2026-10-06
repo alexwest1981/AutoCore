@@ -260,6 +260,10 @@ public final class ActionDialogs {
         CreateDraftDialog.show(garage, onSuccess);
     }
 
+    public static void showCreateDropInWorkOrderDialog(GarageSystem garage, Runnable onSuccess) {
+        WorkOrderDialogs.showCreateDropInWorkOrderDialog(garage, onSuccess);
+    }
+
     public static void showWorkOrderDetailsDialog(GarageSystem garage, WorkOrder workOrder) {
         WorkOrderDialogs.showWorkOrderDetailsDialog(garage, workOrder);
     }

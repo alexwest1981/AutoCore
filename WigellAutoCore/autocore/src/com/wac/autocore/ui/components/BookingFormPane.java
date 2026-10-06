@@ -59,6 +59,17 @@ public class BookingFormPane extends GridPane {
 
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour) {
+        this(garage, existingBooking, initialDate, defaultMechanic, defaultHour, false);
+    }
+
+    /**
+     * dropIn: samma formulär utan Datum & Tid. Bokningen sker när kunden kommer in, så tiden
+     * sätts av tjänsten i stället, och beskrivningen behåller drop-in-texten i stället för
+     * tjänstenamnen — annars går en drop-in inte att skilja från en vanlig bokning i listan.
+     */
+    public BookingFormPane(GarageSystem garage, Booking existingBooking,
+                           LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour,
+                           boolean dropIn) {
         this.excludeId = existingBooking != null ? existingBooking.getId() : 0;
         final boolean isServicesLocked = existingBooking != null && existingBooking.isWorkStarted();
 
@@ -102,7 +113,7 @@ public class BookingFormPane extends GridPane {
             scheduleField.refresh();
             // En ny bokning får tjänsternas namn som beskrivning; i redigeringsläge
             // behålls den text som redan står där.
-            if (existingBooking == null) {
+            if (existingBooking == null && !dropIn) {
                 StringBuilder sb = new StringBuilder();
                 for (ServiceItem s : selectedServices) {
                     if (sb.length() > 0) sb.append(", ");
@@ -116,6 +127,13 @@ public class BookingFormPane extends GridPane {
         servicesField.render();
         mechanics.update();
         scheduleField.refreshDate();
+
+        // En drop-in känns igen på beskrivningen, så den står kvar och går inte att skriva över.
+        // Fältet visar texten, men det som sparas är nyckeln, så den byter språk med resten.
+        if (dropIn) {
+            descField.setText(SeedText.resolve("seed.booking.drop_in.description"));
+            descField.setEditable(false);
+        }
         if (existingBooking != null && existingBooking.getStartTime() != null) {
             this.startTimeBox.getSelectionModel().select(existingBooking.getStartTime());
         } else if (defaultHour != null && defaultHour >= 7 && defaultHour <= 16) {
@@ -123,7 +141,7 @@ public class BookingFormPane extends GridPane {
         }
         scheduleField.refreshTimes();
 
-        new BookingFormLayout(this).layout(
+        new BookingFormLayout(this, dropIn).layout(
                 vehicleBox,
                 serviceMulti, totalSummaryLabel,
                 mechanicMulti, mechanicFilterHint,

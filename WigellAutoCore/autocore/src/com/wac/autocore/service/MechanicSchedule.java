@@ -47,7 +47,7 @@ public class MechanicSchedule {
     public synchronized void syncFromDatabase() {
         if (!databaseSyncEnabled) return;
         String sql = "SELECT wo.id AS wo_id, wo.mechanic_id, wo.status AS wo_status, "
-                + "b.id AS booking_id, b.date, b.description, "
+                + "b.id AS booking_id, b.date, b.start_time, b.description, "
                 + "v.registration_number, c.name AS customer_name "
                 + "FROM work_orders wo "
                 + "JOIN bookings b ON wo.booking_id = b.id "
@@ -86,12 +86,16 @@ public class MechanicSchedule {
                 }
 
                 if (!alreadyBooked) {
-                    for (int hour = START_HOUR + 1; hour < END_HOUR; hour++) {
-                        String key = slotKey(mechId, date, hour);
-                        TimeSlot existing = slots.get(key);
-                        if (existing == null || !existing.isBooked()) {
-                            bookSlotInternal(mechId, date, hour, bId, woId, cust, reg, desc);
-                            break;
+                    // Bokningens egen tid först. En drop-in bokas på timmen kunden kom och ska synas
+                    // där, inte i första bästa lucka.
+                    if (bookAtStoredTime(mechId, date, rs.getString("start_time"), bId, woId, cust, reg, desc) < 0) {
+                        for (int hour = START_HOUR + 1; hour < END_HOUR; hour++) {
+                            String key = slotKey(mechId, date, hour);
+                            TimeSlot existing = slots.get(key);
+                            if (existing == null || !existing.isBooked()) {
+                                bookSlotInternal(mechId, date, hour, bId, woId, cust, reg, desc);
+                                break;
+                            }
                         }
                     }
                 }
@@ -179,6 +183,31 @@ public class MechanicSchedule {
         slot.setVehicleReg(vehicleReg);
         slot.setDescription(desc);
         slots.put(slotKey(mechanicId, date, hour), slot);
+    }
+
+    /** Bokar bokningens egen timme när den finns och är ledig, annars -1 så anroparen får leta en
+     *  ledig lucka. Är timmen tagen av någon annan flyttas ingen annans jobb undan för en drop-in;
+     *  då får jobbet en ledig timme i stället. */
+    private int bookAtStoredTime(int mechanicId, LocalDate date, String startTime, int bookingId,
+                                 int workOrderId, String customer, String vehicleReg, String desc) {
+        if (startTime == null || startTime.trim().isEmpty()) {
+            return -1;
+        }
+        int hour;
+        try {
+            hour = java.time.LocalTime.parse(startTime.trim()).getHour();
+        } catch (java.time.format.DateTimeParseException e) {
+            return -1;
+        }
+        if (hour < START_HOUR || hour >= END_HOUR) {
+            return -1;
+        }
+        TimeSlot existing = slots.get(slotKey(mechanicId, date, hour));
+        if (existing != null && existing.isBooked()) {
+            return -1;
+        }
+        bookSlotInternal(mechanicId, date, hour, bookingId, workOrderId, customer, vehicleReg, desc);
+        return hour;
     }
 
 /** Alla tidsslottar för en mekaniker en dag, 07:00 till 16:00. */
