@@ -363,11 +363,25 @@ public class MultiSelectComboBox<T> extends HBox {
             getStyleClass().add("showing");
         }
 
-        // Placera listan direkt under fältet, i scenens koordinater, på hela pixlar.
+        // Placera listan direkt under fältet, i scenens koordinater, på hela pixlar. Får den inte
+        // plats där hamnar den ovanför i stället: i en dialog som är precis så hög som sitt innehåll
+        // ligger sista fältet nära nederkanten, och då klipptes nedersta raden av fönsterkanten.
         Bounds b = localToScene(getBoundsInLocal());
         panel.autosize();
         panel.applyCss();
-        panel.relocate(Math.round(b.getMinX()), Math.round(b.getMaxY()) + 2);
+
+        double panelHeight = panel.prefHeight(width);
+        double x = Math.round(b.getMinX());
+        double y = Math.round(b.getMaxY()) + 2;
+        if (y + panelHeight > scene.getHeight()) {
+            y = Math.round(b.getMinY()) - panelHeight - 2;
+        }
+        // Går den inte in ens ovanför (mycket kort fönster) kläms den innanför kanten, så att
+        // sista raden alltid går att klicka.
+        x = Math.max(0, Math.min(x, scene.getWidth() - width));
+        y = Math.max(0, Math.min(y, scene.getHeight() - panelHeight));
+
+        panel.relocate(x, y);
         panel.toFront();
 
         outsideClick = ev -> {

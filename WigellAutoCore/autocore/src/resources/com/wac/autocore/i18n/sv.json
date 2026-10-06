@@ -106,6 +106,7 @@
       "meta": "{0} arbetsordrar",
       "meta.one": "{0} arbetsorder",
       "action_create": "+ Ny arbetsorder",
+      "action_dropin": "+ Drop-in (utan bokning)",
       "action_start": "▶ Starta order",
       "action_mark_performed": "Markera utförda arbeten",
       "action_complete": "Slutför order",
@@ -369,6 +370,10 @@
       "create": {
         "title": "Ny arbetsorder",
         "header": "Öppna arbetsorder"
+      },
+      "dropin": {
+        "title": "Drop-in-arbetsorder",
+        "header": "Skapa arbetsorder för en kund utan bokning"
       },
       "booking_select": "Välj bokning",
       "plan_title": "Arbetsordrar som skapas (en per mekaniker)",

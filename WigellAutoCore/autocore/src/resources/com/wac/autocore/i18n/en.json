@@ -106,6 +106,7 @@
       "meta": "{0} work orders",
       "meta.one": "{0} work order",
       "action_create": "+ Create Work Order",
+      "action_dropin": "+ Drop-in (no booking)",
       "action_start": "▶ Start order",
       "action_mark_performed": "Mark performed work",
       "action_complete": "Complete order",
@@ -369,6 +370,10 @@
       "create": {
         "title": "New Work Order",
         "header": "Open Work Order"
+      },
+      "dropin": {
+        "title": "Drop-in work order",
+        "header": "Create a work order for a customer without a booking"
       },
       "booking_select": "Select booking",
       "plan_title": "Work orders to be created (one per mechanic)",

@@ -125,6 +125,9 @@ public final class EntityPages {
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.workorders.action_create"));
         addBtn.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, () -> router.navigate("workorders")));
 
+        Button dropInBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_dropin"));
+        dropInBtn.setOnAction(e -> ActionDialogs.showCreateDropInWorkOrderDialog(garage, () -> router.navigate("workorders")));
+
         Button detailsBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_details"));
         detailsBtn.setDisable(true);
         detailsBtn.setOnAction(e -> {
@@ -228,7 +231,7 @@ public final class EntityPages {
                         PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
                         I18n.get("view.notice.workorders.one"),
                         I18n.get("view.notice.workorders.many")),
-                t, detailsBtn, startBtn, markBtn, completeBtn, invoiceBtn, addBtn);
+                t, detailsBtn, startBtn, markBtn, completeBtn, invoiceBtn, dropInBtn, addBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
