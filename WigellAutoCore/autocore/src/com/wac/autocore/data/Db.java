@@ -76,7 +76,9 @@ public class Db {
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "booking_id INTEGER, "
                 + "mechanic_id INTEGER, "
-                + "status TEXT)",
+                + "status TEXT, "
+                + "vehicle_id INTEGER, "
+                + "description TEXT)",
 
             "CREATE TABLE IF NOT EXISTS booking_service_items ("
                 + "booking_id INTEGER NOT NULL, "
@@ -152,6 +154,20 @@ public class Db {
             // Tomt betyder att tjänsten kan utföras av alla.
             try {
                 statement.executeUpdate("ALTER TABLE service_items ADD COLUMN specialization TEXT");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // Fordonet ligger på arbetsordern så ett utkast går att skapa innan bokningen finns.
+            try {
+                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN vehicle_id INTEGER");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // Kundens egen beskrivning av problemet, den enda uppgift ett utkast behöver.
+            try {
+                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN description TEXT");
             } catch (SQLException ignored) {
                 // Kolumnen existerar redan
             }
