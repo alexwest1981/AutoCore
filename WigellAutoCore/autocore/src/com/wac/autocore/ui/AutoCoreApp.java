@@ -24,8 +24,8 @@ public class AutoCoreApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        com.wac.autocore.data.Db.initTables();
-
+        // Databasen är redan klar: Main kör Db.ensureReady() och garage-fältet ovan gör samma sak
+        // i sin konstruktor. Ett initTables() här gav en andra "Databas redo" i loggen.
         restoreLanguage();
         persistLanguageChanges();
 
