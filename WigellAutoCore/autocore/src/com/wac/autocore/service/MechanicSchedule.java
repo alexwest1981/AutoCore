@@ -53,7 +53,9 @@ public class MechanicSchedule {
                 + "JOIN bookings b ON wo.booking_id = b.id "
                 + "LEFT JOIN vehicles v ON b.vehicle_id = v.id "
                 + "LEFT JOIN customers c ON v.customer_id = c.id "
-                + "WHERE wo.status != 'COMPLETED'";
+                + "WHERE wo.status IN ('CREATED', 'CONFIRMED', 'IN_PROGRESS')\n";
+
+        java.util.Set<Integer> activeWorkOrderIds = new java.util.HashSet<Integer>();
 
         try (java.sql.Connection conn = com.wac.autocore.data.Db.getConnection();
              java.sql.PreparedStatement stmt = conn.prepareStatement(sql);
@@ -61,6 +63,7 @@ public class MechanicSchedule {
 
             while (rs.next()) {
                 int woId = rs.getInt("wo_id");
+                activeWorkOrderIds.add(Integer.valueOf(woId));
                 int mechId = rs.getInt("mechanic_id");
                 int bId = rs.getInt("booking_id");
                 String dateStr = rs.getString("date");
@@ -91,6 +94,15 @@ public class MechanicSchedule {
                             break;
                         }
                     }
+                }
+            }
+
+            // Tider vars arbetsorder inte längre är aktiv lämnar schemat.
+            java.util.Iterator<java.util.Map.Entry<String, TimeSlot>> staleSlots = slots.entrySet().iterator();
+            while (staleSlots.hasNext()) {
+                TimeSlot slot = staleSlots.next().getValue();
+                if (slot.getWorkOrderId() > 0 && !activeWorkOrderIds.contains(Integer.valueOf(slot.getWorkOrderId()))) {
+                    staleSlots.remove();
                 }
             }
         } catch (Exception ignored) {
