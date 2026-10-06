@@ -89,7 +89,9 @@
       "meta.one": "{0} tjänst",
       "action_create": "+ Skapa tjänst",
       "action_edit": "Redigera tjänst",
-      "action_delete": "Ta bort tjänst"
+      "action_delete": "Ta bort tjänst",
+      "action_create_package": "+ Skapa paket",
+      "action_show_packages": "Visa paket"
     },
     "mechanics": {
       "title": "Mekaniker",
@@ -317,6 +319,20 @@
       "total_price": "Beräknat pris: {0}",
       "services_locked_work_started": "Tjänster kan inte ändras eftersom arbetet har påbörjats",
       "status_locked_work_started": "Statusen kan inte ändras tillbaka när arbetet har påbörjats."
+    },
+    "package": {
+      "create": {
+        "title": "Nytt servicepaket",
+        "header": "Skapa servicepaket"
+      },
+      "list": {
+        "title": "Servicepaket",
+        "empty": "Det finns inga servicepaket än."
+      },
+      "name_prompt": "Paketets namn (t.ex. Vinterkontroll)",
+      "desc_prompt": "Kort beskrivning av paketet",
+      "service_label": "Tjänster",
+      "service_select": "Välj tjänster"
     },
     "service": {
       "create": {

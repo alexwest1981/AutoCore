@@ -89,7 +89,9 @@
       "meta.one": "{0} service",
       "action_create": "+ Create Service",
       "action_edit": "Edit Service",
-      "action_delete": "Delete Service"
+      "action_delete": "Delete Service",
+      "action_create_package": "+ Create Package",
+      "action_show_packages": "Show Packages"
     },
     "mechanics": {
       "title": "Mechanics",
@@ -317,6 +319,20 @@
       "total_price": "Estimated price: {0}",
       "services_locked_work_started": "Services cannot be modified because work has started",
       "status_locked_work_started": "The status cannot be changed back once work has started."
+    },
+    "package": {
+      "create": {
+        "title": "New Service Package",
+        "header": "Create Service Package"
+      },
+      "list": {
+        "title": "Service Package",
+        "empty": "There is no service packages yet."
+      },
+      "name_prompt": "Package name (e.g Winter check)",
+      "desc_prompt": "Short package description",
+      "service_label": "Services",
+      "service_select": "Select services"
     },
     "service": {
       "create": {

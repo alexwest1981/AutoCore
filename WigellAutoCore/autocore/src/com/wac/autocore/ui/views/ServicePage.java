@@ -4,6 +4,7 @@ import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
+import com.wac.autocore.ui.ServicePackageDialogs;
 import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
@@ -34,6 +35,10 @@ final class ServicePage {
 
         Button addButton = UiComponents.primaryButton(I18n.get("entity.services.action_create"));
         addButton.setOnAction(e -> ActionDialogs.showCreateServiceItemDialog(garage, () -> router.navigate("services")));
+        Button createPackageButton = UiComponents.secondaryButton(I18n.get("entity.services.action_create_package"));
+        createPackageButton.setOnAction(e -> ServicePackageDialogs.showCreatePackageDialog(garage, () -> router.navigate("services")));
+        Button showPackagesButton = UiComponents.secondaryButton(I18n.get("entity.services.action_show_packages"));
+        showPackagesButton.setOnAction(e -> ServicePackageDialogs.showPackagesDialog(garage));
         Button editButton = UiComponents.secondaryButton(I18n.get("entity.services.action_edit"));
         Button deleteButton = UiComponents.secondaryButton(I18n.get("entity.services.action_delete"));
         editButton.setDisable(true);
@@ -69,6 +74,6 @@ final class ServicePage {
                 I18n.get("entity.services.title"),
                 PageFormatters.meta("entity.services.meta", garage.getServiceItems().size()),
                 I18n.get("entity.services.subtitle"),
-                view, deleteButton, editButton, addButton);
+                view, deleteButton, editButton, showPackagesButton, createPackageButton, addButton);
     }
 }
