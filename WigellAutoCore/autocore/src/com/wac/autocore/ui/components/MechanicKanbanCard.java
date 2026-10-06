@@ -1,28 +1,16 @@
 package com.wac.autocore.ui.components;
 
-import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.model.WorkOrder;
-import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.service.MechanicSchedule;
-import com.wac.autocore.model.DayLoad;
-import com.wac.autocore.model.MonthDayStatus;
 import com.wac.autocore.model.TimeSlot;
+import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
-import com.wac.autocore.ui.util.EntityLookup;
-import com.wac.autocore.ui.util.UiFormatters;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Cursor;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -35,15 +23,10 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.shape.SVGPath;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import com.wac.autocore.seed.SeedText;
 

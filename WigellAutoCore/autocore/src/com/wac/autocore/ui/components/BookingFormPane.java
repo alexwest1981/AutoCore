@@ -9,7 +9,6 @@ import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.BookingAvailability;
-import com.wac.autocore.ui.util.UiFormatters;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -52,7 +51,6 @@ public class BookingFormPane extends GridPane {
     private final ComboBox<String> statusBox;
 
     private final int excludeId;
-    private final GarageSystem garage;
 
     /** Riktig post i stället för null, som får JavaFX att kasta när den väljs. */
     static final Mechanic NO_MECHANIC = new Mechanic(0, "", "", "");
@@ -61,7 +59,6 @@ public class BookingFormPane extends GridPane {
 
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour) {
-        this.garage = garage;
         this.excludeId = existingBooking != null ? existingBooking.getId() : 0;
         final boolean isServicesLocked = existingBooking != null && existingBooking.isWorkStarted();
 

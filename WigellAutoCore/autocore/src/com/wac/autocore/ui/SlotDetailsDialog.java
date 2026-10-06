@@ -5,7 +5,6 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.util.EntityLookup;

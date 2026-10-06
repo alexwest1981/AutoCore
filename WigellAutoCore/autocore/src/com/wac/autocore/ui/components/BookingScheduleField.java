@@ -26,10 +26,6 @@ import com.wac.autocore.ui.util.UiFormatters;
  */
 class BookingScheduleField {
 
-    private final GarageSystem garage;
-    private final BookingFormPane form;
-    private final ComboBox<Mechanic> mechanicBox;
-    private final int excludeId;
     private final DatePicker datePicker;
     private final ComboBox<LocalTime> startTimeBox = new ComboBox<LocalTime>();
     private final Label durationLabel = new Label();
@@ -39,15 +35,10 @@ class BookingScheduleField {
     private final Node calendarNode;
     private final Runnable setupDatePickerCells;
     private final Runnable ensureValidDate;
-    private final Runnable updateDuration;
     private final Runnable refreshTimeBox;
 
     BookingScheduleField(GarageSystem garage, BookingFormPane form, ComboBox<Mechanic> mechanicBox,
                          int excludeId, Booking existingBooking, LocalDate initialDate) {
-        this.garage = garage;
-        this.form = form;
-        this.mechanicBox = mechanicBox;
-        this.excludeId = excludeId;
         // 4. Bokningsdatum (visas som kalender där otillgängliga datum gråmarkeras)
         LocalDate initialDateVal = existingBooking != null && existingBooking.getDate() != null
         ? existingBooking.getDate()
@@ -213,7 +204,6 @@ class BookingScheduleField {
         this.startTimeBox.valueProperty().addListener((obs, o, n) -> updateDuration.run());
         this.setupDatePickerCells = setupDatePickerCells;
         this.ensureValidDate = ensureValidDate;
-        this.updateDuration = updateDuration;
         this.refreshTimeBox = refreshTimeBox;
         this.dateHeaderLabel = dateHeaderLabel;
         this.calendarHintLabel = calendarHintLabel;

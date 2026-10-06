@@ -9,7 +9,6 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.navigation.PageRouter;
 
 import javafx.geometry.Insets;

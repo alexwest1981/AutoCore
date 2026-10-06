@@ -8,7 +8,6 @@ import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.components.BookingFormPane;
 import com.wac.autocore.ui.i18n.I18n;
-import com.wac.autocore.ui.util.BookingAvailability;
 import com.wac.autocore.ui.util.EntityLookup;
 
 import javafx.scene.control.Alert;
