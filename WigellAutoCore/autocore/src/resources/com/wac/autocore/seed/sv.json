@@ -1,5 +1,6 @@
 {
   "seed.booking.brake_calipers_pads.description": "Bromsok och bromsbelägg",
+  "seed.booking.drop_in.description": "Drop-in utan bokning",
   "seed.booking.electronic_fault_diagnosis.description": "Elektronisk feldiagnos",
   "seed.booking.front_brake_inspection.description": "Inspektion av främre bromsar",
   "seed.booking.full_brake_overhaul.description": "Komplett bromsöversyn",
