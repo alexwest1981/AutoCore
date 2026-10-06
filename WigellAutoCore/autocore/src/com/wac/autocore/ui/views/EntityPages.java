@@ -40,7 +40,7 @@ public final class EntityPages {
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
                 TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
                 TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> String.valueOf(c.getDate())),
-                TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_TIME, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
+                TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_TIME, c -> EntityLookup.bookingTime(c)),
                 TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.bookingServices(garage, c)),
                 TableFactory.sizeCol(I18n.get("table.col.estimated_time"), TableFactory.W_MINUTES, c -> {
                     int min = EntityLookup.bookingTotalMinutes(garage, c);
@@ -116,6 +116,8 @@ public final class EntityPages {
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
                 TableFactory.sizeCol(I18n.get("table.col.booking"), TableFactory.W_REF, c -> String.valueOf(c.getBookingId())),
                 TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.workOrderVehicleReg(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> EntityLookup.workOrderDate(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_TIME, c -> EntityLookup.workOrderTime(garage, c)),
                 TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
                 TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.workOrderServices(garage, c)),
                 TableFactory.sizeCol(I18n.get("table.col.total"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
