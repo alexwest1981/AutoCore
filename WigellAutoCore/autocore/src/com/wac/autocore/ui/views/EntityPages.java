@@ -19,9 +19,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Samlingspunkt för sidorna i GUI:t. Varje sida har en egen liten klass.
- */
+/** Sidorna i gränssnittet, en klass per sida. */
 @SuppressWarnings("unchecked")
 public final class EntityPages {
 

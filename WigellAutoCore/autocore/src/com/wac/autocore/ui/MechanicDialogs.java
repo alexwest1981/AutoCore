@@ -19,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Modala dialoger för mekanikerhantering (skapa, redigera, ta bort).
- */
+/** Dialoger för mekanikerhantering. */
 public final class MechanicDialogs {
 
     private MechanicDialogs() {}
@@ -136,7 +134,7 @@ public final class MechanicDialogs {
         });
     }
 
-    /** De fasta specialiseringarna, som nycklar i demodatans ordlista. Nyckeln sparas, texten visas. */
+/** De fasta specialiseringarna som nycklar i demodatans ordlista. */
     private static final String[] SPECIALIZATION_KEYS = {
         "seed.mechanic.general_service.specialization",
         "seed.mechanic.brakes.specialization",
@@ -146,11 +144,7 @@ public final class MechanicDialogs {
         "seed.mechanic.climate.specialization"
     };
 
-    /**
-     * Förslagen som visas i rullistan för specialisering. Offentlig och utan JavaFX så att provet kan
-     * läsa exakt den lista användaren får: den innehöll tidigare tre svenska texter som låg fast i
-     * koden och därför stod kvar på svenska även när gränssnittet kördes på engelska.
-     */
+/** Specialiseringarna i rullistan. Provet läser samma lista som användaren. */
     public static List<String> suggestSpecializations(GarageSystem garage) {
         List<String> suggestions = new ArrayList<String>();
         for (String key : SPECIALIZATION_KEYS) {
@@ -168,10 +162,7 @@ public final class MechanicDialogs {
         return suggestions;
     }
 
-    /**
-     * Värdet som ska sparas: nyckeln när texten är ett av våra fasta val, annars det användaren skrev.
-     * Sparas texten blir den kvar i det språk den skrevs i och visas oöversatt efter ett språkbyte.
-     */
+/** Nyckeln när texten är ett fast val, annars texten användaren skrev. */
     public static String specializationToStore(String chosen) {
         String text = chosen == null ? "" : chosen.trim();
         if (text.isEmpty()) {

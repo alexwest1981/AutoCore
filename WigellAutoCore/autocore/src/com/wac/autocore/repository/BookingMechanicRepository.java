@@ -9,13 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Kopplingen mellan en bokning och de mekaniker som ska utföra den.
- *
- * En bokning kan innehålla tjänster som kräver olika specialister, och då behövs fler än en
- * mekaniker. Tabellen bookings har bara en kolumn för mekaniker, den som gäller tiden, så
- * resten bor här.
- */
+/** Mekanikerna på en bokning. Fler än en när tjänsterna kräver olika specialister. */
 public class BookingMechanicRepository {
 
     /** Ersätter bokningens mekaniker med listan. Tom lista rensar kopplingarna. */

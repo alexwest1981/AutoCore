@@ -235,10 +235,7 @@ public class Booking {
     }
 
 
-    /**
-     * Alla mekaniker som är valda för bokningen. Den första är bokningens huvudsakliga mekaniker,
-     * och den som kolumnen mechanic_id i bookings håller. Äldre bokningar har bara den ena.
-     */
+/** Alla valda mekaniker. Den första ligger också i kolumnen mechanic_id. */
     public List<Integer> getMechanicIds() {
         if (!mechanicIds.isEmpty()) {
             return new ArrayList<Integer>(mechanicIds);

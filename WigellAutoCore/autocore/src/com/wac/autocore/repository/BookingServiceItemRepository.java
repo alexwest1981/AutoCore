@@ -11,9 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Owns the booking_service_items table: which services a booking holds.
- */
+/** Tabellen booking_service_items: tjänsterna på en bokning. */
 public class BookingServiceItemRepository {
 
     public List<ServiceItem> findByBookingId(int bookingId) throws SQLException {
@@ -54,10 +52,7 @@ public class BookingServiceItemRepository {
         }
     }
 
-    /**
-     * Replaces the booking's services on an open connection, so the caller can
-     * keep the booking row and its services in one transaction.
-     */
+/** Sparar tjänsterna på en öppen anslutning, så allt går i samma transaktion. */
     public void save(Connection connection, Booking booking) throws SQLException {
         String deleteLinks = "DELETE FROM booking_service_items WHERE booking_id = ?";
         String insertLink = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id) VALUES (?, ?)";

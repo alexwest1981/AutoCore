@@ -7,19 +7,7 @@ import java.util.List;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
 
-/**
- * Applies a generated theme's stylesheet to a Scene.
- *
- * Usage (Java):
- *     Scene scene = new Scene(root);
- *     ThemeManager.applyDefault(scene);       // applies the default theme
- *     // or: ThemeManager.apply(scene, "slug");
- *
- * Available slugs: "emerald" (officiellt tema för Wigell AutoCore).
- *
- * The scene root should carry the style class "root" (add it once):
- *     root.getStyleClass().add("root");
- */
+/** Lägger temats stilmall på en scen. */
 public final class ThemeManager {
 
     private ThemeManager() {}
@@ -34,17 +22,18 @@ public final class ThemeManager {
     }
 
 
-    /**
-     * The shared component layer. The colour file (azure.css etc.) sets tokens
-     * and colours; components.css styles elements such as bar charts, donuts,
-     * KPI icons, quick-actions, tables, tabs and shadows — elements used by the
-     * themes but not covered by the colour files.
-     *
-     * Kept here rather than in a single app so that every app using a theme
-     * receives the layer automatically. It is placed FIRST in the list so that
-     * the theme's own rules win where they overlap.
-     */
-    private static final String COMPONENTS = "/com/wac/autocore/theme/components.css";
+/** Komponentlagret, en fil per område. Ordningen är den reglerna låg i, rör den inte. */
+    private static final String[] COMPONENTS = {
+        "/com/wac/autocore/theme/components.css",
+        "/com/wac/autocore/theme/dashboard.css",
+        "/com/wac/autocore/theme/tables.css",
+        "/com/wac/autocore/theme/controls.css",
+        "/com/wac/autocore/theme/layout.css",
+        "/com/wac/autocore/theme/a11y.css",
+        "/com/wac/autocore/theme/kanban.css",
+        "/com/wac/autocore/theme/kanban-cards.css",
+        "/com/wac/autocore/theme/multiselect.css",
+    };
 
     private static URL resolveResource(String path) {
         if (path == null) return null;
@@ -70,9 +59,13 @@ public final class ThemeManager {
         if (theme == null) return;
 
         List<String> sheets = new ArrayList<String>();
-        URL components = resolveResource(COMPONENTS);
-        if (components != null) {
-            sheets.add(components.toExternalForm());
+        for (String part : COMPONENTS) {
+            URL url = resolveResource(part);
+            if (url != null) {
+                sheets.add(url.toExternalForm());
+            } else {
+                System.err.println("[ThemeManager] Warning: Could not find component stylesheet: " + part);
+            }
         }
         URL themeUrl = resolveResource(theme.stylesheet);
         if (themeUrl != null) {

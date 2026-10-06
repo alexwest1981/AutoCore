@@ -176,10 +176,7 @@ public class SeedData {
         }
     }
 
-    /**
-     * Ger bokningen en starttid, en tilldelad mekaniker och en sluttid som räknas ur bokningens
-     * tjänster, så att tiden alltid räcker för hela arbetet.
-     */
+/** Ger bokningen tid, mekaniker och en sluttid som räcker för hela arbetet. */
     private static void setSchedule(Booking booking, int startHour, int startMinute, int mechanicId) {
         LocalTime start = LocalTime.of(startHour, startMinute);
         booking.setStartTime(start);

@@ -12,16 +12,12 @@ import javafx.scene.control.TableView;
 import java.util.List;
 import java.util.function.Function;
 
-/**
- * Fabriksmetoder för konsekvent stylade JavaFX-tabeller.
- */
+/** Fabriksmetoder för tabeller med samma stil. */
 public final class TableFactory {
 
     private TableFactory() {}
 
-    /**
-    * Behållare för en TableView och dess data.
-     */
+/** En TableView med sitt data. */
     public static class FilterableTable<S> {
         private final TableView<S> tableView;
         private final ObservableList<S> baseList;
@@ -49,11 +45,7 @@ public final class TableFactory {
         return new FilterableTable<S>(data);
     }
 
-    /**
-     * Luftmarginalen. En kolumn med fast format får sin uppmätta bredd plus den här marginalen, så
-     * att värdet inte ligger dikt an mot grannen. Den nedre gränsen hindrar kolumnen från att
-     * klippas på en liten skärm, den övre från att svälla på en stor.
-     */
+/** Luftmarginal: en kolumn med fast format får sin uppmätta bredd plus den här. */
     public static final double AIR = 40;
 
     /** ID-kolumnen ser likadan ut i varje tabell. "1042" behöver 47. */
@@ -80,7 +72,7 @@ public final class TableFactory {
     /** Datum och tid tillsammans. "2026-10-05 14:30" behöver 127. */
     public static final double W_DATETIME = 135;
 
-    /** Hänvisning till en annan post, "#1042". Rubriken "Arbetsorder" är den breda delen och behöver 86. */
+/** Hänvisning till en annan post, som #1042. */
     public static final double W_REF = 95;
 
     /** Statuschip. Det bredaste ordet, "Arbetsorder skapad", behöver 137. */
@@ -101,10 +93,7 @@ public final class TableFactory {
     /** Betalningstyp. "Kortbetalning" behöver 100. */
     public static final double W_TYPE = 120;
 
-    /**
-     * Personnamn. Samma mått för Namn, Mekaniker och Kund, för de visar samma sorts värde.
-     * "Johan Karlsson" behöver 114, den övre gränsen håller ett namn från att ta hela tabellen.
-     */
+/** Personnamn, samma mått för Namn, Mekaniker och Kund. */
     public static final double W_PERSON_MIN = 130;
     public static final double W_PERSON_MAX = 260;
 
@@ -124,12 +113,7 @@ public final class TableFactory {
     public static final double W_SPEC_MIN = 120;
     public static final double W_SPEC_MAX = 320;
 
-    /**
-     * En kolumn för ett värde med fast format, till exempel ett id, ett belopp eller ett datum.
-     * Minsta bredd är vad värdet behöver för att inte klippas, den övre gränsen är samma bredd plus
-     * luftmarginalen. Mellan de två får kolumnen röra sig, så att tabellen kan fylla sin ruta utan
-     * att en kort kolumn sväller på en stor skärm.
-     */
+/** Kolumn för ett värde med fast format. Minst vad värdet behöver, högst det plus luft. */
     public static <S> TableColumn<S, String> sizeCol(String title, double need,
                                                     Function<S, String> mapper) {
         return textCol(title, need, need + AIR, mapper);
@@ -144,11 +128,7 @@ public final class TableFactory {
         return c;
     }
 
-    /**
-     * En textkolumn som får växa, men inte obegränsat. Minsta bredden är vad texten behöver för att
-     * vara läsbar, den övre gränsen håller en lång rad från att äta hela tabellen på en stor skärm.
-     * På en smal skärm krymper kolumnen till sin minsta bredd i stället för att klippas.
-     */
+/** Textkolumn som får växa, men inte ta hela tabellen. */
     public static <S> TableColumn<S, String> textCol(String title, double minWidth, double maxWidth,
                                                      Function<S, String> mapper) {
         TableColumn<S, String> c = col(title, minWidth, mapper);
@@ -157,17 +137,12 @@ public final class TableFactory {
         return c;
     }
 
-    /**
-     * ID-kolumnen, samma i alla tabeller. Den får ingen luftmarginal: ett id blir aldrig bredare än
-     * fyra siffror, så allt utrymme den tar utöver det är bortkastat och knuffar de andra kolumnerna.
-     */
+/** ID-kolumnen, samma i alla tabeller. Ingen luftmarginal. */
     public static <S> TableColumn<S, String> idCol(Function<S, String> mapper) {
         return textCol(com.wac.autocore.ui.i18n.I18n.get("table.col.id"), W_ID, W_ID, mapper);
     }
 
-    /**
-     * Skapar en standardtextkolumn.
-     */
+/** Standardtextkolumn. */
     public static <S> TableColumn<S, String> col(String title, double width,
                                                 Function<S, String> mapper) {
         TableColumn<S, String> c = new TableColumn<S, String>(title);
@@ -184,9 +159,7 @@ public final class TableFactory {
         return c;
     }
 
-    /**
-     * Skapar en statuskolumn med färgkodade badge-chips.
-     */
+/** Statuskolumn med färgade märken. */
     public static <S> TableColumn<S, String> badgeCol(String title, double width,
                                                      Function<S, String> mapper) {
         TableColumn<S, String> c = new TableColumn<S, String>(title);

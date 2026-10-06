@@ -13,10 +13,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 
-/**
- * Anpassad ListCell för starttider: grön för ledig tid, röd för upptagen tid.
- * Inaktiverar automatiskt upptagna tider i popup-listan så att dubbelbokning förhindras.
- */
+/** Starttider: grön för ledig, röd för upptagen. Upptagna går inte att välja. */
 public class TimeSlotCell extends ListCell<LocalTime> {
 
     public static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");

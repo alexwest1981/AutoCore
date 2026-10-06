@@ -90,17 +90,7 @@ public class PageRouter {
         }
     }
 
-    /**
-     * Räknarna i menyn visar vad som väntar på att bli hanterat på den sidan, inte allt som finns där:
-     * 1. Arbetsordrar: bokningar som ännu inte har någon arbetsorder, alltså jobb att skapa en order för.
-     * 2. Bokningar: inget märke. Sidan visar bokningar, den har inget eget arbete att göra.
-     * 3. Fakturor: bokningar där hela arbetet är klart och ingen faktura finns. En bokning ger
-     *    ett märke, för det är en faktura som ska skapas, oavsett hur många arbetsordrar den har.
-     * 4. Betalningar: fakturor som väntar på betalning (!isPaid).
-     *
-     * Anropas från navigate(), som är enda vägen till en ny vy, och därför följer räknaren med
-     * varje ändring som ritar om sidan, utan egna lyssnare.
-     */
+/** Märkena i menyn visar vad som väntar på sidan, inte allt som finns där. */
     public void updateNavCounts() {
         if (sidebar == null) {
             return;
@@ -126,10 +116,7 @@ public class PageRouter {
     }
 
 
-    /**
-     * Bokningar som ännu inte har någon arbetsorder, alltså jobb att skapa en order för.
-     * Avbokade bokningar räknas inte, de ska inte bli någon arbetsorder.
-     */
+/** Bokningar utan arbetsorder. Avbokade räknas inte. */
     public static int countBookingsWithoutWorkOrder(List<Booking> bookings, List<WorkOrder> orders) {
         int count = 0;
         for (Booking booking : bookings) {
@@ -150,11 +137,7 @@ public class PageRouter {
         return count;
     }
 
-    /**
-     * Bokningar där hela arbetet är klart och ingen faktura finns, alltså antalet fakturor som
-     * väntar på att skapas. En bokning ger ett märke, även om den har flera arbetsordrar, eftersom
-     * fakturan täcker hela bokningen. Samma regel som fakturavyn använder.
-     */
+/** Bokningar där arbetet är klart och ingen faktura finns. En bokning ger ett märke. */
     public static int countBookingsReadyForInvoice(List<Booking> bookings, List<WorkOrder> orders,
                                                    List<Invoice> invoices) {
         int count = 0;

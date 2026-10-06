@@ -27,9 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
 
-/**
- * Modala dialoger för arbetsorderhantering (skapa arbetsorder).
- */
+/** Dialoger för arbetsorderhantering. */
 public final class WorkOrderDialogs {
 
     private WorkOrderDialogs() {}
@@ -222,12 +220,7 @@ public final class WorkOrderDialogs {
         return false;
     }
 
-    /**
-     * Planen för hur bokningens tjänster fördelas: en post per mekaniker, med den mekanikerns
-     * tjänster. Bokningens mekaniker används när hen är behörig, annars den första behöriga — så
-     * samma person får så många av tjänsterna som möjligt. Nyckeln är mekaniker-id, inte objektet,
-     * eftersom mekanikerlistan kan komma från olika anrop.
-     */
+/** Planen: en post per mekaniker med den mekanikerns tjänster. */
     public static java.util.LinkedHashMap<Integer, List<ServiceItem>> planWorkOrders(
             GarageSystem garage, Booking booking) {
 
@@ -274,13 +267,10 @@ public final class WorkOrderDialogs {
         return null;
     }
 
-    /**
-     * Mekanikern som ska utföra tjänsten: bokningens mekaniker om hen är behörig, annars den första
-     * behöriga. Ordningen är bokningens, så samma person får så många av tjänsterna som möjligt.
-     */
+/** Bokningens mekaniker om hen är behörig, annars den första behöriga. */
     private static Mechanic mechanicForService(GarageSystem garage, List<Mechanic> team, ServiceItem service) {
         List<Mechanic> qualified = garage.getQualifiedMechanics(service);
-        // Först i tur är den mekaniker som bokningen helst vill använda, alltså den som valdes först.
+// Först i tur står mekanikern som valdes först i bokningen.
         for (Mechanic m : team) {
             if (m != null && containsId(qualified, m.getId())) {
                 return m;
@@ -456,10 +446,7 @@ public final class WorkOrderDialogs {
         dialog.showAndWait();
     }
 
-    /**
-     *  (D2) och  (C3): markerar vilka arbeten på arbetsordern som är utförda.
-     * Priset som gäller i det ögonblicket frysas på raden.
-     */
+/** Markerar vilka arbeten på ordern som är utförda. Priset frysas i samma stund. */
     public static void showMarkPerformedDialog(GarageSystem garage, WorkOrder workOrder, Runnable onSuccess) {
         if (workOrder == null) {
             return;

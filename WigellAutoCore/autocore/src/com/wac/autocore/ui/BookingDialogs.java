@@ -20,11 +20,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
- * Modala dialoger för att skapa, redigera, avboka och ta bort bokningar.
- * Tunn koordinator som delegerar formulärvy till {@link BookingFormPane}
- * och tillgänglighetskontroll till {@link BookingAvailability}.
- */
+/** Dialogerna för att skapa, ändra, avboka och ta bort en bokning. */
 public final class BookingDialogs {
 
     private BookingDialogs() {}
@@ -261,10 +257,7 @@ public final class BookingDialogs {
         });
     }
 
-    /**
-     * Sparar bokningen och visar felet i stället för att svälja det. En tyst misslyckad skrivning
-     * lämnade kvar en bokning som såg skapad ut men saknade tid och tjänster, utan att någon fick veta.
-     */
+/** Sparar bokningen och visar felet i stället för att svälja det. */
     private static boolean saveBookingOrReport(GarageSystem garage, Booking booking) {
         try {
             garage.updateBooking(booking);

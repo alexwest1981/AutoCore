@@ -16,12 +16,7 @@ public class Mechanic {
         this.available = true;
     }
 
-    /**
-     * Kontaktuppgifterna för en mekaniker: namnet ska vara ifyllt och telefonnumret följer samma regel
-     * som kundens (tio siffror). Namnet får innehålla siffror, för demodata och provrader använder
-     * etiketter som "D2-mekaniker".
-     * Suffixet hör ihop med nyckeln {@code dialog.validation.<suffix>} i språkfilerna.
-     */
+/** Namnet måste vara ifyllt och numret följer kundens regel. Namnet får innehålla siffror. */
     public static String validationProblem(String name, String phone) {
         if (name == null || name.trim().isEmpty()) {
             return ContactRules.PROBLEM_REQUIRED;

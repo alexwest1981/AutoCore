@@ -22,10 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-/**
- * Sidomeny med varumärkesikon, kollapsbara sektioner för navigation
- * och språkväxlare (SV/EN) i botten.
- */
+/** Sidomenyn: varumärket, sektionerna och språkväxlaren. */
 public class SidebarView {
 
     private final VBox container;
@@ -57,9 +54,7 @@ public class SidebarView {
         }
     }
 
-    /**
-     * Visar antalet nya poster som en räknare på menyvalet. Noll döljer räknaren.
-     */
+/** Räknaren på menyvalet. Noll döljer den. */
     public void setNavCount(String key, int count) {
         Label countLabel = navCountLabels.get(key);
         if (countLabel == null) {

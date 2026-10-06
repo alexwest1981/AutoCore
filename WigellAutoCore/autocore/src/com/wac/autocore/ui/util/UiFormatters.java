@@ -20,17 +20,13 @@ public final class UiFormatters {
     private UiFormatters() {}
 
 
-    /**
-     * Formaterar ett double-belopp med tusentalsavgränsare och valutatillägg, t.ex. "1,500 kr".
-     */
+/** Belopp med tusentalsavgränsare, som 1 500 kr. */
     public static String formatMoney(double amount) {
         return MONEY_FORMAT.format(amount) + " kr";
     }
 
 
-    /**
-     * Trunkerar en sträng till maxtecken och lägger till "…" om den klipps.
-     */
+/** Klipper texten till maxtecken och sätter punkt om den kortades. */
     public static String truncate(String s, int max) {
         if (s == null) {
             return "";
@@ -38,16 +34,12 @@ public final class UiFormatters {
         return s.length() <= max ? s : s.substring(0, max - 1) + "…";
     }
 
-    /**
-     * Returnerar dagens datum snyggt formaterat på engelska, t.ex. "Wednesday 16 September 2026".
-     */
+/** Dagens datum på engelska, som Wednesday 16 September 2026. */
     public static String todayFormatted() {
         return formatDate(LocalDate.now());
     }
 
-    /**
-     * Formaterar ett givet LocalDate på aktivt språk (svenska eller engelska).
-     */
+/** Datumet på aktivt språk. */
     public static String formatDate(LocalDate d) {
         if (d == null) {
             return "";
@@ -67,18 +59,12 @@ public final class UiFormatters {
         }
     }
 
-    /**
-     * Datum och tid som den visas i gränssnittet, utan sekunder och millisekunder:
-     * "2026-10-01 21:30" i stället för "2026-10-01T21:30:15.862".
-     */
+/** Datum och tid för visning, utan sekunder: 2026-10-01 21:30. */
     public static String formatDateTime(LocalDateTime value) {
         return value == null ? "-" : value.format(DATE_TIME_FORMAT);
     }
 
-    /**
-     * Betalsättet som ett läsvänligt ord: det sparade värdet "SWISH" visas som "Swish". Ett okänt
-     * betalsätt visas som det sparades, så en ny typ inte blir tom i tabellen.
-     */
+/** Betalsättet som ett ord: SWISH blir Swish. Okända värden visas som de sparades. */
     public static String paymentTypeWord(String stored) {
         if (stored == null || stored.trim().isEmpty()) {
             return "-";
@@ -96,9 +82,7 @@ public final class UiFormatters {
         return stored;
     }
 
-    /**
-     * Översätter en statuskod till ett läsvänligt visningsord via I18n.
-     */
+/** Statuskoden som ett visningsord via I18n. */
     public static String statusWord(String status) {
         if (status == null) {
             return "";
@@ -121,9 +105,7 @@ public final class UiFormatters {
         return status;
     }
 
-    /**
-     * Returnerar true om statusen representerar ett positivt/klart tillstånd.
-     */
+/** Sant om statusen betyder klart. */
     public static boolean isGood(String s) {
         if (s == null) {
             return false;
@@ -132,9 +114,7 @@ public final class UiFormatters {
                 || s.equals("Completed") || s.equals("Slutförd") || s.equals("Paid") || s.equals("Betald");
     }
 
-    /**
-     * Returnerar CSS-klass för statusbadge ("success", "danger", "warn", "info" eller "").
-     */
+/** CSS-klassen för statusmärket. */
     public static String badgeClass(String s) {
         if (s == null) {
             return "";
@@ -155,9 +135,7 @@ public final class UiFormatters {
         return "";
     }
 
-    /**
-     * Returnerar CSS-klass för statuspunkter i översiktspaneler.
-     */
+/** CSS-klassen för statuspricken i översikten. */
     public static String dotClass(String s) {
         String b = badgeClass(s);
         if (b.isEmpty()) {
