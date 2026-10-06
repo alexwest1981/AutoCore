@@ -219,6 +219,15 @@ public class BookingFormPane extends GridPane {
     public LocalDate getSelectedDate() { return datePicker.getValue(); }
     public List<ServiceItem> getSelectedServices() { return new ArrayList<ServiceItem>(selectedServices); }
 
+    // Borttagningen måste gå via fältet, getSelectedServices lämnar en kopia av listan.
+    void removeService(ServiceItem item) {
+        if (serviceMulti != null) {
+            serviceMulti.removeSelectedItem(item);
+        } else {
+            selectedServices.remove(item);
+        }
+    }
+
     /** Första valda tjänsten, eller null. */
     public ServiceItem getSelectedService() {
         return selectedServices.isEmpty() ? null : selectedServices.get(0);
