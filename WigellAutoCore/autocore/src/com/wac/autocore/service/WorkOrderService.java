@@ -157,6 +157,10 @@ public class WorkOrderService {
             return true;
         }
 
+        if ("CANCELLED".equals(from) && "IN_PROGRESS".equals(to)) {
+            return true;
+        }
+
         return false;
     }
 

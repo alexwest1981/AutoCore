@@ -147,7 +147,7 @@ public final class EntityPages {
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
-            startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
+            startBtn.setDisable(sel == null || !("CREATED".equals(sel.getStatus()) || "CANCELLED".equals(sel.getStatus())));
             cancelBtn.setDisable(sel == null || !("CREATED".equals(sel.getStatus()) || "IN_PROGRESS".equals(sel.getStatus())));
 
 
@@ -183,7 +183,7 @@ public final class EntityPages {
 
         startBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && "CREATED".equals(sel.getStatus())) {
+            if (sel != null && ("CREATED".equals(sel.getStatus()) || "CANCELLED".equals(sel.getStatus()))) {
                 garage.startWorkOrder(sel.getId());
                 router.navigate("workorders");
             }
