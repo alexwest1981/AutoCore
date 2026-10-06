@@ -76,7 +76,7 @@ class BookingServicesField {
         if (!locked) {
         Button removeBtn = new Button("✕");
         removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f87171; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4; -fx-font-weight: bold;");
-        removeBtn.setOnAction(ev -> form.getSelectedServices().remove(item));
+        removeBtn.setOnAction(ev -> form.removeService(item));
         row.getChildren().addAll(nameLbl, detailLbl, spacer, removeBtn);
         } else {
         row.getChildren().addAll(nameLbl, detailLbl, spacer);

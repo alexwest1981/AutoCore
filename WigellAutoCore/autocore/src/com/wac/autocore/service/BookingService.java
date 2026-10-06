@@ -1,6 +1,7 @@
 package com.wac.autocore.service;
 
 import com.wac.autocore.model.Booking;
+import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.BookingRepository;
@@ -10,6 +11,8 @@ import com.wac.autocore.repository.VehicleRepository;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,6 +63,49 @@ public class BookingService {
         }
 
         System.out.println("Booking created successfully.");
+        System.out.println(booking);
+
+        return booking;
+    }
+
+    // Drop-in: kunden står i verkstaden utan bokad tid. Ingen start- eller sluttid sätts, så
+    // bokningen syns på Kanban men spärrar inga tider i bokningsdialogen. Tjänsterna läggs in som
+    // objekt, för WorkOrderPlan fördelar dem mekaniker för mekaniker när arbetsordrarna skapas.
+    public Booking createDropInBooking(int vehicleId, List<ServiceItem> services, List<Mechanic> team) {
+
+        Vehicle vehicle = findVehicle(vehicleId);
+        if (vehicle == null) {
+            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
+            return null;
+        }
+        if (services == null || services.isEmpty() || team == null || team.isEmpty()) {
+            System.out.println("A drop-in booking needs at least one service item and one mechanic.");
+            return null;
+        }
+
+        Booking booking = new Booking(vehicleId, LocalDate.now(), "seed.booking.drop_in.description");
+        booking.setServiceItems(services);
+
+        // En drop-in sker när kunden kommer in, så bokningen får innevarande timme i stället för att
+        // sakna tid. Utan tid letar schemat upp första lediga timme, och jobbet hamnar fel på Kanban.
+        LocalTime startTime = LocalTime.now().truncatedTo(ChronoUnit.HOURS);
+        booking.setStartTime(startTime);
+        booking.setEndTime(startTime.plusMinutes(booking.getTotalEstimatedMinutes() > 0
+                ? booking.getTotalEstimatedMinutes() : 60));
+
+        List<Integer> mechanicIds = new ArrayList<Integer>();
+        for (Mechanic mechanic : team) {
+            mechanicIds.add(Integer.valueOf(mechanic.getId()));
+        }
+        booking.setMechanicIds(mechanicIds);
+
+        try {
+            bookingRepository.save(booking);
+        } catch (SQLException e) {
+            System.out.println("Could not save booking: " + e.getMessage());
+            return null;
+        }
+
         System.out.println(booking);
 
         return booking;
