@@ -229,6 +229,10 @@ public class GarageSystem {
         return workOrderService.cancelWorkOrder(workOrderId);
     }
 
+    public boolean confirmWorkOrder(int workOrderId) {
+        return workOrderService.confirmWorkOrder(workOrderId);
+    }
+
     public Payment processPayment(int invoiceId, String paymentType) {
         return paymentService.processPayment(invoiceId, paymentType);
     }

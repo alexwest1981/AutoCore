@@ -161,6 +161,18 @@ public class WorkOrderService {
             return true;
         }
 
+        if ("CREATED".equals(from) && "CONFIRMED".equals(to)) {
+            return true;
+        }
+
+        if ("CONFIRMED".equals(from) && "IN_PROGRESS".equals(to)) {
+            return true;
+        }
+
+        if ("CONFIRMED".equals(from) && "CANCELLED".equals(to)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -242,6 +254,28 @@ public class WorkOrderService {
         System.out.println("Work order " + workOrderId + " has been completed.");
         return true;
     }
+
+    // Ett utkast blir bekräftat först när kunden har sagt ja till pris och tid.
+    public boolean confirmWorkOrder(int workOrderId) {
+        WorkOrder workOrder = findById(workOrderId);
+
+        if (workOrder == null) {
+            System.out.println("Work order with ID " + workOrderId + " does not exist.");
+            return false;
+        }
+
+        if (!canChangeStatus(workOrder.getStatus(), "CONFIRMED")) {
+            System.out.println("Only drafts can be confirmed.");
+            return false;
+        }
+
+        workOrder.setStatus("CONFIRMED");
+        saveWorkOrder(workOrder);
+
+        System.out.println("Work order " + workOrderId + " has been confirmed.");
+        return true;
+    }
+
 
     // Ett avbrutet utkast ska inte lämna kvar en bokad tid, så bokningen avbryts och schemat frigörs.
     public boolean cancelWorkOrder(int workOrderId) {

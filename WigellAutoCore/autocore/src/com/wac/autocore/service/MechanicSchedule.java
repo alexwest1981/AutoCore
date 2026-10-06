@@ -53,7 +53,7 @@ public class MechanicSchedule {
                 + "JOIN bookings b ON wo.booking_id = b.id "
                 + "LEFT JOIN vehicles v ON b.vehicle_id = v.id "
                 + "LEFT JOIN customers c ON v.customer_id = c.id "
-                + "WHERE wo.status IN ('CREATED', 'IN_PROGRESS')\n";
+                + "WHERE wo.status IN ('CREATED', 'CONFIRMED', 'IN_PROGRESS')\n";
 
         java.util.Set<Integer> activeWorkOrderIds = new java.util.HashSet<Integer>();
 
