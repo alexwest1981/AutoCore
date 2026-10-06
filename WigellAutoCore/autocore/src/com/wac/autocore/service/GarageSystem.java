@@ -182,6 +182,11 @@ public class GarageSystem {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
     }
 
+    // Skapar ett utkast, alltså en arbetsorder utan bokning och utan tjänster.
+    public WorkOrder createDraft(int vehicleId, String description) {
+        return workOrderService.createDraft(vehicleId, description);
+    }
+
     public Invoice createInvoice(int workOrderId, String discountCode) {
         return billingService.createInvoice(workOrderId, discountCode);
     }

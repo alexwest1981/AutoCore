@@ -112,6 +112,7 @@
       "action_mark_performed": "Markera utförda arbeten",
       "action_complete": "Slutför order",
       "action_invoice": "Skapa faktura",
+      "action_draft": "+ Nytt utkast",
       "action_details": "Visa detaljer"
     },
     "invoices": {
@@ -367,6 +368,13 @@
       "create_order": "Skapa & öppna arbetsorder",
       "estimated_time": "Beräknad arbetstid:",
       "estimated_cost": "Beräknat pris:"
+    },
+    "draft": {
+      "title": "Nytt utkast",
+      "header": "Registrera jobbet innan tiden är bokad",
+      "description": "Beskrivning av problemet",
+      "no_vehicles": "Det finns inga fordon att knyta utkastet till",
+      "create_failed": "Utkastet kunde inte sparas."
     },
     "workorder": {
       "create": {
