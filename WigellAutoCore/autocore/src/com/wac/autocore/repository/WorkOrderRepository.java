@@ -27,7 +27,7 @@ public class WorkOrderRepository {
 
     public List<WorkOrder> findAll() throws SQLException {
         List<WorkOrder> workOrders = new ArrayList<WorkOrder>();
-        String sql = "SELECT id, booking_id, mechanic_id, status FROM work_orders";
+        String sql = "SELECT id, booking_id, mechanic_id, status, vehicle_id, description FROM work_orders";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -44,7 +44,7 @@ public class WorkOrderRepository {
     }
 
     public WorkOrder findById(int id) throws SQLException {
-        String sql = "SELECT id, booking_id, mechanic_id, status FROM work_orders WHERE id = ?";
+        String sql = "SELECT id, booking_id, mechanic_id, status, vehicle_id, description FROM work_orders WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -80,7 +80,7 @@ public class WorkOrderRepository {
     }
 
     private void insert(WorkOrder workOrder) throws SQLException {
-        String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, vehicle_id, description) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -88,6 +88,8 @@ public class WorkOrderRepository {
             statement.setInt(1, workOrder.getBookingId());
             statement.setInt(2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
+            statement.setInt(4, workOrder.getVehicleId());
+            statement.setString(5, workOrder.getDescription());
             statement.executeUpdate();
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
@@ -99,7 +101,7 @@ public class WorkOrderRepository {
     }
 
     private void update(WorkOrder workOrder) throws SQLException {
-        String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ? WHERE id = ?";
+        String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, vehicle_id = ?, description = ? WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -107,7 +109,9 @@ public class WorkOrderRepository {
             statement.setInt(1, workOrder.getBookingId());
             statement.setInt(2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
-            statement.setInt(4, workOrder.getId());
+            statement.setInt(4, workOrder.getVehicleId());
+            statement.setString(5, workOrder.getDescription());
+            statement.setInt(6, workOrder.getId());
             statement.executeUpdate();
         }
     }
@@ -181,6 +185,10 @@ public class WorkOrderRepository {
         );
 
         String status = resultSet.getString("status");
+
+        workOrder.setVehicleId(resultSet.getInt("vehicle_id"));
+        workOrder.setDescription(resultSet.getString("description"));
+
         if (status != null) {
             workOrder.setStatus(status);
         }

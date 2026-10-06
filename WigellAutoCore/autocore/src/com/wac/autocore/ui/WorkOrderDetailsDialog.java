@@ -60,11 +60,16 @@ final class WorkOrderDetailsDialog {
         infoGrid.add(new Label(I18n.get("table.col.vehicle") + ":"), 0, 3);
         infoGrid.add(new Label(EntityLookup.workOrderVehicleReg(garage, workOrder)), 1, 3);
 
+        infoGrid.add(new Label(I18n.get("table.col.description") + ":"), 0, 4);
+        infoGrid.add(new Label(workOrder.getDescription() == null || workOrder.getDescription().trim().isEmpty()
+                ? "-"
+                : SeedText.resolve(workOrder.getDescription())), 1, 4);
+
         Invoice inv = EntityLookup.invoiceForWorkOrder(garage, workOrder.getId());
         if (inv != null) {
-            infoGrid.add(new Label(I18n.get("table.col.invoice") + ":"), 0, 4);
+            infoGrid.add(new Label(I18n.get("table.col.invoice") + ":"), 0, 5);
             infoGrid.add(new Label("#" + inv.getId() + " (" + inv.getInvoiceDate() + " - "
-                    + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")) + ")"), 1, 4);
+                    + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")) + ")"), 1, 5);
         }
 
         Label servicesTitle = new Label(I18n.get("table.col.services"));

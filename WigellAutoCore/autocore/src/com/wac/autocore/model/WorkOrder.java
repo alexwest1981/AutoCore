@@ -14,6 +14,8 @@ public class WorkOrder {
     private final List<Integer> completedServiceItems = new ArrayList<Integer>();
     private final Map<Integer, Double> completedServicePrices = new LinkedHashMap<Integer, Double>();
     private String status;
+    private int vehicleId;
+    private String description;
 
     public WorkOrder(int id, int bookingId, int mechanicId) {
         this.id = id;
@@ -45,6 +47,22 @@ public class WorkOrder {
 
     public void setMechanicId(int mechanicId) {
         this.mechanicId = mechanicId;
+    }
+
+    public int getVehicleId() {
+        return vehicleId;
+    }
+
+    public void setVehicleId(int vehicleId) {
+        this.vehicleId = vehicleId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<Integer> getServiceItemIds() {

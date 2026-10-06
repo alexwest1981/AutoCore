@@ -4,10 +4,12 @@ import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.MechanicRepository;
 import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
+import com.wac.autocore.repository.VehicleRepository;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ public class WorkOrderService {
     private final BookingRepository bookingRepository = new BookingRepository();
     private final MechanicRepository mechanicRepository = new MechanicRepository();
     private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final VehicleRepository vehicleRepository = new VehicleRepository();
 
     public List<WorkOrder> getAll() {
         try {
@@ -126,7 +129,31 @@ public class WorkOrderService {
         return workOrder;
     }
 
-/** Sant om tjänsten redan ligger på en arbetsorder för samma bokning. Katalogen är delad. */
+    // Skapar ett utkast: fordonet och beskrivningen, resten fylls på senare.
+    public WorkOrder createDraft(int vehicleId, String description) {
+        Vehicle vehicle = findVehicle(vehicleId);
+        if (vehicle == null) {
+            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
+            return null;
+        }
+
+        WorkOrder workOrder = new WorkOrder(0, 0, 0);
+        workOrder.setVehicleId(vehicleId);
+        workOrder.setDescription(description);
+
+        try {
+            workOrderRepository.save(workOrder);
+        } catch (SQLException e) {
+            System.out.println("Could not save draft work order: " + e.getMessage());
+            return null;
+        }
+
+        System.out.println("Draft work order created successfully.");
+        return workOrder;
+    }
+
+
+    /** Sant om tjänsten redan ligger på en arbetsorder för samma bokning. Katalogen är delad. */
     private boolean isClaimed(int bookingId, int serviceItemId) {
         for (WorkOrder order : getAll()) {
             if (order.getBookingId() != bookingId) {
@@ -386,6 +413,15 @@ public class WorkOrderService {
             return serviceItemRepository.findById(id);
         } catch (SQLException e) {
             System.out.println("Could not read service item " + id + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Vehicle findVehicle(int id) {
+        try {
+            return vehicleRepository.findById(id);
+        } catch (SQLException e) {
+            System.out.println("Could not read vehicle " + id + ": " + e.getMessage());
             return null;
         }
     }

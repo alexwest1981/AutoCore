@@ -44,6 +44,9 @@ public final class EntityLookup {
     }
 
     public static String mechanicName(GarageSystem garage, int id) {
+        if (id <= 0) {
+            return "-";
+        }
         if (garage == null) {
             return "Mechanic #" + id;
         }
@@ -185,15 +188,32 @@ public final class EntityLookup {
         return "-";
     }
 
+    /** Bokningsnumret arbetsordern hör till, eller ett streck för ett utkast. */
+    public static String workOrderBookingRef(WorkOrder wo) {
+        if (wo == null || wo.getBookingId() <= 0) return "-";
+        return String.valueOf(wo.getBookingId());
+    }
+
     public static String workOrderVehicleReg(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null) return "-";
+        if (wo.getVehicleId() > 0) return vehicleReg(garage, wo.getVehicleId());
         return bookingVehicleReg(garage, wo.getBookingId());
+    }
+
+    // Kunden som äger fordonet. Ett utkast har ingen bokning, bara ett fordon.
+    private static String vehicleCustomerName(GarageSystem garage, int vehicleId) {
+        for (Vehicle v : garage.getVehicles()) {
+            if (v.getId() == vehicleId) return customerName(garage, v.getCustomerId());
+        }
+        return "-";
     }
 
     public static String workOrderCustomerName(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null) return "-";
+        if (wo.getVehicleId() > 0) return vehicleCustomerName(garage, wo.getVehicleId());
         return bookingCustomerName(garage, wo.getBookingId());
     }
+
 
     /** Bokningens valda tid som text, eller ett streck när ingen tid är vald. */
     public static String bookingTime(Booking b) {
