@@ -148,7 +148,8 @@ public final class EntityPages {
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
             startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
-            cancelBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
+            cancelBtn.setDisable(sel == null || !("CREATED".equals(sel.getStatus()) || "IN_PROGRESS".equals(sel.getStatus())));
+
 
             // DANIEL-LOGIK: Arbetsorder med fler tjänster kräver att man markerar dem utförda
             // ett för ett via markBtn. Arbetsorder med exakt en tjänst hoppar direkt till Complete –
@@ -190,7 +191,7 @@ public final class EntityPages {
 
         cancelBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && "CREATED".equals(sel.getStatus())) {
+            if (sel != null && ("CREATED".equals(sel.getStatus()) || "IN_PROGRESS".equals(sel.getStatus()))) {
                 garage.cancelWorkOrder(sel.getId());
                 router.navigate("workorders");
             }

@@ -153,6 +153,10 @@ public class WorkOrderService {
             return true;
         }
 
+        if ("IN_PROGRESS".equals(from) && "CANCELLED".equals(to)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -245,7 +249,7 @@ public class WorkOrderService {
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "CANCELLED")) {
-            System.out.println("Only drafts can be cancelled.");
+            System.out.println("Only drafts and work orders in progress can be cancelled.");
             return false;
         }
 
