@@ -23,6 +23,8 @@ out/
 bin/
 target/
 *.class
+# Fillistan start.sh genererar for javac, skapas och raderas vid varje korning
+sources.txt
 
 # Lokal databas, skapas av appen och ska inte versionshanteras.
 # Snedstrecket först ankrar regeln till repo-roten, annars träffar den
