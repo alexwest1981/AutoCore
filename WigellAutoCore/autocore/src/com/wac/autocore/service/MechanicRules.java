@@ -90,10 +90,20 @@ public class MechanicRules {
         List<Mechanic> all = getAll();
         for (ServiceItem s : services) {
             Mechanic best = null;
+            // En tjänst utan krav ska den generella mekanikern ta, även om en specialist redan är vald.
+            boolean anyQualified = s.requiresAnyMechanic();
             for (Mechanic m : result) {
-                if (isMechanicQualified(m, s)) {
+                if (isMechanicQualified(m, s) && (!anyQualified || isGeneralist(m))) {
                     best = m;
                     break;
+                }
+            }
+            if (best == null && anyQualified) {
+                for (Mechanic m : all) {
+                    if (isGeneralist(m)) {
+                        best = m;
+                        break;
+                    }
                 }
             }
             if (best == null) {
@@ -106,9 +116,7 @@ public class MechanicRules {
             }
             if (best == null) {
                 for (Mechanic m : all) {
-                    String spec = SeedText.resolve(m.getSpecialization());
-                    String specStr = spec != null ? spec.toLowerCase() : "";
-                    if (specStr.contains("general") || specStr.contains("allmän")) {
+                    if (isGeneralist(m)) {
                         best = m;
                         break;
                     }
@@ -121,6 +129,16 @@ public class MechanicRules {
             }
         }
         return result;
+    }
+
+    /** Sant om mekanikern är generalist och kan ta tjänster utan krav. */
+    public boolean isGeneralist(Mechanic mechanic) {
+        if (mechanic == null) {
+            return false;
+        }
+        String spec = SeedText.resolve(mechanic.getSpecialization());
+        String specStr = spec != null ? spec.toLowerCase() : "";
+        return specStr.contains("general") || specStr.contains("allmän");
     }
 
     public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {

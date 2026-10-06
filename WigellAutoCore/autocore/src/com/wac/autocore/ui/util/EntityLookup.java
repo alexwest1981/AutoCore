@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.util;
 
+import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
@@ -192,6 +193,33 @@ public final class EntityLookup {
     public static String workOrderCustomerName(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null) return "-";
         return bookingCustomerName(garage, wo.getBookingId());
+    }
+
+    /** Bokningens valda tid som text, eller ett streck när ingen tid är vald. */
+    public static String bookingTime(Booking b) {
+        if (b == null || b.getStartTime() == null) return "-";
+        if (b.getEndTime() == null) return b.getStartTime().toString();
+        return b.getStartTime() + " - " + b.getEndTime();
+    }
+
+    /** Arbetsorderns datum, hämtat ur bokningen den skapades från. */
+    public static String workOrderDate(GarageSystem garage, WorkOrder wo) {
+        Booking b = bookingForWorkOrder(garage, wo);
+        return b == null || b.getDate() == null ? "-" : String.valueOf(b.getDate());
+    }
+
+    /** Arbetsorderns tid, hämtad ur bokningen den skapades från. */
+    public static String workOrderTime(GarageSystem garage, WorkOrder wo) {
+        return bookingTime(bookingForWorkOrder(garage, wo));
+    }
+
+    /** Bokningen som arbetsordern hör till, eller null när den saknas. */
+    private static Booking bookingForWorkOrder(GarageSystem garage, WorkOrder wo) {
+        if (garage == null || wo == null || wo.getBookingId() <= 0) return null;
+        for (Booking b : garage.getBookings()) {
+            if (b.getId() == wo.getBookingId()) return b;
+        }
+        return null;
     }
 
     /** Bokningen som arbetsordern hör till, eller 0 om arbetsordern inte finns. */

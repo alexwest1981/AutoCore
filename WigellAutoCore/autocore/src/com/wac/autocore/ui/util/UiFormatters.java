@@ -102,6 +102,13 @@ public final class UiFormatters {
         if ("COMPLETED".equalsIgnoreCase(status)) {
             return com.wac.autocore.ui.i18n.I18n.get("status.completed");
         }
+        if ("CONFIRMED".equalsIgnoreCase(status)) {
+            return com.wac.autocore.ui.i18n.I18n.get("status.confirmed");
+        }
+        if ("CANCELLED".equalsIgnoreCase(status)) {
+            return com.wac.autocore.ui.i18n.I18n.get("status.cancelled");
+        }
+
         return status;
     }
 

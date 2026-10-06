@@ -40,7 +40,7 @@ public final class EntityPages {
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
                 TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.vehicleReg(garage, c.getVehicleId())),
                 TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> String.valueOf(c.getDate())),
-                TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_TIME, c -> c.getStartTime() != null ? (c.getEndTime() != null ? c.getStartTime() + " - " + c.getEndTime() : c.getStartTime().toString()) : "-"),
+                TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_TIME, c -> EntityLookup.bookingTime(c)),
                 TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.bookingServices(garage, c)),
                 TableFactory.sizeCol(I18n.get("table.col.estimated_time"), TableFactory.W_MINUTES, c -> {
                     int min = EntityLookup.bookingTotalMinutes(garage, c);
@@ -116,6 +116,8 @@ public final class EntityPages {
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
                 TableFactory.sizeCol(I18n.get("table.col.booking"), TableFactory.W_REF, c -> String.valueOf(c.getBookingId())),
                 TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.workOrderVehicleReg(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> EntityLookup.workOrderDate(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_TIME, c -> EntityLookup.workOrderTime(garage, c)),
                 TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
                 TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.workOrderServices(garage, c)),
                 TableFactory.sizeCol(I18n.get("table.col.total"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
@@ -138,17 +140,25 @@ public final class EntityPages {
         });
 
         Button startBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_start"));
+        Button cancelBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_cancel"));
+        Button confirmBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_confirm"));
         Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
         Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
         Button invoiceBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_invoice"));
         startBtn.setDisable(true);
+        cancelBtn.setDisable(true);
+        confirmBtn.setDisable(true);
         markBtn.setDisable(true);
         completeBtn.setDisable(true);
         invoiceBtn.setDisable(true);
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
-            startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
+            startBtn.setDisable(sel == null || !("CREATED".equals(sel.getStatus()) || "CONFIRMED".equals(sel.getStatus()) || "CANCELLED".equals(sel.getStatus())));
+            cancelBtn.setDisable(sel == null || !("CREATED".equals(sel.getStatus()) || "CONFIRMED".equals(sel.getStatus()) || "IN_PROGRESS".equals(sel.getStatus())));
+            confirmBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
+
+
 
             // DANIEL-LOGIK: Arbetsorder med fler tjänster kräver att man markerar dem utförda
             // ett för ett via markBtn. Arbetsorder med exakt en tjänst hoppar direkt till Complete –
@@ -182,11 +192,28 @@ public final class EntityPages {
 
         startBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && "CREATED".equals(sel.getStatus())) {
+            if (sel != null && ("CREATED".equals(sel.getStatus()) || "CONFIRMED".equals(sel.getStatus()) || "CANCELLED".equals(sel.getStatus()))) {
                 garage.startWorkOrder(sel.getId());
                 router.navigate("workorders");
             }
         });
+
+        cancelBtn.setOnAction(e -> {
+            WorkOrder sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null && ("CREATED".equals(sel.getStatus()) || "CONFIRMED".equals(sel.getStatus()) || "IN_PROGRESS".equals(sel.getStatus()))) {
+                garage.cancelWorkOrder(sel.getId());
+                router.navigate("workorders");
+            }
+        });
+
+        confirmBtn.setOnAction(e -> {
+            WorkOrder sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null && "CREATED".equals(sel.getStatus())) {
+                garage.confirmWorkOrder(sel.getId());
+                router.navigate("workorders");
+            }
+        });
+
 
         markBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
@@ -231,7 +258,7 @@ public final class EntityPages {
                         PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
                         I18n.get("view.notice.workorders.one"),
                         I18n.get("view.notice.workorders.many")),
-                t, detailsBtn, startBtn, markBtn, completeBtn, invoiceBtn, dropInBtn, addBtn);
+                t, detailsBtn, startBtn, cancelBtn, confirmBtn, markBtn, completeBtn, invoiceBtn, dropInBtn, addBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
