@@ -107,6 +107,7 @@
       "meta.one": "{0} work order",
       "action_create": "+ Create Work Order",
       "action_start": "▶ Start order",
+      "action_cancel": "Cancel order",
       "action_mark_performed": "Mark performed work",
       "action_complete": "Complete order",
       "action_invoice": "Create invoice",

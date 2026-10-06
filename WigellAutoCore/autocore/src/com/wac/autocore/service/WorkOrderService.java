@@ -139,6 +139,24 @@ public class WorkOrderService {
         return false;
     }
 
+    // Enda stället som avgör vilka byten som är tillåtna. Allt som inte står här nekas.
+    private boolean canChangeStatus(String from, String to) {
+        if ("CREATED".equals(from) && "IN_PROGRESS".equals(to)) {
+            return true;
+        }
+
+        if ("IN_PROGRESS".equals(from) && "COMPLETED".equals(to)) {
+            return true;
+        }
+
+        if ("CREATED".equals(from) && "CANCELLED".equals(to)) {
+            return true;
+        }
+
+        return false;
+    }
+
+
     public boolean startWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {
@@ -146,7 +164,7 @@ public class WorkOrderService {
             return false;
         }
 
-        if (!"CREATED".equals(workOrder.getStatus())) {
+        if (!canChangeStatus(workOrder.getStatus(), "IN_PROGRESS")) {
             System.out.println("Work order cannot be started.");
             return false;
         }
@@ -178,7 +196,7 @@ public class WorkOrderService {
             return false;
         }
 
-        if (!"IN_PROGRESS".equals(workOrder.getStatus())) {
+        if (!canChangeStatus(workOrder.getStatus(), "COMPLETED")) {
             System.out.println("Only work orders in progress can be completed.");
             return false;
         }
@@ -214,6 +232,43 @@ public class WorkOrderService {
         }
 
         System.out.println("Work order " + workOrderId + " has been completed.");
+        return true;
+    }
+
+    // Ett avbrutet utkast ska inte lämna kvar en bokad tid, så bokningen avbryts och schemat frigörs.
+    public boolean cancelWorkOrder(int workOrderId) {
+        WorkOrder workOrder = findById(workOrderId);
+
+        if (workOrder == null) {
+            System.out.println("Work order with ID " + workOrderId + " does not exist.");
+            return false;
+        }
+
+        if (!canChangeStatus(workOrder.getStatus(), "CANCELLED")) {
+            System.out.println("Only drafts can be cancelled.");
+            return false;
+        }
+
+        Mechanic mechanic = findMechanic(workOrder.getMechanicId());
+        Booking booking = findBooking(workOrder.getBookingId());
+
+        if (mechanic != null) {
+            mechanic.setAvailable(true);
+            saveMechanic(mechanic);
+        }
+
+        if (booking != null) {
+            booking.setStatus("CANCELLED");
+            saveBooking(booking);
+            MechanicSchedule.getInstance().cancelSlotForBooking(booking.getId());
+            MechanicSchedule.getInstance().syncFromDatabase();
+        }
+
+        workOrder.setStatus("CANCELLED");
+        saveWorkOrder(workOrder);
+
+        System.out.println("Work order " + workOrderId + " has been cancelled.");
+
         return true;
     }
 

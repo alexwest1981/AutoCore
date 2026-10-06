@@ -107,6 +107,7 @@
       "meta.one": "{0} arbetsorder",
       "action_create": "+ Ny arbetsorder",
       "action_start": "▶ Starta order",
+      "action_cancel": "Avbryt order",
       "action_mark_performed": "Markera utförda arbeten",
       "action_complete": "Slutför order",
       "action_invoice": "Skapa faktura",

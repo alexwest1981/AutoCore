@@ -135,10 +135,12 @@ public final class EntityPages {
         });
 
         Button startBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_start"));
+        Button cancelBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_cancel"));
         Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
         Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
         Button invoiceBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_invoice"));
         startBtn.setDisable(true);
+        cancelBtn.setDisable(true);
         markBtn.setDisable(true);
         completeBtn.setDisable(true);
         invoiceBtn.setDisable(true);
@@ -146,6 +148,7 @@ public final class EntityPages {
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
             startBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
+            cancelBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
 
             // DANIEL-LOGIK: Arbetsorder med fler tjänster kräver att man markerar dem utförda
             // ett för ett via markBtn. Arbetsorder med exakt en tjänst hoppar direkt till Complete –
@@ -181,6 +184,14 @@ public final class EntityPages {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
             if (sel != null && "CREATED".equals(sel.getStatus())) {
                 garage.startWorkOrder(sel.getId());
+                router.navigate("workorders");
+            }
+        });
+
+        cancelBtn.setOnAction(e -> {
+            WorkOrder sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null && "CREATED".equals(sel.getStatus())) {
+                garage.cancelWorkOrder(sel.getId());
                 router.navigate("workorders");
             }
         });
@@ -228,7 +239,7 @@ public final class EntityPages {
                         PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
                         I18n.get("view.notice.workorders.one"),
                         I18n.get("view.notice.workorders.many")),
-                t, detailsBtn, startBtn, markBtn, completeBtn, invoiceBtn, addBtn);
+                t, detailsBtn, startBtn, cancelBtn, markBtn, completeBtn, invoiceBtn, addBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
