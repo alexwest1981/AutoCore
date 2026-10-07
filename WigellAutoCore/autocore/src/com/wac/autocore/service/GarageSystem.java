@@ -189,6 +189,17 @@ public class GarageSystem {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
     }
 
+    /** Skapar en arbetsorder av en viss typ: Standard, Reklamation eller Intern. */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds,
+                                     String type) {
+        return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
+    }
+
+    /** Skapar en reklamation på en tidigare utförd arbetsorder. */
+    public WorkOrder createReclamation(int originalWorkOrderId, String description) {
+        return workOrderService.createReclamation(originalWorkOrderId, description);
+    }
+
     // Skapar ett utkast, alltså en arbetsorder utan bokning och utan tjänster.
     public WorkOrder createDraft(int vehicleId, String description) {
         return workOrderService.createDraft(vehicleId, description);
@@ -212,9 +223,19 @@ public class GarageSystem {
         return billingService.createInvoice(workOrderId, discountCode);
     }
 
+/** Fakturerar en arbetsorder, med en ny kostnad som egen rad. */
+    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
+        return billingService.createInvoice(workOrderId, discountCode, extraName, extraAmount);
+    }
+
 /** Fakturerar bokningen. Själva arbetet ligger i {@link BillingService}. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
         return billingService.createInvoiceForBooking(bookingId, discountCode);
+    }
+
+/** Samma faktura, men med plats för en ny kostnad som reklamationen för med sig. */
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
+        return billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
     }
 
     public Mechanic createMechanic(String name, String phone, String specialization) throws SQLException {

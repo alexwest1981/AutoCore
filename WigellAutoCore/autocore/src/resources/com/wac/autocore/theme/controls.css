@@ -35,13 +35,27 @@
     -fx-background-radius: 10;
     -fx-border-color: -wac-line;
     -fx-border-radius: 10;
-    -fx-border-width: 1;
+    -fx-border-width: 2;
     -fx-padding: 8 14;
     -fx-cursor: hand;
 }
 .secondary-button:hover {
     -fx-background-color: -wac-accent-soft;
     -fx-border-color: -wac-accent;
+}
+.danger-button {
+    -fx-background-color: -wac-danger-soft;
+    -fx-text-fill: #991b1b;
+    -fx-background-radius: 10;
+    -fx-border-color: #991b1b;
+    -fx-border-radius: 10;
+    -fx-border-width: 2;
+    -fx-padding: 8 14;
+    -fx-cursor: hand;
+}
+.danger-button:hover {
+    -fx-background-color: derive(-wac-danger-soft, -6%);
+    -fx-border-color: #991b1b;
 }
 .text-link {
     -fx-text-fill: -wac-accent;

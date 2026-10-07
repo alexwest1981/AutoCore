@@ -264,12 +264,16 @@ public final class ActionDialogs {
         WorkOrderDialogs.showCreateDropInWorkOrderDialog(garage, onSuccess);
     }
 
-    public static void showWorkOrderDetailsDialog(GarageSystem garage, WorkOrder workOrder) {
-        WorkOrderDialogs.showWorkOrderDetailsDialog(garage, workOrder);
+    public static void showWorkOrderDetailsDialog(GarageSystem garage, WorkOrder workOrder, Runnable onRefresh) {
+        WorkOrderDialogs.showWorkOrderDetailsDialog(garage, workOrder, onRefresh);
     }
 
     public static void showMarkPerformedDialog(GarageSystem garage, WorkOrder workOrder, Runnable onSuccess) {
         WorkOrderDialogs.showMarkPerformedDialog(garage, workOrder, onSuccess);
+    }
+
+    public static void showCreateReclamationDialog(GarageSystem garage, WorkOrder workOrder, Runnable onSuccess) {
+        WorkOrderDialogs.showCreateReclamationDialog(garage, workOrder, onSuccess);
     }
 
     // =========================================================================

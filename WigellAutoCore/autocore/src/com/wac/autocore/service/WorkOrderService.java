@@ -71,6 +71,16 @@ public class WorkOrderService {
 
 /** Skapar en arbetsorder för ett urval av tjänsterna. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds) {
+        return createWorkOrder(bookingId, mechanicId, serviceItemIds, WorkOrder.TYPES.get(0));
+    }
+
+    /** Skapar en arbetsorder av en viss typ. Standard, garanti eller internt arbete. */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type) {
+        if (type == null || !WorkOrder.TYPES.contains(type)) {
+            System.out.println("Unknown work order type: " + type);
+            return null;
+        }
+
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
@@ -107,6 +117,7 @@ public class WorkOrderService {
         }
 
         WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
+        workOrder.setType(type);
 
         for (Integer serviceItemId : serviceItemIds) {
             workOrder.addServiceItem(serviceItemId);
@@ -127,6 +138,60 @@ public class WorkOrderService {
         System.out.println(workOrder);
 
         return workOrder;
+    }
+
+    // En reklamation är en egen arbetsorder som gör om ett tidigare utfört arbete och pekar ut det
+    // med originalWorkOrderId. Samma bokning, samma mekaniker, samma tjänster — men en ny order.
+    //
+    // Spärren i createWorkOrder som stoppar en tjänst från att ligga på två ordrar gäller inte här.
+    // Tjänsten ska ju göras om, och reklamationen debiteras ändå inte kunden, så den kan inte bli
+    // fakturerad två gånger.
+    public WorkOrder createReclamation(int originalWorkOrderId, String description) {
+        WorkOrder original = findById(originalWorkOrderId);
+
+        if (original == null) {
+            System.out.println("Work order with ID " + originalWorkOrderId + " does not exist.");
+            return null;
+        }
+
+        // Bara ett arbete som faktiskt är utfört går att reklamera.
+        if (!"COMPLETED".equalsIgnoreCase(original.getStatus())) {
+            System.out.println("Work order " + originalWorkOrderId + " is not completed.");
+            return null;
+        }
+
+        Mechanic mechanic = findMechanic(original.getMechanicId());
+        if (mechanic == null) {
+            System.out.println("Mechanic with ID " + original.getMechanicId() + " does not exist.");
+            return null;
+        }
+
+        if (!mechanic.isAvailable()) {
+            System.out.println("Mechanic " + mechanic.getName() + " is not available.");
+            return null;
+        }
+
+        WorkOrder reclamation = new WorkOrder(0, original.getBookingId(), original.getMechanicId());
+        reclamation.setType(WorkOrder.RECLAMATION);
+        reclamation.setOriginalWorkOrderId(originalWorkOrderId);
+        reclamation.setVehicleId(original.getVehicleId());
+        reclamation.setDescription(description);
+
+        for (Integer serviceItemId : original.getServiceItemIds()) {
+            reclamation.addServiceItem(serviceItemId);
+        }
+
+        try {
+            workOrderRepository.save(reclamation);
+        } catch (SQLException e) {
+            System.out.println("Could not save reclamation: " + e.getMessage());
+            return null;
+        }
+
+        System.out.println("Reclamation created successfully.");
+        System.out.println(reclamation);
+
+        return reclamation;
     }
 
     // Skapar ett utkast: fordonet och beskrivningen, resten fylls på senare.
@@ -168,10 +233,6 @@ public class WorkOrderService {
 
     // Enda stället som avgör vilka byten som är tillåtna. Allt som inte står här nekas.
     private boolean canChangeStatus(String from, String to) {
-        if ("CREATED".equals(from) && "IN_PROGRESS".equals(to)) {
-            return true;
-        }
-
         if ("IN_PROGRESS".equals(from) && "COMPLETED".equals(to)) {
             return true;
         }

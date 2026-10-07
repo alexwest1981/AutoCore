@@ -109,6 +109,17 @@
     -fx-background-color: -wac-accent-soft;
 }
 
+.dialog-pane > .button-bar .button.danger-button {
+    -fx-background-color: -wac-danger-soft;
+    -fx-text-fill: #991b1b;
+    -fx-border-color: #991b1b;
+    -fx-border-width: 2;
+}
+.dialog-pane > .button-bar .button.danger-button:hover {
+    -fx-background-color: derive(-wac-danger-soft, -6%);
+    -fx-border-color: #991b1b;
+}
+
 .dialog-pane > .button-bar .button:default {
     -fx-background-color: -wac-accent;
     -fx-text-fill: -wac-on-accent;

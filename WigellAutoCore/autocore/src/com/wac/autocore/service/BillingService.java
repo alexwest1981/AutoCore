@@ -48,7 +48,13 @@ public class BillingService {
         }
     }
 
+/** Utan ny kostnad: konsolen och andra anrop som inte har någon reklamation. */
     public Invoice createInvoice(int workOrderId, String discountCode) {
+        return createInvoice(workOrderId, discountCode, null, 0.0);
+    }
+
+/** Fakturerar en arbetsorder, med en ny kostnad som egen rad när reklamationen kräver det. */
+    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
         WorkOrder workOrder = findWorkOrder(workOrderId);
         if (workOrder == null) {
             System.out.println("Work order with ID " + workOrderId + " does not exist.");
@@ -77,11 +83,16 @@ public class BillingService {
 
         List<WorkOrder> orders = new ArrayList<WorkOrder>();
         orders.add(workOrder);
-        return createInvoiceFrom(orders, workOrderId, discountCode);
+        return createInvoiceFrom(orders, workOrderId, discountCode, extraName, extraAmount);
     }
 
 /** Fakturerar allt utfört arbete på en bokning i en faktura. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
+        return createInvoiceForBooking(bookingId, discountCode, null, 0.0);
+    }
+
+/** Samma faktura, men med plats för en ny kostnad som reklamationen för med sig. */
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
@@ -121,7 +132,7 @@ public class BillingService {
             return null;
         }
 
-        return createInvoiceFrom(orders, primaryOrderId, discountCode);
+        return createInvoiceFrom(orders, primaryOrderId, discountCode, extraName, extraAmount);
     }
 
 /** Bokningar med utfört arbete kvar att fakturera, en rad per bokning. */
@@ -153,7 +164,8 @@ public class BillingService {
     }
 
 /** Bygger fakturan av de utförda tjänsterna. Redan fakturerade rader hoppas över. */
-    private Invoice createInvoiceFrom(List<WorkOrder> orders, int primaryOrderId, String discountCode) {
+    private Invoice createInvoiceFrom(List<WorkOrder> orders, int primaryOrderId, String discountCode,
+                                      String extraName, double extraAmount) {
         WorkOrder primary = findWorkOrder(primaryOrderId);
         int bookingId = primary != null ? primary.getBookingId() : 0;
         List<Integer> invoiced = invoicedServiceIds(bookingId);
@@ -167,10 +179,22 @@ public class BillingService {
                     // Äldre arbetsordrar saknar det och får katalogens pris, som före D2.
                     Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
                     double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
+                    // Ett reklamationsarbete syns på fakturan men kostar inget. Priset nollas och inte
+                    // rabatten, för distributeDiscount skriver över varje rads rabatt så snart
+                    // fakturan har en VIP- eller kodrabatt.
+                    if (workOrder.isReclamation()) {
+                        linePrice = 0.0;
+                    }
                     lines.add(new InvoiceLine(0, 0, serviceItem.getId(),
                             serviceItem.getName(), linePrice, 0.0));
                 }
             }
+        }
+
+        // En ny kostnad hör till reklamationen och debiteras fullt ut. Den läggs in före summan
+        // och rabatten, så att den räknas in i båda.
+        if (extraName != null && !extraName.trim().isEmpty() && extraAmount > 0) {
+            lines.add(new InvoiceLine(0, 0, 0, extraName.trim(), extraAmount, 0.0));
         }
 
         if (lines.isEmpty()) {

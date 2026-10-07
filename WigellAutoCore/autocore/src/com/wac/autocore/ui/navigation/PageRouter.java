@@ -132,6 +132,25 @@ public class PageRouter {
         return count;
     }
 
+    /**
+     * Reklamationer som ännu inte är åtgärdade. En reklamation är en vanlig arbetsorder, så den
+     * väntar tills den är slutförd. Avbrutna räknas inte, de väntar inte på något.
+     */
+    public static int countOpenReclamations(List<WorkOrder> orders) {
+        int count = 0;
+        for (WorkOrder order : orders) {
+            if (!order.isReclamation()) {
+                continue;
+            }
+            String status = order.getStatus();
+            if (status != null && ("COMPLETED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status))) {
+                continue;
+            }
+            count++;
+        }
+        return count;
+    }
+
 
 /** Bokningar utan arbetsorder. Avbokade räknas inte. */
     public static int countBookingsWithoutWorkOrder(List<Booking> bookings, List<WorkOrder> orders) {

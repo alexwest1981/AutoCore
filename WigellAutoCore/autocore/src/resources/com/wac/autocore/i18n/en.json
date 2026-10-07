@@ -114,6 +114,7 @@
       "action_confirm": "Confirm order",
       "action_mark_performed": "Mark performed work",
       "action_complete": "Complete order",
+      "action_reclamation": "Reclamation",
       "action_draft": "+ New draft",
       "action_details": "View details"
     },
@@ -134,6 +135,11 @@
       "meta.one": "{0} payment",
       "action_create": "+ Register Payment"
     }
+  },
+  "workorder_type": {
+    "standard": "Standard",
+    "reclamation": "Reclamation",
+    "internal": "Internal"
   },
   "table": {
     "empty": "No content in table",
@@ -170,6 +176,7 @@
       "time": "Time",
       "invoice": "Invoice",
       "type": "Type",
+      "reclamation_of": "Reclamation of",
       "datetime": "Date/time",
       "paid": "Paid"
     }
@@ -402,6 +409,13 @@
       "no_vehicles": "There are no vehicles to attach the draft to",
       "create_failed": "The draft could not be saved."
     },
+    "reclamation": {
+      "title": "New reclamation",
+      "header": "Reclamation of work order",
+      "description": "Description of the fault",
+      "description_prompt": "What went wrong?",
+      "create_failed": "The reclamation could not be created."
+    },
     "workorder": {
       "create": {
         "title": "New Work Order",
@@ -418,11 +432,16 @@
       "partial_failed": "Only {0} of {1} work orders were created. Mechanics who were not available got no work order.",
       "mark_performed_title": "Mark performed work",
       "mark_performed_header": "Which work is performed?",
-      "mark_performed_desc": "The price that applies when you mark it is stored on the line, so a later price change does not touch this work order.",
       "details_header": "Details for work order #{0}",
       "details_title": "Work Order Details",
       "historical_notice": "Showing charged prices in effect when work was performed.",
-      "open_in_orders": "Open in Work Orders"
+      "no_actions": "No actions left on this order.",
+      "cancel.title": "Cancel work order",
+      "cancel.header": "Confirm cancellation",
+      "cancel.confirm": "Are you sure you want to cancel work order #{0}?",
+      "open_in_orders": "Open in Work Orders",
+      "reclamations_title": "Reclamations on this work order",
+      "no_reclamations": "No reclamations"
     },
     "invoice": {
       "create": {
@@ -433,6 +452,9 @@
       "not_all_completed": "Every work order on the booking must be completed before an invoice can be created.",
       "discount": "Discount / Promotion (SEK)",
       "discount_prompt": "E.g. 10off, WELCOME10, SERVICE200 or amount (optional)",
+      "extra_cost_label": "New cost",
+      "extra_cost_amount": "Amount",
+      "extra_cost_invalid": "Enter an amount greater than 0, or leave the field empty.",
       "create_failed": "The invoice could not be created.",
       "print_title": "Invoice",
       "print_header": "Invoice preview",
@@ -539,7 +561,9 @@
       "invoices.one": "Booking waiting to be invoiced",
       "invoices.many": "Bookings waiting to be invoiced",
       "payments.one": "Invoice waiting for payment",
-      "payments.many": "Invoices waiting for payment"
+      "payments.many": "Invoices waiting for payment",
+      "reclamations.one": "Reclamation not yet dealt with",
+      "reclamations.many": "Reclamations not yet dealt with"
     }
   }
 }

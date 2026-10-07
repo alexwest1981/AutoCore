@@ -114,6 +114,7 @@
       "action_confirm": "Bekräfta order",
       "action_mark_performed": "Markera utförda arbeten",
       "action_complete": "Slutför order",
+      "action_reclamation": "Reklamation",
       "action_draft": "+ Nytt utkast",
       "action_details": "Visa detaljer"
     },
@@ -134,6 +135,11 @@
       "meta.one": "{0} betalning",
       "action_create": "+ Registrera betalning"
     }
+  },
+  "workorder_type": {
+    "standard": "Standard",
+    "reclamation": "Reklamation",
+    "internal": "Intern"
   },
   "table": {
     "empty": "Inget innehåll i tabellen",
@@ -170,6 +176,7 @@
       "time": "Tid",
       "invoice": "Faktura",
       "type": "Typ",
+      "reclamation_of": "Reklamation av",
       "datetime": "Datum/tid",
       "paid": "Betald"
     }
@@ -402,6 +409,13 @@
       "no_vehicles": "Det finns inga fordon att knyta utkastet till",
       "create_failed": "Utkastet kunde inte sparas."
     },
+    "reclamation": {
+      "title": "Ny reklamation",
+      "header": "Reklamation av arbetsorder",
+      "description": "Beskrivning av felet",
+      "description_prompt": "Vad gick fel?",
+      "create_failed": "Reklamationen kunde inte skapas."
+    },
     "workorder": {
       "create": {
         "title": "Ny arbetsorder",
@@ -418,11 +432,16 @@
       "partial_failed": "Bara {0} av {1} arbetsordrar skapades. Mekaniker som inte var tillgängliga blev utan arbetsorder.",
       "mark_performed_title": "Markera utförda arbeten",
       "mark_performed_header": "Vilka arbeten är utförda?",
-      "mark_performed_desc": "Priset som gäller när du markerar sparas på raden, så att en senare prisändring inte rör den här arbetsordern.",
       "details_header": "Detaljer för arbetsorder #{0}",
       "details_title": "Arbetsorderdetaljer",
       "historical_notice": "Visar debiterade priser som gällde när arbetet utfördes.",
-      "open_in_orders": "Öppna i arbetsordrar"
+      "no_actions": "Inga åtgärder kvar på den här ordern.",
+      "cancel.title": "Avbryt arbetsorder",
+      "cancel.header": "Bekräfta avbrytande",
+      "cancel.confirm": "Är du säker på att du vill avbryta arbetsorder #{0}?",
+      "open_in_orders": "Öppna i arbetsordrar",
+      "reclamations_title": "Reklamationer på denna order",
+      "no_reclamations": "Inga reklamationer"
     },
     "invoice": {
       "create": {
@@ -433,6 +452,9 @@
       "not_all_completed": "Alla arbetsordrar på bokningen måste vara slutförda innan fakturan kan skapas.",
       "discount": "Rabatt / Kampanj (kr)",
       "discount_prompt": "T.ex. 10off, WELCOME10, SERVICE200 eller belopp (valfritt)",
+      "extra_cost_label": "Ny kostnad",
+      "extra_cost_amount": "Belopp",
+      "extra_cost_invalid": "Ange ett belopp större än 0, eller lämna fältet tomt.",
       "create_failed": "Fakturan kunde inte skapas.",
       "print_title": "Faktura",
       "print_header": "Förhandsgranskning av fakturan",
@@ -539,7 +561,9 @@
       "invoices.one": "Bokning som väntar på en faktura",
       "invoices.many": "Bokningar som väntar på en faktura",
       "payments.one": "Faktura som väntar på betalning",
-      "payments.many": "Fakturor som väntar på betalning"
+      "payments.many": "Fakturor som väntar på betalning",
+      "reclamations.one": "Reklamation som inte är åtgärdad",
+      "reclamations.many": "Reklamationer som inte är åtgärdade"
     }
   }
 }

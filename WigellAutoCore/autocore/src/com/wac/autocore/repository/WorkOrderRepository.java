@@ -27,7 +27,7 @@ public class WorkOrderRepository {
 
     public List<WorkOrder> findAll() throws SQLException {
         List<WorkOrder> workOrders = new ArrayList<WorkOrder>();
-        String sql = "SELECT id, booking_id, mechanic_id, status, vehicle_id, description FROM work_orders";
+        String sql = "SELECT id, booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id FROM work_orders";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -44,7 +44,7 @@ public class WorkOrderRepository {
     }
 
     public WorkOrder findById(int id) throws SQLException {
-        String sql = "SELECT id, booking_id, mechanic_id, status, vehicle_id, description FROM work_orders WHERE id = ?";
+        String sql = "SELECT id, booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id FROM work_orders WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -80,7 +80,7 @@ public class WorkOrderRepository {
     }
 
     private void insert(WorkOrder workOrder) throws SQLException {
-        String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, vehicle_id, description) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -88,8 +88,10 @@ public class WorkOrderRepository {
             statement.setInt(1, workOrder.getBookingId());
             statement.setInt(2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
-            statement.setInt(4, workOrder.getVehicleId());
-            statement.setString(5, workOrder.getDescription());
+            statement.setString(4, workOrder.getType());
+            statement.setInt(5, workOrder.getVehicleId());
+            statement.setString(6, workOrder.getDescription());
+            statement.setInt(7, workOrder.getOriginalWorkOrderId());
             statement.executeUpdate();
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
@@ -101,7 +103,7 @@ public class WorkOrderRepository {
     }
 
     private void update(WorkOrder workOrder) throws SQLException {
-        String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, vehicle_id = ?, description = ? WHERE id = ?";
+        String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, description = ?, original_work_order_id = ? WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -109,9 +111,11 @@ public class WorkOrderRepository {
             statement.setInt(1, workOrder.getBookingId());
             statement.setInt(2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
-            statement.setInt(4, workOrder.getVehicleId());
-            statement.setString(5, workOrder.getDescription());
-            statement.setInt(6, workOrder.getId());
+            statement.setString(4, workOrder.getType());
+            statement.setInt(5, workOrder.getVehicleId());
+            statement.setString(6, workOrder.getDescription());
+            statement.setInt(7, workOrder.getOriginalWorkOrderId());
+            statement.setInt(8, workOrder.getId());
             statement.executeUpdate();
         }
     }
@@ -185,6 +189,7 @@ public class WorkOrderRepository {
         );
 
         String status = resultSet.getString("status");
+        String type = resultSet.getString("type");
 
         workOrder.setVehicleId(resultSet.getInt("vehicle_id"));
         workOrder.setDescription(resultSet.getString("description"));
@@ -192,6 +197,12 @@ public class WorkOrderRepository {
         if (status != null) {
             workOrder.setStatus(status);
         }
+        // En rad utan typ (äldre eller halvfärdig) behåller modellens standard i stället för tomt.
+        if (type != null && !type.trim().isEmpty()) {
+            workOrder.setType(type);
+        }
+
+        workOrder.setOriginalWorkOrderId(resultSet.getInt("original_work_order_id"));
 
         return workOrder;
     }

@@ -10,7 +10,6 @@ import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
@@ -35,9 +34,6 @@ final class MarkPerformedDialog {
         VBox content = new VBox(12);
         content.setPadding(new Insets(18, 22, 18, 22));
         content.setPrefWidth(580);
-
-        Label info = new Label(I18n.get("dialog.workorder.mark_performed_desc"));
-        info.setWrapText(true);
 
         VBox serviceBox = new VBox(6);
         List<CheckBox> boxes = new ArrayList<CheckBox>();
@@ -66,7 +62,7 @@ final class MarkPerformedDialog {
             serviceBox.getChildren().add(box);
         }
 
-        content.getChildren().addAll(info, serviceBox);
+        content.getChildren().add(serviceBox);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
