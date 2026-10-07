@@ -161,11 +161,7 @@ public final class EntityPages {
                         PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
                         I18n.get("view.notice.workorders.one"),
                         I18n.get("view.notice.workorders.many")),
-<<<<<<< HEAD
-                t, detailsBtn, addBtn, draftBtn, dropInBtn);
-=======
-                t, detailsBtn, startBtn, cancelBtn, confirmBtn, markBtn, completeBtn, addBtn, draftBtn);
->>>>>>> origin/develop
+                t, detailsBtn, addBtn, draftBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
