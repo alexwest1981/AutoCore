@@ -138,100 +138,18 @@ public final class EntityPages {
         detailsBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
             if (sel != null) {
-                ActionDialogs.showWorkOrderDetailsDialog(garage, sel);
+                ActionDialogs.showWorkOrderDetailsDialog(garage, sel, () -> router.navigate("workorders"));
             }
         });
 
-        Button startBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_start"));
-        Button cancelBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_cancel"));
-        Button confirmBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_confirm"));
-        Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
-        Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
-        startBtn.setDisable(true);
-        cancelBtn.setDisable(true);
-        confirmBtn.setDisable(true);
-        markBtn.setDisable(true);
-        completeBtn.setDisable(true);
-
-        t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
-            detailsBtn.setDisable(sel == null);
-            startBtn.setDisable(sel == null || !("CREATED".equals(sel.getStatus()) || "CONFIRMED".equals(sel.getStatus()) || "CANCELLED".equals(sel.getStatus())));
-            cancelBtn.setDisable(sel == null || !("CREATED".equals(sel.getStatus()) || "CONFIRMED".equals(sel.getStatus()) || "IN_PROGRESS".equals(sel.getStatus())));
-            confirmBtn.setDisable(sel == null || !"CREATED".equals(sel.getStatus()));
-
-
-
-            // DANIEL-LOGIK: Arbetsorder med fler tjänster kräver att man markerar dem utförda
-            // ett för ett via markBtn. Arbetsorder med exakt en tjänst hoppar direkt till Complete –
-            // markBtn ska då vara inaktiv.
-            boolean inProgress = sel != null && "IN_PROGRESS".equals(sel.getStatus());
-            int serviceCount = (sel != null && sel.getServiceItemIds() != null) ? sel.getServiceItemIds().size() : 0;
-            boolean multiService = serviceCount > 1;
-            boolean allMarked = sel != null
-                    && sel.getCompletedServiceItems() != null
-                    && sel.getCompletedServiceItems().containsAll(sel.getServiceItemIds());
-
-            // markBtn: aktiv bara om IN_PROGRESS och ordern har fler än 1 tjänst
-            markBtn.setDisable(!inProgress || !multiService);
-
-            // completeBtn: aktiv om rätt status, och om multi-service måste alla vara markerade
-            boolean canComplete = sel != null
-                    && ("IN_PROGRESS".equals(sel.getStatus()) || "CREATED".equals(sel.getStatus()));
-            if (canComplete && multiService && !allMarked) {
-                canComplete = false;
-            }
-            completeBtn.setDisable(!canComplete);
-
-        });
-
-        startBtn.setOnAction(e -> {
-            WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && ("CREATED".equals(sel.getStatus()) || "CONFIRMED".equals(sel.getStatus()) || "CANCELLED".equals(sel.getStatus()))) {
-                garage.startWorkOrder(sel.getId());
-                router.navigate("workorders");
-            }
-        });
-
-        cancelBtn.setOnAction(e -> {
-            WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && ("CREATED".equals(sel.getStatus()) || "CONFIRMED".equals(sel.getStatus()) || "IN_PROGRESS".equals(sel.getStatus()))) {
-                garage.cancelWorkOrder(sel.getId());
-                router.navigate("workorders");
-            }
-        });
-
-        confirmBtn.setOnAction(e -> {
-            WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && "CREATED".equals(sel.getStatus())) {
-                garage.confirmWorkOrder(sel.getId());
-                router.navigate("workorders");
-            }
-        });
-
-
-        markBtn.setOnAction(e -> {
-            WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && "IN_PROGRESS".equals(sel.getStatus())) {
-                ActionDialogs.showMarkPerformedDialog(garage, sel, () -> router.navigate("workorders"));
-            }
-        });
-
-        completeBtn.setOnAction(e -> {
-            WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && ("IN_PROGRESS".equals(sel.getStatus()) || "CREATED".equals(sel.getStatus()))) {
-                if ("CREATED".equals(sel.getStatus())) {
-                    garage.startWorkOrder(sel.getId());
-                }
-                garage.completeWorkOrder(sel.getId());
-                router.navigate("workorders");
-            }
-        });
+        t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) ->
+                detailsBtn.setDisable(sel == null));
 
         t.setRowFactory(tv -> {
             TableRow<WorkOrder> row = new TableRow<WorkOrder>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem());
+                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem(), () -> router.navigate("workorders"));
                 }
             });
             return row;
@@ -245,7 +163,7 @@ public final class EntityPages {
                         PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
                         I18n.get("view.notice.workorders.one"),
                         I18n.get("view.notice.workorders.many")),
-                t, detailsBtn, startBtn, cancelBtn, confirmBtn, markBtn, completeBtn, addBtn, draftBtn, dropInBtn);
+                t, detailsBtn, addBtn, draftBtn, dropInBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {

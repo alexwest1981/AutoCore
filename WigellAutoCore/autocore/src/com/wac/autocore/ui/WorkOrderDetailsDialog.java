@@ -5,6 +5,7 @@ import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
@@ -13,9 +14,11 @@ import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.Button;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import com.wac.autocore.seed.SeedText;
@@ -25,7 +28,7 @@ final class WorkOrderDetailsDialog {
 
     private WorkOrderDetailsDialog() {}
 
-    static void show(GarageSystem garage, WorkOrder workOrder) {
+    static void show(GarageSystem garage, WorkOrder workOrder, Runnable onRefresh) {
         if (workOrder == null) return;
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
@@ -182,9 +185,58 @@ final class WorkOrderDetailsDialog {
         linesGrid.add(totalVal, 2, row);
         linesGrid.add(totalStatusVal, 3, row);
 
-        content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid);
+        // Slutför kräver att alla tjänster är markerade när ordern har fler än en.
+        String status = workOrder.getStatus();
+        boolean multiService = workOrder.getServiceItemIds() != null && workOrder.getServiceItemIds().size() > 1;
+        boolean allMarked = workOrder.getCompletedServiceItems() != null
+                && workOrder.getCompletedServiceItems().containsAll(workOrder.getServiceItemIds());
+
+        Button confirmBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_confirm"));
+        Button startBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_start"));
+        Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
+        Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
+        Button cancelBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_cancel"));
+
+        confirmBtn.setDisable(!"CREATED".equals(status));
+        startBtn.setDisable(!("CREATED".equals(status) || "CONFIRMED".equals(status) || "CANCELLED".equals(status)));
+        markBtn.setDisable(!("IN_PROGRESS".equals(status) && multiService));
+        completeBtn.setDisable(!(("IN_PROGRESS".equals(status) || "CREATED".equals(status)) && (!multiService || allMarked)));
+        cancelBtn.setDisable(!("CREATED".equals(status) || "CONFIRMED".equals(status) || "IN_PROGRESS".equals(status)));
+
+        startBtn.setOnAction(e -> {
+            garage.startWorkOrder(workOrder.getId());
+            closeAndRefresh(dialog, onRefresh);
+        });
+        cancelBtn.setOnAction(e -> {
+            garage.cancelWorkOrder(workOrder.getId());
+            closeAndRefresh(dialog, onRefresh);
+        });
+        confirmBtn.setOnAction(e -> {
+            garage.confirmWorkOrder(workOrder.getId());
+            closeAndRefresh(dialog, onRefresh);
+        });
+        markBtn.setOnAction(e -> ActionDialogs.showMarkPerformedDialog(garage, workOrder,
+                () -> closeAndRefresh(dialog, onRefresh)));
+        completeBtn.setOnAction(e -> {
+            if ("CREATED".equals(status)) {
+                garage.startWorkOrder(workOrder.getId());
+            }
+            garage.completeWorkOrder(workOrder.getId());
+            closeAndRefresh(dialog, onRefresh);
+        });
+
+        HBox actions = new HBox(8, confirmBtn, startBtn, markBtn, completeBtn, cancelBtn);
+
+
+        content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid, actions);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.showAndWait();
     }
+
+    private static void closeAndRefresh(Dialog<?> dialog, Runnable onRefresh) {
+        dialog.close();
+        if (onRefresh != null) onRefresh.run();
+    }
+
 }

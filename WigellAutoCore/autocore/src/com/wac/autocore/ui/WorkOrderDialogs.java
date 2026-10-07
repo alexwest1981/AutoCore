@@ -29,8 +29,8 @@ public final class WorkOrderDialogs {
         CreateDropInWorkOrderDialog.show(garage, onSuccess);
     }
 
-    public static void showWorkOrderDetailsDialog(GarageSystem garage, WorkOrder workOrder) {
-        WorkOrderDetailsDialog.show(garage, workOrder);
+    public static void showWorkOrderDetailsDialog(GarageSystem garage, WorkOrder workOrder, Runnable onRefresh) {
+        WorkOrderDetailsDialog.show(garage, workOrder, onRefresh);
     }
 
     public static void showMarkPerformedDialog(GarageSystem garage, WorkOrder workOrder, Runnable onSuccess) {
