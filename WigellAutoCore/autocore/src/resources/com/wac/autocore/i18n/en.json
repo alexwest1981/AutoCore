@@ -115,6 +115,7 @@
       "action_mark_performed": "Mark performed work",
       "action_complete": "Complete order",
       "action_invoice": "Create invoice",
+      "action_draft": "+ New draft",
       "action_details": "View details"
     },
     "invoices": {
@@ -390,6 +391,13 @@
       "create_order": "Create & open work order",
       "estimated_time": "Estimated time:",
       "estimated_cost": "Estimated price:"
+    },
+    "draft": {
+      "title": "New draft",
+      "header": "Register the job before the time is booked",
+      "description": "Description of the problem",
+      "no_vehicles": "There are no vehicles to attach the draft to",
+      "create_failed": "The draft could not be saved."
     },
     "workorder": {
       "create": {
