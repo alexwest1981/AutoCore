@@ -28,6 +28,9 @@ import javafx.scene.layout.VBox;
 
 import com.wac.autocore.seed.SeedText;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Detaljvyn för en arbetsorder: upplysningar, tjänsterna och de åtgärder som läget tillåter. */
 final class WorkOrderDetailsDialog {
 
@@ -92,10 +95,19 @@ final class WorkOrderDetailsDialog {
                 : SeedText.resolve(workOrder.getDescription())), 1, 5);
 
         Invoice inv = EntityLookup.invoiceForWorkOrder(garage, workOrder.getId());
+
+        // En reklamation visar vilken arbetsorder den gäller.
+        int infoRow = 6;
+        if (workOrder.getOriginalWorkOrderId() > 0) {
+            infoGrid.add(new Label(I18n.get("table.col.reclamation_of") + ":"), 0, infoRow);
+            infoGrid.add(new Label("#" + workOrder.getOriginalWorkOrderId()), 1, infoRow);
+            infoRow++;
+        }
+
         if (inv != null) {
-            infoGrid.add(new Label(I18n.get("table.col.invoice") + ":"), 0, 6);
+            infoGrid.add(new Label(I18n.get("table.col.invoice") + ":"), 0, infoRow);
             infoGrid.add(new Label("#" + inv.getId() + " (" + inv.getInvoiceDate() + " - "
-                    + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")) + ")"), 1, 6);
+                    + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")) + ")"), 1, infoRow);
         }
 
         Label servicesTitle = new Label(I18n.get("table.col.services"));
@@ -207,7 +219,29 @@ final class WorkOrderDetailsDialog {
         linesGrid.add(totalTimeVal, 1, row);
         linesGrid.add(totalVal, 2, row);
         linesGrid.add(totalStatusVal, 3, row);
-        content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid);
+        // Andra riktningen av kopplingen: vilka reklamationer som pekar på den här ordern.
+        Label reclamationsTitle = new Label(I18n.get("dialog.workorder.reclamations_title"));
+        reclamationsTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        VBox reclamationsBox = new VBox(6);
+        List<WorkOrder> reclamations = reclamationsOf(garage, workOrder.getId());
+        if (reclamations.isEmpty()) {
+            Label none = new Label(I18n.get("dialog.workorder.no_reclamations"));
+            none.getStyleClass().addAll("srow-sub", "small");
+            reclamationsBox.getChildren().add(none);
+        } else {
+            for (WorkOrder reclamation : reclamations) {
+                String text = reclamation.getDescription() == null || reclamation.getDescription().trim().isEmpty()
+                        ? "-"
+                        : SeedText.resolve(reclamation.getDescription());
+                Label line = new Label("#" + reclamation.getId() + " · "
+                        + UiFormatters.statusWord(reclamation.getStatus()) + " · " + text);
+                line.setWrapText(true);
+                reclamationsBox.getChildren().add(line);
+            }
+        }
+
+        content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid,
+                reclamationsTitle, reclamationsBox);
         content.getChildren().add(actionRow(garage, workOrder, dialog));
         return content;
     }
@@ -233,6 +267,9 @@ final class WorkOrderDetailsDialog {
             if (!multiService || allMarked) {
                 row.getChildren().add(actionButton("complete", garage, workOrder, dialog));
             }
+        } else if ("COMPLETED".equals(status)) {
+            // Ett utfört arbete har en enda åtgärd: att reklameras.
+            row.getChildren().add(reclamationButton(garage, workOrder, dialog));
         } else if ("CANCELLED".equals(status)) {
             row.getChildren().add(actionButton("start", garage, workOrder, dialog));
         }
@@ -250,6 +287,14 @@ final class WorkOrderDetailsDialog {
         }
 
         return row;
+    }
+
+    /** Reklamationen skapas från det utförda arbetet och syns i listan så snart dialogen ritas om. */
+    private static Button reclamationButton(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
+        Button button = UiComponents.secondaryButton(I18n.get("entity.workorders.action_reclamation"));
+        button.setOnAction(e -> ActionDialogs.showCreateReclamationDialog(garage, workOrder,
+                () -> refreshDialog(garage, workOrder, dialog)));
+        return button;
     }
 
     private static Button actionButton(String key, GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
@@ -321,5 +366,16 @@ final class WorkOrderDetailsDialog {
             }
         }
         dialog.getDialogPane().setContent(buildContent(garage, updated, dialog));
+    }
+
+    /** Andra riktningen: de reklamationer som pekar på den här ordern. */
+    private static List<WorkOrder> reclamationsOf(GarageSystem garage, int workOrderId) {
+        List<WorkOrder> found = new ArrayList<WorkOrder>();
+        for (WorkOrder order : garage.getWorkOrders()) {
+            if (order.getOriginalWorkOrderId() == workOrderId) {
+                found.add(order);
+            }
+        }
+        return found;
     }
 }

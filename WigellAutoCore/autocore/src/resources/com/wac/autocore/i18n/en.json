@@ -20,6 +20,7 @@
       "services": "Show services",
       "mechanics": "Show mechanics",
       "workorders": "Show work orders",
+      "reclamations": "Show reclamations",
       "invoices": "Show invoices",
       "payments": "Show payments"
     },
@@ -114,8 +115,16 @@
       "action_confirm": "Confirm order",
       "action_mark_performed": "Mark performed work",
       "action_complete": "Complete order",
+      "action_reclamation": "Reclamation",
       "action_draft": "+ New draft",
       "action_details": "View details"
+    },
+    "reclamations": {
+      "title": "Reclamations",
+      "subtitle": "Reclamation work and the work order it refers to",
+      "meta": "{0} reclamations",
+      "meta.one": "{0} reclamation",
+      "action_order": "View work order"
     },
     "invoices": {
       "title": "Invoices",
@@ -137,7 +146,7 @@
   },
   "workorder_type": {
     "standard": "Standard",
-    "warranty": "Warranty",
+    "reclamation": "Reclamation",
     "internal": "Internal"
   },
   "table": {
@@ -175,6 +184,7 @@
       "time": "Time",
       "invoice": "Invoice",
       "type": "Type",
+      "reclamation_of": "Reclamation of",
       "datetime": "Date/time",
       "paid": "Paid"
     }
@@ -405,6 +415,13 @@
       "no_vehicles": "There are no vehicles to attach the draft to",
       "create_failed": "The draft could not be saved."
     },
+    "reclamation": {
+      "title": "New reclamation",
+      "header": "Reclamation of work order",
+      "description": "Description of the fault",
+      "description_prompt": "What went wrong?",
+      "create_failed": "The reclamation could not be created."
+    },
     "workorder": {
       "create": {
         "title": "New Work Order",
@@ -428,7 +445,9 @@
       "cancel.title": "Cancel work order",
       "cancel.header": "Confirm cancellation",
       "cancel.confirm": "Are you sure you want to cancel work order #{0}?",
-      "open_in_orders": "Open in Work Orders"
+      "open_in_orders": "Open in Work Orders",
+      "reclamations_title": "Reclamations on this work order",
+      "no_reclamations": "No reclamations"
     },
     "invoice": {
       "create": {
@@ -548,7 +567,9 @@
       "invoices.one": "Booking waiting to be invoiced",
       "invoices.many": "Bookings waiting to be invoiced",
       "payments.one": "Invoice waiting for payment",
-      "payments.many": "Invoices waiting for payment"
+      "payments.many": "Invoices waiting for payment",
+      "reclamations.one": "Reclamation not yet dealt with",
+      "reclamations.many": "Reclamations not yet dealt with"
     }
   }
 }

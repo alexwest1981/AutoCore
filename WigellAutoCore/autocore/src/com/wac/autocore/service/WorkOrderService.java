@@ -140,6 +140,60 @@ public class WorkOrderService {
         return workOrder;
     }
 
+    // En reklamation är en egen arbetsorder som gör om ett tidigare utfört arbete och pekar ut det
+    // med originalWorkOrderId. Samma bokning, samma mekaniker, samma tjänster — men en ny order.
+    //
+    // Spärren i createWorkOrder som stoppar en tjänst från att ligga på två ordrar gäller inte här.
+    // Tjänsten ska ju göras om, och reklamationen debiteras ändå inte kunden, så den kan inte bli
+    // fakturerad två gånger.
+    public WorkOrder createReclamation(int originalWorkOrderId, String description) {
+        WorkOrder original = findById(originalWorkOrderId);
+
+        if (original == null) {
+            System.out.println("Work order with ID " + originalWorkOrderId + " does not exist.");
+            return null;
+        }
+
+        // Bara ett arbete som faktiskt är utfört går att reklamera.
+        if (!"COMPLETED".equalsIgnoreCase(original.getStatus())) {
+            System.out.println("Work order " + originalWorkOrderId + " is not completed.");
+            return null;
+        }
+
+        Mechanic mechanic = findMechanic(original.getMechanicId());
+        if (mechanic == null) {
+            System.out.println("Mechanic with ID " + original.getMechanicId() + " does not exist.");
+            return null;
+        }
+
+        if (!mechanic.isAvailable()) {
+            System.out.println("Mechanic " + mechanic.getName() + " is not available.");
+            return null;
+        }
+
+        WorkOrder reclamation = new WorkOrder(0, original.getBookingId(), original.getMechanicId());
+        reclamation.setType(WorkOrder.RECLAMATION);
+        reclamation.setOriginalWorkOrderId(originalWorkOrderId);
+        reclamation.setVehicleId(original.getVehicleId());
+        reclamation.setDescription(description);
+
+        for (Integer serviceItemId : original.getServiceItemIds()) {
+            reclamation.addServiceItem(serviceItemId);
+        }
+
+        try {
+            workOrderRepository.save(reclamation);
+        } catch (SQLException e) {
+            System.out.println("Could not save reclamation: " + e.getMessage());
+            return null;
+        }
+
+        System.out.println("Reclamation created successfully.");
+        System.out.println(reclamation);
+
+        return reclamation;
+    }
+
     // Skapar ett utkast: fordonet och beskrivningen, resten fylls på senare.
     public WorkOrder createDraft(int vehicleId, String description) {
         Vehicle vehicle = findVehicle(vehicleId);
