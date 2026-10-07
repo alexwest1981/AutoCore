@@ -94,7 +94,7 @@ public final class BookingDialogs {
                     }
                     if (startTime != null) {
                         b.setStartTime(startTime);
-                        int estMin = b.getTotalEstimatedMinutes() > 0 ? b.getTotalEstimatedMinutes() : (chosenService != null ? chosenService.getEstimatedMinutes() : 60);
+                        int estMin = garage.busyMinutes(b.getServiceItems(), form.getSelectedMechanics());
                         b.setEndTime(startTime.plusMinutes(estMin));
                     }
 
@@ -181,7 +181,7 @@ public final class BookingDialogs {
                 booking.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
                 if (startTime != null) {
                     booking.setStartTime(startTime);
-                    int estMin = booking.getTotalEstimatedMinutes() > 0 ? booking.getTotalEstimatedMinutes() : (chosenService != null ? chosenService.getEstimatedMinutes() : 60);
+                    int estMin = garage.busyMinutes(booking.getServiceItems(), form.getSelectedMechanics());
                     booking.setEndTime(startTime.plusMinutes(estMin));
                 }
 

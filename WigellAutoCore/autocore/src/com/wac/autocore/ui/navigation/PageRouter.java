@@ -4,6 +4,7 @@ import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.views.EntityPages;
 import com.wac.autocore.ui.views.OverviewView;
@@ -61,6 +62,12 @@ public class PageRouter {
     }
 
     public void navigate(String key) {
+        // Drop-in är en dialog, inte en sida. Man kan stå mitt i något annat och ändå behöva lägga
+        // in en kund som redan står i verkstaden, så sidan man är på ligger kvar bakom.
+        if ("dropin".equals(key)) {
+            openDropInDialog();
+            return;
+        }
         this.currentPageKey = key;
         if (sidebar != null) {
             sidebar.setSelectedPage(key);
@@ -88,6 +95,16 @@ public class PageRouter {
         } else if ("payments".equals(key)) {
             pageBox.getChildren().add(EntityPages.buildPaymentsPage(garage, this));
         }
+    }
+
+    // Drop-in skapas i en dialog ovanpå sidan man står på, och sidan laddas om efteråt så att
+    // den nya bokningen syns direkt.
+    private void openDropInDialog() {
+        ActionDialogs.showCreateDropInWorkOrderDialog(garage, () -> {
+            if (currentPageKey != null) {
+                navigate(currentPageKey);
+            }
+        });
     }
 
 /** Märkena i menyn visar vad som väntar på sidan, inte allt som finns där. */

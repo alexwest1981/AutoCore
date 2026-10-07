@@ -104,6 +104,11 @@ public class GarageSystem {
         return mechanicRules.isMechanicQualified(mechanic, service);
     }
 
+    /** Hur länge bilen håller verkstaden: den mest belastade mekanikern bestämmer sluttiden. */
+    public int busyMinutes(List<ServiceItem> services, List<Mechanic> mechanics) {
+        return mechanicRules.busyMinutes(services, mechanics);
+    }
+
     /** Bokningar med utfört arbete kvar att fakturera. */
     public java.util.List<Booking> getInvoiceableBookings() {
         return billingService.getInvoiceableBookings();
@@ -195,6 +200,12 @@ public class GarageSystem {
     public Booking createDropInBooking(int vehicleId, java.util.List<ServiceItem> services,
                                        java.util.List<Mechanic> mechanics) {
         return bookingService.createDropInBooking(vehicleId, services, mechanics);
+    }
+
+    /** Tiden en drop-in skulle få just nu, eller null när teamets timmar är slut i dag. */
+    public LocalTime dropInStartTime(java.util.List<ServiceItem> services,
+                                     java.util.List<Mechanic> mechanics) {
+        return bookingService.dropInStartTime(services, mechanics);
     }
 
     public Invoice createInvoice(int workOrderId, String discountCode) {

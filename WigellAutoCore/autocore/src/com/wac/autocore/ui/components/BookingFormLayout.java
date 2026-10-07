@@ -22,7 +22,7 @@ import java.time.LocalTime;
 /**
  * Radlayouten i bokningsformuläret:
  * Fordon -> Tjänster -> Mekaniker -> Datum & Tid -> Beskrivning -> Status.
- * I drop-in-läget hoppas Datum & Tid över: där finns ingen tid att välja.
+ * I drop-in-läget byts Datum & Tid mot den tid tjänsten räknar fram.
  */
 class BookingFormLayout {
 
@@ -39,7 +39,7 @@ class BookingFormLayout {
                 MultiSelectComboBox<Mechanic> mechanicMulti, Label mechanicFilterHint,
                 BookingScheduleField scheduleField,
                 DatePicker datePicker, ComboBox<LocalTime> startTimeBox, Label durationLabel,
-                TextField descField, ComboBox<String> statusBox,
+                TextField descField, ComboBox<String> statusBox, Label dropInTimeLabel,
                 boolean isServicesLocked) {
         datePicker.setMaxWidth(Double.MAX_VALUE);
         startTimeBox.setMaxWidth(Double.MAX_VALUE);
@@ -85,7 +85,7 @@ class BookingFormLayout {
         grid.add(mechCol, 1, rowIdx++);
 
         // Datum & Tid (kalendern synlig med starttiden bredvid). En drop-in bokas när kunden
-        // kommer in, så det finns inget att välja och raden lämnas borta.
+        // kommer in; där finns inget att välja, så raden visar den framräknade tiden i stället.
         if (!dropIn) {
             Label dateTimeLbl = new Label(I18n.get("dialog.booking.date_and_time") + ":");
             GridPane.setValignment(dateTimeLbl, VPos.TOP);
@@ -118,6 +118,20 @@ class BookingFormLayout {
             VBox dateTimeContainer = new VBox(4, dateTimeRow);
             GridPane.setHgrow(dateTimeContainer, Priority.ALWAYS);
             grid.add(dateTimeContainer, 1, rowIdx++);
+        } else {
+            // Kunden ska se när bilen börjar och när den är klar innan bokningen godkänns.
+            Label timeLbl = new Label(I18n.get("dialog.booking.dropin_time") + ":");
+            GridPane.setValignment(timeLbl, VPos.TOP);
+            timeLbl.setPadding(new Insets(6, 0, 0, 0));
+            grid.add(timeLbl, 0, rowIdx);
+
+            VBox timeCol = new VBox(6, dropInTimeLabel);
+            timeCol.setAlignment(Pos.CENTER_LEFT);
+            timeCol.setMinWidth(220);
+            timeCol.setPrefWidth(240);
+            timeCol.getStyleClass().add("booking-card");
+            GridPane.setHgrow(timeCol, Priority.ALWAYS);
+            grid.add(timeCol, 1, rowIdx++);
         }
 
         // Beskrivning

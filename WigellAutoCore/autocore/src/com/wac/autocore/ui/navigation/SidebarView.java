@@ -165,7 +165,9 @@ public class SidebarView {
         groups.setPadding(new Insets(18, 0, 16, 0));
         addGroup(groups, "nav.section.customers", navItem("customers", "nav.item.customers"));
         addGroup(groups, "nav.section.vehicles", navItem("vehicles", "nav.item.vehicles"));
-        addGroup(groups, "nav.section.bookings", navItem("bookings", "nav.item.bookings"));
+        addGroup(groups, "nav.section.bookings",
+                navItem("bookings", "nav.item.bookings"),
+                navItem("dropin", "nav.item.dropin"));
         addGroup(groups, "nav.section.workshop",
                 navItem("services", "nav.item.services"),
                 navItem("mechanics", "nav.item.mechanics"),
@@ -347,6 +349,10 @@ public class SidebarView {
             case "bookings":
                 // Calendar with date grid
                 path = "M 1 3 a 2 2 0 0 1 2 -2 h 8 a 2 2 0 0 1 2 2 v 9 a 2 2 0 0 1 -2 2 h -8 a 2 2 0 0 1 -2 -2 Z M 2.5 5 h 9 v 7 h -9 Z M 3 0.5 h 1.5 v 2 h -1.5 Z M 9.5 0.5 h 1.5 v 2 h -1.5 Z M 4 7 h 2 v 1.8 h -2 Z M 7.5 7 h 2 v 1.8 h -2 Z M 4 9.5 h 2 v 1.8 h -2 Z M 7.5 9.5 h 2 v 1.8 h -2 Z";
+                break;
+            case "dropin":
+                // Blixt: kunden kommer in utan bokad tid
+                path = "M 8.5 0 L 3 7.5 h 3.2 L 5.5 14 L 11 6.5 h -3.2 Z";
                 break;
             case "services":
                 // Service catalog / Gear

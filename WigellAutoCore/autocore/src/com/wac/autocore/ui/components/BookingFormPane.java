@@ -12,6 +12,8 @@ import com.wac.autocore.ui.util.BookingAvailability;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -50,6 +52,11 @@ public class BookingFormPane extends GridPane {
     private final TextField descField;
     private final ComboBox<String> statusBox;
 
+    /** Drop-in: tiden väljs inte, den räknas fram och visas innan bokningen godkänns. */
+    private final Label dropInTimeLabel = new Label();
+    private final ObjectProperty<LocalTime> dropInStart = new SimpleObjectProperty<LocalTime>();
+    private final boolean dropIn;
+
     private final int excludeId;
 
     /** Riktig post i stället för null, som får JavaFX att kasta när den väljs. */
@@ -71,6 +78,8 @@ public class BookingFormPane extends GridPane {
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour,
                            boolean dropIn) {
         this.excludeId = existingBooking != null ? existingBooking.getId() : 0;
+        this.dropIn = dropIn;
+        this.dropInTimeLabel.setWrapText(true);
         final boolean isServicesLocked = existingBooking != null && existingBooking.isWorkStarted();
 
         setHgap(18);
@@ -96,6 +105,10 @@ public class BookingFormPane extends GridPane {
         this.mechanicBox = mechanics.getBox();
         this.mechanicMulti = mechanics.getMulti();
 
+        // Teamet bestämmer drop-in-tiden, så en ändring i teamet räknar om den.
+        this.mechanicMulti.getSelectedItems().addListener(
+                (ListChangeListener<Mechanic>) c -> refreshDropInTime(garage));
+
         this.scheduleField = new BookingScheduleField(garage, this, mechanics.getBox(), excludeId,
                 existingBooking, initialDate);
         this.datePicker = scheduleField.getDatePicker();
@@ -111,6 +124,7 @@ public class BookingFormPane extends GridPane {
             servicesField.render();
             mechanics.update();
             scheduleField.refresh();
+            refreshDropInTime(garage);
             // En ny bokning får tjänsternas namn som beskrivning; i redigeringsläge
             // behålls den text som redan står där.
             if (existingBooking == null && !dropIn) {
@@ -140,6 +154,7 @@ public class BookingFormPane extends GridPane {
             this.startTimeBox.getSelectionModel().select(LocalTime.of(defaultHour, 0));
         }
         scheduleField.refreshTimes();
+        refreshDropInTime(garage);
 
         new BookingFormLayout(this, dropIn).layout(
                 vehicleBox,
@@ -147,8 +162,30 @@ public class BookingFormPane extends GridPane {
                 mechanicMulti, mechanicFilterHint,
                 scheduleField,
                 datePicker, startTimeBox, durationLabel,
-                descField, statusBox,
+                descField, statusBox, dropInTimeLabel,
                 isServicesLocked);
+    }
+
+    // Tiden en drop-in får räknas fram ur teamets lediga timmar, inte ur något användaren väljer.
+    // Den visas innan bokningen godkänns, och står det att det inte finns någon tid är OK stängt.
+    private void refreshDropInTime(GarageSystem garage) {
+        if (!dropIn) {
+            return;
+        }
+        List<ServiceItem> services = new ArrayList<ServiceItem>(selectedServices);
+        List<Mechanic> team = getSelectedMechanics();
+        LocalTime start = services.isEmpty() || team.isEmpty()
+                ? null : garage.dropInStartTime(services, team);
+
+        dropInStart.set(start);
+        if (start == null) {
+            dropInTimeLabel.setText(I18n.get("dialog.booking.dropin_no_time"));
+            dropInTimeLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #f87171; -fx-font-weight: bold;");
+            return;
+        }
+        LocalTime end = start.plusMinutes(garage.busyMinutes(services, team));
+        dropInTimeLabel.setText(start + " – " + end);
+        dropInTimeLabel.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
     }
 
     /** Fordon, datum och antingen en beskrivning eller en tjänst. Ny bokning kräver en tjänst. */
@@ -159,6 +196,11 @@ public class BookingFormPane extends GridPane {
         }
         if (!hasServices && getDescription().isEmpty()) {
             return false;
+        }
+        if (dropIn) {
+            // En drop-in har ingen tid att fylla i. Finns ingen ledig timme finns inget att
+            // godkänna, och då säger raden i formuläret varför OK är stängt.
+            return hasServices && dropInStart.get() != null;
         }
         LocalTime start = getSelectedStartTime();
         if (start != null) {
@@ -175,7 +217,7 @@ public class BookingFormPane extends GridPane {
         return Bindings.createBooleanBinding(
                 () -> requiredFieldsFilled(excludeBookingId),
                 this.vehicleBox.valueProperty(), this.datePicker.valueProperty(),
-                this.startTimeBox.valueProperty(),
+                this.startTimeBox.valueProperty(), this.dropInStart,
                 this.descField.textProperty(), this.selectedServices);
     }
 
@@ -192,8 +234,9 @@ public class BookingFormPane extends GridPane {
         LocalTime startTime = getSelectedStartTime();
         int minutes = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
 
-        // Spärr mot stängningstid (17:00): ett jobb som slutar efter stängning får inte bokas
-        if (startTime != null) {
+        // Spärr mot stängningstid (17:00): ett jobb som slutar efter stängning får inte bokas.
+        // En drop-in har ingen vald tid — den räknas fram av tjänsten.
+        if (startTime != null && !dropIn) {
             LocalTime endTime = startTime.plusMinutes(minutes);
             if (endTime.isAfter(BookingAvailability.CLOSING_TIME)) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.closing_time_exceeded"));
@@ -222,7 +265,8 @@ public class BookingFormPane extends GridPane {
         }
 
         // Hela bokningens intervall kontrolleras mot de behövliga mekanikernas upptagna tider.
-        if (startTime != null) {
+        // Drop-in undantas: dess tid är redan vald ur teamets lediga timmar.
+        if (startTime != null && !dropIn) {
             if (BookingAvailability.isTeamBooked(garage, team, date, startTime,
                     startTime.plusMinutes(minutes), excludeBookingId)) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.slot_busy_error"));
