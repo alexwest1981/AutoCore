@@ -20,7 +20,6 @@
       "services": "Visa tjänster",
       "mechanics": "Visa mekaniker",
       "workorders": "Visa arbetsordrar",
-      "reclamations": "Visa reklamationer",
       "invoices": "Visa fakturor",
       "payments": "Visa betalningar"
     },
@@ -118,13 +117,6 @@
       "action_reclamation": "Reklamation",
       "action_draft": "+ Nytt utkast",
       "action_details": "Visa detaljer"
-    },
-    "reclamations": {
-      "title": "Reklamationer",
-      "subtitle": "Reklamationsarbeten och arbetsordern de gäller",
-      "meta": "{0} reklamationer",
-      "meta.one": "{0} reklamation",
-      "action_order": "Visa arbetsorder"
     },
     "invoices": {
       "title": "Fakturor",

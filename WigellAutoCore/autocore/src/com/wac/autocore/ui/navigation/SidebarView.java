@@ -171,8 +171,7 @@ public class SidebarView {
         addGroup(groups, "nav.section.workshop",
                 navItem("services", "nav.item.services"),
                 navItem("mechanics", "nav.item.mechanics"),
-                navItem("workorders", "nav.item.workorders"),
-                navItem("reclamations", "nav.item.reclamations"));
+                navItem("workorders", "nav.item.workorders"));
         addGroup(groups, "nav.section.finance",
                 navItem("invoices", "nav.item.invoices"),
                 navItem("payments", "nav.item.payments"));
@@ -370,10 +369,6 @@ public class SidebarView {
             case "invoices":
                 // Invoice / Billing receipt
                 path = "M 2 0.5 h 10 v 13 l -1.5 -1 l -1.5 1 l -1.5 -1 l -1.5 1 l -1.5 -1 l -1.5 1 l -1 -0.7 v -12.3 Z M 4 3 h 6 v 1.2 h -6 Z M 4 5.5 h 6 v 1.2 h -6 Z M 4 8 h 4 v 1.2 h -4 Z";
-                break;
-            case "reclamations":
-                // Varningstriangel, utropstecknet skuret som hål ur triangeln
-                path = "M 7 1 L 13.2 12.2 H 0.8 Z M 7.7 5 h -1.4 v 4 h 1.4 Z M 7.7 10 h -1.4 v 1.4 h 1.4 Z";
                 break;
             case "payments":
                 // Payment / Credit card

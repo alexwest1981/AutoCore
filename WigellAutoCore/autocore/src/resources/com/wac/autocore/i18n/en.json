@@ -20,7 +20,6 @@
       "services": "Show services",
       "mechanics": "Show mechanics",
       "workorders": "Show work orders",
-      "reclamations": "Show reclamations",
       "invoices": "Show invoices",
       "payments": "Show payments"
     },
@@ -118,13 +117,6 @@
       "action_reclamation": "Reclamation",
       "action_draft": "+ New draft",
       "action_details": "View details"
-    },
-    "reclamations": {
-      "title": "Reclamations",
-      "subtitle": "Reclamation work and the work order it refers to",
-      "meta": "{0} reclamations",
-      "meta.one": "{0} reclamation",
-      "action_order": "View work order"
     },
     "invoices": {
       "title": "Invoices",
