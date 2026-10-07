@@ -85,6 +85,16 @@ public class Db {
                 + "service_item_id INTEGER NOT NULL, "
                 + "PRIMARY KEY (booking_id, service_item_id))",
 
+            "CREATE TABLE IF NOT EXISTS service_packages ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "name TEXT NOT NULL, "
+                + "description TEXT)",
+
+            "CREATE TABLE IF NOT EXISTS service_package_items ("
+                + "package_id INTEGER NOT NULL, "
+                + "service_item_id INTEGER NOT NULL, "
+                + "PRIMARY KEY (package_id, service_item_id))",
+
             "CREATE TABLE IF NOT EXISTS booking_mechanics ("
                 + "booking_id INTEGER NOT NULL, "
                 + "mechanic_id INTEGER NOT NULL, "

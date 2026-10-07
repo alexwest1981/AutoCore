@@ -9,6 +9,7 @@ import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.ServicePackage;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.repository.MechanicRepository;
@@ -32,6 +33,7 @@ public class GarageSystem {
     private final BookingService bookingService = new BookingService(workOrderService);
     private final BillingService billingService = new BillingService();
     private final PaymentService paymentService = new PaymentService();
+    private final ServicePackageService servicePackageService = new ServicePackageService();
     private final MechanicRules mechanicRules = new MechanicRules();
     private final RemovalRules removalRules = new RemovalRules(
             workOrderService, bookingService, billingService, vehicleService);
@@ -360,5 +362,26 @@ public class GarageSystem {
         if (problem != null) {
             throw new IllegalArgumentException("Mechanic data rejected: " + problem);
         }
+    }
+    // --- Servicepaket ---
+
+    public List<ServicePackage> getServicePackages() {
+        return servicePackageService.getAll();
+    }
+
+    public ServicePackage findServicePackage(int id) {
+        return servicePackageService.findById(id);
+    }
+
+    public ServicePackage createServicePackage(String name, String description, List<ServiceItem> serviceItems) {
+        return servicePackageService.createPackage(name, description, serviceItems);
+    }
+
+    public void updateServicePackage(ServicePackage servicePackage) throws SQLException {
+        servicePackageService.updatePackage(servicePackage);
+    }
+
+    public void deleteServicePackage(int id) throws SQLException {
+        servicePackageService.deletePackage(id);
     }
 }
