@@ -114,7 +114,6 @@
       "action_confirm": "Bekräfta order",
       "action_mark_performed": "Markera utförda arbeten",
       "action_complete": "Slutför order",
-      "action_invoice": "Skapa faktura",
       "action_draft": "+ Nytt utkast",
       "action_details": "Visa detaljer"
     },
