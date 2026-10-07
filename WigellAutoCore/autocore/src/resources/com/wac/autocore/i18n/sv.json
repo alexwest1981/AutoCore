@@ -20,6 +20,7 @@
       "services": "Visa tjänster",
       "mechanics": "Visa mekaniker",
       "workorders": "Visa arbetsordrar",
+      "reclamations": "Visa reklamationer",
       "invoices": "Visa fakturor",
       "payments": "Visa betalningar"
     },
@@ -114,8 +115,16 @@
       "action_confirm": "Bekräfta order",
       "action_mark_performed": "Markera utförda arbeten",
       "action_complete": "Slutför order",
+      "action_reclamation": "Reklamation",
       "action_draft": "+ Nytt utkast",
       "action_details": "Visa detaljer"
+    },
+    "reclamations": {
+      "title": "Reklamationer",
+      "subtitle": "Reklamationsarbeten och arbetsordern de gäller",
+      "meta": "{0} reklamationer",
+      "meta.one": "{0} reklamation",
+      "action_order": "Visa arbetsorder"
     },
     "invoices": {
       "title": "Fakturor",
@@ -137,7 +146,7 @@
   },
   "workorder_type": {
     "standard": "Standard",
-    "warranty": "Garanti",
+    "reclamation": "Reklamation",
     "internal": "Intern"
   },
   "table": {
@@ -175,6 +184,7 @@
       "time": "Tid",
       "invoice": "Faktura",
       "type": "Typ",
+      "reclamation_of": "Reklamation av",
       "datetime": "Datum/tid",
       "paid": "Betald"
     }
@@ -405,6 +415,13 @@
       "no_vehicles": "Det finns inga fordon att knyta utkastet till",
       "create_failed": "Utkastet kunde inte sparas."
     },
+    "reclamation": {
+      "title": "Ny reklamation",
+      "header": "Reklamation av arbetsorder",
+      "description": "Beskrivning av felet",
+      "description_prompt": "Vad gick fel?",
+      "create_failed": "Reklamationen kunde inte skapas."
+    },
     "workorder": {
       "create": {
         "title": "Ny arbetsorder",
@@ -425,7 +442,9 @@
       "details_header": "Detaljer för arbetsorder #{0}",
       "details_title": "Arbetsorderdetaljer",
       "historical_notice": "Visar debiterade priser som gällde när arbetet utfördes.",
-      "open_in_orders": "Öppna i arbetsordrar"
+      "open_in_orders": "Öppna i arbetsordrar",
+      "reclamations_title": "Reklamationer på denna order",
+      "no_reclamations": "Inga reklamationer"
     },
     "invoice": {
       "create": {
@@ -545,7 +564,9 @@
       "invoices.one": "Bokning som väntar på en faktura",
       "invoices.many": "Bokningar som väntar på en faktura",
       "payments.one": "Faktura som väntar på betalning",
-      "payments.many": "Fakturor som väntar på betalning"
+      "payments.many": "Fakturor som väntar på betalning",
+      "reclamations.one": "Reklamation som inte är åtgärdad",
+      "reclamations.many": "Reklamationer som inte är åtgärdade"
     }
   }
 }

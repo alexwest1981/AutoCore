@@ -179,10 +179,10 @@ public class BillingService {
                     // Äldre arbetsordrar saknar det och får katalogens pris, som före D2.
                     Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
                     double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
-                    // Ett garantiarbete syns på fakturan men kostar inget. Priset nollas och inte
+                    // Ett reklamationsarbete syns på fakturan men kostar inget. Priset nollas och inte
                     // rabatten, för distributeDiscount skriver över varje rads rabatt så snart
                     // fakturan har en VIP- eller kodrabatt.
-                    if (workOrder.isWarranty()) {
+                    if (workOrder.isReclamation()) {
                         linePrice = 0.0;
                     }
                     lines.add(new InvoiceLine(0, 0, serviceItem.getId(),

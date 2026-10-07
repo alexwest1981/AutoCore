@@ -8,13 +8,13 @@ import java.util.Map;
 
 public class WorkOrder {
 
-    /** Standard, garanti eller internt arbete. Koden står här och ingen annanstans. */
+    /** Standard, reklamation eller internt arbete. Koden står här och ingen annanstans. */
     public static final String STANDARD = "STANDARD";
-    public static final String WARRANTY = "WARRANTY";
+    public static final String RECLAMATION = "RECLAMATION";
     public static final String INTERNAL = "INTERNAL";
 
     /** Typerna som går att välja. Ordningen är den väljaren visar, och första är standard. */
-    public static final List<String> TYPES = Arrays.asList(STANDARD, WARRANTY, INTERNAL);
+    public static final List<String> TYPES = Arrays.asList(STANDARD, RECLAMATION, INTERNAL);
 
     private int id;
     private int bookingId;
@@ -24,6 +24,9 @@ public class WorkOrder {
     private final Map<Integer, Double> completedServicePrices = new LinkedHashMap<Integer, Double>();
     private String status;
     private String type;
+
+    // Arbetsordern reklamationen gäller. 0 betyder att ordern inte är en reklamation.
+    private int originalWorkOrderId;
     private int vehicleId;
     private String description;
 
@@ -100,9 +103,17 @@ public class WorkOrder {
         this.type = type;
     }
 
-    /** Ett garantiarbete debiteras kunden inte, men det ska ändå synas på fakturan. */
-    public boolean isWarranty() {
-        return WARRANTY.equals(type);
+    public int getOriginalWorkOrderId() {
+        return originalWorkOrderId;
+    }
+
+    public void setOriginalWorkOrderId(int originalWorkOrderId) {
+        this.originalWorkOrderId = originalWorkOrderId;
+    }
+
+    /** En reklamation debiteras kunden inte, men den ska ändå synas på fakturan. */
+    public boolean isReclamation() {
+        return RECLAMATION.equals(type);
     }
 
     public void addServiceItem(int serviceItemId) {
@@ -160,6 +171,7 @@ public class WorkOrder {
                 " | Mechanic ID: " + mechanicId +
                 " | Services: " + serviceItemIds +
                 " | Status: " + status +
-                " | Type: " + type;
+                " | Type: " + type +
+                (originalWorkOrderId > 0 ? " | Reclamation of: " + originalWorkOrderId : "");
     }
 }
