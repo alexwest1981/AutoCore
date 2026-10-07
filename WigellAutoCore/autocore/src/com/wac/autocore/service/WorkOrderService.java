@@ -71,6 +71,16 @@ public class WorkOrderService {
 
 /** Skapar en arbetsorder för ett urval av tjänsterna. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds) {
+        return createWorkOrder(bookingId, mechanicId, serviceItemIds, WorkOrder.TYPES.get(0));
+    }
+
+    /** Skapar en arbetsorder av en viss typ. Standard, garanti eller internt arbete. */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type) {
+        if (type == null || !WorkOrder.TYPES.contains(type)) {
+            System.out.println("Unknown work order type: " + type);
+            return null;
+        }
+
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             System.out.println("Booking with ID " + bookingId + " does not exist.");
@@ -107,6 +117,7 @@ public class WorkOrderService {
         }
 
         WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
+        workOrder.setType(type);
 
         for (Integer serviceItemId : serviceItemIds) {
             workOrder.addServiceItem(serviceItemId);

@@ -115,6 +115,7 @@ public final class EntityPages {
         t.getColumns().addAll(
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
                 TableFactory.sizeCol(I18n.get("table.col.booking"), TableFactory.W_REF, c -> EntityLookup.workOrderBookingRef(c)),
+                TableFactory.sizeCol(I18n.get("table.col.type"), TableFactory.W_TYPE, c -> UiFormatters.workOrderTypeWord(c.getType())),
                 TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.workOrderVehicleReg(garage, c)),
                 TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> EntityLookup.workOrderDate(garage, c)),
                 TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_TIME, c -> EntityLookup.workOrderTime(garage, c)),

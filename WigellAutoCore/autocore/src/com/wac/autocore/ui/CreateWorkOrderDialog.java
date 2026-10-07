@@ -3,6 +3,7 @@ package com.wac.autocore.ui;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
+import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.UiFormatters;
@@ -80,8 +81,25 @@ final class CreateWorkOrderDialog {
             public Booking fromString(String string) { return null; }
         });
 
+        // Typen är samma för alla arbetsordrar en körning skapar: en per mekaniker, en typ.
+        ComboBox<String> typeBox = new ComboBox<String>();
+        typeBox.getItems().addAll(WorkOrder.TYPES);
+        typeBox.setValue(WorkOrder.TYPES.get(0));
+        typeBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(typeBox, Priority.ALWAYS);
+        typeBox.setConverter(new StringConverter<String>() {
+            @Override
+            public String toString(String type) {
+                return type == null ? "" : UiFormatters.workOrderTypeWord(type);
+            }
+            @Override
+            public String fromString(String string) { return null; }
+        });
+
         grid.add(new Label(I18n.get("dialog.workorder.booking_select") + ":"), 0, 0);
         grid.add(bookingBox, 1, 0);
+        grid.add(new Label(I18n.get("table.col.type") + ":"), 0, 1);
+        grid.add(typeBox, 1, 1);
 
         Label servicesTitle = new Label(I18n.get("dialog.workorder.plan_title"));
         servicesTitle.setStyle("-fx-font-weight: bold;");
@@ -169,7 +187,7 @@ final class CreateWorkOrderDialog {
                     for (ServiceItem s : entry.getValue()) {
                         ids.add(Integer.valueOf(s.getId()));
                     }
-                    if (garage.createWorkOrder(b.getId(), entry.getKey().intValue(), ids) != null) {
+                    if (garage.createWorkOrder(b.getId(), entry.getKey().intValue(), ids, typeBox.getValue()) != null) {
                         created++;
                     }
                 }
