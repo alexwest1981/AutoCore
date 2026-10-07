@@ -233,10 +233,6 @@ public class WorkOrderService {
 
     // Enda stället som avgör vilka byten som är tillåtna. Allt som inte står här nekas.
     private boolean canChangeStatus(String from, String to) {
-        if ("CREATED".equals(from) && "IN_PROGRESS".equals(to)) {
-            return true;
-        }
-
         if ("IN_PROGRESS".equals(from) && "COMPLETED".equals(to)) {
             return true;
         }

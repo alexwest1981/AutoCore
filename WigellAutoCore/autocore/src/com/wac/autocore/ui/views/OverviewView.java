@@ -204,7 +204,7 @@ public final class OverviewView {
             javafx.scene.control.TableRow<WorkOrder> row = new javafx.scene.control.TableRow<WorkOrder>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem());
+                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem(), () -> router.navigate("overview"));
                 }
             });
             return row;
