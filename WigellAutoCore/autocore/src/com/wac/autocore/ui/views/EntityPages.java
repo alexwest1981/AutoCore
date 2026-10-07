@@ -106,7 +106,7 @@ public final class EntityPages {
                 I18n.get("entity.bookings.title"),
                 PageFormatters.meta("entity.bookings.meta", garage.getBookings().size()),
                 I18n.get("entity.bookings.subtitle"),
-                t, cancelBtn, deleteBtn, editBtn, addBtn);
+                table, cancelBtn, deleteBtn, editBtn, addBtn);
     }
 
     public static VBox buildWorkOrdersPage(GarageSystem garage, PageRouter router) {
@@ -157,7 +157,7 @@ public final class EntityPages {
                 I18n.get("entity.workorders.title"),
                 PageFormatters.meta("entity.workorders.meta", garage.getWorkOrders().size()),
                 I18n.get("entity.workorders.subtitle"),
-                new VBox(8,
+                new javafx.scene.layout.HBox(10,
                         UiComponents.viewNotice(
                                 PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
                                 I18n.get("view.notice.workorders.one"),
@@ -166,7 +166,7 @@ public final class EntityPages {
                                 PageRouter.countOpenReclamations(garage.getWorkOrders()),
                                 I18n.get("view.notice.reclamations.one"),
                                 I18n.get("view.notice.reclamations.many"))),
-                t, detailsBtn, addBtn, draftBtn);
+                table, detailsBtn, addBtn, draftBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
@@ -248,7 +248,7 @@ public final class EntityPages {
                                 garage.getInvoices()),
                         I18n.get("view.notice.invoices.one"),
                         I18n.get("view.notice.invoices.many")),
-                t, printBtn, linesBtn, payBtn, addBtn);
+                table, printBtn, linesBtn, payBtn, addBtn);
     }
 
     public static VBox buildPaymentsPage(GarageSystem garage, PageRouter router) {
@@ -276,6 +276,6 @@ public final class EntityPages {
                         PageRouter.countUnpaidInvoices(garage.getInvoices()),
                         I18n.get("view.notice.payments.one"),
                         I18n.get("view.notice.payments.many")),
-                t, addBtn);
+                table, addBtn);
     }
 }

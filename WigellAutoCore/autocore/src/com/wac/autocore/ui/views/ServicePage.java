@@ -74,6 +74,6 @@ final class ServicePage {
                 I18n.get("entity.services.title"),
                 PageFormatters.meta("entity.services.meta", garage.getServiceItems().size()),
                 I18n.get("entity.services.subtitle"),
-                view, deleteButton, editButton, showPackagesButton, createPackageButton, addButton);
+                table, deleteButton, editButton, showPackagesButton, createPackageButton, addButton);
     }
 }

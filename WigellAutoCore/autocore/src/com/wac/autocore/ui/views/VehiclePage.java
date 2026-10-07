@@ -73,6 +73,6 @@ final class VehiclePage {
                 I18n.get("entity.vehicles.title"),
                 PageFormatters.meta("entity.vehicles.meta", garage.getVehicles().size()),
                 I18n.get("entity.vehicles.subtitle"),
-                view, deleteButton, editButton, addButton);
+                table, deleteButton, editButton, addButton);
     }
 }

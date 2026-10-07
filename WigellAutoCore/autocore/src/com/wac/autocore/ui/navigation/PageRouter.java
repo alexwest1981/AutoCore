@@ -48,16 +48,27 @@ public class PageRouter {
 
     public void navigateToWorkOrder(int workOrderId) {
         navigate("workorders");
-        if (workOrderId > 0 && activeTable != null) {
-            javafx.scene.control.TableView<?> tv = activeTable.getTableView();
-            int idx = 0;
-            for (Object item : tv.getItems()) {
-                if (item instanceof com.wac.autocore.model.WorkOrder && ((com.wac.autocore.model.WorkOrder) item).getId() == workOrderId) {
-                    tv.getSelectionModel().select(idx);
-                    break;
-                }
-                idx++;
+        if (workOrderId <= 0 || activeTable == null) {
+            return;
+        }
+        // Ordern kan ligga på en annan sida än den som visas, så leta i hela listan och bläddra
+        // fram rätt sida innan raden markeras — annars skulle den tyst utebli.
+        for (int index = 0; index < activeTable.getBaseList().size(); index++) {
+            Object item = activeTable.getBaseList().get(index);
+            if (!(item instanceof com.wac.autocore.model.WorkOrder)) {
+                continue;
             }
+            if (((com.wac.autocore.model.WorkOrder) item).getId() != workOrderId) {
+                continue;
+            }
+            activeTable.showPage(index / activeTable.getPageSize());
+            javafx.scene.control.TableView<?> tv = activeTable.getTableView();
+            int rowOnPage = index % activeTable.getPageSize();
+            if (rowOnPage < tv.getItems().size()) {
+                tv.getSelectionModel().select(rowOnPage);
+                tv.scrollTo(rowOnPage);
+            }
+            return;
         }
     }
 

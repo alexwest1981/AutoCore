@@ -69,6 +69,6 @@ final class MechanicPage {
                 I18n.get("entity.mechanics.title"),
                 PageFormatters.meta("entity.mechanics.meta", garage.getMechanics().size()),
                 I18n.get("entity.mechanics.subtitle"),
-                view, deleteButton, editButton, addButton);
+                table, deleteButton, editButton, addButton);
     }
 }

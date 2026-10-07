@@ -181,6 +181,11 @@
       "paid": "Betald"
     }
   },
+  "list": {
+    "showing": "Visar {0}–{1} av {2}",
+    "previous": "Föregående",
+    "next": "Nästa"
+  },
   "status": {
     "booked": "Bokad",
     "in_progress": "Pågående",
