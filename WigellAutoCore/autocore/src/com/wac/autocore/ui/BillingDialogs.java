@@ -108,7 +108,7 @@ public final class BillingDialogs {
         grid.add(extraAmountField, 1, 3);
 
         Runnable updateExtraFields = () -> {
-            boolean show = hasWarrantyOrder(garage, bookingBox.getValue());
+            boolean show = hasReclamationOrder(garage, bookingBox.getValue());
             extraNameLabel.setVisible(show);
             extraNameLabel.setManaged(show);
             extraNameField.setVisible(show);
@@ -157,14 +157,14 @@ public final class BillingDialogs {
         });
     }
 
-    // Kostnader utöver arbetet hör till en reklamation, så utan ett garantiarbete finns inget att
-    // fylla i. Letar i bokningens arbetsordrar, inte bara den förvalda.
-    private static boolean hasWarrantyOrder(GarageSystem garage, Booking booking) {
+    // Kostnader utöver arbetet hör till en reklamation, så utan ett reklamationsarbete finns inget
+    // att fylla i. Letar i bokningens arbetsordrar, inte bara den förvalda.
+    private static boolean hasReclamationOrder(GarageSystem garage, Booking booking) {
         if (booking == null) {
             return false;
         }
         for (WorkOrder order : garage.getWorkOrders()) {
-            if (order.getBookingId() == booking.getId() && order.isWarranty()) {
+            if (order.getBookingId() == booking.getId() && order.isReclamation()) {
                 return true;
             }
         }

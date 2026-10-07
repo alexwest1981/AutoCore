@@ -19,6 +19,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import com.wac.autocore.seed.SeedText;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Sidorna i gränssnittet, en klass per sida. */
 @SuppressWarnings("unchecked")
 public final class EntityPages {
@@ -145,11 +148,13 @@ public final class EntityPages {
         Button confirmBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_confirm"));
         Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
         Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
+        Button reclamationBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_reclamation"));
         startBtn.setDisable(true);
         cancelBtn.setDisable(true);
         confirmBtn.setDisable(true);
         markBtn.setDisable(true);
         completeBtn.setDisable(true);
+        reclamationBtn.setDisable(true);
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
@@ -179,6 +184,9 @@ public final class EntityPages {
                 canComplete = false;
             }
             completeBtn.setDisable(!canComplete);
+
+            // Bara ett utfört arbete går att reklamera.
+            reclamationBtn.setDisable(sel == null || !"COMPLETED".equalsIgnoreCase(sel.getStatus()));
 
         });
 
@@ -225,6 +233,13 @@ public final class EntityPages {
             }
         });
 
+        reclamationBtn.setOnAction(e -> {
+            WorkOrder sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null && "COMPLETED".equalsIgnoreCase(sel.getStatus())) {
+                ActionDialogs.showCreateReclamationDialog(garage, sel, () -> router.navigate("workorders"));
+            }
+        });
+
         t.setRowFactory(tv -> {
             TableRow<WorkOrder> row = new TableRow<WorkOrder>();
             row.setOnMouseClicked(event -> {
@@ -239,15 +254,74 @@ public final class EntityPages {
                 I18n.get("entity.workorders.title"),
                 PageFormatters.meta("entity.workorders.meta", garage.getWorkOrders().size()),
                 I18n.get("entity.workorders.subtitle"),
-                UiComponents.viewNotice(
-                        PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
-                        I18n.get("view.notice.workorders.one"),
-                        I18n.get("view.notice.workorders.many")),
-                t, detailsBtn, startBtn, cancelBtn, confirmBtn, markBtn, completeBtn, addBtn, draftBtn);
+                new VBox(8,
+                        UiComponents.viewNotice(
+                                PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
+                                I18n.get("view.notice.workorders.one"),
+                                I18n.get("view.notice.workorders.many")),
+                        UiComponents.viewNotice(
+                                PageRouter.countOpenReclamations(garage.getWorkOrders()),
+                                I18n.get("view.notice.reclamations.one"),
+                                I18n.get("view.notice.reclamations.many"))),
+                t, detailsBtn, startBtn, cancelBtn, confirmBtn, markBtn, completeBtn, reclamationBtn,
+                addBtn, draftBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
         return ServicePage.build(garage, router);
+    }
+
+    // Reklamationerna är vanliga arbetsordrar, så sidan är Arbetsordrar filtrerad på typen.
+    // Kolumnen Reklamation av leder tillbaka till ordern reklamationen gäller.
+    public static VBox buildReclamationsPage(GarageSystem garage, PageRouter router) {
+        List<WorkOrder> reclamations = new ArrayList<WorkOrder>();
+        for (WorkOrder order : garage.getWorkOrders()) {
+            if (order.isReclamation()) {
+                reclamations.add(order);
+            }
+        }
+
+        FilterableTable<WorkOrder> table = TableFactory.create(reclamations);
+        TableView<WorkOrder> t = table.getTableView();
+        t.getColumns().addAll(
+                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                TableFactory.sizeCol(I18n.get("table.col.reclamation_of"), TableFactory.W_REF, c -> c.getOriginalWorkOrderId() > 0
+                        ? "#" + c.getOriginalWorkOrderId()
+                        : "-"),
+                TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.workOrderVehicleReg(garage, c)),
+                TableFactory.textCol(I18n.get("table.col.customer"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.workOrderCustomerName(garage, c)),
+                TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> EntityLookup.workOrderDate(garage, c)),
+                TableFactory.textCol(I18n.get("table.col.description"), TableFactory.W_TEXT_MIN, TableFactory.W_TEXT_MAX, c -> c.getDescription() == null ? "-" : SeedText.resolve(c.getDescription())),
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
+        router.setActiveTable(table);
+
+        Button orderBtn = UiComponents.secondaryButton(I18n.get("entity.reclamations.action_order"));
+        orderBtn.setDisable(true);
+        orderBtn.setOnAction(e -> {
+            WorkOrder sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                router.navigateToWorkOrder(sel.getOriginalWorkOrderId());
+            }
+        });
+
+        t.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldV, sel) -> orderBtn.setDisable(sel == null));
+
+        t.setRowFactory(tv -> {
+            TableRow<WorkOrder> row = new TableRow<WorkOrder>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    router.navigateToWorkOrder(row.getItem().getOriginalWorkOrderId());
+                }
+            });
+            return row;
+        });
+
+        return UiComponents.buildEntityPage(
+                I18n.get("entity.reclamations.title"),
+                PageFormatters.meta("entity.reclamations.meta", reclamations.size()),
+                I18n.get("entity.reclamations.subtitle"),
+                t, orderBtn);
     }
 
     public static VBox buildMechanicsPage(GarageSystem garage, PageRouter router) {

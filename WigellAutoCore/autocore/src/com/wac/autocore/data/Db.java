@@ -79,7 +79,8 @@ public class Db {
                 + "status TEXT, "
                 + "type TEXT, "
                 + "vehicle_id INTEGER, "
-                + "description TEXT)",
+                + "description TEXT, "
+                + "original_work_order_id INTEGER)",
 
             "CREATE TABLE IF NOT EXISTS booking_service_items ("
                 + "booking_id INTEGER NOT NULL, "
@@ -183,15 +184,25 @@ public class Db {
                 // Kolumnen existerar redan
             }
 
-            // Arbetsorderns typ: standard, garanti eller internt arbete.
+            // Arbetsorderns typ: standard, reklamation eller internt arbete.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN type TEXT");
             } catch (SQLException ignored) {
                 // Kolumnen existerar redan
             }
 
+            // Referensen en reklamation har till arbetsordern den gäller. Tom för alla andra.
+            try {
+                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN original_work_order_id INTEGER");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
             // Ordrar som skapades innan typen fanns är vanliga arbeten.
             statement.executeUpdate("UPDATE work_orders SET type = 'STANDARD' WHERE type IS NULL OR type = ''");
+
+            // Garanti bytte namn till reklamation när kravet preciserades.
+            statement.executeUpdate("UPDATE work_orders SET type = 'RECLAMATION' WHERE type = 'WARRANTY'");
             // Tjänster som skapades innan kravet fanns får sitt krav här, så en befintlig databas
             // får samma uppsättning som en nyskapad.
             statement.executeUpdate("UPDATE service_items SET specialization = 'seed.mechanic.brakes.specialization' "

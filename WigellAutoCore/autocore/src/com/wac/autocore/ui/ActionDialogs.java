@@ -272,6 +272,10 @@ public final class ActionDialogs {
         WorkOrderDialogs.showMarkPerformedDialog(garage, workOrder, onSuccess);
     }
 
+    public static void showCreateReclamationDialog(GarageSystem garage, WorkOrder workOrder, Runnable onSuccess) {
+        WorkOrderDialogs.showCreateReclamationDialog(garage, workOrder, onSuccess);
+    }
+
     // =========================================================================
     // 5. Fakturering & Betalning (BillingDialogs)
     // =========================================================================

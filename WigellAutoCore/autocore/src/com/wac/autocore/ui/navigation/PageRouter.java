@@ -86,6 +86,8 @@ public class PageRouter {
             pageBox.getChildren().add(EntityPages.buildBookingsPage(garage, this));
         } else if ("workorders".equals(key)) {
             pageBox.getChildren().add(EntityPages.buildWorkOrdersPage(garage, this));
+        } else if ("reclamations".equals(key)) {
+            pageBox.getChildren().add(EntityPages.buildReclamationsPage(garage, this));
         } else if ("services".equals(key)) {
             pageBox.getChildren().add(EntityPages.buildServicesPage(garage, this));
         } else if ("mechanics".equals(key)) {
@@ -128,6 +130,25 @@ public class PageRouter {
             if (!invoice.isPaid()) {
                 count++;
             }
+        }
+        return count;
+    }
+
+    /**
+     * Reklamationer som ännu inte är åtgärdade. En reklamation är en vanlig arbetsorder, så den
+     * väntar tills den är slutförd. Avbrutna räknas inte, de väntar inte på något.
+     */
+    public static int countOpenReclamations(List<WorkOrder> orders) {
+        int count = 0;
+        for (WorkOrder order : orders) {
+            if (!order.isReclamation()) {
+                continue;
+            }
+            String status = order.getStatus();
+            if (status != null && ("COMPLETED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status))) {
+                continue;
+            }
+            count++;
         }
         return count;
     }
