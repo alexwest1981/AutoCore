@@ -86,8 +86,6 @@ public class PageRouter {
             pageBox.getChildren().add(EntityPages.buildBookingsPage(garage, this));
         } else if ("workorders".equals(key)) {
             pageBox.getChildren().add(EntityPages.buildWorkOrdersPage(garage, this));
-        } else if ("reclamations".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildReclamationsPage(garage, this));
         } else if ("services".equals(key)) {
             pageBox.getChildren().add(EntityPages.buildServicesPage(garage, this));
         } else if ("mechanics".equals(key)) {

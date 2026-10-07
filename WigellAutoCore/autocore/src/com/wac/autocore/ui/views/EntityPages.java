@@ -19,9 +19,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import com.wac.autocore.seed.SeedText;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /** Sidorna i gränssnittet, en klass per sida. */
 @SuppressWarnings("unchecked")
 public final class EntityPages {
@@ -174,59 +171,6 @@ public final class EntityPages {
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
         return ServicePage.build(garage, router);
-    }
-
-    // Reklamationerna är vanliga arbetsordrar, så sidan är Arbetsordrar filtrerad på typen.
-    // Kolumnen Reklamation av leder tillbaka till ordern reklamationen gäller.
-    public static VBox buildReclamationsPage(GarageSystem garage, PageRouter router) {
-        List<WorkOrder> reclamations = new ArrayList<WorkOrder>();
-        for (WorkOrder order : garage.getWorkOrders()) {
-            if (order.isReclamation()) {
-                reclamations.add(order);
-            }
-        }
-
-        FilterableTable<WorkOrder> table = TableFactory.create(reclamations);
-        TableView<WorkOrder> t = table.getTableView();
-        t.getColumns().addAll(
-                TableFactory.idCol(c -> String.valueOf(c.getId())),
-                TableFactory.sizeCol(I18n.get("table.col.reclamation_of"), TableFactory.W_REF, c -> c.getOriginalWorkOrderId() > 0
-                        ? "#" + c.getOriginalWorkOrderId()
-                        : "-"),
-                TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.workOrderVehicleReg(garage, c)),
-                TableFactory.textCol(I18n.get("table.col.customer"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.workOrderCustomerName(garage, c)),
-                TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> EntityLookup.workOrderDate(garage, c)),
-                TableFactory.textCol(I18n.get("table.col.description"), TableFactory.W_TEXT_MIN, TableFactory.W_TEXT_MAX, c -> c.getDescription() == null ? "-" : SeedText.resolve(c.getDescription())),
-                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
-        router.setActiveTable(table);
-
-        Button orderBtn = UiComponents.secondaryButton(I18n.get("entity.reclamations.action_order"));
-        orderBtn.setDisable(true);
-        orderBtn.setOnAction(e -> {
-            WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null) {
-                router.navigateToWorkOrder(sel.getOriginalWorkOrderId());
-            }
-        });
-
-        t.getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldV, sel) -> orderBtn.setDisable(sel == null));
-
-        t.setRowFactory(tv -> {
-            TableRow<WorkOrder> row = new TableRow<WorkOrder>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    router.navigateToWorkOrder(row.getItem().getOriginalWorkOrderId());
-                }
-            });
-            return row;
-        });
-
-        return UiComponents.buildEntityPage(
-                I18n.get("entity.reclamations.title"),
-                PageFormatters.meta("entity.reclamations.meta", reclamations.size()),
-                I18n.get("entity.reclamations.subtitle"),
-                t, orderBtn);
     }
 
     public static VBox buildMechanicsPage(GarageSystem garage, PageRouter router) {
