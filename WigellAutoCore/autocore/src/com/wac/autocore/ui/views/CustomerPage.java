@@ -71,6 +71,6 @@ final class CustomerPage {
                 I18n.get("entity.customers.title"),
                 PageFormatters.meta("entity.customers.meta", garage.getCustomers().size()),
                 I18n.get("entity.customers.subtitle"),
-                view, deleteButton, editButton, addButton);
+                table, deleteButton, editButton, addButton);
     }
 }

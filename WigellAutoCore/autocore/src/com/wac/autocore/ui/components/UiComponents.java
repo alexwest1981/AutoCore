@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -15,6 +16,9 @@ import javafx.scene.layout.VBox;
 public final class UiComponents {
 
     private UiComponents() {}
+
+    /** FlowPane viker vid sin egen bredd. Tröskeln sätts så hög att den bara viker när den måste. */
+    private static final double NO_WRAP_LENGTH = 4000;
 
     public static VBox pageHead(String title, String sub, String eyebrow) {
         Label eyebrowLabel = null;
@@ -97,18 +101,28 @@ public final class UiComponents {
     }
 
     public static VBox buildEntityPage(String title, String sub, String eyebrow,
-                                       TableView<?> table, Node... actions) {
-        return buildEntityPage(title, sub, eyebrow, null, table, actions);
+                                       TableFactory.FilterableTable<?> data, Node... actions) {
+        return buildEntityPage(title, sub, eyebrow, null, data, actions);
     }
 
-/** Samma sida med en notisrad överst, med samma siffra som sidebaren visar. */
+/** Samma sida men med notisen i sidhuvudet, med samma siffra som sidebaren visar. */
     public static VBox buildEntityPage(String title, String sub, String eyebrow, Node notice,
-                                       TableView<?> table, Node... actions) {
+                                       TableFactory.FilterableTable<?> data, Node... actions) {
+        TableView<?> table = data.getTableView();
         VBox titles = pageHead(title, sub, eyebrow);
-        HBox.setHgrow(titles, Priority.ALWAYS);
+        // Rubriken får aldrig krossas. Den behåller sin naturliga bredd i stället för ett gissat
+        // mått, och knapparna viker in på nästa rad när de inte får plats.
+        titles.setMinWidth(Region.USE_PREF_SIZE);
 
         HBox topRow = new HBox(12, titles);
         topRow.setAlignment(Pos.CENTER_LEFT);
+
+        // Notisen ligger i sidhuvudet i stället för på en egen rad. Radhöjden bestäms då av
+        // titelblocket, som redan är högst, så tabellen står på samma plats i varje vy — utan att
+        // någon plats behöver reserveras. Är räkningen noll göms notisen och tar ingen plats.
+        if (notice != null) {
+            topRow.getChildren().add(notice);
+        }
 
         if (actions != null && actions.length > 0) {
             for (Node act : actions) {
@@ -117,9 +131,13 @@ public final class UiComponents {
                     b.setMinWidth(Region.USE_PREF_SIZE);
                 }
             }
-            HBox actionBox = new HBox(8, actions);
+            // FlowPane i stället för HBox: den viker in knapparna på nästa rad när de inte får
+            // plats, i stället för att ta rubrikens utrymme.
+            FlowPane actionBox = new FlowPane(8, 8);
+            actionBox.getChildren().addAll(actions);
             actionBox.setAlignment(Pos.CENTER_RIGHT);
-            actionBox.setMinWidth(Region.USE_PREF_SIZE);
+            actionBox.setPrefWrapLength(NO_WRAP_LENGTH);
+            HBox.setHgrow(actionBox, Priority.ALWAYS);
             topRow.getChildren().add(actionBox);
         }
 
@@ -127,30 +145,24 @@ public final class UiComponents {
         placeholder.getStyleClass().add("text-muted");
         table.setPlaceholder(placeholder);
         HBox.setHgrow(table, Priority.ALWAYS);
+        fixTableHeight(table);
 
-// Låt tabellen visa alla rader utan egen scroll, sidan scrollar själv.
+        VBox inner = new VBox(0, table, TableFactory.buildPager(data));
+        inner.getStyleClass().add("panel");
+        inner.setPadding(new Insets(4, 6, 6, 6));
+
+        return new VBox(18, topRow, inner);
+    }
+
+    /** Fast höjd för en tabellsida, också när listan är kort — då står rutan still mellan vyerna. */
+    public static void fixTableHeight(TableView<?> table) {
         final double CELL_HEIGHT = 32;
         final double HEADER_HEIGHT = 36;
         table.setFixedCellSize(CELL_HEIGHT);
-        Runnable resize = () -> {
-            int rows = table.getItems().size();
-            double h = HEADER_HEIGHT + (rows * CELL_HEIGHT) + 2; // +2 for border
-            table.setPrefHeight(h);
-            table.setMinHeight(h);
-            table.setMaxHeight(h);
-        };
-        resize.run();
-        table.getItems().addListener((javafx.collections.ListChangeListener<Object>) c -> resize.run());
-
-        VBox inner = new VBox();
-        inner.getStyleClass().add("panel");
-        inner.getChildren().add(table);
-        inner.setPadding(new Insets(4, 6, 6, 6));
-
-        if (notice == null) {
-            return new VBox(18, topRow, inner);
-        }
-        return new VBox(18, topRow, notice, inner);
+        double height = HEADER_HEIGHT + (TableFactory.FilterableTable.PAGE_SIZE * CELL_HEIGHT) + 2; // +2 for border
+        table.setPrefHeight(height);
+        table.setMinHeight(height);
+        table.setMaxHeight(height);
     }
 
 /** Notisraden: en siffra och en rad om vad som väntar. Tom tar den ingen plats. */

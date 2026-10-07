@@ -181,6 +181,11 @@
       "paid": "Paid"
     }
   },
+  "list": {
+    "showing": "Showing {0}–{1} of {2}",
+    "previous": "Previous",
+    "next": "Next"
+  },
   "status": {
     "booked": "Booked",
     "in_progress": "In progress",

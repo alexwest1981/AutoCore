@@ -92,9 +92,10 @@ public final class OverviewView {
 
         VBox kanbanBoard = com.wac.autocore.ui.components.KanbanBoard.build(garage, router, onRefresh);
 
-        TableView<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders, router);
+        TableFactory.FilterableTable<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders, router);
         VBox recentPanel = UiComponents.panel(I18n.get("overview.section.recent_workorders"),
-                I18n.get("overview.section.recent_workorders_sub"), recent);
+                I18n.get("overview.section.recent_workorders_sub"),
+                new VBox(0, recent.getTableView(), TableFactory.buildPager(recent)));
 
         return new VBox(18, head, quickBar, kpis, kanbanBoard, panels, recentPanel);
     }
@@ -188,7 +189,7 @@ public final class OverviewView {
     }
 
     @SuppressWarnings("unchecked")
-    private static TableView<WorkOrder> buildRecentOrdersTable(GarageSystem garage, List<WorkOrder> orders, com.wac.autocore.ui.navigation.PageRouter router) {
+    private static TableFactory.FilterableTable<WorkOrder> buildRecentOrdersTable(GarageSystem garage, List<WorkOrder> orders, com.wac.autocore.ui.navigation.PageRouter router) {
         TableFactory.FilterableTable<WorkOrder> table = TableFactory.create(orders);
         TableView<WorkOrder> t = table.getTableView();
         t.getColumns().addAll(
@@ -212,6 +213,8 @@ public final class OverviewView {
         if (router != null) {
             router.setActiveTable(table);
         }
-        return t;
+        // Samma höjd som listsidorna, så rutan inte heller här hoppar mellan vyerna.
+        UiComponents.fixTableHeight(t);
+        return table;
     }
 }
