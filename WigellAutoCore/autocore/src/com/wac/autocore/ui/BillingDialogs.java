@@ -87,10 +87,40 @@ public final class BillingDialogs {
         discountField.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(discountField, Priority.ALWAYS);
 
+        // En reklamation kan föra med sig en ny kostnad som kunden ska betala. Fälten visas bara
+        // när bokningen innehåller ett garantiarbete, annars står de bara i vägen.
+        Label extraNameLabel = new Label(I18n.get("dialog.invoice.extra_cost_label") + ":");
+        TextField extraNameField = new TextField();
+        extraNameField.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(extraNameField, Priority.ALWAYS);
+        Label extraAmountLabel = new Label(I18n.get("dialog.invoice.extra_cost_amount") + ":");
+        TextField extraAmountField = new TextField();
+        extraAmountField.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(extraAmountField, Priority.ALWAYS);
+
         grid.add(new Label(I18n.get("dialog.invoice.booking_select") + ":"), 0, 0);
         grid.add(bookingBox, 1, 0);
         grid.add(new Label(I18n.get("dialog.invoice.discount") + ":"), 0, 1);
         grid.add(discountField, 1, 1);
+        grid.add(extraNameLabel, 0, 2);
+        grid.add(extraNameField, 1, 2);
+        grid.add(extraAmountLabel, 0, 3);
+        grid.add(extraAmountField, 1, 3);
+
+        Runnable updateExtraFields = () -> {
+            boolean show = hasWarrantyOrder(garage, bookingBox.getValue());
+            extraNameLabel.setVisible(show);
+            extraNameLabel.setManaged(show);
+            extraNameField.setVisible(show);
+            extraNameField.setManaged(show);
+            extraAmountLabel.setVisible(show);
+            extraAmountLabel.setManaged(show);
+            extraAmountField.setVisible(show);
+            extraAmountField.setManaged(show);
+        };
+        bookingBox.getSelectionModel().selectedItemProperty()
+                .addListener((obs, old, now) -> updateExtraFields.run());
+        updateExtraFields.run();
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -103,7 +133,20 @@ public final class BillingDialogs {
                     return;
                 }
                 String code = discountField.getText().trim();
-                Invoice invoice = garage.createInvoiceForBooking(booking.getId(), code);
+                Double extraAmount = null;
+                if (extraNameField.isVisible() && !extraAmountField.getText().trim().isEmpty()) {
+                    // Samma tolkning av belopp som tjänstedialogen gör, så att 250,50 går att skriva
+                    // på båda ställena.
+                    extraAmount = ServiceItemDialogs.parsePrice(extraAmountField.getText());
+                    if (extraAmount == null) {
+                        ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                                I18n.get("dialog.invoice.extra_cost_invalid"));
+                        return;
+                    }
+                }
+                Invoice invoice = garage.createInvoiceForBooking(booking.getId(), code,
+                        extraNameField.getText().trim(),
+                        extraAmount == null ? 0.0 : extraAmount.doubleValue());
                 if (invoice == null) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.invoice.create_failed"));
                     return;
@@ -112,6 +155,20 @@ public final class BillingDialogs {
                 if (onSuccess != null) onSuccess.run();
             }
         });
+    }
+
+    // Kostnader utöver arbetet hör till en reklamation, så utan ett garantiarbete finns inget att
+    // fylla i. Letar i bokningens arbetsordrar, inte bara den förvalda.
+    private static boolean hasWarrantyOrder(GarageSystem garage, Booking booking) {
+        if (booking == null) {
+            return false;
+        }
+        for (WorkOrder order : garage.getWorkOrders()) {
+            if (order.getBookingId() == booking.getId() && order.isWarranty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void showProcessPaymentDialog(GarageSystem garage, Invoice preselected, Runnable onSuccess) {

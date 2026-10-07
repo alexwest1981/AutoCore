@@ -8,8 +8,13 @@ import java.util.Map;
 
 public class WorkOrder {
 
+    /** Standard, garanti eller internt arbete. Koden står här och ingen annanstans. */
+    public static final String STANDARD = "STANDARD";
+    public static final String WARRANTY = "WARRANTY";
+    public static final String INTERNAL = "INTERNAL";
+
     /** Typerna som går att välja. Ordningen är den väljaren visar, och första är standard. */
-    public static final List<String> TYPES = Arrays.asList("STANDARD", "WARRANTY", "INTERNAL");
+    public static final List<String> TYPES = Arrays.asList(STANDARD, WARRANTY, INTERNAL);
 
     private int id;
     private int bookingId;
@@ -28,7 +33,7 @@ public class WorkOrder {
         this.mechanicId = mechanicId;
         this.serviceItemIds = new ArrayList<Integer>();
         this.status = "CREATED";
-        this.type = "STANDARD";
+        this.type = STANDARD;
     }
 
     public int getId() {
@@ -93,6 +98,11 @@ public class WorkOrder {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    /** Ett garantiarbete debiteras kunden inte, men det ska ändå synas på fakturan. */
+    public boolean isWarranty() {
+        return WARRANTY.equals(type);
     }
 
     public void addServiceItem(int serviceItemId) {
