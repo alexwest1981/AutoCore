@@ -11,19 +11,24 @@ import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.Button;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import com.wac.autocore.seed.SeedText;
 
-/** Detaljvyn för en arbetsorder: upplysningar och tjänsterna med sitt läge. */
+/** Detaljvyn för en arbetsorder: upplysningar, tjänsterna och de åtgärder som läget tillåter. */
 final class WorkOrderDetailsDialog {
 
     private WorkOrderDetailsDialog() {}
@@ -37,6 +42,21 @@ final class WorkOrderDetailsDialog {
                 + " (" + I18n.get("table.col.booking") + " #" + workOrder.getBookingId() + ")");
         ActionDialogs.styleDialog(dialog);
 
+        dialog.getDialogPane().setContent(buildContent(garage, workOrder, dialog));
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+
+        // Listan bakom dialogen hämtas när den stängs, inte vid varje knapptryck.
+        dialog.setOnHidden(e -> {
+            if (onRefresh != null) {
+                onRefresh.run();
+            }
+        });
+
+        dialog.showAndWait();
+    }
+
+    /** Innehållet byggs om efter varje åtgärd, så statusen och knapparna alltid stämmer. */
+    private static VBox buildContent(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
         VBox content = new VBox(14);
         content.setPadding(new Insets(18, 22, 18, 22));
         content.setPrefWidth(640);
@@ -184,59 +204,119 @@ final class WorkOrderDetailsDialog {
         linesGrid.add(totalTimeVal, 1, row);
         linesGrid.add(totalVal, 2, row);
         linesGrid.add(totalStatusVal, 3, row);
+        content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid);
+        content.getChildren().add(actionRow(garage, workOrder, dialog));
+        return content;
+    }
 
-        // Slutför kräver att alla tjänster är markerade när ordern har fler än en.
+    /** Visar bara de åtgärder som statusen tillåter. Avbryt hamnar sist, avskild till höger. */
+    private static HBox actionRow(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
         String status = workOrder.getStatus();
         boolean multiService = workOrder.getServiceItemIds() != null && workOrder.getServiceItemIds().size() > 1;
         boolean allMarked = workOrder.getCompletedServiceItems() != null
                 && workOrder.getCompletedServiceItems().containsAll(workOrder.getServiceItemIds());
 
-        Button confirmBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_confirm"));
-        Button startBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_start"));
-        Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
-        Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
-        Button cancelBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_cancel"));
+        HBox row = new HBox(8);
 
-        confirmBtn.setDisable(!"CREATED".equals(status));
-        startBtn.setDisable(!("CREATED".equals(status) || "CONFIRMED".equals(status) || "CANCELLED".equals(status)));
-        markBtn.setDisable(!("IN_PROGRESS".equals(status) && multiService));
-        completeBtn.setDisable(!(("IN_PROGRESS".equals(status) || "CREATED".equals(status)) && (!multiService || allMarked)));
-        cancelBtn.setDisable(!("CREATED".equals(status) || "CONFIRMED".equals(status) || "IN_PROGRESS".equals(status)));
-
-        startBtn.setOnAction(e -> {
-            garage.startWorkOrder(workOrder.getId());
-            closeAndRefresh(dialog, onRefresh);
-        });
-        cancelBtn.setOnAction(e -> {
-            garage.cancelWorkOrder(workOrder.getId());
-            closeAndRefresh(dialog, onRefresh);
-        });
-        confirmBtn.setOnAction(e -> {
-            garage.confirmWorkOrder(workOrder.getId());
-            closeAndRefresh(dialog, onRefresh);
-        });
-        markBtn.setOnAction(e -> ActionDialogs.showMarkPerformedDialog(garage, workOrder,
-                () -> closeAndRefresh(dialog, onRefresh)));
-        completeBtn.setOnAction(e -> {
-            if ("CREATED".equals(status)) {
-                garage.startWorkOrder(workOrder.getId());
+        if ("CREATED".equals(status)) {
+            row.getChildren().add(actionButton("confirm", garage, workOrder, dialog));
+        } else if ("CONFIRMED".equals(status)) {
+            row.getChildren().add(actionButton("start", garage, workOrder, dialog));
+        } else if ("IN_PROGRESS".equals(status)) {
+            Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
+            markBtn.setOnAction(e -> ActionDialogs.showMarkPerformedDialog(garage, workOrder,
+                    () -> refreshDialog(garage, workOrder, dialog)));
+            row.getChildren().add(markBtn);
+            if (!multiService || allMarked) {
+                row.getChildren().add(actionButton("complete", garage, workOrder, dialog));
             }
-            garage.completeWorkOrder(workOrder.getId());
-            closeAndRefresh(dialog, onRefresh);
+        } else if ("CANCELLED".equals(status)) {
+            row.getChildren().add(actionButton("start", garage, workOrder, dialog));
+        }
+
+        if ("CREATED".equals(status) || "CONFIRMED".equals(status) || "IN_PROGRESS".equals(status)) {
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            row.getChildren().addAll(spacer, actionButton("cancel", garage, workOrder, dialog));
+        }
+
+        if (row.getChildren().isEmpty()) {
+            Label emptyLabel = new Label(I18n.get("dialog.workorder.no_actions"));
+            emptyLabel.getStyleClass().add("small");
+            row.getChildren().add(emptyLabel);
+        }
+
+        return row;
+    }
+
+    private static Button actionButton(String key, GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
+        Button button = UiComponents.secondaryButton(I18n.get("entity.workorders.action_" + key));
+        button.setOnAction(e -> {
+            if ("confirm".equals(key)) {
+                garage.confirmWorkOrder(workOrder.getId());
+                refreshDialog(garage, workOrder, dialog);
+            } else if ("start".equals(key)) {
+                garage.startWorkOrder(workOrder.getId());
+                refreshDialog(garage, workOrder, dialog);
+            } else if ("complete".equals(key)) {
+                garage.completeWorkOrder(workOrder.getId());
+                refreshDialog(garage, workOrder, dialog);
+            } else if ("cancel".equals(key)) {
+                // Att avbryta går inte att ångra, så det får ett eget ja först.
+                Alert alert = ActionDialogs.confirm(I18n.get("dialog.workorder.cancel.title"),
+                        I18n.get("dialog.workorder.cancel.header"),
+                        I18n.get("dialog.workorder.cancel.confirm", String.valueOf(workOrder.getId())));
+                // Frågetecknet som JavaFX lägger dit hör inte till vår stil.
+                alert.setGraphic(null);
+                ButtonType close = new ButtonType(I18n.get("common.close"), ButtonBar.ButtonData.CANCEL_CLOSE);
+                ButtonType cancelOrder = new ButtonType(I18n.get("entity.workorders.action_cancel"),
+                        ButtonBar.ButtonData.OK_DONE);
+                alert.getButtonTypes().setAll(close, cancelOrder);
+                alert.getDialogPane().lookupButton(cancelOrder).getStyleClass().add("danger-button");
+                Button closeButton = (Button) alert.getDialogPane().lookupButton(close);
+                Button cancelButton = (Button) alert.getDialogPane().lookupButton(cancelOrder);
+                alert.getDialogPane().setMinWidth(420);
+                alert.setOnShown(event -> {
+                    for (Node bar : alert.getDialogPane().lookupAll(".button-bar > .container")) {
+                        if (bar instanceof HBox) {
+                            HBox row = (HBox) bar;
+                            row.setAlignment(Pos.CENTER);
+                            for (Node child : row.getChildren()) {
+                                if (child instanceof Region && !(child instanceof Button)) {
+                                    HBox.setHgrow(child, Priority.NEVER);
+                                    ((Region) child).setMinWidth(0);
+                                    ((Region) child).setPrefWidth(0);
+                                }
+                            }
+                        }
+                    }
+                    // Bredden sätts efter att temat lagt på sin stil, annars krymper knappen och texten klipps.
+                    closeButton.getStyleClass().add("secondary-button");
+                    closeButton.setMinWidth(closeButton.prefWidth(-1));
+                    cancelButton.setMinWidth(cancelButton.prefWidth(-1));
+                    cancelButton.setPrefWidth(160);
+                });
+
+                alert.showAndWait().ifPresent(response -> {
+                    if (response == cancelOrder) {
+                        garage.cancelWorkOrder(workOrder.getId());
+                        refreshDialog(garage, workOrder, dialog);
+                    }
+                });
+            }
         });
-
-        HBox actions = new HBox(8, confirmBtn, startBtn, markBtn, completeBtn, cancelBtn);
-
-
-        content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid, actions);
-        dialog.getDialogPane().setContent(content);
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
-        dialog.showAndWait();
+        return button;
     }
 
-    private static void closeAndRefresh(Dialog<?> dialog, Runnable onRefresh) {
-        dialog.close();
-        if (onRefresh != null) onRefresh.run();
+    /** Hämtar ordern på nytt och ritar om innehållet, så statusen visas direkt. */
+    private static void refreshDialog(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
+        WorkOrder updated = workOrder;
+        for (WorkOrder w : garage.getWorkOrders()) {
+            if (w.getId() == workOrder.getId()) {
+                updated = w;
+                break;
+            }
+        }
+        dialog.getDialogPane().setContent(buildContent(garage, updated, dialog));
     }
-
 }

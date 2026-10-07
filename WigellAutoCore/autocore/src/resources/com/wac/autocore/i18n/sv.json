@@ -414,10 +414,13 @@
       "partial_failed": "Bara {0} av {1} arbetsordrar skapades. Mekaniker som inte var tillgängliga blev utan arbetsorder.",
       "mark_performed_title": "Markera utförda arbeten",
       "mark_performed_header": "Vilka arbeten är utförda?",
-      "mark_performed_desc": "Priset som gäller när du markerar sparas på raden, så att en senare prisändring inte rör den här arbetsordern.",
       "details_header": "Detaljer för arbetsorder #{0}",
       "details_title": "Arbetsorderdetaljer",
       "historical_notice": "Visar debiterade priser som gällde när arbetet utfördes.",
+      "no_actions": "Inga åtgärder kvar på den här ordern.",
+      "cancel.title": "Avbryt arbetsorder",
+      "cancel.header": "Bekräfta avbrytande",
+      "cancel.confirm": "Är du säker på att du vill avbryta arbetsorder #{0}?",
       "open_in_orders": "Öppna i arbetsordrar"
     },
     "invoice": {

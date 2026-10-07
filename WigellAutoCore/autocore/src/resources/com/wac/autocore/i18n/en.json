@@ -414,10 +414,13 @@
       "partial_failed": "Only {0} of {1} work orders were created. Mechanics who were not available got no work order.",
       "mark_performed_title": "Mark performed work",
       "mark_performed_header": "Which work is performed?",
-      "mark_performed_desc": "The price that applies when you mark it is stored on the line, so a later price change does not touch this work order.",
       "details_header": "Details for work order #{0}",
       "details_title": "Work Order Details",
       "historical_notice": "Showing charged prices in effect when work was performed.",
+      "no_actions": "No actions left on this order.",
+      "cancel.title": "Cancel work order",
+      "cancel.header": "Confirm cancellation",
+      "cancel.confirm": "Are you sure you want to cancel work order #{0}?",
       "open_in_orders": "Open in Work Orders"
     },
     "invoice": {
