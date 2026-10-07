@@ -147,13 +147,11 @@ public final class EntityPages {
         Button confirmBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_confirm"));
         Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
         Button completeBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_complete"));
-        Button invoiceBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_invoice"));
         startBtn.setDisable(true);
         cancelBtn.setDisable(true);
         confirmBtn.setDisable(true);
         markBtn.setDisable(true);
         completeBtn.setDisable(true);
-        invoiceBtn.setDisable(true);
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             detailsBtn.setDisable(sel == null);
@@ -184,13 +182,6 @@ public final class EntityPages {
             }
             completeBtn.setDisable(!canComplete);
 
-            boolean canInvoice = false;
-            if (sel != null && "COMPLETED".equals(sel.getStatus())) {
-                // En arbetsorder kan vara fakturerad av en faktura som gäller hela bokningen, och då
-                // ligger den på en annan arbetsorder. Samma regel som i fakturavyn: en källa.
-                canInvoice = EntityLookup.invoiceForWorkOrder(garage, sel.getId()) == null;
-            }
-            invoiceBtn.setDisable(!canInvoice);
         });
 
         startBtn.setOnAction(e -> {
@@ -236,13 +227,6 @@ public final class EntityPages {
             }
         });
 
-        invoiceBtn.setOnAction(e -> {
-            WorkOrder sel = t.getSelectionModel().getSelectedItem();
-            if (sel != null && "COMPLETED".equals(sel.getStatus())) {
-                ActionDialogs.showCreateInvoiceDialog(garage, sel, () -> router.navigate("workorders"));
-            }
-        });
-
         t.setRowFactory(tv -> {
             TableRow<WorkOrder> row = new TableRow<WorkOrder>();
             row.setOnMouseClicked(event -> {
@@ -261,7 +245,7 @@ public final class EntityPages {
                         PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
                         I18n.get("view.notice.workorders.one"),
                         I18n.get("view.notice.workorders.many")),
-                t, detailsBtn, startBtn, cancelBtn, confirmBtn, markBtn, completeBtn, invoiceBtn, addBtn, draftBtn, dropInBtn);
+                t, detailsBtn, startBtn, cancelBtn, confirmBtn, markBtn, completeBtn, addBtn, draftBtn, dropInBtn);
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
