@@ -291,6 +291,8 @@
       },
       "vehicle_select": "Select vehicle",
       "service_select": "Select service",
+      "package_select": "Service package",
+      "package_prompt": "Choose a package (optional)",
       "mechanic_select": "Select mechanic",
       "time_select": "Select start time",
       "no_service": "No specific service",

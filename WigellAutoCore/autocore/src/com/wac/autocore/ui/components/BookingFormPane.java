@@ -34,7 +34,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Formuläret för att skapa och ändra en bokning. */
+/**
+ * Formuläret för att skapa och ändra en bokning.
+ */
 public class BookingFormPane extends GridPane {
 
     private final ComboBox<Vehicle> vehicleBox;
@@ -43,6 +45,7 @@ public class BookingFormPane extends GridPane {
     private MultiSelectComboBox<ServiceItem> serviceMulti;
     private final ObservableList<ServiceItem> selectedServices = FXCollections.observableArrayList();
     private final BookingServicesField servicesField;
+    private final BookingPackagePicker packagePicker;
     private final Label totalSummaryLabel;
     private final ComboBox<Mechanic> mechanicBox;
     private MultiSelectComboBox<Mechanic> mechanicMulti;
@@ -52,14 +55,18 @@ public class BookingFormPane extends GridPane {
     private final TextField descField;
     private final ComboBox<String> statusBox;
 
-    /** Drop-in: tiden väljs inte, den räknas fram och visas innan bokningen godkänns. */
+    /**
+     * Drop-in: tiden väljs inte, den räknas fram och visas innan bokningen godkänns.
+     */
     private final Label dropInTimeLabel = new Label();
     private final ObjectProperty<LocalTime> dropInStart = new SimpleObjectProperty<LocalTime>();
     private final boolean dropIn;
 
     private final int excludeId;
 
-    /** Riktig post i stället för null, som får JavaFX att kasta när den väljs. */
+    /**
+     * Riktig post i stället för null, som får JavaFX att kasta när den väljs.
+     */
     static final Mechanic NO_MECHANIC = new Mechanic(0, "", "", "");
 
     private Runnable onContentGrown;
@@ -99,6 +106,7 @@ public class BookingFormPane extends GridPane {
         this.servicesField = new BookingServicesField(this, isServicesLocked);
         this.totalSummaryLabel = servicesField.getSummary();
         this.serviceMulti = new BookingServicePicker(garage, existingBooking, selectedServices, isServicesLocked).getMulti();
+        this.packagePicker = new BookingPackagePicker(garage, serviceMulti, isServicesLocked);
 
         BookingMechanicsField mechanics = new BookingMechanicsField(garage, this);
         this.mechanicFilterHint = mechanics.getHint();
@@ -158,6 +166,7 @@ public class BookingFormPane extends GridPane {
 
         new BookingFormLayout(this, dropIn).layout(
                 vehicleBox,
+                packagePicker.getBox(),
                 serviceMulti, totalSummaryLabel,
                 mechanicMulti, mechanicFilterHint,
                 scheduleField,
@@ -188,7 +197,9 @@ public class BookingFormPane extends GridPane {
         dropInTimeLabel.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
     }
 
-    /** Fordon, datum och antingen en beskrivning eller en tjänst. Ny bokning kräver en tjänst. */
+    /**
+     * Fordon, datum och antingen en beskrivning eller en tjänst. Ny bokning kräver en tjänst.
+     */
     private boolean requiredFieldsFilled(int excludeBookingId) {
         boolean hasServices = !selectedServices.isEmpty();
         if (getSelectedVehicle() == null || getSelectedDate() == null) {
@@ -212,7 +223,9 @@ public class BookingFormPane extends GridPane {
         return excludeBookingId != 0 || hasServices;
     }
 
-    /** Låser OK-knappen tills fälten är ifyllda, samma regel som validate(). */
+    /**
+     * Låser OK-knappen tills fälten är ifyllda, samma regel som validate().
+     */
     public BooleanBinding requiredFieldsFilledBinding(final int excludeBookingId) {
         return Bindings.createBooleanBinding(
                 () -> requiredFieldsFilled(excludeBookingId),
@@ -277,9 +290,17 @@ public class BookingFormPane extends GridPane {
         return true;
     }
 
-    public Vehicle getSelectedVehicle() { return vehicleBox.getValue(); }
-    public LocalDate getSelectedDate() { return datePicker.getValue(); }
-    public List<ServiceItem> getSelectedServices() { return new ArrayList<ServiceItem>(selectedServices); }
+    public Vehicle getSelectedVehicle() {
+        return vehicleBox.getValue();
+    }
+
+    public LocalDate getSelectedDate() {
+        return datePicker.getValue();
+    }
+
+    public List<ServiceItem> getSelectedServices() {
+        return new ArrayList<ServiceItem>(selectedServices);
+    }
 
     // Borttagningen måste gå via fältet, getSelectedServices lämnar en kopia av listan.
     void removeService(ServiceItem item) {
@@ -290,7 +311,9 @@ public class BookingFormPane extends GridPane {
         }
     }
 
-    /** Första valda tjänsten, eller null. */
+    /**
+     * Första valda tjänsten, eller null.
+     */
     public ServiceItem getSelectedService() {
         return selectedServices.isEmpty() ? null : selectedServices.get(0);
     }
@@ -308,7 +331,9 @@ public class BookingFormPane extends GridPane {
         return chosen.isEmpty() ? null : chosen.get(0);
     }
 
-    /** Mekanikerna i den ordning de valdes. */
+    /**
+     * Mekanikerna i den ordning de valdes.
+     */
     public List<Mechanic> getSelectedMechanics() {
         List<Mechanic> ut = new ArrayList<Mechanic>();
         if (mechanicMulti != null) {
@@ -322,21 +347,33 @@ public class BookingFormPane extends GridPane {
         return ut;
     }
 
-    /** Kör lyssnaren som låter dialogen växa med innehållet. */
+    /**
+     * Kör lyssnaren som låter dialogen växa med innehållet.
+     */
     void contentGrown() {
         if (onContentGrown != null) {
             onContentGrown.run();
         }
     }
 
-    /** Låter dialogen veta när formuläret behöver mer plats, så att fönstret kan växa med det. */
+    /**
+     * Låter dialogen veta när formuläret behöver mer plats, så att fönstret kan växa med det.
+     */
     public void setOnContentGrown(Runnable listener) {
         this.onContentGrown = listener;
     }
 
-    public LocalTime getSelectedStartTime() { return startTimeBox.getValue(); }
-    public String getDescription() { return descField.getText().trim(); }
-    public String getStatus() { return statusBox != null ? statusBox.getValue() : "BOOKED"; }
+    public LocalTime getSelectedStartTime() {
+        return startTimeBox.getValue();
+    }
+
+    public String getDescription() {
+        return descField.getText().trim();
+    }
+
+    public String getStatus() {
+        return statusBox != null ? statusBox.getValue() : "BOOKED";
+    }
 
     static <T> void setupComboBoxDisplay(ComboBox<T> box, StringConverter<T> converter) {
         box.setConverter(converter);
