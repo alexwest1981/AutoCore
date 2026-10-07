@@ -329,6 +329,11 @@
         "title": "Servicepaket",
         "empty": "Det finns inga servicepaket än."
       },
+      "delete":"Ta bort paket",
+      "title": "ta bort servicepaket",
+      "header": "Bekräfta borttagning",
+      "confirm": "Är du säker på att du vill ta bort paketet {0}? Bokningar som redan har skapats påverkas inte.",
+      },
       "name_prompt": "Paketets namn (t.ex. Vinterkontroll)",
       "desc_prompt": "Kort beskrivning av paketet",
       "service_label": "Tjänster",
