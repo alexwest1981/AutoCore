@@ -80,7 +80,10 @@ public class Db {
                 + "type TEXT, "
                 + "vehicle_id INTEGER, "
                 + "description TEXT, "
-                + "original_work_order_id INTEGER)",
+                + "original_work_order_id INTEGER, "
+                + "planned_date TEXT, "
+                + "customer_instructions TEXT, "
+                + "other_comments TEXT)",
 
             "CREATE TABLE IF NOT EXISTS booking_service_items ("
                 + "booking_id INTEGER NOT NULL, "
@@ -194,6 +197,27 @@ public class Db {
             // Referensen en reklamation har till arbetsordern den gäller. Tom för alla andra.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN original_work_order_id INTEGER");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // Det planerade datumet på ett utkast, som ännu inte har någon bokning att låna ett datum ifrån.
+            try {
+                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN planned_date TEXT");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // Kundens instruktioner, ifyllda när kunden har något att säga om arbetet.
+            try {
+                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN customer_instructions TEXT");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // Övriga kommentarer som hör till ordern men inte till någon av de andra rutorna.
+            try {
+                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN other_comments TEXT");
             } catch (SQLException ignored) {
                 // Kolumnen existerar redan
             }
