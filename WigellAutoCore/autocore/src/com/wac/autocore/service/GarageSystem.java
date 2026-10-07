@@ -205,6 +205,13 @@ public class GarageSystem {
         return workOrderService.createDraft(vehicleId, description);
     }
 
+    public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
+            List<Integer> serviceItemIds, String plannedDate, String customerInstructions, String otherComments) {
+        return workOrderService.updateDraft(workOrderId, vehicleId, description, mechanicId, serviceItemIds,
+                plannedDate, customerInstructions, otherComments);
+    }
+
+
     /** Drop-in utan bokad tid: bokningsraden skapas först, i samma svep, så allt som slår upp
      *  kund och fordon via bokningen fortsätter fungera. Mekanikerna kommer från formuläret,
      *  som fyller på dem ur tjänsternas krav. */

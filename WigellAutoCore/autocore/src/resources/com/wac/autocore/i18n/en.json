@@ -116,6 +116,7 @@
       "action_mark_performed": "Mark performed work",
       "action_complete": "Complete order",
       "action_reclamation": "Reclamation",
+      "action_edit": "Edit",
       "action_draft": "+ New draft",
       "action_details": "View details"
     },
@@ -413,7 +414,12 @@
       "header": "Register the job before the time is booked",
       "description": "Description of the problem",
       "no_vehicles": "There are no vehicles to attach the draft to",
-      "create_failed": "The draft could not be saved."
+      "create_failed": "The draft could not be saved.",
+      "edit_title": "Edit draft",
+      "edit_header": "Add the missing information",
+      "planned_date": "Planned date",
+      "customer_instructions": "Customer instructions",
+      "other_comments": "Other comments"
     },
     "reclamation": {
       "title": "New reclamation",

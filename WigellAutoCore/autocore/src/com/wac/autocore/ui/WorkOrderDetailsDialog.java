@@ -240,10 +240,28 @@ final class WorkOrderDetailsDialog {
             }
         }
 
+        if ("CREATED".equals(workOrder.getStatus())) {
+            content.getChildren().add(headerRow(garage, workOrder, dialog));
+        }
+
         content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid,
                 reclamationsTitle, reclamationsBox);
         content.getChildren().add(actionRow(garage, workOrder, dialog));
         return content;
+    }
+
+    /** Redigera-knappen högst upp till höger, så att ett utkast kan kompletteras senare. */
+    private static HBox headerRow(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
+        HBox row = new HBox(8);
+        row.setAlignment(Pos.CENTER_RIGHT);
+
+        Button edit = new Button(I18n.get("entity.workorders.action_edit"));
+        edit.getStyleClass().add("secondary-button");
+        edit.setOnAction(e -> ActionDialogs.showEditDraftDialog(garage, workOrder,
+                () -> refreshDialog(garage, workOrder, dialog)));
+
+        row.getChildren().add(edit);
+        return row;
     }
 
     /** Visar bara de åtgärder som statusen tillåter. Avbryt hamnar sist, avskild till höger. */

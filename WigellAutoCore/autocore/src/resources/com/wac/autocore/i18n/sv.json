@@ -117,6 +117,8 @@
       "action_complete": "Slutför order",
       "action_reclamation": "Reklamation",
       "action_draft": "+ Nytt utkast",
+
+      "action_edit": "Redigera",
       "action_details": "Visa detaljer"
     },
     "reclamations": {
@@ -413,7 +415,12 @@
       "header": "Registrera jobbet innan tiden är bokad",
       "description": "Beskrivning av problemet",
       "no_vehicles": "Det finns inga fordon att knyta utkastet till",
-      "create_failed": "Utkastet kunde inte sparas."
+      "create_failed": "Utkastet kunde inte sparas.",
+      "edit_title": "Redigera utkast",
+      "edit_header": "Fyll på uppgifterna som saknas",
+      "planned_date": "Planerat datum",
+      "customer_instructions": "Kundens instruktioner",
+      "other_comments": "Övriga kommentarer"
     },
     "reclamation": {
       "title": "Ny reklamation",

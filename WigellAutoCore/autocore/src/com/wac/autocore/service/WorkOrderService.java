@@ -217,6 +217,35 @@ public class WorkOrderService {
         return workOrder;
     }
 
+    public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
+            List<Integer> serviceItemIds, String plannedDate, String customerInstructions, String otherComments) {
+
+        WorkOrder workOrder = findById(workOrderId);
+
+        if (workOrder == null) {
+            System.out.println("Work order with ID " + workOrderId + " does not exist.");
+            return null;
+        }
+
+        workOrder.setVehicleId(vehicleId);
+        workOrder.setDescription(description);
+        workOrder.setMechanicId(mechanicId);
+        workOrder.setServiceItemIds(serviceItemIds);
+        workOrder.setPlannedDate(plannedDate);
+        workOrder.setCustomerInstructions(customerInstructions);
+        workOrder.setOtherComments(otherComments);
+
+        try {
+            workOrderRepository.save(workOrder);
+        } catch (SQLException e) {
+            System.out.println("Could not save draft work order: " + e.getMessage());
+            return null;
+        }
+
+        return workOrder;
+    }
+
+
 
     /** Sant om tjänsten redan ligger på en arbetsorder för samma bokning. Katalogen är delad. */
     private boolean isClaimed(int bookingId, int serviceItemId) {
