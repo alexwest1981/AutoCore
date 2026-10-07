@@ -298,6 +298,8 @@
       },
       "vehicle_select": "Välj fordon",
       "service_select": "Välj tjänst",
+      "package_select": "Servicepaket",
+      "package_prompt": "Välj paket (valfritt)",
       "mechanic_select": "Välj mekaniker",
       "time_select": "Välj starttid",
       "no_service": "Ingen specifik tjänst",

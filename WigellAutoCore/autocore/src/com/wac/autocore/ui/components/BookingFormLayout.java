@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.components;
 
+import com.wac.autocore.model.ServicePackage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -21,7 +22,7 @@ import java.time.LocalTime;
 
 /**
  * Radlayouten i bokningsformuläret:
- * Fordon -> Tjänster -> Mekaniker -> Datum & Tid -> Beskrivning -> Status.
+ * Fordon -> Servicepaket -> Tjänster -> Mekaniker -> Datum & Tid -> Beskrivning -> Status.
  * I drop-in-läget byts Datum & Tid mot den tid tjänsten räknar fram.
  */
 class BookingFormLayout {
@@ -35,6 +36,7 @@ class BookingFormLayout {
     }
 
     void layout(ComboBox<Vehicle> vehicleBox,
+                ComboBox<ServicePackage> packageBox,
                 MultiSelectComboBox<ServiceItem> serviceMulti, Label totalSummaryLabel,
                 MultiSelectComboBox<Mechanic> mechanicMulti, Label mechanicFilterHint,
                 BookingScheduleField scheduleField,
@@ -54,6 +56,10 @@ class BookingFormLayout {
         grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, rowIdx);
         GridPane.setHgrow(vehicleBox, Priority.ALWAYS);
         grid.add(vehicleBox, 1, rowIdx++);
+
+        grid.add(new Label(I18n.get("dialog.booking.package_select") + ":"), 0, rowIdx);
+        GridPane.setHgrow(packageBox, Priority.ALWAYS);
+        grid.add(packageBox, 1, rowIdx++);
 
         // Tjänster
         Label serviceLbl = new Label(I18n.get("dialog.booking.service_select") + ":");
