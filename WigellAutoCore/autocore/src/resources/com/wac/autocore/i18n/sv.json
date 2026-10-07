@@ -135,6 +135,11 @@
       "action_create": "+ Registrera betalning"
     }
   },
+  "workorder_type": {
+    "standard": "Standard",
+    "warranty": "Garanti",
+    "internal": "Intern"
+  },
   "table": {
     "empty": "Inget innehåll i tabellen",
     "col": {

@@ -135,6 +135,11 @@
       "action_create": "+ Register Payment"
     }
   },
+  "workorder_type": {
+    "standard": "Standard",
+    "warranty": "Warranty",
+    "internal": "Internal"
+  },
   "table": {
     "empty": "No content in table",
     "col": {

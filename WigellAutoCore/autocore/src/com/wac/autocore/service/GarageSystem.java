@@ -189,6 +189,12 @@ public class GarageSystem {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
     }
 
+    /** Skapar en arbetsorder av en viss typ: Standard, Garanti eller Intern. */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds,
+                                     String type) {
+        return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
+    }
+
     // Skapar ett utkast, alltså en arbetsorder utan bokning och utan tjänster.
     public WorkOrder createDraft(int vehicleId, String description) {
         return workOrderService.createDraft(vehicleId, description);

@@ -77,6 +77,7 @@ public class Db {
                 + "booking_id INTEGER, "
                 + "mechanic_id INTEGER, "
                 + "status TEXT, "
+                + "type TEXT, "
                 + "vehicle_id INTEGER, "
                 + "description TEXT)",
 
@@ -181,6 +182,16 @@ public class Db {
             } catch (SQLException ignored) {
                 // Kolumnen existerar redan
             }
+
+            // Arbetsorderns typ: standard, garanti eller internt arbete.
+            try {
+                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN type TEXT");
+            } catch (SQLException ignored) {
+                // Kolumnen existerar redan
+            }
+
+            // Ordrar som skapades innan typen fanns är vanliga arbeten.
+            statement.executeUpdate("UPDATE work_orders SET type = 'STANDARD' WHERE type IS NULL OR type = ''");
             // Tjänster som skapades innan kravet fanns får sitt krav här, så en befintlig databas
             // får samma uppsättning som en nyskapad.
             statement.executeUpdate("UPDATE service_items SET specialization = 'seed.mechanic.brakes.specialization' "

@@ -42,34 +42,37 @@ final class WorkOrderDetailsDialog {
         // efter sina etiketter i stället för att tryckas ut till höger.
         GridPane infoGrid = ActionDialogs.createGrid();
         infoGrid.getColumnConstraints().clear();
-        infoGrid.add(new Label(I18n.get("table.col.status") + ":"), 0, 0);
+        infoGrid.add(new Label(I18n.get("table.col.type") + ":"), 0, 0);
+        infoGrid.add(new Label(UiFormatters.workOrderTypeWord(workOrder.getType())), 1, 0);
+
+        infoGrid.add(new Label(I18n.get("table.col.status") + ":"), 0, 1);
         Label statusBadge = new Label(UiFormatters.statusWord(workOrder.getStatus()));
         statusBadge.getStyleClass().add("badge");
         String badgeCls = UiFormatters.badgeClass(UiFormatters.statusWord(workOrder.getStatus()));
         if (!badgeCls.isEmpty()) {
             statusBadge.getStyleClass().add(badgeCls);
         }
-        infoGrid.add(statusBadge, 1, 0);
+        infoGrid.add(statusBadge, 1, 1);
 
-        infoGrid.add(new Label(I18n.get("table.col.mechanic") + ":"), 0, 1);
-        infoGrid.add(new Label(EntityLookup.mechanicName(garage, workOrder.getMechanicId())), 1, 1);
+        infoGrid.add(new Label(I18n.get("table.col.mechanic") + ":"), 0, 2);
+        infoGrid.add(new Label(EntityLookup.mechanicName(garage, workOrder.getMechanicId())), 1, 2);
 
-        infoGrid.add(new Label(I18n.get("table.col.customer") + ":"), 0, 2);
-        infoGrid.add(new Label(EntityLookup.workOrderCustomerName(garage, workOrder)), 1, 2);
+        infoGrid.add(new Label(I18n.get("table.col.customer") + ":"), 0, 3);
+        infoGrid.add(new Label(EntityLookup.workOrderCustomerName(garage, workOrder)), 1, 3);
 
-        infoGrid.add(new Label(I18n.get("table.col.vehicle") + ":"), 0, 3);
-        infoGrid.add(new Label(EntityLookup.workOrderVehicleReg(garage, workOrder)), 1, 3);
+        infoGrid.add(new Label(I18n.get("table.col.vehicle") + ":"), 0, 4);
+        infoGrid.add(new Label(EntityLookup.workOrderVehicleReg(garage, workOrder)), 1, 4);
 
-        infoGrid.add(new Label(I18n.get("table.col.description") + ":"), 0, 4);
+        infoGrid.add(new Label(I18n.get("table.col.description") + ":"), 0, 5);
         infoGrid.add(new Label(workOrder.getDescription() == null || workOrder.getDescription().trim().isEmpty()
                 ? "-"
-                : SeedText.resolve(workOrder.getDescription())), 1, 4);
+                : SeedText.resolve(workOrder.getDescription())), 1, 5);
 
         Invoice inv = EntityLookup.invoiceForWorkOrder(garage, workOrder.getId());
         if (inv != null) {
-            infoGrid.add(new Label(I18n.get("table.col.invoice") + ":"), 0, 5);
+            infoGrid.add(new Label(I18n.get("table.col.invoice") + ":"), 0, 6);
             infoGrid.add(new Label("#" + inv.getId() + " (" + inv.getInvoiceDate() + " - "
-                    + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")) + ")"), 1, 5);
+                    + (inv.isPaid() ? I18n.get("status.paid") : I18n.get("status.unpaid")) + ")"), 1, 6);
         }
 
         Label servicesTitle = new Label(I18n.get("table.col.services"));
