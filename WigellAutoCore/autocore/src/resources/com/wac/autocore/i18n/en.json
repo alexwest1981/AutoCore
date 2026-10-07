@@ -338,7 +338,7 @@
       },
       "name_prompt": "Package name (e.g. Winter check)",
       "desc_prompt": "Short package description",
-      "service_label": "Services",
+      "services_label": "Services",
       "service_select": "Select services"
     },
     "service": {
