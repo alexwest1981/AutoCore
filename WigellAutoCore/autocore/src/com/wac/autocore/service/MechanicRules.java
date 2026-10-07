@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /** Vem som får utföra vilken tjänst. Tjänsten kräver en specialisering, mekanikern bär sin. */
 public class MechanicRules {
@@ -129,6 +131,58 @@ public class MechanicRules {
             }
         }
         return result;
+    }
+
+    /** Hur länge bilen håller verkstaden: den mekaniker som får mest arbete bestämmer.
+     *  Summerar man i stället alla tjänster får bilen ett fönster där den för länge sedan är klar. */
+    public int busyMinutes(Collection<ServiceItem> services, List<Mechanic> team) {
+        if (services == null || services.isEmpty()) {
+            return 60;
+        }
+
+        Map<Integer, Integer> perMechanic = new LinkedHashMap<Integer, Integer>();
+        for (ServiceItem service : services) {
+            if (service == null) {
+                continue;
+            }
+            Mechanic who = firstQualifiedInTeam(team, service);
+            if (who == null) {
+                continue;
+            }
+            Integer done = perMechanic.get(Integer.valueOf(who.getId()));
+            perMechanic.put(Integer.valueOf(who.getId()), Integer.valueOf(
+                    (done == null ? 0 : done.intValue()) + service.getEstimatedMinutes()));
+        }
+
+        int busiest = 0;
+        for (Integer minutes : perMechanic.values()) {
+            busiest = Math.max(busiest, minutes.intValue());
+        }
+        if (busiest > 0) {
+            return busiest;
+        }
+
+        // Ingen mekaniker kunde pekas ut: summan är det enda vi vet om tiden.
+        int total = 0;
+        for (ServiceItem service : services) {
+            if (service != null) {
+                total += service.getEstimatedMinutes();
+            }
+        }
+        return total > 0 ? total : 60;
+    }
+
+    /** Första mekanikern i teamet som får utföra tjänsten. Samma val som arbetsordrarna gör. */
+    private Mechanic firstQualifiedInTeam(List<Mechanic> team, ServiceItem service) {
+        if (team == null) {
+            return null;
+        }
+        for (Mechanic mechanic : team) {
+            if (isMechanicQualified(mechanic, service)) {
+                return mechanic;
+            }
+        }
+        return null;
     }
 
     /** Sant om mekanikern är generalist och kan ta tjänster utan krav. */

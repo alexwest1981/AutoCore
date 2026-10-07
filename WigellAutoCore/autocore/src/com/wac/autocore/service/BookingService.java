@@ -11,7 +11,6 @@ import com.wac.autocore.repository.VehicleRepository;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +21,7 @@ public class BookingService {
     private final BookingRepository bookingRepository = new BookingRepository();
     private final VehicleRepository vehicleRepository = new VehicleRepository();
     private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final MechanicRules mechanicRules = new MechanicRules();
     private final WorkOrderService workOrderService;
 
     public BookingService(WorkOrderService workOrderService) {
@@ -68,9 +68,8 @@ public class BookingService {
         return booking;
     }
 
-    // Drop-in: kunden står i verkstaden utan bokad tid. Ingen start- eller sluttid sätts, så
-    // bokningen syns på Kanban men spärrar inga tider i bokningsdialogen. Tjänsterna läggs in som
-    // objekt, för WorkOrderPlan fördelar dem mekaniker för mekaniker när arbetsordrarna skapas.
+    // Drop-in: kunden står i verkstaden utan bokad tid. Tjänsterna läggs in som objekt, för
+    // WorkOrderPlan fördelar dem mekaniker för mekaniker när arbetsordrarna skapas.
     public Booking createDropInBooking(int vehicleId, List<ServiceItem> services, List<Mechanic> team) {
 
         Vehicle vehicle = findVehicle(vehicleId);
@@ -83,21 +82,24 @@ public class BookingService {
             return null;
         }
 
-        Booking booking = new Booking(vehicleId, LocalDate.now(), "seed.booking.drop_in.description");
+        List<Integer> mechanicIds = mechanicIdsOf(team);
+
+        LocalDate date = LocalDate.now();
+        Booking booking = new Booking(vehicleId, date, "seed.booking.drop_in.description");
         booking.setServiceItems(services);
-
-        // En drop-in sker när kunden kommer in, så bokningen får innevarande timme i stället för att
-        // sakna tid. Utan tid letar schemat upp första lediga timme, och jobbet hamnar fel på Kanban.
-        LocalTime startTime = LocalTime.now().truncatedTo(ChronoUnit.HOURS);
-        booking.setStartTime(startTime);
-        booking.setEndTime(startTime.plusMinutes(booking.getTotalEstimatedMinutes() > 0
-                ? booking.getTotalEstimatedMinutes() : 60));
-
-        List<Integer> mechanicIds = new ArrayList<Integer>();
-        for (Mechanic mechanic : team) {
-            mechanicIds.add(Integer.valueOf(mechanic.getId()));
-        }
         booking.setMechanicIds(mechanicIds);
+
+        // En drop-in sker när kunden kommer in, så bokningen utgår från innevarande timme. Är den
+        // upptagen tar teamet nästa lediga, annars hamnade två kunder på samma tid.
+        LocalTime startTime = firstFreeHourForTeam(date, mechanicIds);
+        if (startTime == null) {
+            System.out.println("The team has no free hour left today.");
+            return null;
+        }
+        booking.setStartTime(startTime);
+        // Bilen är klar när den mest belastade mekanikern är klar, inte när alla tjänsters tider
+        // är summerade — annars tar en enda drop-in hela teamets dag.
+        booking.setEndTime(startTime.plusMinutes(mechanicRules.busyMinutes(services, team)));
 
         try {
             bookingRepository.save(booking);
@@ -109,6 +111,72 @@ public class BookingService {
         System.out.println(booking);
 
         return booking;
+    }
+
+    /** Starttiden en drop-in skulle få just nu, eller null när teamets timmar är slut i dag.
+     *  Dialogen visar tiden innan kunden godkänner och räknar då samma sak som bokningen gör. */
+    public LocalTime dropInStartTime(List<ServiceItem> services, List<Mechanic> team) {
+        if (services == null || services.isEmpty() || team == null || team.isEmpty()) {
+            return null;
+        }
+        return firstFreeHourForTeam(LocalDate.now(), mechanicIdsOf(team));
+    }
+
+    private List<Integer> mechanicIdsOf(List<Mechanic> team) {
+        List<Integer> ids = new ArrayList<Integer>();
+        for (Mechanic mechanic : team) {
+            ids.add(Integer.valueOf(mechanic.getId()));
+        }
+        return ids;
+    }
+
+    // Första timmen i dag där hela teamet är ledigt, räknat från innevarande timme, eller null när
+    // dagen är full. Alla i teamet måste vara lediga, annars står en mekaniker med två jobb samtidigt.
+    private LocalTime firstFreeHourForTeam(LocalDate date, List<Integer> mechanicIds) {
+        List<Booking> bookedToday = new ArrayList<Booking>();
+        for (Booking booking : getAll()) {
+            if (date.equals(booking.getDate()) && booking.getStartTime() != null
+                    && !"CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+                bookedToday.add(booking);
+            }
+        }
+
+        // Arbetsdagen står i MechanicSchedule, samma timmar som Kanban ritar.
+        int fromHour = Math.max(LocalTime.now().getHour(), MechanicSchedule.START_HOUR);
+        for (int hour = fromHour; hour < MechanicSchedule.END_HOUR; hour++) {
+            if (isHourFree(bookedToday, mechanicIds, hour)) {
+                return LocalTime.of(hour, 0);
+            }
+        }
+
+        return null;
+    }
+
+    // Timmen [h, h+1) är ledig när ingen av teamets bokningar rör den.
+    private boolean isHourFree(List<Booking> bookedToday, List<Integer> mechanicIds, int hour) {
+        LocalTime hourStart = LocalTime.of(hour, 0);
+        LocalTime hourEnd = hourStart.plusHours(1);
+        for (Booking booking : bookedToday) {
+            if (!sharesMechanic(booking, mechanicIds)) {
+                continue;
+            }
+            LocalTime start = booking.getStartTime();
+            LocalTime end = booking.getEndTime() != null && booking.getEndTime().isAfter(start)
+                    ? booking.getEndTime() : start.plusHours(1);
+            if (hourStart.isBefore(end) && start.isBefore(hourEnd)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean sharesMechanic(Booking booking, List<Integer> mechanicIds) {
+        for (Integer mechanicId : booking.getMechanicIds()) {
+            if (mechanicIds.contains(mechanicId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Booking createBooking(int vehicleId, LocalDate date, String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
