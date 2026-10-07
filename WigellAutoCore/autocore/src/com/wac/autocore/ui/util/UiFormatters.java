@@ -82,6 +82,24 @@ public final class UiFormatters {
         return stored;
     }
 
+/** Arbetsordertypen som ett ord: WARRANTY blir Garanti. Okända värden visas som de sparades. */
+    public static String workOrderTypeWord(String stored) {
+        if (stored == null || stored.trim().isEmpty()) {
+            return "-";
+        }
+        String type = stored.trim().toUpperCase(Locale.US);
+        if ("STANDARD".equals(type)) {
+            return com.wac.autocore.ui.i18n.I18n.get("workorder_type.standard");
+        }
+        if ("WARRANTY".equals(type)) {
+            return com.wac.autocore.ui.i18n.I18n.get("workorder_type.warranty");
+        }
+        if ("INTERNAL".equals(type)) {
+            return com.wac.autocore.ui.i18n.I18n.get("workorder_type.internal");
+        }
+        return stored;
+    }
+
 /** Statuskoden som ett visningsord via I18n. */
     public static String statusWord(String status) {
         if (status == null) {

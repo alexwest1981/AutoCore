@@ -104,6 +104,11 @@ public class GarageSystem {
         return mechanicRules.isMechanicQualified(mechanic, service);
     }
 
+    /** Hur länge bilen håller verkstaden: den mest belastade mekanikern bestämmer sluttiden. */
+    public int busyMinutes(List<ServiceItem> services, List<Mechanic> mechanics) {
+        return mechanicRules.busyMinutes(services, mechanics);
+    }
+
     /** Bokningar med utfört arbete kvar att fakturera. */
     public java.util.List<Booking> getInvoiceableBookings() {
         return billingService.getInvoiceableBookings();
@@ -184,6 +189,12 @@ public class GarageSystem {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
     }
 
+    /** Skapar en arbetsorder av en viss typ: Standard, Garanti eller Intern. */
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds,
+                                     String type) {
+        return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
+    }
+
     // Skapar ett utkast, alltså en arbetsorder utan bokning och utan tjänster.
     public WorkOrder createDraft(int vehicleId, String description) {
         return workOrderService.createDraft(vehicleId, description);
@@ -197,13 +208,29 @@ public class GarageSystem {
         return bookingService.createDropInBooking(vehicleId, services, mechanics);
     }
 
+    /** Tiden en drop-in skulle få just nu, eller null när teamets timmar är slut i dag. */
+    public LocalTime dropInStartTime(java.util.List<ServiceItem> services,
+                                     java.util.List<Mechanic> mechanics) {
+        return bookingService.dropInStartTime(services, mechanics);
+    }
+
     public Invoice createInvoice(int workOrderId, String discountCode) {
         return billingService.createInvoice(workOrderId, discountCode);
+    }
+
+/** Fakturerar en arbetsorder, med en ny kostnad som egen rad. */
+    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
+        return billingService.createInvoice(workOrderId, discountCode, extraName, extraAmount);
     }
 
 /** Fakturerar bokningen. Själva arbetet ligger i {@link BillingService}. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
         return billingService.createInvoiceForBooking(bookingId, discountCode);
+    }
+
+/** Samma faktura, men med plats för en ny kostnad som reklamationen för med sig. */
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
+        return billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
     }
 
     public Mechanic createMechanic(String name, String phone, String specialization) throws SQLException {

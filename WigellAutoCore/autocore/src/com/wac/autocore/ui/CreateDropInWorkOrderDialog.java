@@ -47,8 +47,10 @@ final class CreateDropInWorkOrderDialog {
 
                 Booking booking = garage.createDropInBooking(vehicle.getId(), services, mechanics);
                 if (booking == null) {
+                    // Formuläret är redan validerat, och OK är stängt när ingen tid finns, så hit
+                    // kommer man bara om tiden hann försvinna medan dialogen stod öppen.
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                            I18n.get("dialog.workorder.create_failed"));
+                            I18n.get("dialog.booking.dropin_no_time"));
                     return;
                 }
 

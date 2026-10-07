@@ -1,11 +1,20 @@
 package com.wac.autocore.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class WorkOrder {
+
+    /** Standard, garanti eller internt arbete. Koden står här och ingen annanstans. */
+    public static final String STANDARD = "STANDARD";
+    public static final String WARRANTY = "WARRANTY";
+    public static final String INTERNAL = "INTERNAL";
+
+    /** Typerna som går att välja. Ordningen är den väljaren visar, och första är standard. */
+    public static final List<String> TYPES = Arrays.asList(STANDARD, WARRANTY, INTERNAL);
 
     private int id;
     private int bookingId;
@@ -14,6 +23,7 @@ public class WorkOrder {
     private final List<Integer> completedServiceItems = new ArrayList<Integer>();
     private final Map<Integer, Double> completedServicePrices = new LinkedHashMap<Integer, Double>();
     private String status;
+    private String type;
     private int vehicleId;
     private String description;
 
@@ -23,6 +33,7 @@ public class WorkOrder {
         this.mechanicId = mechanicId;
         this.serviceItemIds = new ArrayList<Integer>();
         this.status = "CREATED";
+        this.type = STANDARD;
     }
 
     public int getId() {
@@ -81,6 +92,19 @@ public class WorkOrder {
         this.status = status;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /** Ett garantiarbete debiteras kunden inte, men det ska ändå synas på fakturan. */
+    public boolean isWarranty() {
+        return WARRANTY.equals(type);
+    }
+
     public void addServiceItem(int serviceItemId) {
         serviceItemIds.add(serviceItemId);
     }
@@ -135,6 +159,7 @@ public class WorkOrder {
                 " - Booking ID: " + bookingId +
                 " | Mechanic ID: " + mechanicId +
                 " | Services: " + serviceItemIds +
-                " | Status: " + status;
+                " | Status: " + status +
+                " | Type: " + type;
     }
 }

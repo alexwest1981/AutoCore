@@ -16,6 +16,7 @@
       "customers": "Visa kunder",
       "vehicles": "Visa fordon",
       "bookings": "Visa bokningar",
+      "dropin": "Drop-in (utan bokning)",
       "services": "Visa tjänster",
       "mechanics": "Visa mekaniker",
       "workorders": "Visa arbetsordrar",
@@ -108,7 +109,6 @@
       "meta": "{0} arbetsordrar",
       "meta.one": "{0} arbetsorder",
       "action_create": "+ Ny arbetsorder",
-      "action_dropin": "+ Drop-in (utan bokning)",
       "action_start": "▶ Starta order",
       "action_cancel": "Avbryt order",
       "action_confirm": "Bekräfta order",
@@ -134,6 +134,11 @@
       "meta.one": "{0} betalning",
       "action_create": "+ Registrera betalning"
     }
+  },
+  "workorder_type": {
+    "standard": "Standard",
+    "warranty": "Garanti",
+    "internal": "Intern"
   },
   "table": {
     "empty": "Inget innehåll i tabellen",
@@ -300,6 +305,8 @@
       "selected_date": "Valt datum: {0}",
       "calendar_hint": "Gråmarkerade dagar kan inte bokas för vald tidsåtgång",
       "date_and_time": "Datum & Tid",
+      "dropin_time": "Beräknad tid",
+      "dropin_no_time": "Ingen ledig tid kvar i dag för mekanikerna.",
       "closing_time_exceeded": "Bokningen blir klar efter stängningstid (17:00).",
       "date_past": "Tidigare datum",
       "date_weekend": "Helg (stängt)",
@@ -432,6 +439,9 @@
       "not_all_completed": "Alla arbetsordrar på bokningen måste vara slutförda innan fakturan kan skapas.",
       "discount": "Rabatt / Kampanj (kr)",
       "discount_prompt": "T.ex. 10off, WELCOME10, SERVICE200 eller belopp (valfritt)",
+      "extra_cost_label": "Ny kostnad",
+      "extra_cost_amount": "Belopp",
+      "extra_cost_invalid": "Ange ett belopp större än 0, eller lämna fältet tomt.",
       "create_failed": "Fakturan kunde inte skapas.",
       "print_title": "Faktura",
       "print_header": "Förhandsgranskning av fakturan",

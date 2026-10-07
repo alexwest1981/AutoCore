@@ -16,6 +16,7 @@
       "customers": "Show customers",
       "vehicles": "Show vehicles",
       "bookings": "Show bookings",
+      "dropin": "Drop-in (no booking)",
       "services": "Show services",
       "mechanics": "Show mechanics",
       "workorders": "Show work orders",
@@ -108,7 +109,6 @@
       "meta": "{0} work orders",
       "meta.one": "{0} work order",
       "action_create": "+ Create Work Order",
-      "action_dropin": "+ Drop-in (no booking)",
       "action_start": "▶ Start order",
       "action_cancel": "Cancel order",
       "action_confirm": "Confirm order",
@@ -134,6 +134,11 @@
       "meta.one": "{0} payment",
       "action_create": "+ Register Payment"
     }
+  },
+  "workorder_type": {
+    "standard": "Standard",
+    "warranty": "Warranty",
+    "internal": "Internal"
   },
   "table": {
     "empty": "No content in table",
@@ -300,6 +305,8 @@
       "selected_date": "Selected date: {0}",
       "calendar_hint": "Grayed out days cannot be booked for selected duration",
       "date_and_time": "Date & Time",
+      "dropin_time": "Estimated time",
+      "dropin_no_time": "No free time left today for those mechanics.",
       "closing_time_exceeded": "The booking finishes after closing time (17:00).",
       "date_past": "Past date",
       "date_weekend": "Weekend (closed)",
@@ -432,6 +439,9 @@
       "not_all_completed": "Every work order on the booking must be completed before an invoice can be created.",
       "discount": "Discount / Promotion (SEK)",
       "discount_prompt": "E.g. 10off, WELCOME10, SERVICE200 or amount (optional)",
+      "extra_cost_label": "New cost",
+      "extra_cost_amount": "Amount",
+      "extra_cost_invalid": "Enter an amount greater than 0, or leave the field empty.",
       "create_failed": "The invoice could not be created.",
       "print_title": "Invoice",
       "print_header": "Invoice preview",
