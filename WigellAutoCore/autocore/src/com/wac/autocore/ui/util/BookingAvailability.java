@@ -85,7 +85,7 @@ public final class BookingAvailability {
             return false;
         }
         if (durationMinutes > MAX_WORK_MINUTES_PER_DAY) {
-            return false; // Överstiger hela arbetsdagen (10 timmar = 600 min)
+            return false; // longer than a full working day (10 hours = 600 min)
         }
 
         List<Mechanic> candidates = new ArrayList<Mechanic>();

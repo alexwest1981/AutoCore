@@ -152,7 +152,7 @@ class KanbanCardHeader {
         btn.setOnAction(e -> {
             card.currentMode = mode;
             card.renderBody();
-            render(); // Uppdatera aktiv klass
+            render(); // moves the active class to this button
         });
         return btn;
     }
