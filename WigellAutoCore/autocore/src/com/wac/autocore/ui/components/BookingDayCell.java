@@ -47,7 +47,7 @@ class BookingDayCell extends DateCell {
                     "dialog.booking.duration_too_long");
             return;
         }
-        List<Mechanic> team = form.getSelectedMechanics();   // de mekaniker som är valda i fältet
+        List<Mechanic> team = form.getSelectedMechanics();   // the mechanics picked in the field
         if (!BookingAvailability.hasAvailableSlotOnDate(garage, form.getSelectedMechanic(), team, date, duration, excludeId)) {
             unbookable("-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-opacity: 0.50;",
                     "dialog.booking.date_fully_booked");

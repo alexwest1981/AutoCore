@@ -185,7 +185,7 @@ public final class I18n {
             }
             String rawKey = json.substring(keyStart, i);
             String key = unescapeJson(rawKey);
-            i++; // förbi avslutande citattecken
+            i++; // past the closing quote
 
             // Find the colon ':'
             while (i < len && json.charAt(i) != ':') i++;
@@ -233,7 +233,7 @@ public final class I18n {
                 }
                 String rawVal = json.substring(valStart, i);
                 out.put(fullKey, unescapeJson(rawVal));
-                i++; // förbi avslutande citattecken
+                i++; // past the closing quote
             } else {
                 // Primitive value (number, boolean etc)
                 int valStart = i;
