@@ -348,6 +348,11 @@
         "title": "Nytt servicepaket",
         "header": "Skapa servicepaket"
       },
+      "edit":{
+        "title": "Redigera servicepaket",
+        "header": "Ändra paketets namn, beskrivning och tjänster",
+        "button": "Redigera paket"
+      },
       "list": {
         "title": "Servicepaket",
         "empty": "Det finns inga servicepaket än."

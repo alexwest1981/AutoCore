@@ -10,11 +10,13 @@ import com.wac.autocore.ui.util.UiFormatters;
 
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 
 import java.util.ArrayList;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Dialoger för servicepaket: skapa ett paket och visa de som finns.
@@ -24,14 +26,25 @@ public final class ServicePackageDialogs {
     private ServicePackageDialogs() {
     }
 
-    public static void showCreatePackageDialog(GarageSystem garage, Runnable onSuccess) {
+    public static void showCreatePackageDialog(GarageSystem garage, Runnable onSuccess){
+        showPackageForm(garage, null, onSuccess);
+    }
+
+    public static void showEditPackageDialog(GarageSystem garage, ServicePackage servicePackage, Runnable onSuccess) {
+        showPackageForm(garage, servicePackage, onSuccess);
+    }
+
+    private static void showPackageForm(GarageSystem garage, ServicePackage existing, Runnable onSuccess) {
+        boolean editing = existing != null;
+
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.package.create.title"));
-        dialog.setHeaderText(I18n.get("dialog.package.create.header"));
+        dialog.setTitle(I18n.get(editing ? "dialog.package.edit.title" : "dialog.package.create.title"));
+        dialog.setHeaderText(I18n.get(editing ? "dialog.package.edit.header" : "dialog.package.create.header"));
         ActionDialogs.styleDialog(dialog);
 
         TextField nameField = new TextField();
         nameField.setPromptText(I18n.get("dialog.package.name_prompt"));
+
         TextField descField = new TextField();
         descField.setPromptText(I18n.get("dialog.package.desc_prompt"));
 
@@ -40,6 +53,12 @@ public final class ServicePackageDialogs {
                 s -> SeedText.resolve(s.getName()));
         serviceBox.setItems(garage.getServiceItems());
         serviceBox.setKeyProvider(s -> s.getId());
+
+        if (editing) {
+            nameField.setText(existing.getName());
+            descField.setText(existing.getDescription() == null ? "" : existing.getDescription());
+            serviceBox.setSelectedItems(existing.getServiceItems());
+        }
 
         GridPane grid = ActionDialogs.createGrid();
         grid.add(new Label(I18n.get("table.col.name") + ":"), 0, 0);
@@ -58,11 +77,18 @@ public final class ServicePackageDialogs {
                 return;
             }
             try {
-                garage.createServicePackage(
-                        nameField.getText(),
-                        descField.getText().trim(),
-                        new ArrayList<ServiceItem>(serviceBox.getSelectedItems()));
-            } catch (IllegalArgumentException e) {
+                String name = nameField.getText().trim();
+                String desc = descField.getText().trim();
+                List<ServiceItem> items = new ArrayList<ServiceItem>(serviceBox.getSelectedItems());
+
+                if (editing){
+                    ServicePackage changed = new ServicePackage(existing.getId(), name, desc);
+                    changed.setServiceItems(items);
+                    garage.updateServicePackage(changed);
+                } else {
+                    garage.createServicePackage(name, desc, items);
+                }
+            } catch (IllegalArgumentException | SQLException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
             }
@@ -87,13 +113,28 @@ public final class ServicePackageDialogs {
         list.setPlaceholder(new Label(I18n.get("dialog.package.list.empty")));
         list.setPrefSize(520, 300);
 
+        Button editButton = new Button(I18n.get("dialog.package.edit.button"));
+        editButton.setDisable(true);
+
         Button deleteButton = new Button(I18n.get("dialog.package.delete.button"));
         deleteButton.setDisable(true);
-        list.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldValue, selected) -> deleteButton.setDisable(selected == null));
-        deleteButton.setOnAction(e -> confirmDelete(garage, list));
 
-        VBox content = new VBox(10, list, deleteButton);
+        list.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldValue, selected) -> {
+                   editButton.setDisable(selected == null);
+                   deleteButton.setDisable(selected == null);
+                });
+        deleteButton.setOnAction(e -> confirmDelete(garage, list));
+        editButton.setOnAction(e -> {
+            ServicePackage selected = list.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                return;
+            }
+            showEditPackageDialog(garage, selected,
+                    () -> list.getItems().setAll(garage.getServicePackages()));
+        });
+        HBox buttons = new HBox(10, editButton, deleteButton);
+        VBox content = new VBox(10, list, buttons);
 
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);

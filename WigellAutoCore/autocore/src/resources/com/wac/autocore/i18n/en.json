@@ -348,6 +348,11 @@
         "title": "New Service Package",
         "header": "Create Service Package"
       },
+      "edit": {
+        "title": "Edit Service Package",
+        "header": "Change the ackage name, description and service",
+        "button": "Edit Package"
+      },
       "list": {
         "title": "Service Package",
         "empty": "There are no service packages yet."
