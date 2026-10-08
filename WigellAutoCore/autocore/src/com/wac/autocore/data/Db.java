@@ -154,51 +154,51 @@ public class Db {
             // Säkerställ att kolumnen completed finns vid migrering.
             try {
                 statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN completed INTEGER NOT NULL DEFAULT 0");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Säkerställ att kolumnen price finns, så ett utfört arbete behåller sitt pris.
             try {
                 statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN price REAL");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Behörigheten hänger på en nyckel: tjänsten säger vilken specialisering den kräver.
             // Tomt betyder att tjänsten kan utföras av alla.
             try {
                 statement.executeUpdate("ALTER TABLE service_items ADD COLUMN specialization TEXT");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Fordonet ligger på arbetsordern så ett utkast går att skapa innan bokningen finns.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN vehicle_id INTEGER");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Kundens egen beskrivning av problemet, den enda uppgift ett utkast behöver.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN description TEXT");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Arbetsorderns typ: standard, reklamation eller internt arbete.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN type TEXT");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Referensen en reklamation har till arbetsordern den gäller. Tom för alla andra.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN original_work_order_id INTEGER");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Det planerade datumet på ett utkast, som ännu inte har någon bokning att låna ett datum ifrån.
@@ -267,11 +267,21 @@ public class Db {
             System.out.println("Databas redo: " + DATABASE_PATH);
 
         } catch (SQLException e) {
-            System.out.println("Kunde inte skapa tabellerna: " + e.getMessage());
+            // Halvvägs igenom betyder en databas som ser hel ut men saknar kolumner, och
+            // då är det bättre att stanna än att fylla i demodata ovanpå röran.
+            throw new IllegalStateException("Databasen kunde inte förberedas: " + e.getMessage(), e);
         }
 
         normalizeRegistrationNumbers();
         SeedData.seedIfEmpty();
+    }
+
+    /** Släpper igenom "kolumnen finns redan" och låter alla andra fel gå vidare. */
+    private static void rethrowUnlessDuplicateColumn(SQLException e) throws SQLException {
+        if (String.valueOf(e.getMessage()).contains("duplicate column name")) {
+            return;
+        }
+        throw e;
     }
 
 /** Rättar registreringsnummer som sparades innan modellen normaliserade dem. */

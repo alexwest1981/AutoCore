@@ -13,7 +13,15 @@ import javafx.application.Application;
 public class Main {
 
     public static void main(String[] args) {
-        Db.ensureReady();
+        try {
+            Db.ensureReady();
+        } catch (RuntimeException e) {
+            // Utan en färdig databas blir fönstret tomt och ser ändå ut att fungera.
+            // Säg vad som är fel och öppna ingenting, i stället för en halv app.
+            System.out.println(e.getMessage());
+            System.out.println("Databasen är inte körbar. Åtgärda felet och starta om.");
+            System.exit(1);
+        }
         Application.launch(AutoCoreApp.class, args);
     }
 }
