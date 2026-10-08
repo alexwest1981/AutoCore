@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import com.wac.autocore.seed.SeedText;
 
-/** En del av mekanikerkortet. */
+/** One part of the mechanic card. */
 class KanbanDayView {
 
     private final MechanicKanbanCard card;
@@ -112,10 +112,6 @@ class KanbanDayView {
         return slotContainer;
     }
 
-    // =========================================================================
-    // 2. KOMPAKT VECKOVY (Beläggningsskala Grön -> Gul -> Orange -> Röd)
-    // =========================================================================
-
         VBox build(Mechanic mech) {
         Button prevDayBtn = new Button("<");
         prevDayBtn.getStyleClass().addAll("ghost", "small");
@@ -139,8 +135,8 @@ class KanbanDayView {
         });
 
         Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
-        // Hela veckodagsnamnet i dagvyns rubrik. Den förkortade formen ("LÖ 3 okt") såg avklippt ut
-        // ovanför raderna, och rubriken har plats för hela namnet.
+        // The full weekday name in the day view's heading. The short form ("LÖ 3 okt") looked
+        // cut off above the rows, and the heading has room for the whole name.
         String dayName = card.selectedDate.getDayOfWeek().getDisplayName(TextStyle.FULL, locale);
         dayName = dayName.substring(0, 1).toUpperCase(locale) + dayName.substring(1);
         String formattedDate = card.selectedDate.format(DateTimeFormatter.ofPattern("d MMMM", locale));

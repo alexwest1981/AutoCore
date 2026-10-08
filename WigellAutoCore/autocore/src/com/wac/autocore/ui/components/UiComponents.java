@@ -12,12 +12,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-/** Gemensamma byggstenar för gränssnittet. */
+/** Shared building blocks for the interface. */
 public final class UiComponents {
 
     private UiComponents() {}
 
-    /** FlowPane viker vid sin egen bredd. Tröskeln sätts så hög att den bara viker när den måste. */
+    /** A FlowPane wraps at its own width. The threshold is set high so it only wraps when it must. */
     private static final double NO_WRAP_LENGTH = 4000;
 
     public static VBox pageHead(String title, String sub, String eyebrow) {
@@ -84,7 +84,7 @@ public final class UiComponents {
         return l;
     }
 
-    /** Läser logotypen från applikationens resurser. */
+    /** Reads the logo from the application's resources. */
     public static javafx.scene.image.Image loadLogoImage() {
         try {
             java.io.InputStream in = UiComponents.class.getResourceAsStream("/com/wac/autocore/images/Logo.png");
@@ -105,21 +105,21 @@ public final class UiComponents {
         return buildEntityPage(title, sub, eyebrow, null, data, actions);
     }
 
-/** Samma sida men med notisen i sidhuvudet, med samma siffra som sidebaren visar. */
+    /** The same page but with the notice in the header, carrying the number the sidebar shows. */
     public static VBox buildEntityPage(String title, String sub, String eyebrow, Node notice,
                                        TableFactory.FilterableTable<?> data, Node... actions) {
         TableView<?> table = data.getTableView();
         VBox titles = pageHead(title, sub, eyebrow);
-        // Rubriken får aldrig krossas. Den behåller sin naturliga bredd i stället för ett gissat
-        // mått, och knapparna viker in på nästa rad när de inte får plats.
+        // The heading must never be crushed. It keeps its natural width instead of a guessed
+        // one, and the buttons wrap to the next line when they do not fit.
         titles.setMinWidth(Region.USE_PREF_SIZE);
 
         HBox topRow = new HBox(12, titles);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
-        // Notisen ligger i sidhuvudet i stället för på en egen rad. Radhöjden bestäms då av
-        // titelblocket, som redan är högst, så tabellen står på samma plats i varje vy — utan att
-        // någon plats behöver reserveras. Är räkningen noll göms notisen och tar ingen plats.
+        // The notice sits in the header instead of on a line of its own. The row height is then
+        // set by the title block, which is already the tallest, so the table stays in the same
+        // place in every view — without reserving any space. At zero the notice is hidden.
         if (notice != null) {
             topRow.getChildren().add(notice);
         }
@@ -131,8 +131,8 @@ public final class UiComponents {
                     b.setMinWidth(Region.USE_PREF_SIZE);
                 }
             }
-            // FlowPane i stället för HBox: den viker in knapparna på nästa rad när de inte får
-            // plats, i stället för att ta rubrikens utrymme.
+            // A FlowPane instead of an HBox: it wraps the buttons to the next line when they do
+            // not fit, rather than taking the heading's room.
             FlowPane actionBox = new FlowPane(8, 8);
             actionBox.getChildren().addAll(actions);
             actionBox.setAlignment(Pos.CENTER_RIGHT);
@@ -154,7 +154,8 @@ public final class UiComponents {
         return new VBox(18, topRow, inner);
     }
 
-    /** Fast höjd för en tabellsida, också när listan är kort — då står rutan still mellan vyerna. */
+    /** A fixed height for a table page, even when the list is short — then the panel stays put
+     *  between views. */
     public static void fixTableHeight(TableView<?> table) {
         final double CELL_HEIGHT = 32;
         final double HEADER_HEIGHT = 36;
@@ -165,7 +166,7 @@ public final class UiComponents {
         table.setMaxHeight(height);
     }
 
-/** Notisraden: en siffra och en rad om vad som väntar. Tom tar den ingen plats. */
+    /** The notice row: a number and a line about what is waiting. Empty, it takes no space. */
     public static Node viewNotice(int count, String singularKey, String pluralKey) {
         HBox row = new HBox(10);
         row.getStyleClass().add("notice");
@@ -177,7 +178,7 @@ public final class UiComponents {
         }
         Label number = new Label(String.valueOf(count));
         number.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
-        // Ett styck heter annat än flera, så texten väljs efter siffran.
+        // One is named differently from several, so the text is chosen by the number.
         Label message = new Label(com.wac.autocore.ui.i18n.I18n.get(count == 1 ? singularKey : pluralKey));
         row.getChildren().addAll(number, message);
         return row;

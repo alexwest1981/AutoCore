@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Formuläret för att skapa och ändra en bokning.
+ * The form for creating and changing a booking.
  */
 public class BookingFormPane extends GridPane {
 
@@ -56,7 +56,7 @@ public class BookingFormPane extends GridPane {
     private final ComboBox<String> statusBox;
 
     /**
-     * Drop-in: tiden väljs inte, den räknas fram och visas innan bokningen godkänns.
+     * Drop-in: the time is not picked, it is worked out and shown before the booking is approved.
      */
     private final Label dropInTimeLabel = new Label();
     private final ObjectProperty<LocalTime> dropInStart = new SimpleObjectProperty<LocalTime>();
@@ -65,7 +65,7 @@ public class BookingFormPane extends GridPane {
     private final int excludeId;
 
     /**
-     * Riktig post i stället för null, som får JavaFX att kasta när den väljs.
+     * A real entry instead of null, which makes JavaFX throw when it is picked.
      */
     static final Mechanic NO_MECHANIC = new Mechanic(0, "", "", "");
 
@@ -77,9 +77,9 @@ public class BookingFormPane extends GridPane {
     }
 
     /**
-     * dropIn: samma formulär utan Datum & Tid. Bokningen sker när kunden kommer in, så tiden
-     * sätts av tjänsten i stället, och beskrivningen behåller drop-in-texten i stället för
-     * tjänstenamnen — annars går en drop-in inte att skilja från en vanlig bokning i listan.
+     * dropIn: the same form without Date & Time. The booking happens as the customer walks in, so
+     * the time is set by the service instead, and the description keeps the drop-in text rather
+     * than the service names — otherwise a drop-in cannot be told from an ordinary booking in the list.
      */
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour,
@@ -88,8 +88,8 @@ public class BookingFormPane extends GridPane {
     }
 
     /**
-     * forCopy: en ny bokning som ärver uppgifter från en gammal. Den ska varken låsa tjänsterna
-     * eller räkna bort den gamlas tid, för den nya bokningen är en egen bokning.
+     * forCopy: a new booking that inherits details from an old one. It should neither lock the
+     * services nor count away the old one's time, because the new booking is a booking of its own.
      */
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour,
@@ -123,7 +123,7 @@ public class BookingFormPane extends GridPane {
         this.mechanicBox = mechanics.getBox();
         this.mechanicMulti = mechanics.getMulti();
 
-        // Teamet bestämmer drop-in-tiden, så en ändring i teamet räknar om den.
+        // The team decides the drop-in time, so a change in the team works it out again.
         this.mechanicMulti.getSelectedItems().addListener(
                 (ListChangeListener<Mechanic>) c -> refreshDropInTime(garage));
 
@@ -137,14 +137,14 @@ public class BookingFormPane extends GridPane {
         this.descField = statusField.getDesc();
         this.statusBox = statusField.getStatus();
 
-        // Listan av valda tjänster styr sammanfattningen, mekanikerfiltret och schemat.
+        // The list of picked services drives the summary, the mechanic filter and the calendar.
         selectedServices.addListener((ListChangeListener<ServiceItem>) c -> {
             servicesField.render();
             mechanics.update();
             scheduleField.refresh();
             refreshDropInTime(garage);
-            // En ny bokning får tjänsternas namn som beskrivning; i redigeringsläge
-            // behålls den text som redan står där.
+            // A new booking gets the service names as its description; in edit mode the text
+            // already there is kept.
             if (existingBooking == null && !dropIn) {
                 StringBuilder sb = new StringBuilder();
                 for (ServiceItem s : selectedServices) {
@@ -155,13 +155,13 @@ public class BookingFormPane extends GridPane {
             }
         });
 
-        // Initial körning
+        // First run
         servicesField.render();
         mechanics.update();
         scheduleField.refreshDate();
 
-        // En drop-in känns igen på beskrivningen, så den står kvar och går inte att skriva över.
-        // Fältet visar texten, men det som sparas är nyckeln, så den byter språk med resten.
+        // A drop-in is recognized by its description, so it stays and cannot be written over.
+        // The field shows the text, but the key is what is stored, so it switches language with the rest.
         if (dropIn) {
             descField.setText(SeedText.resolve("seed.booking.drop_in.description"));
             descField.setEditable(false);
@@ -185,8 +185,8 @@ public class BookingFormPane extends GridPane {
                 isServicesLocked);
     }
 
-    // Tiden en drop-in får räknas fram ur teamets lediga timmar, inte ur något användaren väljer.
-    // Den visas innan bokningen godkänns, och står det att det inte finns någon tid är OK stängt.
+    // The time a drop-in gets is worked out from the team's free hours, not from anything the user
+    // picks. It is shown before the booking is approved, and if it says there is no time, OK is locked.
     private void refreshDropInTime(GarageSystem garage) {
         if (!dropIn) {
             return;
@@ -208,7 +208,7 @@ public class BookingFormPane extends GridPane {
     }
 
     /**
-     * Fordon, datum och antingen en beskrivning eller en tjänst. Ny bokning kräver en tjänst.
+     * Vehicle, date and either a description or a service. A new booking requires a service.
      */
     private boolean requiredFieldsFilled(int excludeBookingId) {
         boolean hasServices = !selectedServices.isEmpty();
@@ -219,8 +219,8 @@ public class BookingFormPane extends GridPane {
             return false;
         }
         if (dropIn) {
-            // En drop-in har ingen tid att fylla i. Finns ingen ledig timme finns inget att
-            // godkänna, och då säger raden i formuläret varför OK är stängt.
+            // A drop-in has no time to fill in. With no free hour there is nothing to approve,
+            // and then the row in the form says why OK is locked.
             return hasServices && dropInStart.get() != null;
         }
         LocalTime start = getSelectedStartTime();
@@ -234,7 +234,7 @@ public class BookingFormPane extends GridPane {
     }
 
     /**
-     * Låser OK-knappen tills fälten är ifyllda, samma regel som validate().
+     * Locks the OK button until the fields are filled in, the same rule as validate().
      */
     public BooleanBinding requiredFieldsFilledBinding(final int excludeBookingId) {
         return Bindings.createBooleanBinding(
@@ -245,8 +245,8 @@ public class BookingFormPane extends GridPane {
     }
 
     public boolean validate(GarageSystem garage, int excludeBookingId) {
-        // En ny bokning måste innehålla minst en tjänst. Vid en redigering gäller inte
-        // kravet, eftersom en bokning som redan finns får behålla sina tjänster.
+        // A new booking must hold at least one service. In edit mode the requirement does not
+        // apply, because a booking that already exists may keep its services.
         if (!requiredFieldsFilled(excludeBookingId)) {
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
             return false;
@@ -257,8 +257,8 @@ public class BookingFormPane extends GridPane {
         LocalTime startTime = getSelectedStartTime();
         int minutes = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
 
-        // Spärr mot stängningstid (17:00): ett jobb som slutar efter stängning får inte bokas.
-        // En drop-in har ingen vald tid — den räknas fram av tjänsten.
+        // Blocked against closing time (17:00): a job that ends after closing cannot be booked.
+        // A drop-in has no picked time — it is worked out by the service.
         if (startTime != null && !dropIn) {
             LocalTime endTime = startTime.plusMinutes(minutes);
             if (endTime.isAfter(BookingAvailability.CLOSING_TIME)) {
@@ -267,7 +267,7 @@ public class BookingFormPane extends GridPane {
             }
         }
 
-        // Behörighetskontroll: varje vald tjänst måste ha minst en behörig mekaniker i teamet
+        // Qualification check: every picked service needs at least one qualified mechanic in the team
         List<Mechanic> team = getSelectedMechanics();
         for (ServiceItem s : selectedServices) {
             boolean hasQualified = false;
@@ -287,8 +287,8 @@ public class BookingFormPane extends GridPane {
             }
         }
 
-        // Hela bokningens intervall kontrolleras mot de behövliga mekanikernas upptagna tider.
-        // Drop-in undantas: dess tid är redan vald ur teamets lediga timmar.
+        // The whole booking's range is checked against the busy times of the required mechanics.
+        // Drop-in is exempt: its time was already picked from the team's free hours.
         if (startTime != null && !dropIn) {
             if (BookingAvailability.isTeamBooked(garage, team, date, startTime,
                     startTime.plusMinutes(minutes), excludeBookingId)) {
@@ -312,7 +312,7 @@ public class BookingFormPane extends GridPane {
         return new ArrayList<ServiceItem>(selectedServices);
     }
 
-    // Borttagningen måste gå via fältet, getSelectedServices lämnar en kopia av listan.
+    // The removal has to go through the field, getSelectedServices hands out a copy of the list.
     void removeService(ServiceItem item) {
         if (serviceMulti != null) {
             serviceMulti.removeSelectedItem(item);
@@ -322,7 +322,7 @@ public class BookingFormPane extends GridPane {
     }
 
     /**
-     * Första valda tjänsten, eller null.
+     * The first picked service, or null.
      */
     public ServiceItem getSelectedService() {
         return selectedServices.isEmpty() ? null : selectedServices.get(0);
@@ -342,7 +342,7 @@ public class BookingFormPane extends GridPane {
     }
 
     /**
-     * Mekanikerna i den ordning de valdes.
+     * The mechanics in the order they were picked.
      */
     public List<Mechanic> getSelectedMechanics() {
         List<Mechanic> ut = new ArrayList<Mechanic>();
@@ -358,7 +358,7 @@ public class BookingFormPane extends GridPane {
     }
 
     /**
-     * Kör lyssnaren som låter dialogen växa med innehållet.
+     * Runs the listener that lets the dialog grow with the content.
      */
     void contentGrown() {
         if (onContentGrown != null) {
@@ -367,7 +367,7 @@ public class BookingFormPane extends GridPane {
     }
 
     /**
-     * Låter dialogen veta när formuläret behöver mer plats, så att fönstret kan växa med det.
+     * Lets the dialog know when the form needs more room, so the window can grow with it.
      */
     public void setOnContentGrown(Runnable listener) {
         this.onContentGrown = listener;

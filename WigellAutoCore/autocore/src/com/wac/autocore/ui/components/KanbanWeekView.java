@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import com.wac.autocore.seed.SeedText;
 
-/** En del av mekanikerkortet. */
+/** One part of the mechanic card. */
 class KanbanWeekView {
 
     private final MechanicKanbanCard card;
@@ -43,7 +43,7 @@ class KanbanWeekView {
         dayLabel.setPrefWidth(60);
         dayLabel.setMaxWidth(55);
 
-        // Beläggningspill
+        // Load pill
         String loadClass = "load-" + dl.getLevel().getCode();
         Label pill = new Label(I18n.get("kanban.load." + dl.getLevel().getCode()));
         pill.getStyleClass().addAll("kanban-load-pill-compact", loadClass);
@@ -52,13 +52,13 @@ class KanbanWeekView {
         pill.setMaxWidth(85);
         pill.setAlignment(Pos.CENTER);
 
-        // Siffror (t.ex. 3/9 h)
+        // Numbers (e.g. 3/9 h)
         Label countLabel = new Label(dl.getBookedHours() + "/" + dl.getTotalHours() + "h");
         countLabel.getStyleClass().add("kanban-week-count-compact");
         countLabel.setMinWidth(50);
         countLabel.setPrefWidth(50);
         countLabel.setMaxWidth(45);
-        // 9 timboxar (kl. 07:00 till 16:00) där bokade timmar markeras med belastningsfärg
+        // 9 hour boxes (07:00 to 16:00) where booked hours are marked with the load colour
         HBox hourBoxes = new HBox(2);
         hourBoxes.getStyleClass().add("kanban-hour-boxes");
         hourBoxes.setAlignment(Pos.CENTER_LEFT);
@@ -98,7 +98,7 @@ class KanbanWeekView {
         row.getStyleClass().add("kanban-week-row-compact");
         row.setCursor(Cursor.HAND);
 
-        // Klick öppnar dagsvyn för vald dag
+        // A click opens the day view for the chosen day
         row.setOnMouseClicked(e -> {
             card.selectedDate = dl.getDate();
             card.currentMode = MechanicKanbanCard.KanbanViewMode.DAY;
@@ -108,14 +108,13 @@ class KanbanWeekView {
         VBox dayItem = new VBox(4);
         dayItem.getChildren().add(row);
 
-        // Om en tidsslott denna dag är utfälld – visa informationen direkt nedvikt under dagen!
+        // If a time slot this day is expanded, show the information unfolded right below the day.
         if (card.expandedSlot != null && card.expandedSlot.getDate().equals(dl.getDate())) {
             dayItem.getChildren().add(card.slotDrawer.build(mech, card.expandedSlot));
         }
 
         return dayItem;
     }
-
 
         VBox build(Mechanic mech) {
         LocalDate monday = card.selectedDate.with(DayOfWeek.MONDAY);

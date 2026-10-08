@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import com.wac.autocore.seed.SeedText;
 
-/** Kanban-tavlan för mekaniker: alla sida vid sida, en ruta per timme. */
+/** The Kanban board for mechanics: all side by side, one box per hour. */
 public final class KanbanBoard {
 
     private KanbanBoard() {}
@@ -30,7 +30,7 @@ public final class KanbanBoard {
     public static VBox build(GarageSystem garage, PageRouter router, Runnable onRefresh) {
         List<Mechanic> mechanics = garage.getMechanics();
 
-        // Rubrikrad för hela Kanban-sektionen
+        // Title row for the whole Kanban section
         Label title = new Label(I18n.get("kanban.title"));
         title.getStyleClass().add("panel-title");
 
@@ -45,7 +45,7 @@ public final class KanbanBoard {
         Region spr1 = new Region();
         HBox.setHgrow(spr1, Priority.ALWAYS);
 
-        // Belastningslegend
+        // Load legend
         HBox legend = buildCompactLegend();
 
         HBox headLeft = new HBox(12, new VBox(2, title, sub), addMechBtn);
@@ -55,12 +55,12 @@ public final class KanbanBoard {
         boardHead.setAlignment(Pos.CENTER_LEFT);
         boardHead.setPadding(new Insets(0, 0, 8, 0));
 
-        // Rad med alla mekanikerkort sida vid sida
+        // Row with all the mechanic cards side by side
         HBox cardsRow = new HBox(14);
         cardsRow.setAlignment(Pos.TOP_LEFT);
         cardsRow.setMinWidth(Region.USE_PREF_SIZE);
 
-        // Horisontell scroll om många mekaniker tillkommer
+        // Horizontal scroll if many mechanics are added
         ScrollPane scroll = new ScrollPane(cardsRow);
         scroll.setFitToHeight(true);
         scroll.setFitToWidth(false);
@@ -68,7 +68,7 @@ public final class KanbanBoard {
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
 
-        // Rad 2: Filter-chips & Scroll-kontroller
+        // Row 2: filter chips and scroll controls
         HBox filterBox = new HBox(8);
         filterBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -131,7 +131,7 @@ public final class KanbanBoard {
             scroll.setHvalue(0.0);
         };
 
-        // Samla unika specialiseringar och räkna mekaniker per kategori
+        // Collect the unique specializations and count mechanics per category
         Map<String, Integer> specCounts = new LinkedHashMap<String, Integer>();
         for (Mechanic m : mechanics) {
             String spec = SeedText.resolve(m.getSpecialization());
@@ -140,7 +140,7 @@ public final class KanbanBoard {
             }
         }
 
-        // Knapp: Alla
+        // Button: All
         Button allBtn = new Button(I18n.get("kanban.filter.all") + " (" + mechanics.size() + ")");
         allBtn.getStyleClass().addAll("kanban-filter-chip", "active");
         allBtn.setMinWidth(Region.USE_PREF_SIZE);
@@ -155,7 +155,7 @@ public final class KanbanBoard {
         });
         filterBox.getChildren().add(allBtn);
 
-        // Knappar för varje specialisering
+        // A button for each specialization
         for (Map.Entry<String, Integer> entry : specCounts.entrySet()) {
             final String specKey = entry.getKey();
             String displaySpec = MechanicKanbanCard.formatSpecialization(specKey) + " (" + entry.getValue() + ")";

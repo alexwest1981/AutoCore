@@ -20,7 +20,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import com.wac.autocore.seed.SeedText;
 
-/** En del av mekanikerkortet. */
+/** One part of the mechanic card. */
 class KanbanSlotDrawer {
 
     private final MechanicKanbanCard card;
@@ -73,7 +73,7 @@ class KanbanSlotDrawer {
         VBox drawer = new VBox(10);
         drawer.getStyleClass().add("kanban-inline-drawer");
 
-        // Rubrikrad: tid till vänster, hänvisning och stängknapp till höger.
+        // Title row: time on the left, reference and close button on the right.
         String title = (wo != null)
                 ? I18n.get("kanban.drawer.work_order", wo.getId())
                 : I18n.get("kanban.drawer.booked");
@@ -97,7 +97,7 @@ class KanbanSlotDrawer {
         HBox head = new HBox(8, timeLbl, spr, refLbl, closeBtn);
         head.setAlignment(Pos.CENTER_LEFT);
 
-        // Detaljerna som etikett och värde, så att kund, fordon och arbete linjerar i en kolumn.
+        // The details as label and value, so customer, vehicle and work line up in one column.
         String reg = slot.getVehicleReg() != null && !slot.getVehicleReg().isEmpty() ? slot.getVehicleReg() : (b != null ? EntityLookup.vehicleReg(card.garage, b.getVehicleId()) : "-");
         String cust = slot.getCustomerName() != null && !slot.getCustomerName().isEmpty() ? slot.getCustomerName() : "-";
         String desc = slot.getDescription() != null && !slot.getDescription().isEmpty() ? SeedText.resolve(slot.getDescription()) : (b != null ? SeedText.resolve(b.getDescription()) : "-");
@@ -179,7 +179,7 @@ class KanbanSlotDrawer {
                     slot.setBookingId(targetBooking.getId());
                 }
                 if (targetBooking != null && targetBooking.getServiceItemIds().isEmpty()) {
-                    // Bokningen saknar tjänster. Ge den en, så arbetsordern har något att utföra ().
+                    // The booking has no services. Give it one, so the work order has something to do.
                     try {
                         targetBooking.addServiceItem(card.garage.getServiceItems().get(0));
                         card.garage.updateBooking(targetBooking);
@@ -187,8 +187,8 @@ class KanbanSlotDrawer {
                         System.out.println("Could not give the booking a service: " + ex.getMessage());
                     }
                 }
-                // En arbetsorder per mekaniker, samma plan som arbetsorderdialogen använder,
-                // så att en bokning med flera specialister får en order var även härifrån.
+                // One work order per mechanic, the same plan the work order dialog uses,
+                // so a booking with several specialists gets one order each from here too.
                 java.util.LinkedHashMap<Integer, java.util.List<com.wac.autocore.model.ServiceItem>> plan =
                         com.wac.autocore.ui.WorkOrderDialogs.planWorkOrders(card.garage, targetBooking);
                 WorkOrder createdWo = null;
@@ -205,7 +205,8 @@ class KanbanSlotDrawer {
                     }
                 }
                 if (createdWo == null) {
-                    // Schemats mekaniker fick ingen egen post i planen. Då skapas ordern åt hen direkt.
+                    // The schedule's mechanic got no entry of their own in the plan. Then the order
+                    // is created for them directly.
                     createdWo = card.garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId());
                 }
                 if (createdWo != null) {
@@ -224,8 +225,4 @@ class KanbanSlotDrawer {
         return drawer;
     }
 
-
-    // =========================================================================
-    // 3. KOMPAKT MÅNADSVY (Kalenderraster)
-    // =========================================================================
 }

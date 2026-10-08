@@ -15,8 +15,8 @@ import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 
 /**
- * Mekanikerfältet i bokningsformuläret: vem som ska utföra arbetet.
- * Teamet följer tjänsterna, och den som tagits bort ur teamet läggs inte tillbaka.
+ * The mechanic field in the booking form: who is to do the job.
+ * The team follows the services, and whoever was taken out of the team is not put back.
  */
 class BookingMechanicsField {
 
@@ -59,7 +59,7 @@ class BookingMechanicsField {
 
     Label getHint() { return hint; }
 
-    /** Teamets mekaniker som användaren tagit bort kommer ihåg som borttagna. */
+    /** The team's mechanics the user has removed are remembered as removed. */
     private void onSelectionChanged() {
         if (updating) {
             return;
@@ -77,7 +77,7 @@ class BookingMechanicsField {
                 removed.add(m.getId());
             }
         }
-        // Egna tillägg utanför teamet hålls isär: de ligger kvar när tjänsterna ändras.
+        // Extras outside the team are kept apart: they stay when the services change.
         for (Mechanic m : garage.getMechanics()) {
             if (inTeam.contains(m.getId())) {
                 continue;
@@ -90,8 +90,7 @@ class BookingMechanicsField {
         }
     }
 
-    /** Fyller fältet utifrån tjänsterna som är valda just nu. */
-    /** Fyller fältet utifrån tjänsterna som är valda just nu. */
+    /** Fills the field from the services picked right now. */
     void update() {
         List<Mechanic> team = garage.getRequiredMechanics(form.getSelectedServices());
         List<Mechanic> qualified = garage.getQualifiedMechanics(form.getSelectedServices());
@@ -109,7 +108,7 @@ class BookingMechanicsField {
         box.getItems().addAll(garage.getMechanics());
         }
 
-        // Teamet följer tjänsterna. Egna tillägg ligger kvar, bortvalda läggs inte tillbaka.
+        // The team follows the services. Extras stay, removed ones are not put back.
         java.util.List<Mechanic> chosen = new java.util.ArrayList<Mechanic>();
         java.util.List<Integer> inTeam = new java.util.ArrayList<Integer>();
         for (Mechanic m : team) {
@@ -118,7 +117,7 @@ class BookingMechanicsField {
         chosen.add(m);
         }
         }
-        // Bortval utanför teamet glöms, så att tjänsten kan komma tillbaka.
+        // Deselections outside the team are forgotten, so the service can come back.
         java.util.Iterator<Integer> removedIterator = removed.iterator();
         while (removedIterator.hasNext()) {
         if (!inTeam.contains(removedIterator.next())) {
@@ -144,7 +143,7 @@ class BookingMechanicsField {
         multi.setSelectedItems(chosen);
         updating = false;
 
-        // Tipset behövs bara när tjänsterna inte går att bemanna.
+        // The hint is only needed when the services cannot be staffed.
         if (!form.getSelectedServices().isEmpty() && team.isEmpty()) {
         hint.setText(I18n.get("dialog.booking.no_mechanic_for_selected_services"));
         hint.setStyle("-fx-font-size: 11px; -fx-text-fill: #f87171;");
@@ -152,7 +151,7 @@ class BookingMechanicsField {
         hint.setText("");
         }
 
-        // Combon hålls i takt med fältet. Den är den som sparandet och tidskontrollerna läser.
+        // The combo box is kept in step with the field. It is the one the saving and the time checks read.
         java.util.List<Mechanic> chosenNow = form.getSelectedMechanics();
         if (!chosenNow.isEmpty()) {
         int firstId = chosenNow.get(0).getId();

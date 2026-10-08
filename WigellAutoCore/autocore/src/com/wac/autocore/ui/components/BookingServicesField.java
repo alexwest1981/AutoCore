@@ -14,8 +14,8 @@ import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.UiFormatters;
 
 /**
- * Tjänsterna på bokningen: raden per tjänst, antalet och summan.
- * Är arbetet påbörjat går tjänsterna inte att ändra.
+ * The services on the booking: the row per service, the count and the sum.
+ * Once the job has started the services cannot be changed.
  */
 class BookingServicesField {
 
@@ -46,7 +46,7 @@ class BookingServicesField {
 
     ScrollPane getScroll() { return scroll; }
 
-    /** Ritar om listan och sammanfattningen. */
+    /** Redraws the list and the summary. */
     void render() {
         container.getChildren().clear();
         if (form.getSelectedServices().isEmpty()) {
@@ -86,8 +86,8 @@ class BookingServicesField {
         summary.setText(I18n.get("dialog.booking.total_time", totalMin) + "  |  " + I18n.get("dialog.booking.total_price", UiFormatters.formatMoney(totalCost)));
         summary.setStyle("-fx-font-weight: bold; -fx-text-fill: -wac-accent; -fx-font-size: 12px; -fx-padding: 2 0 0 2;");
         }
-        // Rutan växer med antalet tjänster i stället för att scrolla i en liten yta. Taket gör
-        // att en lång lista fortfarande scrollar, men först när dialogen är så hög den får bli.
+        // The box grows with the number of services instead of scrolling in a small area. The
+        // ceiling means a long list still scrolls, but only once the dialog is as tall as it may be.
         double wanted = 12 + Math.max(1, form.getSelectedServices().size()) * ROW_HEIGHT;
         double height = Math.min(MAX_HEIGHT, wanted);
         scroll.setPrefHeight(height);

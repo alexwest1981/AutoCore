@@ -13,9 +13,9 @@ import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.UiFormatters;
 
 /**
- * Tjänsterna väljs som chips i fältet, med pris och tid per tjänst i listan.
- * En bokning som redan har tjänster visar dem som valda, även i redigeringsläge.
- * Är arbetet påbörjat går tjänsterna inte att ändra.
+ * The services are picked as chips in the field, with price and time per service in the list.
+ * A booking that already has services shows them as picked, in edit mode too.
+ * Once the job has started the services cannot be changed.
  */
 class BookingServicePicker {
 
@@ -42,7 +42,7 @@ class BookingServicePicker {
 
     MultiSelectComboBox<ServiceItem> getMulti() { return multi; }
 
-    /** Plockar bokningens tjänster ur registret, oavsett om de ligger som poster eller id:n. */
+    /** Picks the booking's services out of the register, whether they sit as records or as ids. */
     private void loadExistingServices(GarageSystem garage, Booking existingBooking,
             ObservableList<ServiceItem> selectedServices) {
         if (existingBooking == null) {

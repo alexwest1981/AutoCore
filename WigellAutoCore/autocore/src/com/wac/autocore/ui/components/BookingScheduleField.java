@@ -21,8 +21,8 @@ import com.wac.autocore.ui.util.BookingAvailability;
 import com.wac.autocore.ui.util.UiFormatters;
 
 /**
- * Datum, starttid och sluttid i bokningsformuläret.
- * Kalendern gråmarkerar dagar som inte rymmer hela arbetet, och tidslistan visar bara lediga tider.
+ * The date, the start time and the end time in the booking form.
+ * The calendar greys out days that cannot hold the whole job, and the time list shows free times only.
  */
 class BookingScheduleField {
 
@@ -39,7 +39,6 @@ class BookingScheduleField {
 
     BookingScheduleField(GarageSystem garage, BookingFormPane form, ComboBox<Mechanic> mechanicBox,
                          int excludeId, Booking existingBooking, LocalDate initialDate) {
-        // 4. Bokningsdatum (visas som kalender där otillgängliga datum gråmarkeras)
         LocalDate initialDateVal = existingBooking != null && existingBooking.getDate() != null
         ? existingBooking.getDate()
         : (initialDate != null ? initialDate : LocalDate.now().plusDays(1));
@@ -47,8 +46,8 @@ class BookingScheduleField {
         this.datePicker.setVisible(false);
         this.datePicker.setManaged(false);
 
-        // Kalenderns dagar. Fabriken sätts en gång och cellerna läser aktuella tjänster och tider
-        // varje gång de ritas, så de kan uppdateras med refresh() när valet ändras.
+        // The calendar's days. The factory is set once, and the cells read the current services and
+        // times each time they are drawn, so refresh() can update them when the selection changes.
         this.datePicker.setDayCellFactory(picker -> {
         BookingDayCell cell = new BookingDayCell(garage, excludeId, form);
         dayCells.add(cell);
@@ -58,8 +57,8 @@ class BookingScheduleField {
         com.sun.javafx.scene.control.skin.DatePickerSkin dateSkin =
         new com.sun.javafx.scene.control.skin.DatePickerSkin(this.datePicker);
         this.calendarNode = dateSkin.getPopupContent();
-        // Temafärgerna sätts i stilmallen (.booking-calendar): en inline-style kan inte slå upp
-        // -wac-card/-wac-line, så de föll tyst bort och kalendern blev genomskinlig.
+        // The theme colours are set in the stylesheet (.booking-calendar): an inline style cannot
+        // resolve -wac-card/-wac-line, so they dropped out silently and the calendar went see-through.
         calendarNode.getStyleClass().add("booking-calendar");
 
         Label dateHeaderLabel = new Label();
@@ -80,9 +79,9 @@ class BookingScheduleField {
         this.datePicker.valueProperty().addListener((obs, o, n) -> updateDateHeader.run());
         updateDateHeader.run();
 
-        // Ritar om kalenderns dagar när tjänster, mekaniker eller datum ändrats. Cellerna behåller
-        // annars den bedömning de gjorde när de skapades, och en dag som inte längre rymmer hela
-        // jobbet stod kvar som bokningsbar.
+        // Redraws the calendar's days when services, mechanics or the date have changed. Otherwise
+        // the cells keep the judgement they made when they were created, and a day that no longer
+        // holds the whole job stayed bookable.
         Runnable setupDatePickerCells = () -> {
         for (BookingDayCell cell : dayCells) {
         cell.refresh();
@@ -91,7 +90,7 @@ class BookingScheduleField {
 
         Runnable ensureValidDate = () -> {
         int duration = form.getTotalEstimatedMinutes() > 0 ? form.getTotalEstimatedMinutes() : 60;
-        List<Mechanic> team = form.getSelectedMechanics();   // de mekaniker som är valda i fältet
+        List<Mechanic> team = form.getSelectedMechanics();   // the mechanics picked in the field
         Mechanic m = form.getSelectedMechanic();
         LocalDate current = datePicker.getValue();
         if (current == null || !BookingAvailability.hasAvailableSlotOnDate(garage, m, team, current, duration, excludeId)) {
@@ -106,7 +105,7 @@ class BookingScheduleField {
         }
         };
 
-        // 5. Starttid med stängningsspärr (17:00) och tillgänglighetsindikering
+        // Start time, blocked after closing (17:00), with availability marked.
 
         Function<LocalTime, Boolean> isBusyFunc = time -> {
         if (time == null) return false;
@@ -116,7 +115,7 @@ class BookingScheduleField {
         return true;
         }
         LocalDate d = datePicker.getValue();
-        List<Mechanic> team = form.getSelectedMechanics();   // de mekaniker som är valda i fältet
+        List<Mechanic> team = form.getSelectedMechanics();   // the mechanics picked in the field
         if (team != null && !team.isEmpty()) {
         return BookingAvailability.isTeamBooked(garage, team, d, time, end, excludeId);
         }
@@ -135,7 +134,7 @@ class BookingScheduleField {
         public LocalTime fromString(String string) { return null; }
         });
 
-        // 6. Dynamisk sluttidsberäkning
+        // End time recalculated from the start time and the total duration.
         this.durationLabel.setStyle("-fx-text-fill: -wac-accent; -fx-font-weight: bold;");
 
         Runnable updateDuration = () -> {
@@ -166,8 +165,8 @@ class BookingScheduleField {
 
         Runnable refreshTimeBox = () -> {
         int duration = form.getTotalEstimatedMinutes() > 0 ? form.getTotalEstimatedMinutes() : 60;
-        // Bara de tider som går att boka: de som ryms före stängning och är lediga för vald
-        // mekaniker. Upptagna tider visas inte alls, och finns det ingen kvar stängs fältet av.
+        // Only the times that can be booked: those that fit before closing and are free for the
+        // picked mechanic. Busy times are not shown at all, and if none are left the field is locked.
         List<LocalTime> freeTimes = new ArrayList<LocalTime>();
         for (int h = 7; h <= 16; h++) {
         LocalTime t = LocalTime.of(h, 0);
@@ -195,7 +194,7 @@ class BookingScheduleField {
         updateDuration.run();
         };
 
-        // Koppla lyssnare
+        // Wire up the listeners
         this.datePicker.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
         mechanicBox.valueProperty().addListener((obs, o, n) -> {
         setupDatePickerCells.run();
@@ -221,7 +220,7 @@ class BookingScheduleField {
 
     Label getCalendarHint() { return calendarHintLabel; }
 
-    /** Väljer den första lediga tiden, annars klockan 08. */
+    /** Picks the first free time, otherwise 08:00. */
     private void selectFirstAvailableTime(List<LocalTime> timeOptions, Function<LocalTime, Boolean> isBusyFunc) {
         LocalTime firstFree = null;
         for (LocalTime t : timeOptions) {
@@ -233,18 +232,18 @@ class BookingScheduleField {
         startTimeBox.getSelectionModel().select(firstFree != null ? firstFree : LocalTime.of(8, 0));
     }
 
-    /** Läser om dagarna och väljer ett giltigt datum. */
+    /** Re-reads the days and picks a valid date. */
     void refreshDate() {
         setupDatePickerCells.run();
         ensureValidDate.run();
     }
 
-    /** Läser bara om tiderna. */
+    /** Re-reads the times only. */
     void refreshTimes() {
         refreshTimeBox.run();
     }
 
-    /** Läser om dagarna, datumet och tiderna. */
+    /** Re-reads the days, the date and the times. */
     void refresh() {
         setupDatePickerCells.run();
         ensureValidDate.run();

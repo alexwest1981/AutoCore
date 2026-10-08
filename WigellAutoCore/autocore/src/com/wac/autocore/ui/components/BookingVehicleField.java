@@ -9,8 +9,8 @@ import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.util.EntityLookup;
 
 /**
- * Fordonsfältet i bokningsformuläret. Visar fordonet med ägaren i samma rad,
- * och förväljer bokningens fordon vid redigering.
+ * The vehicle field in the booking form. Shows the vehicle with its owner on the same row,
+ * and pre-selects the booking's vehicle when editing.
  */
 class BookingVehicleField {
 
