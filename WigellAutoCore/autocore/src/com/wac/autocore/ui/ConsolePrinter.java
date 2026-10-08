@@ -11,7 +11,7 @@ import com.wac.autocore.model.WorkOrder;
 
 import java.util.List;
 
-/** All utskrift för textversionen. Samlad här så servicelagret slipper skriva till konsolen. */
+/** All output for the text version. Gathered here so the service layer does not write to the console. */
 public class ConsolePrinter {
 
     public void printCustomers(List<Customer> customers) {
@@ -111,7 +111,6 @@ public class ConsolePrinter {
             System.out.println(payment);
         }
     }
-
 
     private void printHeader(String title) {
         System.out.println();

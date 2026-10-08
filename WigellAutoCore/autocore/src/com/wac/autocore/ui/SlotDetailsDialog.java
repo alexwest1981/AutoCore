@@ -16,7 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import com.wac.autocore.seed.SeedText;
 
-/** Dialoger för tidsluckor och arbetsorderdetaljer. */
+/** Dialogs for time slots and work order details. */
 public final class SlotDetailsDialog {
 
     private SlotDetailsDialog() {}
@@ -168,7 +168,7 @@ public final class SlotDetailsDialog {
                         slot.setBookingId(targetBooking.getId());
                     }
                     if (targetBooking != null && targetBooking.getServiceItemIds().isEmpty()) {
-                        // Bokningen saknar tjänster. Ge den en, så arbetsordern har något att utföra ().
+                        // The booking has no services. Give it one, so the work order has something to do.
                         try {
                             targetBooking.addServiceItem(garage.getServiceItems().get(0));
                             garage.updateBooking(targetBooking);
@@ -176,8 +176,8 @@ public final class SlotDetailsDialog {
                             System.out.println("Could not give the booking a service: " + ex.getMessage());
                         }
                     }
-                    // En arbetsorder per mekaniker, samma plan som arbetsorderdialogen använder,
-                    // så att en bokning med flera specialister får en order var även härifrån.
+                    // One work order per mechanic, the same plan the work order dialog uses,
+                    // so a booking with several specialists gets one order each from here too.
                     java.util.LinkedHashMap<Integer, java.util.List<com.wac.autocore.model.ServiceItem>> plan =
                             WorkOrderDialogs.planWorkOrders(garage, targetBooking);
                     WorkOrder createdWo = null;
@@ -193,8 +193,8 @@ public final class SlotDetailsDialog {
                         }
                     }
                     if (createdWo == null) {
-                        // Schemats mekaniker fick ingen egen post i planen, till exempel för att
-                        // bokningen bara har en tjänst. Då skapas ordern åt hen direkt.
+                        // The schedule's mechanic got no entry of their own in the plan, for instance
+                        // because the booking has only one service. Then the order is created for them.
                         createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId());
                     }
                     if (createdWo != null) {

@@ -13,13 +13,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-
 import java.util.ArrayList;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Dialoger för servicepaket: skapa ett paket och visa de som finns.
+ * Dialogs for service packages: create a package and list the ones that exist.
  */
 public final class ServicePackageDialogs {
 
@@ -164,7 +163,6 @@ public final class ServicePackageDialogs {
         });
 
     }
-
 
     private static String describe(ServicePackage servicePackage) {
         StringBuilder names = new StringBuilder();

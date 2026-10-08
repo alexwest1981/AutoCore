@@ -24,14 +24,14 @@ import java.util.List;
 import java.util.Map;
 import com.wac.autocore.seed.SeedText;
 
-/** Dialogen som skapar arbetsordrar: en order per mekaniker ur bokningens plan. */
+/** The dialog that creates work orders: one order per mechanic from the booking's plan. */
 final class CreateWorkOrderDialog {
 
     private CreateWorkOrderDialog() {}
 
     static void show(GarageSystem garage, Booking defaultBooking, Runnable onSuccess) {
-        // En bokning vars tjänster redan ligger på arbetsordrar ska inte gå att välja igen. En
-        // bokning som bara är delvis uppdelad (några tjänster kvar) ska däremot gå att fylla på.
+        // A booking whose services already sit on work orders must not be pickable again. A
+        // booking that is only partly split (some services left) should still be fillable.
         List<Booking> bookings = new ArrayList<Booking>();
         for (Booking b : garage.getBookings()) {
             if ("BOOKED".equalsIgnoreCase(b.getStatus()) || "CONFIRMED".equalsIgnoreCase(b.getStatus())) {
@@ -81,7 +81,7 @@ final class CreateWorkOrderDialog {
             public Booking fromString(String string) { return null; }
         });
 
-        // Typen är samma för alla arbetsordrar en körning skapar: en per mekaniker, en typ.
+        // The type is the same for all work orders one run creates: one per mechanic, one type.
         ComboBox<String> typeBox = new ComboBox<String>();
         typeBox.getItems().addAll(WorkOrder.TYPES);
         typeBox.setValue(WorkOrder.TYPES.get(0));
@@ -106,8 +106,8 @@ final class CreateWorkOrderDialog {
 
         VBox serviceList = new VBox(8);
 
-        // Nyckeln i planen är mekaniker-id, inte objektet: mekanikerlistan kan komma från
-        // olika anrop.
+        // The key in the plan is the mechanic id, not the object: the mechanic list can come
+        // from different calls.
         final Map<Integer, List<ServiceItem>> plan = new java.util.LinkedHashMap<Integer, List<ServiceItem>>();
 
         java.util.function.Consumer<Booking> syncFromBooking = b -> {
@@ -160,8 +160,8 @@ final class CreateWorkOrderDialog {
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // OK är låst tills den valda bokningen har något att utföra — en arbetsorder utan tjänster
-        // går ändå inte att skapa.
+        // OK is locked until the chosen booking has something to do — a work order without
+        // services cannot be created anyway.
         javafx.beans.property.BooleanProperty bookingHasServices = new javafx.beans.property.SimpleBooleanProperty();
         bookingHasServices.set(WorkOrderPlan.hasServices(bookingBox.getValue()));
         bookingBox.valueProperty().addListener((obs, oldB, newB) -> bookingHasServices.set(WorkOrderPlan.hasServices(newB)));
@@ -180,7 +180,7 @@ final class CreateWorkOrderDialog {
                     return;
                 }
 
-                // En arbetsorder per mekaniker, var och en med sina egna tjänster.
+                // One work order per mechanic, each with its own services.
                 int created = 0;
                 for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
                     List<Integer> ids = new ArrayList<Integer>();

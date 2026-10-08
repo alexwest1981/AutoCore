@@ -33,7 +33,7 @@ import com.wac.autocore.seed.SeedText;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Detaljvyn för en arbetsorder: upplysningar, tjänsterna och de åtgärder som läget tillåter. */
+/** The details view for a work order: the facts, the services and the actions the status allows. */
 final class WorkOrderDetailsDialog {
 
     private WorkOrderDetailsDialog() {}
@@ -49,10 +49,10 @@ final class WorkOrderDetailsDialog {
 
         dialog.getDialogPane().setContent(scrollContent(buildContent(garage, workOrder, dialog)));
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
-        // Utan klass far knappen JavaFX standardstil och forsvinner mot temats accent.
+        // Without the class the button gets JavaFX's default style and disappears against the theme's accent.
         dialog.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add("primary-button");
 
-        // Listan bakom dialogen hämtas när den stängs, inte vid varje knapptryck.
+        // The list behind the dialog is fetched when it closes, not on every button press.
         dialog.setOnHidden(e -> {
             if (onRefresh != null) {
                 onRefresh.run();
@@ -62,14 +62,14 @@ final class WorkOrderDetailsDialog {
         dialog.showAndWait();
     }
 
-    /** Innehållet byggs om efter varje åtgärd, så statusen och knapparna alltid stämmer. */
+    /** The content is rebuilt after every action, so the status and the buttons always match. */
     private static VBox buildContent(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
         VBox content = new VBox(14);
         content.setPadding(new Insets(18, 22, 18, 22));
         content.setPrefWidth(640);
 
-        // Detaljvyn är upplysningar, inte ett formulär. Utan kolumnregler hamnar värdena direkt
-        // efter sina etiketter i stället för att tryckas ut till höger.
+        // The details view is information, not a form. Without column rules the values land
+        // right after their labels instead of being pushed out to the right.
         GridPane infoGrid = ActionDialogs.createGrid();
         infoGrid.getColumnConstraints().clear();
         infoGrid.add(new Label(I18n.get("table.col.type") + ":"), 0, 0);
@@ -100,7 +100,7 @@ final class WorkOrderDetailsDialog {
 
         Invoice inv = EntityLookup.invoiceForWorkOrder(garage, workOrder.getId());
 
-        // En reklamation visar vilken arbetsorder den gäller.
+        // A reclamation shows which work order it is for.
         int infoRow = 6;
         if (workOrder.getOriginalWorkOrderId() > 0) {
             infoGrid.add(new Label(I18n.get("table.col.reclamation_of") + ":"), 0, infoRow);
@@ -120,7 +120,7 @@ final class WorkOrderDetailsDialog {
         Label notice = new Label(I18n.get("dialog.workorder.historical_notice"));
         notice.getStyleClass().addAll("srow-sub", "small");
 
-        // Rader av tjänster är en tabell med fyra kolumner, så den får fyra egna kolumnregler.
+        // Rows of services are a table with four columns, so it gets four column rules of its own.
         GridPane linesGrid = ActionDialogs.createGrid();
         linesGrid.getColumnConstraints().clear();
         for (int i = 0; i < 4; i++) {
@@ -223,7 +223,7 @@ final class WorkOrderDetailsDialog {
         linesGrid.add(totalTimeVal, 1, row);
         linesGrid.add(totalVal, 2, row);
         linesGrid.add(totalStatusVal, 3, row);
-        // Andra riktningen av kopplingen: vilka reklamationer som pekar på den här ordern.
+        // The other direction of the link: which reclamations point at this order.
         Label reclamationsTitle = new Label(I18n.get("dialog.workorder.reclamations_title"));
         reclamationsTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
         VBox reclamationsBox = new VBox(6);
@@ -256,7 +256,7 @@ final class WorkOrderDetailsDialog {
         return content;
     }
 
-    /** Redigera-knappen högst upp till höger, så att ett utkast kan kompletteras senare. */
+    /** The edit button in the top right, so a draft can be completed later. */
     private static HBox headerRow(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
         HBox row = new HBox(8);
         row.setAlignment(Pos.CENTER_RIGHT);
@@ -270,7 +270,7 @@ final class WorkOrderDetailsDialog {
         return row;
     }
 
-    /** Visar bara de åtgärder som statusen tillåter. Avbryt hamnar sist, avskild till höger. */
+    /** Shows only the actions the status allows. Cancel comes last, set apart to the right. */
     private static HBox actionRow(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
         String status = workOrder.getStatus();
         boolean multiService = workOrder.getServiceItemIds() != null && workOrder.getServiceItemIds().size() > 1;
@@ -292,7 +292,7 @@ final class WorkOrderDetailsDialog {
                 row.getChildren().add(actionButton("complete", garage, workOrder, dialog));
             }
         } else if ("COMPLETED".equals(status)) {
-            // Ett utfört arbete har en enda åtgärd: att reklameras.
+            // A completed job has exactly one action: to be reclaimed.
             row.getChildren().add(reclamationButton(garage, workOrder, dialog));
         } else if ("CANCELLED".equals(status)) {
             row.getChildren().add(actionButton("start", garage, workOrder, dialog));
@@ -313,7 +313,8 @@ final class WorkOrderDetailsDialog {
         return row;
     }
 
-    /** Reklamationen skapas från det utförda arbetet och syns i listan så snart dialogen ritas om. */
+    /** The reclamation is created from the completed work and shows in the list as soon as the
+     *  dialog redraws. */
     private static Button reclamationButton(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
         Button button = UiComponents.secondaryButton(I18n.get("entity.workorders.action_reclamation"));
         button.setOnAction(e -> ActionDialogs.showCreateReclamationDialog(garage, workOrder,
@@ -334,11 +335,11 @@ final class WorkOrderDetailsDialog {
                 garage.completeWorkOrder(workOrder.getId());
                 refreshDialog(garage, workOrder, dialog);
             } else if ("cancel".equals(key)) {
-                // Att avbryta går inte att ångra, så det får ett eget ja först.
+                // Cancelling cannot be undone, so it gets a yes of its own first.
                 Alert alert = ActionDialogs.confirm(I18n.get("dialog.workorder.cancel.title"),
                         I18n.get("dialog.workorder.cancel.header"),
                         I18n.get("dialog.workorder.cancel.confirm", String.valueOf(workOrder.getId())));
-                // Frågetecknet som JavaFX lägger dit hör inte till vår stil.
+                // The question mark JavaFX puts there is not part of our styling.
                 alert.setGraphic(null);
                 ButtonType close = new ButtonType(I18n.get("common.close"), ButtonBar.ButtonData.CANCEL_CLOSE);
                 ButtonType cancelOrder = new ButtonType(I18n.get("entity.workorders.action_cancel"),
@@ -362,7 +363,8 @@ final class WorkOrderDetailsDialog {
                             }
                         }
                     }
-                    // Bredden sätts efter att temat lagt på sin stil, annars krymper knappen och texten klipps.
+                    // The width is set after the theme has applied its style, otherwise the button
+                    // shrinks and the text clips.
                     closeButton.getStyleClass().add("secondary-button");
                     closeButton.setMinWidth(closeButton.prefWidth(-1));
                     cancelButton.setMinWidth(cancelButton.prefWidth(-1));
@@ -380,7 +382,7 @@ final class WorkOrderDetailsDialog {
         return button;
     }
 
-    /** Hämtar ordern på nytt och ritar om innehållet, så statusen visas direkt. */
+    /** Fetches the order again and redraws the content, so the status shows right away. */
     private static void refreshDialog(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
         WorkOrder updated = workOrder;
         for (WorkOrder w : garage.getWorkOrders()) {
@@ -393,7 +395,7 @@ final class WorkOrderDetailsDialog {
         refitWindow(dialog);
     }
 
-    /** Andra riktningen: de reklamationer som pekar på den här ordern. */
+    /** The other direction: the reclamations that point at this order. */
     private static List<WorkOrder> reclamationsOf(GarageSystem garage, int workOrderId) {
         List<WorkOrder> found = new ArrayList<WorkOrder>();
         for (WorkOrder order : garage.getWorkOrders()) {
@@ -404,7 +406,7 @@ final class WorkOrderDetailsDialog {
         return found;
     }
 
-    /** Innehållet rullar när det är högre än fönstret, så knappraden alltid syns. */
+    /** The content scrolls when it is taller than the window, so the button row is always visible. */
     private static ScrollPane scrollContent(VBox content) {
         ScrollPane scroll = new ScrollPane(content);
         scroll.setFitToWidth(true);
@@ -415,7 +417,7 @@ final class WorkOrderDetailsDialog {
         return scroll;
     }
 
-    /** Krymper fonstret efter innehållet. Utan det lamnar en kortare order en glipa over knappraden. */
+    /** Shrinks the window to fit the content. Without it a shorter order leaves a gap above the button row. */
     private static void refitWindow(Dialog<ButtonType> dialog) {
         if (dialog.getDialogPane().getScene() == null || dialog.getDialogPane().getScene().getWindow() == null) {
             return;

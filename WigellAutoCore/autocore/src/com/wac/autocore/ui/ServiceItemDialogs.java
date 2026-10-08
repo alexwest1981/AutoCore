@@ -15,7 +15,7 @@ import javafx.scene.layout.GridPane;
 import java.sql.SQLException;
 import com.wac.autocore.seed.SeedText;
 
-/** Dialoger för tjänstehantering. */
+/** Dialogs for managing services. */
 public final class ServiceItemDialogs {
 
     private ServiceItemDialogs() {}
@@ -211,7 +211,7 @@ public final class ServiceItemDialogs {
         });
     }
 
-/** Specialiseringen tjänsten kräver. Första valet betyder alla mekaniker. */
+    /** The specialization the service requires. The first choice means all mechanics. */
     static ComboBox<String> requirementBox(GarageSystem garage) {
         ComboBox<String> box = new ComboBox<String>();
         box.getItems().add(I18n.get("dialog.service.spec_any"));
@@ -221,7 +221,7 @@ public final class ServiceItemDialogs {
         return box;
     }
 
-    /** Nyckeln som ska sparas: tom när tjänsten inte kräver någon särskild specialisering. */
+    /** The key to store: empty when the service requires no particular specialization. */
     static String requirementKey(ComboBox<String> box) {
         String chosen = box.getValue();
         if (chosen == null || chosen.equals(I18n.get("dialog.service.spec_any"))) {
@@ -230,7 +230,7 @@ public final class ServiceItemDialogs {
         return MechanicDialogs.specializationToStore(chosen);
     }
 
-    /** Visar tjänstens nuvarande krav i rullistan. */
+    /** Shows the service's current requirement in the drop-down. */
     static void showRequirement(ComboBox<String> box, ServiceItem serviceItem) {
         String stored = serviceItem.getSpecialization();
         if (stored == null || stored.trim().isEmpty()) {

@@ -49,7 +49,7 @@ final class EditDraftDialog {
         content.setPadding(new Insets(18, 22, 18, 22));
         content.setPrefWidth(820);
 
-        // Samma matt som bokningsdialogen, den bredaste i appen.
+        // The same size as the booking dialog, the widest in the app.
         dialog.getDialogPane().setPrefWidth(860);
         dialog.getDialogPane().setMinWidth(760);
 
@@ -62,7 +62,7 @@ final class EditDraftDialog {
         TextArea instructions = createInstructionsField(workOrder);
         TextArea otherComments = createCommentsField(workOrder);
 
-        // Teamet följer tjänsterna först när användaren ändrar dem, inte när rutan öppnas.
+        // The team follows the services only when the user changes them, not when the dialog opens.
         serviceBox.getSelectedItems().addListener((ListChangeListener<ServiceItem>) change ->
                 updateMechanics(garage, serviceBox.getSelectedItems(), mechanicBox, mechanicHint));
 
@@ -70,7 +70,7 @@ final class EditDraftDialog {
                 updateHint(garage, serviceBox.getSelectedItems(), mechanicBox, mechanicHint));
 
         GridPane grid = ActionDialogs.createGrid();
-        // Rutnätet ärver 480 från hjälparen, fältkolumnen får plats först när taket höjs.
+        // The grid inherits 480 from the helper, the field column only gets room once the ceiling is raised.
         grid.setPrefWidth(820);
         grid.add(new Label(I18n.get("table.col.vehicle") + ":"), 0, 0);
         grid.add(vehicleBox, 1, 0);
@@ -107,7 +107,7 @@ final class EditDraftDialog {
             LinkedHashMap<Integer, List<ServiceItem>> plan = WorkOrderPlan.planWorkOrders(garage, chosen,
                     serviceBox.getSelectedItems());
 
-            // Forsta mekanikern behaller ordern som oppnades, ovriga far var sin ny.
+            // The first mechanic keeps the order that was opened, the others get a new one each.
             boolean first = true;
             for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
 
@@ -143,7 +143,7 @@ final class EditDraftDialog {
         });
     }
 
-    /** Fordonsrutan visar ägaren efter registreringsnumret, så två lika bilar går att skilja. */
+    /** The vehicle box shows the owner after the registration number, so two identical cars can be told apart. */
     private static ComboBox<Vehicle> createVehicleBox(GarageSystem garage, WorkOrder workOrder) {
 
         ComboBox<Vehicle> vehicleBox = new ComboBox<Vehicle>();
@@ -174,7 +174,7 @@ final class EditDraftDialog {
         return vehicleBox;
     }
 
-    /** Mekanikern förvald från ordern, rutan får ändra den. */
+    /** The mechanic pre-selected from the order, the box may change it. */
     private static MultiSelectComboBox<Mechanic> createMechanicBox(GarageSystem garage, WorkOrder workOrder) {
 
         MultiSelectComboBox<Mechanic> mechanicBox = new MultiSelectComboBox<Mechanic>(
@@ -197,7 +197,7 @@ final class EditDraftDialog {
         return mechanicBox;
     }
 
-    /** Tjänsterna som redan ligger på utkastet är förvalda. */
+    /** The services already on the draft are pre-selected. */
     private static MultiSelectComboBox<ServiceItem> createServiceBox(GarageSystem garage, WorkOrder workOrder) {
 
         MultiSelectComboBox<ServiceItem> serviceBox = new MultiSelectComboBox<ServiceItem>(
@@ -257,7 +257,7 @@ final class EditDraftDialog {
         return otherComments;
     }
 
-    /** Tom tills tjänsterna säger något om vem som kan utföra dem. */
+    /** Empty until the services say something about who can perform them. */
     private static Label createMechanicHint() {
 
         Label mechanicHint = new Label();
@@ -265,7 +265,7 @@ final class EditDraftDialog {
         return mechanicHint;
     }
 
-    /** Fyller mekanikerfältet utifrån tjänsterna, samma regel som bokningen använder. */
+    /** Fills the mechanic field from the services, the same rule the booking uses. */
     private static void updateMechanics(GarageSystem garage, List<ServiceItem> services,
                                         MultiSelectComboBox<Mechanic> mechanicBox, Label mechanicHint) {
         List<Mechanic> team = garage.getRequiredMechanics(services);
@@ -276,12 +276,12 @@ final class EditDraftDialog {
         updateHint(garage, services, mechanicBox, mechanicHint);
     }
 
-    /** Skriver texten under fältet. Rör aldrig valet, annars larmar lyssnaren sig själv i ring. */
+    /** Writes the text under the field. Never touches the selection, or the listener sets itself off in a loop. */
     private static void updateHint(GarageSystem garage, List<ServiceItem> services,
                                    MultiSelectComboBox<Mechanic> mechanicBox, Label mechanicHint) {
         List<Mechanic> team = garage.getRequiredMechanics(services);
 
-        // Planen avslojar hur många ordrar OK skapar, och om någon hamnar hos en ovald mekaniker.
+        // The plan reveals how many orders OK creates, and whether anyone ends up with an unpicked mechanic.
         LinkedHashMap<Integer, List<ServiceItem>> plan =
                 WorkOrderPlan.planWorkOrders(garage, mechanicBox.getSelectedItems(), services);
         boolean fleraOrdrar = plan.size() > 1;
@@ -309,7 +309,7 @@ final class EditDraftDialog {
         }
     }
 
-    /** Sparar ett utkast med en mekanikers tjänster. Samma faltvarde till varje order. */
+    /** Saves a draft with one mechanic's services. The same field values for every order. */
     private static WorkOrder saveDraft(GarageSystem garage, int workOrderId, Vehicle vehicle, int mechanicId,
             List<Integer> serviceIds, DatePicker datePicker, TextArea description, TextArea instructions,
             TextArea otherComments) {

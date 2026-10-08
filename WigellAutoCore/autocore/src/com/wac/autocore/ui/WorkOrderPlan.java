@@ -11,14 +11,14 @@ import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 
 /**
- * En post per mekaniker med den mekanikerns tjänster, fördelade efter behörighet.
- * Används både för en bokning och för ett utkast.
+ * One entry per mechanic with that mechanic's services, handed out by qualification.
+ * Used both for a booking and for a draft.
  */
 public final class WorkOrderPlan {
 
     private WorkOrderPlan() {}
 
-    /** Planen: en post per mekaniker med den mekanikerns tjänster. */
+    /** The plan: one entry per mechanic with that mechanic's services. */
     public static LinkedHashMap<Integer, List<ServiceItem>> planWorkOrders(
             GarageSystem garage, Booking booking) {
 
@@ -27,7 +27,7 @@ public final class WorkOrderPlan {
             return plan;
         }
 
-        // Bokningens mekaniker, i den ordning de valdes. Den första är den som gäller tiden.
+        // The booking's mechanics, in the order they were chosen. The first one holds the time.
         List<Mechanic> team = new ArrayList<Mechanic>();
         for (Integer mechanicId : booking.getMechanicIds()) {
             Mechanic m = mechanicById(garage, mechanicId.intValue());
@@ -42,7 +42,7 @@ public final class WorkOrderPlan {
         return planWorkOrders(garage, team, booking.getServiceItems());
     }
 
-    /** Planen för ett utkast: teamet och tjänsterna kommer från rutan, inte från en bokning. */
+    /** The plan for a draft: the team and the services come from the form, not from a booking. */
     public static LinkedHashMap<Integer, List<ServiceItem>> planWorkOrders(
             GarageSystem garage, List<Mechanic> team, List<ServiceItem> services) {
 
@@ -74,7 +74,7 @@ public final class WorkOrderPlan {
         return plan;
     }
 
-    /** Sant om bokningen har minst en tjänst som ingen arbetsorder tagit hand om. */
+    /** True if the booking has at least one service no work order has taken care of. */
     static boolean hasServicesLeftForAWorkOrder(GarageSystem garage, Booking booking) {
         for (Integer serviceItemId : booking.getServiceItemIds()) {
             boolean claimed = false;
@@ -92,12 +92,12 @@ public final class WorkOrderPlan {
         return false;
     }
 
-    /** En bokning utan tjänster kan inte bli en arbetsorder. */
+    /** A booking without services cannot become a work order. */
     static boolean hasServices(Booking booking) {
         return booking != null && !booking.getServiceItemIds().isEmpty();
     }
 
-    /** Mekanikern med angivet id, eller null. */
+    /** The mechanic with the given id, or null. */
     static Mechanic mechanicById(GarageSystem garage, int mechanicId) {
         for (Mechanic m : garage.getMechanics()) {
             if (m.getId() == mechanicId) {
@@ -107,10 +107,10 @@ public final class WorkOrderPlan {
         return null;
     }
 
-    /** Bokningens mekaniker om hen är behörig, annars den första behöriga. */
+    /** The booking's mechanic if qualified, otherwise the first qualified one. */
     private static Mechanic mechanicForService(GarageSystem garage, List<Mechanic> team, ServiceItem service) {
         List<Mechanic> qualified = garage.getQualifiedMechanics(service);
-        // Först i tur står mekanikern som valdes först i bokningen.
+        // First in line is the mechanic chosen first in the booking.
         for (Mechanic m : team) {
             if (m != null && containsId(qualified, m.getId())) {
                 return m;
