@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Fakturor från slutförda arbetsordrar, med rabatt. */
+/** Invoices from completed work orders, with discount. */
 public class BillingService {
 
     private final InvoiceRepository invoiceRepository = new InvoiceRepository();
@@ -48,12 +48,12 @@ public class BillingService {
         }
     }
 
-/** Utan ny kostnad: konsolen och andra anrop som inte har någon reklamation. */
+    /** With no new charge: the console and other calls that have no reclamation. */
     public Invoice createInvoice(int workOrderId, String discountCode) {
         return createInvoice(workOrderId, discountCode, null, 0.0);
     }
 
-/** Fakturerar en arbetsorder, med en ny kostnad som egen rad när reklamationen kräver det. */
+    /** Invoices a work order, with a new charge as its own line when the reclamation calls for one. */
     public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
         WorkOrder workOrder = findWorkOrder(workOrderId);
         if (workOrder == null) {
@@ -66,16 +66,16 @@ public class BillingService {
             return null;
         }
 
-        // Även här gäller hela bokningen: en enskild arbetsorder får inte faktureras medan
-        // syskonarbetsordrarna på samma bokning är kvar.
+        // The whole booking counts here too: a single work order cannot be invoiced while its
+        // sibling orders on the same booking are still open.
         if (!allOrdersCompleted(workOrder.getBookingId())) {
             System.out.println("Booking with ID " + workOrder.getBookingId()
                     + " still has work orders that are not completed.");
             return null;
         }
 
-        // Ett jobb ska bara faktureras en gång. Gränssnittet hindrar att samma bokning väljs om,
-        // men anropet kan komma underifrån — och då blev det två fakturor på samma arbete.
+        // A job should only be invoiced once. The interface stops the same booking being picked
+        // twice, but the call can come from below — and then there were two invoices for one job.
         if (hasInvoiceFor(workOrderId)) {
             System.out.println("Invoice already exists for work order " + workOrderId + ".");
             return null;
@@ -86,12 +86,12 @@ public class BillingService {
         return createInvoiceFrom(orders, workOrderId, discountCode, extraName, extraAmount);
     }
 
-/** Fakturerar allt utfört arbete på en bokning i en faktura. */
+    /** Invoices all the work done on a booking on a single invoice. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
         return createInvoiceForBooking(bookingId, discountCode, null, 0.0);
     }
 
-/** Samma faktura, men med plats för en ny kostnad som reklamationen för med sig. */
+    /** The same invoice, but with room for a new charge the reclamation brings with it. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
@@ -99,7 +99,7 @@ public class BillingService {
             return null;
         }
 
-        // En faktura täcker allt arbete på bokningen, så är något kvar att göra väntar den.
+        // One invoice covers all the work on the booking, so if something is left to do it waits.
         if (!allOrdersCompleted(bookingId)) {
             System.out.println("Booking with ID " + bookingId
                     + " still has work orders that are not completed.");
@@ -135,7 +135,7 @@ public class BillingService {
         return createInvoiceFrom(orders, primaryOrderId, discountCode, extraName, extraAmount);
     }
 
-/** Bokningar med utfört arbete kvar att fakturera, en rad per bokning. */
+    /** Bookings with finished work still to invoice, one row per booking. */
     public List<Booking> getInvoiceableBookings() {
         List<Integer> handled = new ArrayList<Integer>();
         List<Booking> bookings = new ArrayList<Booking>();
@@ -163,7 +163,7 @@ public class BillingService {
         return bookings;
     }
 
-/** Bygger fakturan av de utförda tjänsterna. Redan fakturerade rader hoppas över. */
+    /** Builds the invoice from the performed services. Lines already invoiced are skipped. */
     private Invoice createInvoiceFrom(List<WorkOrder> orders, int primaryOrderId, String discountCode,
                                       String extraName, double extraAmount) {
         WorkOrder primary = findWorkOrder(primaryOrderId);
@@ -175,13 +175,13 @@ public class BillingService {
             for (Integer serviceItemId : performedServices(workOrder, invoiced)) {
                 ServiceItem serviceItem = findServiceItem(serviceItemId);
                 if (serviceItem != null) {
-                    // Använd det sparade priset när det finns ett.
-                    // Äldre arbetsordrar saknar det och får katalogens pris, som före D2.
+                    // Use the stored price when there is one.
+                    // Older work orders have none and get the catalogue price, as before D2.
                     Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
                     double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
-                    // Ett reklamationsarbete syns på fakturan men kostar inget. Priset nollas och inte
-                    // rabatten, för distributeDiscount skriver över varje rads rabatt så snart
-                    // fakturan har en VIP- eller kodrabatt.
+                    // Reclamation work shows on the invoice but costs nothing. The price is zeroed and
+                    // not the discount, because distributeDiscount overwrites each line's discount as
+                    // soon as the invoice has a VIP or code discount.
                     if (workOrder.isReclamation()) {
                         linePrice = 0.0;
                     }
@@ -191,8 +191,8 @@ public class BillingService {
             }
         }
 
-        // En ny kostnad hör till reklamationen och debiteras fullt ut. Den läggs in före summan
-        // och rabatten, så att den räknas in i båda.
+        // A new charge belongs to the reclamation and is billed in full. It goes in before the sum
+        // and the discount, so that it counts towards both.
         if (extraName != null && !extraName.trim().isEmpty() && extraAmount > 0) {
             lines.add(new InvoiceLine(0, 0, 0, extraName.trim(), extraAmount, 0.0));
         }
@@ -254,7 +254,8 @@ public class BillingService {
 
         return invoice;
     }
-/** Utförda tjänster som inte fakturerats. Är ingen markerad men ordern slutförd gäller alla. */
+
+    /** Performed services not yet invoiced. If none is marked but the order is finished, all count. */
     private List<Integer> performedServices(WorkOrder workOrder, List<Integer> invoicedServiceIds) {
         List<Integer> performed = workOrder.getCompletedServiceItems();
         if (performed.isEmpty() && "COMPLETED".equals(workOrder.getStatus())) {
@@ -270,14 +271,14 @@ public class BillingService {
         return remaining;
     }
 
-/** Tjänsterna som redan står på en faktura. En tjänst faktureras en gång. */
+    /** The services already on an invoice. A service is invoiced once. */
     private List<Integer> invoicedServiceIds(int bookingId) {
         List<Integer> invoiced = new ArrayList<Integer>();
         List<Integer> bookingOrderIds = bookingOrderIds(bookingId);
         try {
             for (Invoice invoice : invoiceRepository.findAll()) {
-                // Tjänstekatalogen är delad, så en fakturarad med samma tjänst-id kan höra till en
-                // helt annan bokning. Bara fakturor på den här bokningens arbetsordrar räknas.
+                // The service catalogue is shared, so an invoice line with the same service id may
+                // belong to a different booking. Only invoices on this booking's orders count.
                 if (!bookingOrderIds.contains(Integer.valueOf(invoice.getWorkOrderId()))) {
                     continue;
                 }
@@ -294,7 +295,7 @@ public class BillingService {
         return invoiced;
     }
 
-/** Sant om varje arbetsorder är slutförd. En bokning utan arbetsordrar räknas inte som klar. */
+    /** True if every work order is finished. A booking with no work orders does not count as done. */
     private boolean allOrdersCompleted(int bookingId) {
         boolean foundAny = false;
         for (WorkOrder order : getAllWorkOrders()) {
@@ -309,7 +310,7 @@ public class BillingService {
         return foundAny;
     }
 
-    /** Sant om någon bokning har arbetsordrar som ännu inte är slutförda. */
+    /** True if any booking has work orders that are not finished yet. */
     public boolean hasBookingWithUnfinishedWork() {
         List<Integer> seen = new ArrayList<Integer>();
         for (WorkOrder order : getAllWorkOrders()) {
@@ -325,7 +326,7 @@ public class BillingService {
         return false;
     }
 
-    /** Id:n för arbetsordrarna som hör till bokningen. */
+    /** The ids of the work orders that belong to the booking. */
     private List<Integer> bookingOrderIds(int bookingId) {
         List<Integer> orderIds = new ArrayList<Integer>();
         for (WorkOrder order : getAllWorkOrders()) {
@@ -345,7 +346,7 @@ public class BillingService {
         }
     }
 
-/** Sant om arbetsordern redan har en faktura. Kontrollen går mot databasen, inte mot vyn. */
+    /** True if the work order already has an invoice. The check goes against the database, not the view. */
     private boolean hasInvoiceFor(int workOrderId) {
         try {
             List<Invoice> invoices = invoiceRepository.findAll();

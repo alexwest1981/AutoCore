@@ -4,13 +4,13 @@ import com.wac.autocore.model.InvoiceLine;
 
 import java.util.List;
 
-/** Rabattreglerna för en faktura. */
+/** The discount rules for an invoice. */
 public class DiscountRules {
 
-    /** VIP-kundens rabatt i procent av hela beloppet. */
+    /** The VIP customer's discount as a percentage of the whole amount. */
     public static final double VIP_PERCENT = 10.0;
 
-/** Rabatten i kronor för en kampanjkod: fast belopp, procent eller ett av de namngivna. */
+    /** The discount in kronor for a campaign code: fixed amount, percentage or one of the named ones. */
     public static double forCode(String discountCode, double amount) {
         if (discountCode == null || discountCode.trim().isEmpty()) {
             return 0.0;
@@ -53,7 +53,7 @@ public class DiscountRules {
         return 0.0;
     }
 
-/** Fördelar rabatten i proportion till radpriset. Resten läggs på dyraste raden. */
+    /** Spreads the discount in proportion to the line price. The remainder goes on the dearest line. */
     public static void distributeDiscount(List<InvoiceLine> lines, double amount, double discount) {
         if (lines.isEmpty() || amount <= 0 || discount <= 0) {
             return;

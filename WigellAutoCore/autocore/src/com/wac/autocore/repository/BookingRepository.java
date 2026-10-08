@@ -27,7 +27,7 @@ public class BookingRepository {
             update(booking);
         }
         bookingServiceItemRepository.save(booking);
-        // Mekanikerna sparas i samma svep, så att en bokning med flera specialister behåller dem.
+        // The mechanics are stored in the same sweep, so a booking with several specialists keeps them.
         bookingMechanicRepository.saveForBooking(booking.getId(), booking.getMechanicIds());
     }
 
@@ -151,7 +151,6 @@ public class BookingRepository {
         }
     }
 
-
     private void setTime(PreparedStatement statement, int position, LocalTime time) throws SQLException {
         if (time == null) {
             statement.setNull(position, Types.VARCHAR);
@@ -172,7 +171,7 @@ public class BookingRepository {
     private Booking buildBooking(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("date");
 
-        // 1. Skapa bokningsobjektet först
+        // Create the booking object first
         Booking booking = new Booking(
                 resultSet.getInt("id"),
                 resultSet.getInt("vehicle_id"),
@@ -221,7 +220,7 @@ public class BookingRepository {
         return booking;
     }
 
-// Den första mekanikern ligger i bookings, resten i kopplingstabellen.
+    // The first mechanic sits in bookings, the rest in the join table.
     private void loadMechanics(Booking booking) throws SQLException {
         List<Integer> ids = bookingMechanicRepository.findMechanicIds(booking.getId());
         if (ids.isEmpty() && booking.getMechanicId() > 0) {
@@ -260,7 +259,7 @@ public class BookingRepository {
                             rs.getDouble("price"),
                             rs.getInt("estimated_minutes")
                     );
-                    // Kravet måste med, annars ser tjänsten kravlös ut och alla mekaniker blir behöriga.
+                    // The requirement has to come along, otherwise the service looks requirement-free and every mechanic becomes qualified.
                     item.setSpecialization(rs.getString("specialization"));
                     return item;
                 }
