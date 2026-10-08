@@ -17,6 +17,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.application.Platform;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
@@ -45,8 +47,10 @@ final class WorkOrderDetailsDialog {
                 + " (" + I18n.get("table.col.booking") + " #" + workOrder.getBookingId() + ")");
         ActionDialogs.styleDialog(dialog);
 
-        dialog.getDialogPane().setContent(buildContent(garage, workOrder, dialog));
+        dialog.getDialogPane().setContent(scrollContent(buildContent(garage, workOrder, dialog)));
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        // Utan klass far knappen JavaFX standardstil och forsvinner mot temats accent.
+        dialog.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add("primary-button");
 
         // Listan bakom dialogen hämtas när den stängs, inte vid varje knapptryck.
         dialog.setOnHidden(e -> {
@@ -241,9 +245,11 @@ final class WorkOrderDetailsDialog {
         }
 
         if ("CREATED".equals(workOrder.getStatus())) {
+            }
+
+        if ("CREATED".equals(workOrder.getStatus())) {
             content.getChildren().add(headerRow(garage, workOrder, dialog));
         }
-
         content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid,
                 reclamationsTitle, reclamationsBox);
         content.getChildren().add(actionRow(garage, workOrder, dialog));
@@ -383,7 +389,8 @@ final class WorkOrderDetailsDialog {
                 break;
             }
         }
-        dialog.getDialogPane().setContent(buildContent(garage, updated, dialog));
+        dialog.getDialogPane().setContent(scrollContent(buildContent(garage, updated, dialog)));
+        refitWindow(dialog);
     }
 
     /** Andra riktningen: de reklamationer som pekar på den här ordern. */
@@ -395,5 +402,31 @@ final class WorkOrderDetailsDialog {
             }
         }
         return found;
+    }
+
+    /** Innehållet rullar när det är högre än fönstret, så knappraden alltid syns. */
+    private static ScrollPane scrollContent(VBox content) {
+        ScrollPane scroll = new ScrollPane(content);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
+        scroll.setMaxHeight(620);
+        return scroll;
+    }
+
+    /** Krymper fonstret efter innehållet. Utan det lamnar en kortare order en glipa over knappraden. */
+    private static void refitWindow(Dialog<ButtonType> dialog) {
+        if (dialog.getDialogPane().getScene() == null || dialog.getDialogPane().getScene().getWindow() == null) {
+            return;
+        }
+        javafx.stage.Window window = dialog.getDialogPane().getScene().getWindow();
+        Platform.runLater(() -> {
+            if (window.getScene() == null) {
+                return;
+            }
+            window.setHeight(0);
+            window.sizeToScene();
+        });
     }
 }
