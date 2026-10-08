@@ -23,6 +23,9 @@ public class WorkOrder {
     private final List<Integer> completedServiceItems = new ArrayList<Integer>();
     private final Map<Integer, Double> completedServicePrices = new LinkedHashMap<Integer, Double>();
     private String status;
+    private String plannedDate;
+    private String customerInstructions;
+    private String otherComments;
     private String type;
 
     // Arbetsordern reklamationen gäller. 0 betyder att ordern inte är en reklamation.
@@ -109,6 +112,31 @@ public class WorkOrder {
 
     public void setOriginalWorkOrderId(int originalWorkOrderId) {
         this.originalWorkOrderId = originalWorkOrderId;
+    }
+
+    /** Planerat datum på ett utkast, som text på samma sätt som bokningens datum. */
+    public String getPlannedDate() {
+        return plannedDate;
+    }
+
+    public void setPlannedDate(String plannedDate) {
+        this.plannedDate = plannedDate;
+    }
+
+    public String getCustomerInstructions() {
+        return customerInstructions;
+    }
+
+    public void setCustomerInstructions(String customerInstructions) {
+        this.customerInstructions = customerInstructions;
+    }
+
+    public String getOtherComments() {
+        return otherComments;
+    }
+
+    public void setOtherComments(String otherComments) {
+        this.otherComments = otherComments;
     }
 
     /** En reklamation debiteras kunden inte, men den ska ändå synas på fakturan. */

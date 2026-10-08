@@ -84,10 +84,20 @@ public class BookingFormPane extends GridPane {
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour,
                            boolean dropIn) {
-        this.excludeId = existingBooking != null ? existingBooking.getId() : 0;
+        this(garage, existingBooking, initialDate, defaultMechanic, defaultHour, dropIn, false);
+    }
+
+    /**
+     * forCopy: en ny bokning som ärver uppgifter från en gammal. Den ska varken låsa tjänsterna
+     * eller räkna bort den gamlas tid, för den nya bokningen är en egen bokning.
+     */
+    public BookingFormPane(GarageSystem garage, Booking existingBooking,
+                           LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour,
+                           boolean dropIn, boolean forCopy) {
+        this.excludeId = existingBooking != null && !forCopy ? existingBooking.getId() : 0;
         this.dropIn = dropIn;
         this.dropInTimeLabel.setWrapText(true);
-        final boolean isServicesLocked = existingBooking != null && existingBooking.isWorkStarted();
+        final boolean isServicesLocked = existingBooking != null && existingBooking.isWorkStarted() && !forCopy;
 
         setHgap(18);
         setVgap(16);

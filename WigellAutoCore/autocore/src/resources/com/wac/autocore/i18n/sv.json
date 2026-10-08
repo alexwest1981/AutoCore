@@ -23,8 +23,7 @@
       "invoices": "Visa fakturor",
       "payments": "Visa betalningar"
     },
-    "lang": {
-    }
+    "lang": {}
   },
   "overview": {
     "title": "Översikt",
@@ -116,6 +115,7 @@
       "action_complete": "Slutför order",
       "action_reclamation": "Reklamation",
       "action_draft": "+ Nytt utkast",
+      "action_edit": "Redigera",
       "action_details": "Visa detaljer"
     },
     "invoices": {
@@ -233,6 +233,13 @@
     "footer_terms": "Betalningsvillkor: {0} dagar netto."
   },
   "dialog": {
+    "copy": {
+      "booking": {
+        "title": "Ny bokning utifrån en tidigare",
+        "header": "Tjänsterna är ifyllda. Kontrollera datum och tid.",
+        "action": "Kopiera bokning"
+      }
+    },
     "customer": {
       "create": {
         "title": "Ny kund",
@@ -324,8 +331,8 @@
       "time_window": "Arbetspass: {0} – {1}",
       "time_available": "Ledig",
       "time_busy": "Upptagen",
-        "no_free_times": "Inga lediga tider denna dag",
-        "only_free_times": "Bara lediga tider visas",
+      "no_free_times": "Inga lediga tider denna dag",
+      "only_free_times": "Bara lediga tider visas",
       "slot_busy_error": "Den valda tiden är redan upptagen hos denna mekaniker. Vänligen välj en ledig tid.",
       "save_failed": "Bokningen kunde inte sparas.",
       "desc_prompt": "T.ex. Årlig service och bromsbyte",
@@ -351,7 +358,7 @@
         "empty": "Det finns inga servicepaket än."
       },
       "delete": {
-        "button":"Ta bort paket",
+        "button": "Ta bort paket",
         "title": "Ta bort servicepaket",
         "header": "Bekräfta borttagning",
         "confirm": "Är du säker på att du vill ta bort paketet {0}? Bokningar som redan har skapats påverkas inte."
@@ -417,7 +424,13 @@
       "header": "Registrera jobbet innan tiden är bokad",
       "description": "Beskrivning av problemet",
       "no_vehicles": "Det finns inga fordon att knyta utkastet till",
-      "create_failed": "Utkastet kunde inte sparas."
+      "create_failed": "Utkastet kunde inte sparas.",
+      "edit_title": "Redigera utkast",
+      "edit_header": "Fyll på uppgifterna som saknas",
+      "planned_date": "Planerat datum",
+      "customer_instructions": "Kundens instruktioner",
+      "other_comments": "Övriga kommentarer",
+      "split_warning": "OK skapar en order per mekaniker. De nya ordrarna läggs till i listan."
     },
     "reclamation": {
       "title": "Ny reklamation",
@@ -493,8 +506,7 @@
       "phone_ten_digits": "Telefonnumret måste vara exakt 10 siffror (t.ex. 070-1234567).",
       "email_format": "Ange en giltig e-postadress (t.ex. namn@exempel.se)."
     },
-    "success": {
-    },
+    "success": {},
     "confirm": {
       "title": "Bekräfta"
     }
@@ -524,8 +536,7 @@
     "week": {
       "title": "Vecka {0}"
     },
-    "month": {
-    },
+    "month": {},
     "slot": {
       "booked": "Bokad",
       "click_to_expand": "Klicka för att fälla ut",

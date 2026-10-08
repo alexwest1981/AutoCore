@@ -27,7 +27,7 @@ public class WorkOrderRepository {
 
     public List<WorkOrder> findAll() throws SQLException {
         List<WorkOrder> workOrders = new ArrayList<WorkOrder>();
-        String sql = "SELECT id, booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id FROM work_orders";
+        String sql = "SELECT id, booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id, planned_date, customer_instructions, other_comments FROM work_orders";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -44,7 +44,7 @@ public class WorkOrderRepository {
     }
 
     public WorkOrder findById(int id) throws SQLException {
-        String sql = "SELECT id, booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id FROM work_orders WHERE id = ?";
+        String sql = "SELECT id, booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id, planned_date, customer_instructions, other_comments FROM work_orders WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -80,7 +80,7 @@ public class WorkOrderRepository {
     }
 
     private void insert(WorkOrder workOrder) throws SQLException {
-        String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id, planned_date, customer_instructions, other_comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -92,6 +92,9 @@ public class WorkOrderRepository {
             statement.setInt(5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
             statement.setInt(7, workOrder.getOriginalWorkOrderId());
+            statement.setString(8, workOrder.getPlannedDate());
+            statement.setString(9, workOrder.getCustomerInstructions());
+            statement.setString(10, workOrder.getOtherComments());
             statement.executeUpdate();
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
@@ -103,7 +106,7 @@ public class WorkOrderRepository {
     }
 
     private void update(WorkOrder workOrder) throws SQLException {
-        String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, description = ?, original_work_order_id = ? WHERE id = ?";
+        String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, description = ?, original_work_order_id = ?, planned_date = ?, customer_instructions = ?, other_comments = ? WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -115,7 +118,10 @@ public class WorkOrderRepository {
             statement.setInt(5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
             statement.setInt(7, workOrder.getOriginalWorkOrderId());
-            statement.setInt(8, workOrder.getId());
+            statement.setString(8, workOrder.getPlannedDate());
+            statement.setString(9, workOrder.getCustomerInstructions());
+            statement.setString(10, workOrder.getOtherComments());
+            statement.setInt(11, workOrder.getId());
             statement.executeUpdate();
         }
     }
@@ -203,6 +209,9 @@ public class WorkOrderRepository {
         }
 
         workOrder.setOriginalWorkOrderId(resultSet.getInt("original_work_order_id"));
+        workOrder.setPlannedDate(resultSet.getString("planned_date"));
+        workOrder.setCustomerInstructions(resultSet.getString("customer_instructions"));
+        workOrder.setOtherComments(resultSet.getString("other_comments"));
 
         return workOrder;
     }

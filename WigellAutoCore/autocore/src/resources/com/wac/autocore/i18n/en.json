@@ -23,8 +23,7 @@
       "invoices": "Show invoices",
       "payments": "Show payments"
     },
-    "lang": {
-    }
+    "lang": {}
   },
   "overview": {
     "title": "Overview",
@@ -115,6 +114,7 @@
       "action_mark_performed": "Mark performed work",
       "action_complete": "Complete order",
       "action_reclamation": "Reclamation",
+      "action_edit": "Edit",
       "action_draft": "+ New draft",
       "action_details": "View details"
     },
@@ -233,6 +233,13 @@
     "footer_terms": "Payment terms: {0} days net."
   },
   "dialog": {
+    "copy": {
+      "booking": {
+        "title": "New booking from an earlier one",
+        "header": "The services are filled in. Check the date and time.",
+        "action": "Copy booking"
+      }
+    },
     "customer": {
       "create": {
         "title": "New Customer",
@@ -325,7 +332,7 @@
       "time_available": "Available",
       "time_busy": "Busy",
       "no_free_times": "No available times this day",
-        "only_free_times": "Only available times are shown",
+      "only_free_times": "Only available times are shown",
       "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
       "save_failed": "The booking could not be saved.",
       "desc_prompt": "E.g. Annual service and brake replacement",
@@ -417,7 +424,13 @@
       "header": "Register the job before the time is booked",
       "description": "Description of the problem",
       "no_vehicles": "There are no vehicles to attach the draft to",
-      "create_failed": "The draft could not be saved."
+      "create_failed": "The draft could not be saved.",
+      "edit_title": "Edit draft",
+      "edit_header": "Add the missing information",
+      "planned_date": "Planned date",
+      "customer_instructions": "Customer instructions",
+      "other_comments": "Other comments",
+      "split_warning": "OK creates one order per mechanic. The new orders are added to the list."
     },
     "reclamation": {
       "title": "New reclamation",
@@ -493,8 +506,7 @@
       "phone_ten_digits": "The phone number must be exactly 10 digits (e.g. 070-1234567).",
       "email_format": "Enter a valid email address (e.g. name@example.com)."
     },
-    "success": {
-    },
+    "success": {},
     "confirm": {
       "title": "Confirm"
     }
@@ -524,8 +536,7 @@
     "week": {
       "title": "Week {0}"
     },
-    "month": {
-    },
+    "month": {},
     "slot": {
       "booked": "Booked",
       "click_to_expand": "Click to expand",
