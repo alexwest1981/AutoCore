@@ -19,7 +19,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import com.wac.autocore.seed.SeedText;
 
-/** Sidorna i gränssnittet, en klass per sida. */
+/** The pages of the interface, one class per page. */
 @SuppressWarnings("unchecked")
 public final class EntityPages {
 

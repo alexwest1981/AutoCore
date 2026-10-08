@@ -12,7 +12,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.List;
 
-/** Hanterar sidnavigering och håller reda på den aktiva tabellen. */
+/** Handles page navigation and keeps track of the active table. */
 public class PageRouter {
 
     private final GarageSystem garage;
@@ -45,14 +45,13 @@ public class PageRouter {
         this.activeTable = table;
     }
 
-
     public void navigateToWorkOrder(int workOrderId) {
         navigate("workorders");
         if (workOrderId <= 0 || activeTable == null) {
             return;
         }
-        // Ordern kan ligga på en annan sida än den som visas, så leta i hela listan och bläddra
-        // fram rätt sida innan raden markeras — annars skulle den tyst utebli.
+        // The order may sit on another page than the one on screen, so search the whole list and
+        // turn to the right page before selecting the row — otherwise it would silently not show.
         for (int index = 0; index < activeTable.getBaseList().size(); index++) {
             Object item = activeTable.getBaseList().get(index);
             if (!(item instanceof com.wac.autocore.model.WorkOrder)) {
@@ -73,8 +72,8 @@ public class PageRouter {
     }
 
     public void navigate(String key) {
-        // Drop-in är en dialog, inte en sida. Man kan stå mitt i något annat och ändå behöva lägga
-        // in en kund som redan står i verkstaden, så sidan man är på ligger kvar bakom.
+        // A drop-in is a dialog, not a page. You can be in the middle of something else and still
+        // need to add a customer already standing in the workshop, so the current page stays behind.
         if ("dropin".equals(key)) {
             openDropInDialog();
             return;
@@ -108,8 +107,8 @@ public class PageRouter {
         }
     }
 
-    // Drop-in skapas i en dialog ovanpå sidan man står på, och sidan laddas om efteråt så att
-    // den nya bokningen syns direkt.
+    // The drop-in is created in a dialog on top of the current page, and the page is reloaded
+    // afterwards so the new booking shows right away.
     private void openDropInDialog() {
         ActionDialogs.showCreateDropInWorkOrderDialog(garage, () -> {
             if (currentPageKey != null) {
@@ -118,7 +117,7 @@ public class PageRouter {
         });
     }
 
-/** Märkena i menyn visar vad som väntar på sidan, inte allt som finns där. */
+    /** The badges in the menu show what is waiting on the page, not everything that is there. */
     public void updateNavCounts() {
         if (sidebar == null) {
             return;
@@ -132,7 +131,7 @@ public class PageRouter {
         sidebar.setNavCount("payments", countUnpaidInvoices(garage.getInvoices()));
     }
 
-    /** Obetalda fakturor är pengar som ska in, alltså det som väntar på hantering. */
+    /** Unpaid invoices are money to come in, that is what is waiting to be handled. */
     public static int countUnpaidInvoices(List<Invoice> invoices) {
         int count = 0;
         for (Invoice invoice : invoices) {
@@ -144,8 +143,8 @@ public class PageRouter {
     }
 
     /**
-     * Reklamationer som ännu inte är åtgärdade. En reklamation är en vanlig arbetsorder, så den
-     * väntar tills den är slutförd. Avbrutna räknas inte, de väntar inte på något.
+     * Reclamations not yet dealt with. A reclamation is an ordinary work order, so it waits
+     * until it is completed. Cancelled ones do not count, they wait for nothing.
      */
     public static int countOpenReclamations(List<WorkOrder> orders) {
         int count = 0;
@@ -162,8 +161,7 @@ public class PageRouter {
         return count;
     }
 
-
-/** Bokningar utan arbetsorder. Avbokade räknas inte. */
+    /** Bookings without a work order. Cancelled ones do not count. */
     public static int countBookingsWithoutWorkOrder(List<Booking> bookings, List<WorkOrder> orders) {
         int count = 0;
         for (Booking booking : bookings) {
@@ -184,7 +182,7 @@ public class PageRouter {
         return count;
     }
 
-/** Bokningar där arbetet är klart och ingen faktura finns. En bokning ger ett märke. */
+    /** Bookings where the work is done and no invoice exists. One booking gives one badge. */
     public static int countBookingsReadyForInvoice(List<Booking> bookings, List<WorkOrder> orders,
                                                    List<Invoice> invoices) {
         int count = 0;

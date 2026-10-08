@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-/** Sidomenyn: varumärket, sektionerna och språkväxlaren. */
+/** The sidebar: the brand, the sections and the language switch. */
 public class SidebarView {
 
     private final VBox container;
@@ -54,7 +54,7 @@ public class SidebarView {
         }
     }
 
-/** Räknaren på menyvalet. Noll döljer den. */
+    /** The counter on the menu item. Zero hides it. */
     public void setNavCount(String key, int count) {
         Label countLabel = navCountLabels.get(key);
         if (countLabel == null) {
@@ -315,8 +315,8 @@ public class SidebarView {
             navButtonMap.put(key, b);
         }
 
-        // Räknaren ligger som ett lager ovanpå knappen i stället för i dess innehåll: då behåller
-        // etiketten sin formatering och knappens klick- och fokusbeteende är orört.
+        // The counter sits as a layer on top of the button instead of in its content: that way
+        // the label keeps its formatting and the button's click and focus behaviour stays intact.
         Label count = new Label();
         count.getStyleClass().addAll("badge", "info");
         count.setMouseTransparent(true);
@@ -351,7 +351,7 @@ public class SidebarView {
                 path = "M 1 3 a 2 2 0 0 1 2 -2 h 8 a 2 2 0 0 1 2 2 v 9 a 2 2 0 0 1 -2 2 h -8 a 2 2 0 0 1 -2 -2 Z M 2.5 5 h 9 v 7 h -9 Z M 3 0.5 h 1.5 v 2 h -1.5 Z M 9.5 0.5 h 1.5 v 2 h -1.5 Z M 4 7 h 2 v 1.8 h -2 Z M 7.5 7 h 2 v 1.8 h -2 Z M 4 9.5 h 2 v 1.8 h -2 Z M 7.5 9.5 h 2 v 1.8 h -2 Z";
                 break;
             case "dropin":
-                // Blixt: kunden kommer in utan bokad tid
+                // Lightning bolt: the customer arrives without a booked time
                 path = "M 8.5 0 L 3 7.5 h 3.2 L 5.5 14 L 11 6.5 h -3.2 Z";
                 break;
             case "services":

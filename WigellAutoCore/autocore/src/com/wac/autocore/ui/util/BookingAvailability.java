@@ -12,7 +12,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Tillgängliga och upptagna timmar för mekanikerna. */
+/** The available and busy hours for the mechanics. */
 public final class BookingAvailability {
 
     public static final LocalTime CLOSING_TIME = LocalTime.of(17, 0);
@@ -20,17 +20,16 @@ public final class BookingAvailability {
 
     private BookingAvailability() {}
 
-
-/** Sant när hela intervallet rör en tid som redan är bokad för mekanikern. */
+    /** True when the whole range touches a time already booked for the mechanic. */
     public static boolean isRangeBooked(GarageSystem garage, Mechanic mechanic, LocalDate date,
                                         LocalTime start, LocalTime end, int excludeBookingId) {
         if (mechanic == null || date == null || start == null || end == null) {
             return false;
         }
-        // En trasig rad (slut före start) får inte tysta hela kontrollen.
+        // A broken row (end before start) must not silence the whole check.
         LocalTime rangeEnd = end.isAfter(start) ? end : start.plusHours(1);
 
-        // 1. Kontrollera mot schemat (MechanicSchedule). En timlucka är [timme, timme + 1).
+        // Checked against the schedule (MechanicSchedule). An hour slot is [hour, hour + 1).
         MechanicSchedule schedule = MechanicSchedule.getInstance();
         List<TimeSlot> slots = schedule.getSlotsForDay(mechanic.getId(), date);
         for (TimeSlot s : slots) {
@@ -46,7 +45,7 @@ public final class BookingAvailability {
             }
         }
 
-        // 2. Kontrollera mot sparade bokningar i GarageSystem
+        // Checked against the stored bookings in GarageSystem
         if (garage != null) {
             for (Booking b : garage.getBookings()) {
                 if (excludeBookingId > 0 && b.getId() == excludeBookingId) {
@@ -72,8 +71,7 @@ public final class BookingAvailability {
         return false;
     }
 
-
-/** Sant om det finns minst en ledig starttid för hela arbetet den dagen. */
+    /** True if there is at least one free start time for the whole job that day. */
     public static boolean hasAvailableSlotOnDate(GarageSystem garage, Mechanic mechanic,
                                                  List<Mechanic> qualifiedMechanics,
                                                  LocalDate date, int durationMinutes, int excludeBookingId) {
@@ -109,9 +107,9 @@ public final class BookingAvailability {
             return false;
         }
 
-        // Ett jobb som kräver ett bestämt team behöver hela teamet ledigt. Är varken mekaniker eller
-// Räcker det att någon i teamet är ledig räcker det, inte att alla är det.
-        // och då försvann dagar som hade gott om plats.
+        // A job that requires a given team needs the whole team free. If neither a mechanic nor
+        // qualified mechanics are given it is enough that one of the team is free, not all —
+        // otherwise days with plenty of room disappeared.
         boolean needsWholeTeam = mechanic != null && mechanic.getId() > 0
                 || qualifiedMechanics != null && !qualifiedMechanics.isEmpty();
 

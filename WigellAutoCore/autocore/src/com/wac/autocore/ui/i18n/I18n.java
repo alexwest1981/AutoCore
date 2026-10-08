@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
-/** Översättningarna. Läser egna JSON-filer, inga externa beroenden. */
+/** The translations. Reads its own JSON files, no external dependencies. */
 public final class I18n {
 
     public static final String LANG_EN = "en";
@@ -38,7 +38,7 @@ public final class I18n {
 
     private I18n() {}
 
-/** Texten för nyckeln. Saknas den visas nyckeln själv, så ett hål syns. */
+    /** The text for the key. If it is missing the key itself shows, so a gap is visible. */
     public static String get(String key) {
         if (key == null) return "";
         synchronized (activeDictionary) {
@@ -50,7 +50,7 @@ public final class I18n {
         return key;
     }
 
-/** Texten med MessageFormat, för {0}, {1} och så vidare. */
+    /** The text with MessageFormat, for {0}, {1} and so on. */
     public static String get(String key, Object... args) {
         String pattern = get(key);
         if (args == null || args.length == 0) {
@@ -63,7 +63,7 @@ public final class I18n {
         }
     }
 
-/** Byter språk och säger till lyssnarna. */
+    /** Switches language and tells the listeners. */
     public static synchronized void setLanguage(String lang) {
         if (lang == null || lang.trim().isEmpty()) {
             lang = DEFAULT_LANG;
@@ -100,8 +100,7 @@ public final class I18n {
         }
     }
 
-
-    /** Läser in ordlistan för ett språk. */
+    /** Loads the dictionary for a language. */
     public static Map<String, String> loadDictionary(String lang) {
         Map<String, String> result = new HashMap<>();
         String resourcePath = "/com/wac/autocore/i18n/" + lang + ".json";
@@ -157,7 +156,7 @@ public final class I18n {
         return null;
     }
 
-/** Läser en platt JSON till punktnoterade nycklar: nav.overview. */
+    /** Reads a flat JSON into dot-notated keys: nav.overview. */
     static void parseJsonObject(String prefix, String json, Map<String, String> out) {
         if (json == null) return;
         json = json.trim();
@@ -168,13 +167,13 @@ public final class I18n {
         int len = json.length();
 
         while (i < len) {
-            // Hoppa över blanksteg och kommatecken
+            // Skip whitespace and commas
             while (i < len && (Character.isWhitespace(json.charAt(i)) || json.charAt(i) == ',')) {
                 i++;
             }
             if (i >= len) break;
 
-            // Läs nyckel (måste starta med citattecken)
+            // Read the key (must start with a quote)
             if (json.charAt(i) != '"') {
                 i++;
                 continue;
@@ -188,19 +187,19 @@ public final class I18n {
             String key = unescapeJson(rawKey);
             i++; // förbi avslutande citattecken
 
-            // Hitta kolon ':'
+            // Find the colon ':'
             while (i < len && json.charAt(i) != ':') i++;
             if (i >= len) break;
             i++; // förbi ':'
 
-            // Hitta start av värde
+            // Find the start of the value
             while (i < len && Character.isWhitespace(json.charAt(i))) i++;
             if (i >= len) break;
 
             String fullKey = prefix.isEmpty() ? key : prefix + "." + key;
 
             if (json.charAt(i) == '{') {
-                // Hitta matchande klammerparentes
+                // Find the matching brace
                 int objStart = i;
                 int depth = 0;
                 boolean inStr = false;
@@ -236,7 +235,7 @@ public final class I18n {
                 out.put(fullKey, unescapeJson(rawVal));
                 i++; // förbi avslutande citattecken
             } else {
-                // Primitivt värde (tal, boolean etc)
+                // Primitive value (number, boolean etc)
                 int valStart = i;
                 while (i < len && json.charAt(i) != ',' && json.charAt(i) != '}' && !Character.isWhitespace(json.charAt(i))) {
                     i++;
