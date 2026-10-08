@@ -1,4 +1,3 @@
-
 import com.wac.autocore.data.Db;
 import com.wac.autocore.service.GarageSystem;
 
@@ -222,7 +221,7 @@ public class ConsoleApp {
         garageSystem.showMechanics();
         int mechanicId = readInt("Mechanic ID: ");
 
-        // Arbetsordern får bokningens tjänster.
+        // The work order gets the booking's services.
         garageSystem.createWorkOrder(bookingId, mechanicId);
     }
 
