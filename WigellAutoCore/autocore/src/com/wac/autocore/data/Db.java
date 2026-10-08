@@ -204,22 +204,22 @@ public class Db {
             // Det planerade datumet på ett utkast, som ännu inte har någon bokning att låna ett datum ifrån.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN planned_date TEXT");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Kundens instruktioner, ifyllda när kunden har något att säga om arbetet.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN customer_instructions TEXT");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Övriga kommentarer som hör till ordern men inte till någon av de andra rutorna.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN other_comments TEXT");
-            } catch (SQLException ignored) {
-                // Kolumnen existerar redan
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
             }
 
             // Ordrar som skapades innan typen fanns är vanliga arbeten.
