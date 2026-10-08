@@ -234,8 +234,7 @@ public class Booking {
         return true;
     }
 
-
-/** Alla valda mekaniker. Den första ligger också i kolumnen mechanic_id. */
+    /** All chosen mechanics. The first one also sits in the mechanic_id column. */
     public List<Integer> getMechanicIds() {
         if (!mechanicIds.isEmpty()) {
             return new ArrayList<Integer>(mechanicIds);
@@ -260,7 +259,6 @@ public class Booking {
             this.mechanicId = this.mechanicIds.get(0).intValue();
         }
     }
-
 
     public List<Integer> getServiceItemIds() {
         if (!serviceItemIds.isEmpty()) {

@@ -7,7 +7,7 @@ public class ServiceItem {
     private String description;
     private double price;
     private int estimatedMinutes;
-    /** Nyckeln till den specialisering tjänsten kräver. Tom betyder att alla kan utföra den. */
+    /** The key of the specialization the service requires. Empty means anyone can do it. */
     private String specialization;
 
     public ServiceItem(int id, String name, String description,
@@ -73,7 +73,7 @@ public class ServiceItem {
         this.specialization = specialization != null ? specialization : "";
     }
 
-    /** Sant när tjänsten inte kräver någon särskild specialisering. */
+    /** True when the service requires no particular specialization. */
     public boolean requiresAnyMechanic() {
         return specialization == null || specialization.trim().isEmpty();
     }

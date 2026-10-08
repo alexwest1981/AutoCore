@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Texterna i demodata. Gränssnittets texter ligger i i18n. */
+/** The texts in the seed data. The interface's texts live in i18n. */
 public final class SeedText {
 
     public static final String LANG_EN = "en";
@@ -42,7 +42,7 @@ public final class SeedText {
 
     private SeedText() {}
 
-/** Texten för ett värde: översättningen om värdet är en nyckel, annars värdet självt. */
+    /** The text for a value: the translation if the value is a key, otherwise the value itself. */
     public static String resolve(String value) {
         if (value == null) {
             return null;
@@ -53,7 +53,7 @@ public final class SeedText {
         return get(value);
     }
 
-/** Översättningen för nyckeln. Saknas den visas nyckeln. */
+    /** The translation for the key. When it is missing, the key is shown. */
     public static String get(String key) {
         if (key == null) {
             return "";
@@ -76,7 +76,7 @@ public final class SeedText {
         return value != null && value.startsWith(PREFIX);
     }
 
-/** Sätter språket för demodatan. Anropas av I18n, så ordlistorna följs åt. */
+    /** Sets the language for the seed data. Called by I18n, so the dictionaries stay in step. */
     public static synchronized void setLanguage(String lang) {
         String normalized = lang == null ? DEFAULT_LANG : lang.trim().toLowerCase();
         if (!LANG_SV.equals(normalized) && !LANG_EN.equals(normalized)) {
@@ -90,7 +90,7 @@ public final class SeedText {
         return currentLanguage;
     }
 
-    /** Läser ordlistan för ett språk. */
+    /** Reads the dictionary for a language. */
     public static Map<String, String> loadDictionary(String lang) {
         Map<String, String> result = new HashMap<String, String>();
         String path = RESOURCE_PATH + lang + ".json";
@@ -118,7 +118,7 @@ public final class SeedText {
         }
     }
 
-/** Läser en rad med nyckel och värde. Filerna är platta. */
+    /** Reads one line with a key and a value. The files are flat. */
     private static void parseEntry(String line, Map<String, String> target) {
         if (line == null) {
             return;

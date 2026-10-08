@@ -36,7 +36,6 @@ public class DayLoad {
         return totalHours;
     }
 
-
     public LoadLevel getLevel() {
         return level;
     }

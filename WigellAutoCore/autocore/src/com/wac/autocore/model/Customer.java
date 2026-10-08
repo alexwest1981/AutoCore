@@ -56,7 +56,7 @@ public class Customer {
         this.vip = vip;
     }
 
-    /** Suffix i {@code dialog.validation.<suffix>}, eller null när raden går att spara. */
+    /** Suffix in {@code dialog.validation.<suffix>}, or null when the row can be saved. */
     public static String validationProblem(String name, String phone, String email) {
         return ContactRules.problemWith(name, phone, email);
     }

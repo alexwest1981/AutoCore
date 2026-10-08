@@ -8,12 +8,12 @@ import java.util.Map;
 
 public class WorkOrder {
 
-    /** Standard, reklamation eller internt arbete. Koden står här och ingen annanstans. */
+    /** Standard, reclamation or internal work. The code lives here and nowhere else. */
     public static final String STANDARD = "STANDARD";
     public static final String RECLAMATION = "RECLAMATION";
     public static final String INTERNAL = "INTERNAL";
 
-    /** Typerna som går att välja. Ordningen är den väljaren visar, och första är standard. */
+    /** The types you can pick. The order is the one the picker shows, and the first is standard. */
     public static final List<String> TYPES = Arrays.asList(STANDARD, RECLAMATION, INTERNAL);
 
     private int id;
@@ -28,7 +28,7 @@ public class WorkOrder {
     private String otherComments;
     private String type;
 
-    // Arbetsordern reklamationen gäller. 0 betyder att ordern inte är en reklamation.
+    // The work order the reclamation concerns. 0 means the order is not a reclamation.
     private int originalWorkOrderId;
     private int vehicleId;
     private String description;
@@ -114,7 +114,7 @@ public class WorkOrder {
         this.originalWorkOrderId = originalWorkOrderId;
     }
 
-    /** Planerat datum på ett utkast, som text på samma sätt som bokningens datum. */
+    /** The planned date on a draft, as text the same way as the booking's date. */
     public String getPlannedDate() {
         return plannedDate;
     }
@@ -139,7 +139,7 @@ public class WorkOrder {
         this.otherComments = otherComments;
     }
 
-    /** En reklamation debiteras kunden inte, men den ska ändå synas på fakturan. */
+    /** A reclamation is not charged to the customer, but it must still show on the invoice. */
     public boolean isReclamation() {
         return RECLAMATION.equals(type);
     }
@@ -147,7 +147,6 @@ public class WorkOrder {
     public void addServiceItem(int serviceItemId) {
         serviceItemIds.add(serviceItemId);
     }
-
 
     public List<Integer> getCompletedServiceItems() {
         return completedServiceItems;
@@ -160,7 +159,7 @@ public class WorkOrder {
         }
     }
 
-    /** Returnerar priset som gällde när tjänsten utfördes. */
+    /** Returns the price that applied when the service was performed. */
     public Double getCompletedServicePrice(int serviceItemId) {
         return completedServicePrices.get(Integer.valueOf(serviceItemId));
     }
@@ -185,12 +184,11 @@ public class WorkOrder {
         }
     }
 
-    /** Markerar tjänsten som utförd och sparar priset som gällde då. */
+    /** Marks the service as performed and stores the price that applied then. */
     public void markServiceAsCompleted(int serviceItemId, double frozenPrice) {
         markServiceAsCompleted(serviceItemId);
         completedServicePrices.put(Integer.valueOf(serviceItemId), Double.valueOf(frozenPrice));
     }
-
 
     @Override
     public String toString() {

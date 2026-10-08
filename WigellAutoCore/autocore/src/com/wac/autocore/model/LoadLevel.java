@@ -1,6 +1,5 @@
 package com.wac.autocore.model;
 
-
 public enum LoadLevel {
     FREE("free"),        // 0-2 timmar
     MODERATE("moderate"),  // 3-4 timmar

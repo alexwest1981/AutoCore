@@ -40,11 +40,9 @@ public class Payment {
         return amount;
     }
 
-
     public String getPaymentType() {
         return paymentType;
     }
-
 
     public LocalDateTime getPaymentDate() {
         return paymentDate;

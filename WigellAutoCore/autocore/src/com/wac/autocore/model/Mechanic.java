@@ -16,7 +16,7 @@ public class Mechanic {
         this.available = true;
     }
 
-/** Namnet måste vara ifyllt och numret följer kundens regel. Namnet får innehålla siffror. */
+    /** The name must be filled in and the number follows the customer's rule. The name may hold digits. */
     public static String validationProblem(String name, String phone) {
         if (name == null || name.trim().isEmpty()) {
             return ContactRules.PROBLEM_REQUIRED;
