@@ -233,6 +233,13 @@
     "footer_terms": "Payment terms: {0} days net."
   },
   "dialog": {
+    "copy": {
+      "booking": {
+        "title": "New booking from an earlier one",
+        "header": "The services are filled in. Check the date and time.",
+        "action": "Copy booking"
+      }
+    },
     "customer": {
       "create": {
         "title": "New Customer",

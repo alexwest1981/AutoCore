@@ -10,9 +10,15 @@ import com.wac.autocore.ui.components.BookingFormPane;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
 
+import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -117,6 +123,103 @@ public final class BookingDialogs {
         });
     }
 
+    public static void showCopyBookingDialog(GarageSystem garage, Booking source, Runnable onSuccess) {
+
+        List<Vehicle> vehicles = garage.getVehicles();
+
+        if (vehicles.isEmpty()) {
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+            return;
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+
+        dialog.setTitle(I18n.get("dialog.copy.booking.title"));
+        dialog.setHeaderText(I18n.get("dialog.copy.booking.header"));
+        ActionDialogs.styleDialog(dialog);
+        dialog.setResizable(true);
+        dialog.getDialogPane().setPrefWidth(860);
+        dialog.getDialogPane().setMinWidth(760);
+        dialog.getDialogPane().setMinHeight(720);
+
+        // Datumet är ett nytt värde, enligt kravet får det inte ärvas från den gamla bokningen.
+        BookingFormPane form = new BookingFormPane(garage, source, LocalDate.now(), null, null, false, true);
+        form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
+        dialog.getDialogPane().setContent(form);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, form.requiredFieldsFilledBinding(0));
+        dialog.showAndWait().ifPresent(response -> {
+
+            if (response == ButtonType.OK) {
+
+                if (!form.validate(garage, 0)) {
+                    return;
+                }
+
+                Vehicle v = form.getSelectedVehicle();
+                LocalDate date = form.getSelectedDate();
+                List<ServiceItem> chosenServices = form.getSelectedServices();
+                ServiceItem chosenService = form.getSelectedService();
+                Mechanic chosenMech = form.getSelectedMechanic();
+                LocalTime startTime = form.getSelectedStartTime();
+                String desc = form.getDescription();
+
+                if (desc.isEmpty() && !chosenServices.isEmpty()) {
+
+                    StringBuilder sb = new StringBuilder();
+
+                    for (ServiceItem s : chosenServices) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(com.wac.autocore.seed.SeedText.resolve(s.getName()));
+                    }
+                    desc = sb.toString();
+                } else if (desc.isEmpty() && chosenService != null) {
+                    desc = com.wac.autocore.seed.SeedText.resolve(chosenService.getName());
+                }
+
+                // Skapa ren bokning i systemet (INGEN arbetsorder skapas eller startas automatiskt)
+                Booking b = garage.createBooking(v.getId(), date, desc);
+                if (b != null) {
+                    b.setStatus("BOOKED");
+                    if (!chosenServices.isEmpty()) {
+                        b.setServiceItems(chosenServices);
+                    } else if (chosenService != null && !b.addServiceItem(chosenService)) {
+                        ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                                I18n.get("dialog.booking.services_locked_work_started"));
+                        return;
+                    }
+                    
+                    b.setMechanicId(chosenMech != null ? chosenMech.getId() : 0);
+                    b.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
+
+                    if (startTime != null) {
+                        b.setStartTime(startTime);
+                        int estMin = garage.busyMinutes(b.getServiceItems(), form.getSelectedMechanics());
+                        b.setEndTime(startTime.plusMinutes(estMin));
+                    }
+
+                    if (!saveBookingOrReport(garage, b)) {
+                        return;
+                    }
+
+                    // Reservera tid i schemat om mekaniker valts (workOrderId = 0)
+                    if (chosenMech != null) {
+
+                        int hour = startTime != null ? startTime.getHour() : 8;
+
+                        String custName = EntityLookup.customerName(garage, v.getCustomerId());
+
+                        MechanicSchedule.getInstance().bookSlot(
+                                chosenMech.getId(), date, hour, b.getId(), 0,
+                                custName, v.getRegistrationNumber(), desc
+                        );
+                    }
+                }
+                if (onSuccess != null) onSuccess.run();
+            }
+        });
+    }
+
     public static void showEditBookingDialog(GarageSystem garage, Booking booking, Runnable onSuccess) {
         if (booking == null) return;
 
@@ -133,7 +236,21 @@ public final class BookingDialogs {
 
         BookingFormPane form = new BookingFormPane(garage, booking, booking.getDate(), null, null);
         form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
-        dialog.getDialogPane().setContent(form);
+
+        // Knappen ligger i en egen rad ovanför formuläret, inuti den stylade ytan.
+        HBox actionRow = new HBox();
+        actionRow.setAlignment(Pos.CENTER_RIGHT);
+        Button copyButton = new Button(I18n.get("dialog.copy.booking.action"));
+        copyButton.setOnAction(e -> {
+            dialog.close();
+            Platform.runLater(() -> showCopyBookingDialog(garage, booking, onSuccess));
+        });
+        actionRow.getChildren().add(copyButton);
+
+        VBox content = new VBox(10);
+        VBox.setVgrow(form, Priority.ALWAYS);
+        content.getChildren().addAll(actionRow, form);
+        dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         ActionDialogs.requireFilled(dialog, form.requiredFieldsFilledBinding(booking.getId()));
 
