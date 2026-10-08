@@ -13,7 +13,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
-/** Dialogen som skapar en reklamation: beskrivningen av felet räcker, resten ärvs från ordern. */
+/** The dialog that creates a reclamation: the description of the fault is enough, the rest is inherited from the order. */
 final class CreateReclamationDialog {
 
     private CreateReclamationDialog() {}
@@ -32,7 +32,7 @@ final class CreateReclamationDialog {
         content.setPadding(new Insets(16, 20, 16, 20));
         content.setPrefWidth(560);
 
-        // Vad reklamationen gäller står i klartext, så man ser att rätt order valdes.
+        // What the reclamation concerns is spelled out, so you can see the right order was picked.
         Label originalLabel = new Label(
                 I18n.get("table.col.booking") + ": #" + original.getBookingId()
                         + " · " + I18n.get("table.col.vehicle") + ": " + EntityLookup.workOrderVehicleReg(garage, original)
@@ -54,7 +54,7 @@ final class CreateReclamationDialog {
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // OK är låst tills beskrivningen är ifylld, för en reklamation utan ärende går inte att följa upp.
+        // OK is locked until the description is filled in, since a reclamation with no case cannot be followed up.
         ActionDialogs.requireFilled(dialog, description);
 
         dialog.showAndWait().ifPresent(response -> {

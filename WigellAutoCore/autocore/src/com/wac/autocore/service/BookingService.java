@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Hanterar bokningar och validerar deras fordon och tider. */
+/** Handles bookings and validates their vehicles and times. */
 public class BookingService {
 
     private final BookingRepository bookingRepository = new BookingRepository();
@@ -68,8 +68,8 @@ public class BookingService {
         return booking;
     }
 
-    // Drop-in: kunden står i verkstaden utan bokad tid. Tjänsterna läggs in som objekt, för
-    // WorkOrderPlan fördelar dem mekaniker för mekaniker när arbetsordrarna skapas.
+    // Drop-in: the customer is standing in the shop with no booked time. The services go in as
+    // objects, because WorkOrderPlan hands them out mechanic by mechanic when the orders are made.
     public Booking createDropInBooking(int vehicleId, List<ServiceItem> services, List<Mechanic> team) {
 
         Vehicle vehicle = findVehicle(vehicleId);
@@ -89,16 +89,16 @@ public class BookingService {
         booking.setServiceItems(services);
         booking.setMechanicIds(mechanicIds);
 
-        // En drop-in sker när kunden kommer in, så bokningen utgår från innevarande timme. Är den
-        // upptagen tar teamet nästa lediga, annars hamnade två kunder på samma tid.
+        // A drop-in happens when the customer walks in, so the booking starts from the current hour.
+        // If that one is taken the team gets the next free one, otherwise two customers collide.
         LocalTime startTime = firstFreeHourForTeam(date, mechanicIds);
         if (startTime == null) {
             System.out.println("The team has no free hour left today.");
             return null;
         }
         booking.setStartTime(startTime);
-        // Bilen är klar när den mest belastade mekanikern är klar, inte när alla tjänsters tider
-        // är summerade — annars tar en enda drop-in hela teamets dag.
+        // The car is done when the busiest mechanic is done, not when every service's time has been
+        // added up — otherwise a single drop-in eats the whole team's day.
         booking.setEndTime(startTime.plusMinutes(mechanicRules.busyMinutes(services, team)));
 
         try {
@@ -113,8 +113,8 @@ public class BookingService {
         return booking;
     }
 
-    /** Starttiden en drop-in skulle få just nu, eller null när teamets timmar är slut i dag.
-     *  Dialogen visar tiden innan kunden godkänner och räknar då samma sak som bokningen gör. */
+    /** The start time a drop-in would get right now, or null when the team's hours are out for the day.
+     *  The dialog shows the time before the customer agrees, and then works out the same thing the booking does. */
     public LocalTime dropInStartTime(List<ServiceItem> services, List<Mechanic> team) {
         if (services == null || services.isEmpty() || team == null || team.isEmpty()) {
             return null;
@@ -130,8 +130,8 @@ public class BookingService {
         return ids;
     }
 
-    // Första timmen i dag där hela teamet är ledigt, räknat från innevarande timme, eller null när
-    // dagen är full. Alla i teamet måste vara lediga, annars står en mekaniker med två jobb samtidigt.
+    // The first hour today where the whole team is free, counted from the current hour, or null when
+    // the day is full. Everyone in the team has to be free, otherwise one mechanic holds two jobs at once.
     private LocalTime firstFreeHourForTeam(LocalDate date, List<Integer> mechanicIds) {
         List<Booking> bookedToday = new ArrayList<Booking>();
         for (Booking booking : getAll()) {
@@ -141,7 +141,7 @@ public class BookingService {
             }
         }
 
-        // Arbetsdagen står i MechanicSchedule, samma timmar som Kanban ritar.
+        // The working day lives in MechanicSchedule, the same hours the Kanban draws.
         int fromHour = Math.max(LocalTime.now().getHour(), MechanicSchedule.START_HOUR);
         for (int hour = fromHour; hour < MechanicSchedule.END_HOUR; hour++) {
             if (isHourFree(bookedToday, mechanicIds, hour)) {
@@ -152,7 +152,7 @@ public class BookingService {
         return null;
     }
 
-    // Timmen [h, h+1) är ledig när ingen av teamets bokningar rör den.
+    // The hour [h, h+1) is free when none of the team's bookings touch it.
     private boolean isHourFree(List<Booking> bookedToday, List<Integer> mechanicIds, int hour) {
         LocalTime hourStart = LocalTime.of(hour, 0);
         LocalTime hourEnd = hourStart.plusHours(1);

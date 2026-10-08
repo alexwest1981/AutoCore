@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/** Drop-in: arbetsorder för en kund som kommer in utan bokad tid. Formuläret är bokningens eget,
- *  utan Datum & Tid, så fälten och reglerna är desamma som i en vanlig bokning. */
+/** Drop-in: a work order for a customer who arrives without a booked time. The form is the
+ *  booking's own, without Date & Time, so the fields and rules match an ordinary booking. */
 final class CreateDropInWorkOrderDialog {
 
     private CreateDropInWorkOrderDialog() {}
@@ -47,15 +47,15 @@ final class CreateDropInWorkOrderDialog {
 
                 Booking booking = garage.createDropInBooking(vehicle.getId(), services, mechanics);
                 if (booking == null) {
-                    // Formuläret är redan validerat, och OK är stängt när ingen tid finns, så hit
-                    // kommer man bara om tiden hann försvinna medan dialogen stod öppen.
+                    // The form is already validated and OK is locked when no time exists, so you only
+                    // get here if the time disappeared while the dialog was open.
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"),
                             I18n.get("dialog.booking.dropin_no_time"));
                     return;
                 }
 
-                // Samma fördelning som bokningsdialogen: en arbetsorder per mekaniker, var och en
-                // med sina egna tjänster.
+                // The same split as the booking dialog: one work order per mechanic, each with
+                // its own services.
                 Map<Integer, List<ServiceItem>> plan = WorkOrderPlan.planWorkOrders(garage, booking);
                 int created = 0;
                 for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {

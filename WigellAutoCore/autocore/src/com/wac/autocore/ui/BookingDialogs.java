@@ -25,7 +25,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.ArrayList;
 
-/** Dialogerna för att skapa, ändra, avboka och ta bort en bokning. */
+/** The dialogs for creating, changing, cancelling and deleting a booking. */
 public final class BookingDialogs {
 
     private BookingDialogs() {}
@@ -47,8 +47,8 @@ public final class BookingDialogs {
         dialog.setHeaderText(I18n.get("dialog.booking.create.header"));
         ActionDialogs.styleDialog(dialog);
         dialog.setResizable(true);
-        // Lite större fönster: formuläret är 820 brett, och höjden får en undre gräns så att
-        // kalendern och tiden inte kläms ihop.
+        // A slightly bigger window: the form is 820 wide, and the height gets a lower bound so the
+        // calendar and the time are not squeezed together.
         dialog.getDialogPane().setPrefWidth(860);
         dialog.getDialogPane().setMinWidth(760);
         dialog.getDialogPane().setMinHeight(720);
@@ -83,7 +83,7 @@ public final class BookingDialogs {
                     desc = com.wac.autocore.seed.SeedText.resolve(chosenService.getName());
                 }
 
-                // Skapa ren bokning i systemet (INGEN arbetsorder skapas eller startas automatiskt)
+                // Create a clean booking in the system (NO work order is created or started automatically)
                 Booking b = garage.createBooking(v.getId(), date, desc);
                 if (b != null) {
                     b.setStatus("BOOKED");
@@ -108,7 +108,7 @@ public final class BookingDialogs {
                         return;
                     }
 
-                    // Reservera tid i schemat om mekaniker valts (workOrderId = 0)
+                    // Reserve a slot in the schedule if a mechanic was picked (workOrderId = 0)
                     if (chosenMech != null) {
                         int hour = startTime != null ? startTime.getHour() : (defaultHour != null ? defaultHour : 8);
                         String custName = EntityLookup.customerName(garage, v.getCustomerId());
@@ -142,7 +142,7 @@ public final class BookingDialogs {
         dialog.getDialogPane().setMinWidth(760);
         dialog.getDialogPane().setMinHeight(720);
 
-        // Datumet är ett nytt värde, enligt kravet får det inte ärvas från den gamla bokningen.
+        // The date is a new value; the requirement says it must not be inherited from the old booking.
         BookingFormPane form = new BookingFormPane(garage, source, LocalDate.now(), null, null, false, true);
         form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
         dialog.getDialogPane().setContent(form);
@@ -177,7 +177,7 @@ public final class BookingDialogs {
                     desc = com.wac.autocore.seed.SeedText.resolve(chosenService.getName());
                 }
 
-                // Skapa ren bokning i systemet (INGEN arbetsorder skapas eller startas automatiskt)
+                // Create a clean booking in the system (NO work order is created or started automatically)
                 Booking b = garage.createBooking(v.getId(), date, desc);
                 if (b != null) {
                     b.setStatus("BOOKED");
@@ -188,7 +188,7 @@ public final class BookingDialogs {
                                 I18n.get("dialog.booking.services_locked_work_started"));
                         return;
                     }
-                    
+
                     b.setMechanicId(chosenMech != null ? chosenMech.getId() : 0);
                     b.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
 
@@ -202,7 +202,7 @@ public final class BookingDialogs {
                         return;
                     }
 
-                    // Reservera tid i schemat om mekaniker valts (workOrderId = 0)
+                    // Reserve a slot in the schedule if a mechanic was picked (workOrderId = 0)
                     if (chosenMech != null) {
 
                         int hour = startTime != null ? startTime.getHour() : 8;
@@ -228,8 +228,8 @@ public final class BookingDialogs {
         dialog.setHeaderText(I18n.get("dialog.booking.edit.header"));
         ActionDialogs.styleDialog(dialog);
         dialog.setResizable(true);
-        // Lite större fönster: formuläret är 820 brett, och höjden får en undre gräns så att
-        // kalendern och tiden inte kläms ihop.
+        // A slightly bigger window: the form is 820 wide, and the height gets a lower bound so the
+        // calendar and the time are not squeezed together.
         dialog.getDialogPane().setPrefWidth(860);
         dialog.getDialogPane().setMinWidth(760);
         dialog.getDialogPane().setMinHeight(720);
@@ -237,7 +237,7 @@ public final class BookingDialogs {
         BookingFormPane form = new BookingFormPane(garage, booking, booking.getDate(), null, null);
         form.setOnContentGrown(() -> ActionDialogs.growToFitContent(dialog));
 
-        // Knappen ligger i en egen rad ovanför formuläret, inuti den stylade ytan.
+        // The button sits on a row of its own above the form, inside the styled area.
         HBox actionRow = new HBox();
         actionRow.setAlignment(Pos.CENTER_RIGHT);
         Button copyButton = new Button(I18n.get("dialog.copy.booking.action"));
@@ -269,7 +269,7 @@ public final class BookingDialogs {
                 String desc = form.getDescription();
                 String status = form.getStatus();
 
-                // Rensa eventuell tidigare schemaplats för denna bokning
+                // Clear any earlier schedule slot for this booking
                 MechanicSchedule.getInstance().cancelSlotForBooking(booking.getId());
 
                 booking.setVehicleId(v.getId());
@@ -285,8 +285,8 @@ public final class BookingDialogs {
                     booking.setServiceItems(java.util.Collections.emptyList());
                 }
 
-                // Statusen sätts sist, för en statusändring tillbaka till Bokad öppnar
-                // låset på tjänsterna igen. Är arbetet påbörjat får den inte gå tillbaka.
+                // The status is set last, because a change back to Booked unlocks the services
+                // again. Once the job has started it cannot go back.
                 if (booking.isWorkStarted() && !statusTillaten(status)
                         && !status.equalsIgnoreCase(booking.getStatus())) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"),
@@ -306,7 +306,7 @@ public final class BookingDialogs {
                     return;
                 }
 
-                // Återboka i schemat om mekaniker är tilldelad och bokningen ej är avbokad
+                // Rebook in the schedule if a mechanic is assigned and the booking is not cancelled
                 if (chosenMech != null && !"CANCELLED".equalsIgnoreCase(status)) {
                     int hour = startTime != null ? startTime.getHour() : 8;
                     String custName = EntityLookup.customerName(garage, v.getCustomerId());
@@ -373,7 +373,7 @@ public final class BookingDialogs {
         });
     }
 
-/** Sparar bokningen och visar felet i stället för att svälja det. */
+    /** Saves the booking and shows the error instead of swallowing it. */
     private static boolean saveBookingOrReport(GarageSystem garage, Booking booking) {
         try {
             garage.updateBooking(booking);
@@ -387,14 +387,13 @@ public final class BookingDialogs {
         }
     }
 
-
-    /** Statusar som får sättas när arbetet redan har påbörjats. */
+    /** The statuses that may be set once the work has already started. */
     private static boolean statusTillaten(String status) {
         return "IN_PROGRESS".equalsIgnoreCase(status)
                 || "COMPLETED".equalsIgnoreCase(status);
     }
 
-    /** Id på de mekaniker som är valda i formuläret, i den ordning de valdes. */
+    /** The ids of the mechanics picked in the form, in the order they were picked. */
     private static List<Integer> mechanicIdsFrom(List<Mechanic> chosen) {
         List<Integer> ids = new ArrayList<Integer>();
         if (chosen != null) {

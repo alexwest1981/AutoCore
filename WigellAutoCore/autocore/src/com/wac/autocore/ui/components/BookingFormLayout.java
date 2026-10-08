@@ -21,9 +21,9 @@ import com.wac.autocore.ui.i18n.I18n;
 import java.time.LocalTime;
 
 /**
- * Radlayouten i bokningsformuläret:
- * Fordon -> Servicepaket -> Tjänster -> Mekaniker -> Datum & Tid -> Beskrivning -> Status.
- * I drop-in-läget byts Datum & Tid mot den tid tjänsten räknar fram.
+ * The row layout of the booking form:
+ * Vehicle -> Service package -> Services -> Mechanic -> Date & Time -> Description -> Status.
+ * In drop-in mode Date & Time is swapped for the time the service works out.
  */
 class BookingFormLayout {
 
@@ -66,7 +66,7 @@ class BookingFormLayout {
         GridPane.setValignment(serviceLbl, VPos.TOP);
         serviceLbl.setPadding(new Insets(6, 0, 0, 0));
         grid.add(serviceLbl, 0, rowIdx);
-        // Fältet ska fylla kolumnen, annars stannar pilen långt in från kanten.
+        // The field should fill the column, otherwise the arrow stops well inside the edge.
         serviceMulti.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(serviceMulti, Priority.ALWAYS);
         VBox serviceCol = new VBox(6, serviceMulti);
@@ -90,8 +90,8 @@ class BookingFormLayout {
         GridPane.setHgrow(mechCol, Priority.ALWAYS);
         grid.add(mechCol, 1, rowIdx++);
 
-        // Datum & Tid (kalendern synlig med starttiden bredvid). En drop-in bokas när kunden
-        // kommer in; där finns inget att välja, så raden visar den framräknade tiden i stället.
+        // Date & Time (the calendar visible with the start time beside it). A drop-in is booked as
+        // the customer walks in; there is nothing to pick there, so the row shows the worked-out time instead.
         if (!dropIn) {
             Label dateTimeLbl = new Label(I18n.get("dialog.booking.date_and_time") + ":");
             GridPane.setValignment(dateTimeLbl, VPos.TOP);
@@ -118,14 +118,14 @@ class BookingFormLayout {
             HBox dateTimeRow = new HBox(16, calCol, timeCol);
             dateTimeRow.setAlignment(Pos.TOP_LEFT);
 
-            // Datumväljaren själv läggs inte i layouten: kalendern ovan är byggd från ett eget
-            // skinn, och lägger man ändå kontrollen i scenen skapar JavaFX ett andra skinn —
-            // då kastar DatePickerSkin "duplicate children added" och formuläret dör vid klick.
+            // The date picker itself is not put into the layout: the calendar above is built from
+            // a skin of its own, and putting the control into the scene anyway makes JavaFX create
+            // a second skin — then DatePickerSkin throws "duplicate children added" and the form dies on click.
             VBox dateTimeContainer = new VBox(4, dateTimeRow);
             GridPane.setHgrow(dateTimeContainer, Priority.ALWAYS);
             grid.add(dateTimeContainer, 1, rowIdx++);
         } else {
-            // Kunden ska se när bilen börjar och när den är klar innan bokningen godkänns.
+            // The customer should see when the car starts and when it is done before the booking is approved.
             Label timeLbl = new Label(I18n.get("dialog.booking.dropin_time") + ":");
             GridPane.setValignment(timeLbl, VPos.TOP);
             timeLbl.setPadding(new Insets(6, 0, 0, 0));
@@ -145,7 +145,7 @@ class BookingFormLayout {
         GridPane.setHgrow(descField, Priority.ALWAYS);
         grid.add(descField, 1, rowIdx++);
 
-        // Status (om redigering)
+        // Status (when editing)
         if (statusBox != null) {
             grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
             GridPane.setHgrow(statusBox, Priority.ALWAYS);

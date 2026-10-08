@@ -24,8 +24,8 @@ import javafx.scene.shape.SVGPath;
 import com.wac.autocore.seed.SeedText;
 
 /**
- * Kortets huvud: avatar och namn, vyväxlaren Dag/Vecka/Månad,
- * specialiseringen och tillgänglighetsbadgen, samt redigeringsmenyn.
+ * The card's header: avatar and name, the Day/Week/Month view switcher,
+ * the specialization and the availability badge, and the edit menu.
  */
 class KanbanCardHeader {
 
@@ -71,7 +71,7 @@ class KanbanCardHeader {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Segmenterad vyväxlare: Dag | Vecka | Månad
+        // Segmented view switcher: Day | Week | Month
         Button dayBtn = createViewButton(I18n.get("kanban.view.day"), MechanicKanbanCard.KanbanViewMode.DAY);
         Button weekBtn = createViewButton(I18n.get("kanban.view.week"), MechanicKanbanCard.KanbanViewMode.WEEK);
         Button monthBtn = createViewButton(I18n.get("kanban.view.month"), MechanicKanbanCard.KanbanViewMode.MONTH);
@@ -121,7 +121,7 @@ class KanbanCardHeader {
         HBox topRow = new HBox(6, mechTitle, spacer, toggleGroup, optionsBtn);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
-        // Rad 2: Specialisering och tillgänglighetsbadge
+        // Row 2: specialization and availability badge
         Label specLabel = new Label(MechanicKanbanCard.formatSpecialization(SeedText.resolve(mech.getSpecialization())));
         specLabel.getStyleClass().add("kanban-mech-sub-compact");
         specLabel.setMinWidth(0);

@@ -27,20 +27,20 @@ import javafx.scene.text.FontWeight;
 
 import java.time.LocalDate;
 
-/** Fakturan som den skrivs ut, med företaget, kunden, fordonet och arbetena. */
+/** The invoice as it is printed, with the company, the customer, the vehicle and the work. */
 public final class InvoiceDocument {
 
-    /** Företagsuppgifterna i fakturahuvudet. Ändra här när verkstadens adress ändras. */
+    /** The company details in the invoice header. Change here when the workshop address changes. */
     private static final String COMPANY_NAME = "Wigell AutoCore";
     private static final String COMPANY_STREET = "Verkstadsvägen 1";
     private static final String COMPANY_POSTAL = "512 00 Svenljunga";
     private static final String COMPANY_PHONE = "070-000 00 00";
     private static final String COMPANY_EMAIL = "info@wigellautocore.se";
 
-    /** Betalningsvillkor i dagar. Räknas från fakturadatumet och visas som förfallodatum. */
+    /** Payment terms in days. Counted from the invoice date and shown as the due date. */
     private static final int PAYMENT_TERMS_DAYS = 30;
 
-    /** Papprets bredd i punkter (A4 med marginal), så förhandsgranskningen liknar det utskrivna. */
+    /** Paper width in points (A4 with margins), so the preview resembles the printout. */
     private static final double PAPER_WIDTH = 520;
 
     private static final String INK = "-fx-text-fill: #111827;";
@@ -70,8 +70,6 @@ public final class InvoiceDocument {
                 footer());
         return paper;
     }
-
-    // ─────────────────────────────────────────────────────────────────── huvudet
 
     private static Node header() {
         Image logo = com.wac.autocore.ui.components.UiComponents.loadLogoImage();
@@ -120,8 +118,6 @@ public final class InvoiceDocument {
         return row;
     }
 
-    // ─────────────────────────────────────────────────────────────────── parterna
-
     private static Node parties(GarageSystem garage, Invoice invoice) {
         Customer customer = customerFor(garage, invoice);
         Vehicle vehicle = vehicleFor(garage, invoice);
@@ -160,8 +156,6 @@ public final class InvoiceDocument {
         return box;
     }
 
-    // ─────────────────────────────────────────────────────────────────── raderna
-
     private static Node lines(Invoice invoice) {
         GridPane grid = new GridPane();
         grid.setHgap(0);
@@ -191,8 +185,6 @@ public final class InvoiceDocument {
         return grid;
     }
 
-    // ─────────────────────────────────────────────────────────────────── summan
-
     private static Node totals(Invoice invoice) {
         GridPane grid = new GridPane();
         grid.setHgap(18);
@@ -208,7 +200,7 @@ public final class InvoiceDocument {
         grid.add(right(label(I18n.get("invoice.vat"), 11, false, MUTED)), 0, 2);
         grid.add(right(label(UiFormatters.formatMoney(invoice.getVatAmount()), 11, false, INK)), 1, 2);
 
-        // Att betala är beloppet kunden ska betala, alltså med moms på.
+        // To pay is the amount the customer owes, that is with VAT added.
         Label totalLabel = label(I18n.get("invoice.total"), 13, true, INK);
         Label totalValue = label(UiFormatters.formatMoney(invoice.getTotalIncludingVat()), 13, true, INK);
         grid.add(right(totalLabel), 0, 3);
@@ -227,8 +219,6 @@ public final class InvoiceDocument {
         footer.setPadding(new Insets(12, 0, 0, 0));
         return footer;
     }
-
-    // ─────────────────────────────────────────────────────────────────── smådelar
 
     static LocalDate dueDate(Invoice invoice) {
         LocalDate date = invoice.getInvoiceDate() == null ? LocalDate.now() : invoice.getInvoiceDate();
@@ -323,7 +313,7 @@ public final class InvoiceDocument {
         return spacer;
     }
 
-    /** Tom yta mellan avsnitten, så fakturan får luft. */
+    /** Empty space between the sections, so the invoice breathes. */
     private static final class Spacer extends Region {
         private Spacer(double height) {
             setMinHeight(height);

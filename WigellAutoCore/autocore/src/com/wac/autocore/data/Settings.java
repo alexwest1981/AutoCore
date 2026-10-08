@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/** Inställningar som ska överleva en omstart. En tabell och två operationer, med flit. */
+/** Settings that should survive a restart. One table and two operations, on purpose. */
 public final class Settings {
 
     private Settings() {}

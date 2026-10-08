@@ -7,26 +7,24 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/** Hjälpmetoder för dataformatering i gränssnittet. */
+/** Helper methods for formatting data in the interface. */
 public final class UiFormatters {
 
     private static final DecimalFormat MONEY_FORMAT =
             new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.US));
 
-    /** Datum och tid utan sekunder, så en tabellrad inte domineras av millisekunder. */
+    /** Date and time without seconds, so a table row is not dominated by milliseconds. */
     private static final DateTimeFormatter DATE_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private UiFormatters() {}
 
-
-/** Belopp med tusentalsavgränsare, som 1 500 kr. */
+    /** Amount with a thousands separator, like 1 500 kr. */
     public static String formatMoney(double amount) {
         return MONEY_FORMAT.format(amount) + " kr";
     }
 
-
-/** Klipper texten till maxtecken och sätter punkt om den kortades. */
+    /** Cuts the text to max characters and adds a full stop if it was shortened. */
     public static String truncate(String s, int max) {
         if (s == null) {
             return "";
@@ -34,12 +32,12 @@ public final class UiFormatters {
         return s.length() <= max ? s : s.substring(0, max - 1) + "…";
     }
 
-/** Dagens datum på engelska, som Wednesday 16 September 2026. */
+    /** Today's date in English, like Wednesday 16 September 2026. */
     public static String todayFormatted() {
         return formatDate(LocalDate.now());
     }
 
-/** Datumet på aktivt språk. */
+    /** The date in the active language. */
     public static String formatDate(LocalDate d) {
         if (d == null) {
             return "";
@@ -59,12 +57,12 @@ public final class UiFormatters {
         }
     }
 
-/** Datum och tid för visning, utan sekunder: 2026-10-01 21:30. */
+    /** Date and time for display, without seconds: 2026-10-01 21:30. */
     public static String formatDateTime(LocalDateTime value) {
         return value == null ? "-" : value.format(DATE_TIME_FORMAT);
     }
 
-/** Betalsättet som ett ord: SWISH blir Swish. Okända värden visas som de sparades. */
+    /** The payment type as one word: SWISH becomes Swish. Unknown values are shown as stored. */
     public static String paymentTypeWord(String stored) {
         if (stored == null || stored.trim().isEmpty()) {
             return "-";
@@ -82,7 +80,8 @@ public final class UiFormatters {
         return stored;
     }
 
-/** Arbetsordertypen som ett ord: RECLAMATION blir Reklamation. Okända värden visas som de sparades. */
+    /** The work order type as one word: RECLAMATION becomes Reclamation. Unknown values are shown
+     *  as they were stored. */
     public static String workOrderTypeWord(String stored) {
         if (stored == null || stored.trim().isEmpty()) {
             return "-";
@@ -100,7 +99,7 @@ public final class UiFormatters {
         return stored;
     }
 
-/** Statuskoden som ett visningsord via I18n. */
+    /** The status code as a display word, via I18n. */
     public static String statusWord(String status) {
         if (status == null) {
             return "";
@@ -130,7 +129,7 @@ public final class UiFormatters {
         return status;
     }
 
-/** Sant om statusen betyder klart. */
+    /** True if the status means finished. */
     public static boolean isGood(String s) {
         if (s == null) {
             return false;
@@ -139,7 +138,7 @@ public final class UiFormatters {
                 || s.equals("Completed") || s.equals("Slutförd") || s.equals("Paid") || s.equals("Betald");
     }
 
-/** CSS-klassen för statusmärket. */
+    /** The CSS class for the status badge. */
     public static String badgeClass(String s) {
         if (s == null) {
             return "";
@@ -160,7 +159,7 @@ public final class UiFormatters {
         return "";
     }
 
-/** CSS-klassen för statuspricken i översikten. */
+    /** The CSS class for the status dot in the overview. */
     public static String dotClass(String s) {
         String b = badgeClass(s);
         if (b.isEmpty()) {

@@ -16,7 +16,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
-/** Dialogen som skapar ett utkast: fordonet och beskrivningen räcker. */
+/** The dialog that creates a draft: the vehicle and the description are enough. */
 final class CreateDraftDialog {
 
     private CreateDraftDialog() {}
@@ -70,7 +70,7 @@ final class CreateDraftDialog {
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // OK är låst tills både fordon och beskrivning är ifyllda.
+        // OK is locked until both vehicle and description are filled in.
         ActionDialogs.requireFilled(dialog, vehicleBox, description);
 
         dialog.showAndWait().ifPresent(response -> {

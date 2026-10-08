@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Arbetsorderns livscykel från skapad till klar. */
+/** The work order's life cycle from created to finished. */
 public class WorkOrderService {
 
     private final WorkOrderRepository workOrderRepository = new WorkOrderRepository();
@@ -52,9 +52,9 @@ public class WorkOrderService {
             return null;
         }
 
-        // Tjänsterna som ingen arbetsorder tagit hand om än. Är alla redan tagna finns det inget
-        // kvar att göra, och då ska ingen ny order skapas — samma spärr mot dubbel fakturering som
-        // förut, men per tjänst i stället för per bokning.
+        // The services no work order has taken yet. If all are already taken there is nothing
+        // left to do, and then no new order should be created — the same guard against double
+        // invoicing as before, but per service instead of per booking.
         List<Integer> remaining = new ArrayList<Integer>();
         for (Integer serviceItemId : booking.getServiceItemIds()) {
             if (!isClaimed(bookingId, serviceItemId)) {
@@ -69,12 +69,12 @@ public class WorkOrderService {
         return createWorkOrder(bookingId, mechanicId, remaining);
     }
 
-/** Skapar en arbetsorder för ett urval av tjänsterna. */
+    /** Creates a work order for a selection of the services. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds) {
         return createWorkOrder(bookingId, mechanicId, serviceItemIds, WorkOrder.TYPES.get(0));
     }
 
-    /** Skapar en arbetsorder av en viss typ. Standard, garanti eller internt arbete. */
+    /** Creates a work order of a given type. Standard, reclamation or internal work. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type) {
         if (type == null || !WorkOrder.TYPES.contains(type)) {
             System.out.println("Unknown work order type: " + type);
@@ -140,12 +140,12 @@ public class WorkOrderService {
         return workOrder;
     }
 
-    // En reklamation är en egen arbetsorder som gör om ett tidigare utfört arbete och pekar ut det
-    // med originalWorkOrderId. Samma bokning, samma mekaniker, samma tjänster — men en ny order.
+    // A reclamation is a work order of its own that redoes earlier performed work and points it
+    // out with originalWorkOrderId. Same booking, same mechanic, same services — but a new order.
     //
-    // Spärren i createWorkOrder som stoppar en tjänst från att ligga på två ordrar gäller inte här.
-    // Tjänsten ska ju göras om, och reklamationen debiteras ändå inte kunden, så den kan inte bli
-    // fakturerad två gånger.
+    // The guard in createWorkOrder that stops a service from sitting on two orders does not apply
+    // here. The service is to be redone, and the reclamation is not charged to the customer
+    // anyway, so it cannot be invoiced twice.
     public WorkOrder createReclamation(int originalWorkOrderId, String description) {
         WorkOrder original = findById(originalWorkOrderId);
 
@@ -154,7 +154,7 @@ public class WorkOrderService {
             return null;
         }
 
-        // Bara ett arbete som faktiskt är utfört går att reklamera.
+        // Only work that has actually been performed can be reclaimed.
         if (!"COMPLETED".equalsIgnoreCase(original.getStatus())) {
             System.out.println("Work order " + originalWorkOrderId + " is not completed.");
             return null;
@@ -194,7 +194,7 @@ public class WorkOrderService {
         return reclamation;
     }
 
-    // Skapar ett utkast: fordonet och beskrivningen, resten fylls på senare.
+    // Creates a draft: the vehicle and the description, the rest is filled in later.
     public WorkOrder createDraft(int vehicleId, String description) {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
@@ -245,9 +245,7 @@ public class WorkOrderService {
         return workOrder;
     }
 
-
-
-    /** Sant om tjänsten redan ligger på en arbetsorder för samma bokning. Katalogen är delad. */
+    /** True if the service already sits on a work order for the same booking. The catalogue is shared. */
     private boolean isClaimed(int bookingId, int serviceItemId) {
         for (WorkOrder order : getAll()) {
             if (order.getBookingId() != bookingId) {
@@ -260,7 +258,7 @@ public class WorkOrderService {
         return false;
     }
 
-    // Enda stället som avgör vilka byten som är tillåtna. Allt som inte står här nekas.
+    // The only place that decides which status changes are allowed. Anything not listed is refused.
     private boolean canChangeStatus(String from, String to) {
         if ("IN_PROGRESS".equals(from) && "COMPLETED".equals(to)) {
             return true;
@@ -292,7 +290,6 @@ public class WorkOrderService {
 
         return false;
     }
-
 
     public boolean startWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
@@ -338,9 +335,9 @@ public class WorkOrderService {
             return false;
         }
 
-        // Priset frysas även när ordern slutförs utan att någon har markerat arbetena.
-        // Priset läggs på raden utan att tjänsten markeras som utförd, för fakturan ska
-        // fortfarande bara byggas på de arbeten som faktiskt markerats.
+        // The price is frozen even when the order is finished without anyone having marked the
+        // jobs. The price goes on the line without marking the service as performed, because the
+        // invoice should still only be built on the jobs that were actually marked.
         Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
             if (!priser.containsKey(serviceItemId)) {
@@ -372,7 +369,7 @@ public class WorkOrderService {
         return true;
     }
 
-    // Ett utkast blir bekräftat först när kunden har sagt ja till pris och tid.
+    // A draft becomes confirmed only once the customer has said yes to the price and the time.
     public boolean confirmWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
 
@@ -393,8 +390,7 @@ public class WorkOrderService {
         return true;
     }
 
-
-    // Ett avbrutet utkast ska inte lämna kvar en bokad tid, så bokningen avbryts och schemat frigörs.
+    // A cancelled draft should not leave a booked time behind, so the booking is cancelled and the schedule freed.
     public boolean cancelWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
 
@@ -431,7 +427,7 @@ public class WorkOrderService {
         return true;
     }
 
-/** Markerar tjänsterna utförda och sparar priset just nu. */
+    /** Marks the services performed and stores the price right now. */
     public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {
@@ -455,7 +451,7 @@ public class WorkOrderService {
                 System.out.println("Service item with ID " + serviceItemId + " does not exist.");
                 return false;
             }
-            // Priset frysas en gång. Är tjänsten redan markerad behåller den sitt gamla pris.
+            // The price is frozen once. If the service is already marked it keeps its old price.
             Double alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
             double frozenPrice = alreadyFrozen != null ? alreadyFrozen.doubleValue() : serviceItem.getPrice();
             workOrder.markServiceAsCompleted(serviceItemId, frozenPrice);

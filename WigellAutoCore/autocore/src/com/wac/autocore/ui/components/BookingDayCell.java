@@ -12,7 +12,7 @@ import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.BookingAvailability;
 
-/* En dag i kalendern. Reglerna läses vid varje ritning. */
+/** A day in the calendar. The rules are read on every draw. */
 class BookingDayCell extends DateCell {
 
     private final GarageSystem garage;
@@ -59,7 +59,7 @@ class BookingDayCell extends DateCell {
         setTooltip(null);
     }
 
-    /** Ritar om cellen med de val som gäller nu. */
+    /** Redraws the cell with the choices that apply now. */
     void refresh() {
         updateItem(getItem(), isEmpty());
     }

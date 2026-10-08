@@ -21,7 +21,7 @@ public class Vehicle {
         this.customerId = customerId;
     }
 
-    /** Normaliserar registreringsnumret till versaler och ett läsbart mellanrum. */
+    /** Normalizes the registration number to capitals and a readable space. */
     public static String normalizeRegistrationNumber(String registrationNumber) {
         if (registrationNumber == null) {
             return null;

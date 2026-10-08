@@ -21,7 +21,7 @@ import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
 
-/** En del av mekanikerkortet. */
+/** A part of the mechanic card. */
 class KanbanMonthView {
 
     private final MechanicKanbanCard card;
@@ -66,7 +66,6 @@ class KanbanMonthView {
 
         return cell;
     }
-
 
         VBox build(Mechanic mech) {
         YearMonth ym = YearMonth.from(card.selectedDate);

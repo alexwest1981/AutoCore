@@ -24,7 +24,7 @@ import javafx.util.StringConverter;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Dialoger för fakturering och betalningar. */
+/** Dialogs for invoicing and payments. */
 public final class BillingDialogs {
 
     private BillingDialogs() {}
@@ -34,13 +34,13 @@ public final class BillingDialogs {
     }
 
     public static void showCreateInvoiceDialog(GarageSystem garage, WorkOrder preselected, Runnable onSuccess) {
-        // Bokningar med utfört arbete kvar att fakturera. En bokning kan ha flera arbetsordrar — en
-/** Kunden ska ha en faktura med allt som är gjort. */
+        // Bookings with finished work left to invoice. One booking can hold several work orders —
+        // the customer is to have one invoice with everything that has been done.
         List<Booking> invoiceable = garage.getInvoiceableBookings();
 
         if (invoiceable.isEmpty()) {
-            // Är det arbete kvar på bokningarna är det därför ingen faktura kan skapas, och då
-            // säger vi det i stället för att bara visa att listan är tom.
+            // If work is left on the bookings that is why no invoice can be created, and then we
+            // say so instead of just showing that the list is empty.
             String message = garage.hasBookingWithUnfinishedWork()
                     ? I18n.get("dialog.invoice.not_all_completed")
                     : I18n.get("overview.empty.workorders");
@@ -54,7 +54,6 @@ public final class BillingDialogs {
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
-
 
         ComboBox<Booking> bookingBox = new ComboBox<Booking>();
         bookingBox.getItems().addAll(invoiceable);
@@ -87,8 +86,8 @@ public final class BillingDialogs {
         discountField.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(discountField, Priority.ALWAYS);
 
-        // En reklamation kan föra med sig en ny kostnad som kunden ska betala. Fälten visas bara
-        // när bokningen innehåller ett garantiarbete, annars står de bara i vägen.
+        // A reclamation can bring a new charge the customer is to pay. The fields only show when the
+        // booking holds reclamation work, otherwise they just get in the way.
         Label extraNameLabel = new Label(I18n.get("dialog.invoice.extra_cost_label") + ":");
         TextField extraNameField = new TextField();
         extraNameField.setMaxWidth(Double.MAX_VALUE);
@@ -135,8 +134,8 @@ public final class BillingDialogs {
                 String code = discountField.getText().trim();
                 Double extraAmount = null;
                 if (extraNameField.isVisible() && !extraAmountField.getText().trim().isEmpty()) {
-                    // Samma tolkning av belopp som tjänstedialogen gör, så att 250,50 går att skriva
-                    // på båda ställena.
+                    // The same reading of amounts as the service dialog uses, so that 250,50 can be
+                    // typed in both places.
                     extraAmount = ServiceItemDialogs.parsePrice(extraAmountField.getText());
                     if (extraAmount == null) {
                         ActionDialogs.showError(I18n.get("dialog.confirm.title"),
@@ -157,8 +156,8 @@ public final class BillingDialogs {
         });
     }
 
-    // Kostnader utöver arbetet hör till en reklamation, så utan ett reklamationsarbete finns inget
-    // att fylla i. Letar i bokningens arbetsordrar, inte bara den förvalda.
+    // Charges beyond the job belong to a reclamation, so with no reclamation work there is nothing
+    // to fill in. Looks through the booking's work orders, not just the preselected one.
     private static boolean hasReclamationOrder(GarageSystem garage, Booking booking) {
         if (booking == null) {
             return false;
@@ -191,7 +190,6 @@ public final class BillingDialogs {
 
         GridPane grid = ActionDialogs.createGrid();
 
-
         ComboBox<Invoice> invoiceBox = new ComboBox<Invoice>();
         invoiceBox.getItems().addAll(unpaid);
         invoiceBox.setMaxWidth(Double.MAX_VALUE);
@@ -215,7 +213,7 @@ public final class BillingDialogs {
         typeBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(typeBox, Priority.ALWAYS);
         typeBox.getSelectionModel().select("SWISH");
-        // Det sparade värdet står kvar som SWISH i databasen, men listan visar "Swish".
+        // The stored value stays as SWISH in the database, but the list shows "Swish".
         typeBox.setConverter(new StringConverter<String>() {
             @Override
             public String toString(String stored) {
@@ -263,8 +261,8 @@ public final class BillingDialogs {
         notice.getStyleClass().addAll("srow-sub", "small");
 
         GridPane grid = ActionDialogs.createGrid();
-        // Den här dialogen är en tabell med fyra kolumner, så den byter ut de två kolumnreglerna
-        // mot fyra egna där alla får växa jämnt.
+        // This dialog is a table with four columns, so it swaps the two column rules for four of
+        // its own where all of them grow evenly.
         grid.getColumnConstraints().clear();
         for (int i = 0; i < 4; i++) {
             javafx.scene.layout.ColumnConstraints column = new javafx.scene.layout.ColumnConstraints();
@@ -312,7 +310,7 @@ public final class BillingDialogs {
         dialog.showAndWait();
     }
 
-/** Förhandsgranskar fakturan och skickar den till skrivaren. Rutan stängs inte. */
+    /** Previews the invoice and sends it to the printer. The window is not closed. */
     static void showInvoiceDocumentDialog(GarageSystem garage, Invoice invoice) {
         if (invoice == null) return;
 
@@ -341,7 +339,7 @@ public final class BillingDialogs {
         dialog.showAndWait();
     }
 
-/** Skickar dokumentet till skrivaren. Utan skrivare blir det ett besked. */
+    /** Sends the document to the printer. With no printer it becomes a message. */
     private static void sendToPrinter(final javafx.scene.Node document, Dialog<?> dialog) {
         javafx.print.PrinterJob job = javafx.print.PrinterJob.createPrinterJob();
         if (job == null) {
@@ -355,7 +353,7 @@ public final class BillingDialogs {
                     javafx.print.Printer.MarginType.DEFAULT);
             job.getJobSettings().setPageLayout(layout);
         } catch (Exception ignored) {
-            // Skrivaren utan A4: skriv ut på den layout den erbjuder i stället.
+            // A printer without A4: print on whatever layout it does offer instead.
         }
 
         javafx.stage.Window owner = dialog.getDialogPane().getScene() == null

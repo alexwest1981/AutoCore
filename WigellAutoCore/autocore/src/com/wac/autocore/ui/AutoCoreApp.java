@@ -14,7 +14,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-/** JavaFX-gränssnittet för Wigell AutoCore. */
+/** The JavaFX interface for Wigell AutoCore. */
 public class AutoCoreApp extends Application {
 
     /** Key the language choice is stored under in the settings table. */
@@ -24,8 +24,8 @@ public class AutoCoreApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // Databasen är redan klar: Main kör Db.ensureReady() och garage-fältet ovan gör samma sak
-        // i sin konstruktor. Ett initTables() här gav en andra "Databas redo" i loggen.
+        // The database is already ready: Main runs Db.ensureReady() and the garage field above
+        // does the same in its constructor. An initTables() here gave a second "Databas redo".
         restoreLanguage();
         persistLanguageChanges();
 
@@ -44,7 +44,7 @@ public class AutoCoreApp extends Application {
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        // Initiera navigering och sidhanterare med SidebarView
+        // Set up navigation and the page handler with SidebarView
         PageRouter router = new PageRouter(garage, pageBox);
         SidebarView sidebar = new SidebarView(router::navigate);
         router.setSidebar(sidebar);
@@ -59,7 +59,7 @@ public class AutoCoreApp extends Application {
         stage.setCenter(shell);
 
         Scene scene = new Scene(stage, 1280, 800);
-        // Lås tema till Emerald
+        // Lock the theme to Emerald
         ThemeManager.apply(scene, "emerald");
 
         primaryStage.setTitle("Wigell AutoCore");
@@ -69,12 +69,12 @@ public class AutoCoreApp extends Application {
         router.navigate("overview");
     }
 
-    /** Läser det senast valda språket från inställningarna. */
+    /** Reads the last chosen language from the settings. */
     public static void restoreLanguage() {
         I18n.setLanguage(Settings.get(LANGUAGE_KEY, I18n.DEFAULT_LANG));
     }
 
-    /** Sparar språkbyten så att valet finns kvar vid nästa start. */
+    /** Saves language switches so the choice survives a restart. */
     public static void persistLanguageChanges() {
         I18n.addListener(lang -> Settings.put(LANGUAGE_KEY, lang));
     }

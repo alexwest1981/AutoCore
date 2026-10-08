@@ -13,7 +13,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 
-/** Starttider: grön för ledig, röd för upptagen. Upptagna går inte att välja. */
+/** Start times: green for free, red for busy. Busy ones cannot be picked. */
 public class TimeSlotCell extends ListCell<LocalTime> {
 
     public static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");

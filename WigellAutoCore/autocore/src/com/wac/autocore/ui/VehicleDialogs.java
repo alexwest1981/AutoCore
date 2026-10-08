@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Dialoger för fordonshantering. */
+/** Dialogs for managing vehicles. */
 public final class VehicleDialogs {
 
     private VehicleDialogs() {}

@@ -9,9 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * Ingången till arbetsorderdialogerna. Själva dialogerna ligger i varsin klass:
- * CreateWorkOrderDialog, WorkOrderDetailsDialog och MarkPerformedDialog,
- * och fördelningen av tjänster i WorkOrderPlan.
+ * The entry point to the work order dialogs. The dialogs themselves live in a class
+ * each: CreateWorkOrderDialog, WorkOrderDetailsDialog and MarkPerformedDialog,
+ * and the split of the services in WorkOrderPlan.
  */
 public final class WorkOrderDialogs {
 
@@ -41,7 +41,7 @@ public final class WorkOrderDialogs {
         MarkPerformedDialog.show(garage, workOrder, onSuccess);
     }
 
-    /** Planen: en post per mekaniker med den mekanikerns tjänster. */
+    /** The plan: one entry per mechanic with that mechanic's services. */
     public static LinkedHashMap<Integer, List<ServiceItem>> planWorkOrders(GarageSystem garage, Booking booking) {
         return WorkOrderPlan.planWorkOrders(garage, booking);
     }

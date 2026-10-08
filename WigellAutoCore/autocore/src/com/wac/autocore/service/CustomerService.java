@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-/** Kunder: läsning, uppslag och validering. */
+/** Customers: reading, lookup and validation. */
 public class CustomerService {
 
     private final CustomerRepository customerRepository = new CustomerRepository();
@@ -48,7 +48,7 @@ public class CustomerService {
         return customer;
     }
 
-/** Sparar ändringen genom samma regel som skapandet. */
+    /** Saves the change through the same rule as the creation. */
     public void updateCustomer(Customer customer) throws SQLException {
         if (customer == null) {
             return;
@@ -57,7 +57,7 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
-/** Regeln ligger här och inte i formuläret, så varje väg till en kundradering kontrolleras. */
+    /** The rule sits here and not in the form, so every path to a customer edit is checked. */
     private static void refuseUnlessStorable(String name, String phone, String email) {
         String problem = Customer.validationProblem(name, phone, email);
         if (problem != null) {

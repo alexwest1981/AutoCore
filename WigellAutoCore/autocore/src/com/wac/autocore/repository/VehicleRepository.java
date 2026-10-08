@@ -12,7 +12,7 @@ import java.util.List;
 
 public class VehicleRepository {
 
-/** Sparar fordonet. Numret är redan normaliserat i modellen. */
+    /** Saves the vehicle. The number is already normalized in the model. */
     public void save(Vehicle vehicle) throws SQLException {
         String registrationNumber = vehicle.getRegistrationNumber();
         if (registrationNumber == null || registrationNumber.trim().isEmpty()) {
@@ -26,7 +26,7 @@ public class VehicleRepository {
         }
     }
 
-    /** Sant om ett annat fordon redan har numret. Frågan stängs innan den som anropade skriver. */
+    /** True if another vehicle already has the number. The query is closed before the caller writes. */
     private boolean registrationNumberTaken(Connection connection, String registrationNumber, int exceptId)
             throws SQLException {
         PreparedStatement statement = connection.prepareStatement(

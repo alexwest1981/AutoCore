@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
 
-/** Dialoger för mekanikerhantering. */
+/** Dialogs for managing mechanics. */
 public final class MechanicDialogs {
 
     private MechanicDialogs() {}
@@ -134,7 +134,7 @@ public final class MechanicDialogs {
         });
     }
 
-/** De fasta specialiseringarna som nycklar i demodatans ordlista. */
+    /** The fixed specializations as keys in the seed dictionary. */
     private static final String[] SPECIALIZATION_KEYS = {
         "seed.mechanic.general_service.specialization",
         "seed.mechanic.brakes.specialization",
@@ -144,7 +144,7 @@ public final class MechanicDialogs {
         "seed.mechanic.climate.specialization"
     };
 
-/** Specialiseringarna i rullistan. Provet läser samma lista som användaren. */
+    /** The specializations in the drop-down. The test reads the same list the user does. */
     public static List<String> suggestSpecializations(GarageSystem garage) {
         List<String> suggestions = new ArrayList<String>();
         for (String key : SPECIALIZATION_KEYS) {
@@ -162,7 +162,7 @@ public final class MechanicDialogs {
         return suggestions;
     }
 
-/** Nyckeln när texten är ett fast val, annars texten användaren skrev. */
+    /** The key when the text is a fixed choice, otherwise the text the user typed. */
     public static String specializationToStore(String chosen) {
         String text = chosen == null ? "" : chosen.trim();
         if (text.isEmpty()) {

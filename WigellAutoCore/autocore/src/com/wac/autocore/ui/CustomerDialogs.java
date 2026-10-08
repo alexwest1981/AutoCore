@@ -14,7 +14,7 @@ import javafx.scene.layout.GridPane;
 
 import java.sql.SQLException;
 
-/** Dialoger för kundhantering. */
+/** Dialogs for managing customers. */
 public final class CustomerDialogs {
 
     private CustomerDialogs() {}

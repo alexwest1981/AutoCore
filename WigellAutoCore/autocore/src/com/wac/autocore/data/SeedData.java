@@ -96,9 +96,9 @@ public class SeedData {
 
             LocalDate today = LocalDate.now();
 
-            // Tiderna ligger inom verkstadens dag, 07:00 till 16:00, och varje mekaniker har
-            // bara ett jobb i taget. Sluttiden räknas ur bokningens tjänster, så den följer med
-            // om en tjänst får en annan tidsåtgång.
+            // The times fall inside the shop's day, 07:00 to 16:00, and every mechanic has
+            // only one job at a time. The end time is worked out from the booking's services, so it
+            // follows along if a service gets a different time estimate.
             Booking firstBooking = new Booking(0, volvo.getId(), today, "seed.booking.oil_change_filter.description");
             firstBooking.addServiceItem(oilChange);
             setSchedule(firstBooking, 7, 0, johan.getId());
@@ -135,7 +135,7 @@ public class SeedData {
             firstOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(firstOrder);
 
-            // Bokningens status ska spegla arbetsordern, annars ser startdatan motsägelsefull ut.
+            // The booking's status should mirror the work order, otherwise the start data looks contradictory.
             firstBooking.setStatus("IN_PROGRESS");
             bookingRepository.save(firstBooking);
 
@@ -176,7 +176,7 @@ public class SeedData {
         }
     }
 
-/** Ger bokningen tid, mekaniker och en sluttid som räcker för hela arbetet. */
+    /** Gives the booking a time, a mechanic and an end time that covers the whole job. */
     private static void setSchedule(Booking booking, int startHour, int startMinute, int mechanicId) {
         LocalTime start = LocalTime.of(startHour, startMinute);
         booking.setStartTime(start);

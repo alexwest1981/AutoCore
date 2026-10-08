@@ -12,7 +12,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Tabellen invoice_lines: raderna en skickad faktura är byggd av. */
+/** The invoice_lines table: the rows a sent invoice is built from. */
 public class InvoiceLineRepository {
 
     public List<InvoiceLine> findByInvoiceId(int invoiceId) throws SQLException {
@@ -42,7 +42,7 @@ public class InvoiceLineRepository {
         return lines;
     }
 
-/** Sparar raderna på en öppen anslutning, så allt går i samma transaktion. */
+    /** Saves the rows on an open connection, so everything runs in one transaction. */
     public void saveLines(Connection connection, Invoice invoice) throws SQLException {
         String sql = "INSERT INTO invoice_lines (invoice_id, service_item_id, service_name, price, discount) " +
                 "VALUES (?, ?, ?, ?, ?)";

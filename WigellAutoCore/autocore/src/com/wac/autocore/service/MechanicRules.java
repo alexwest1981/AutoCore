@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Vem som får utföra vilken tjänst. Tjänsten kräver en specialisering, mekanikern bär sin. */
+/** Who may perform which service. The service requires a specialization, the mechanic carries their own. */
 public class MechanicRules {
 
     private final MechanicRepository mechanicRepository = new MechanicRepository();
@@ -83,7 +83,7 @@ public class MechanicRules {
         return qualified;
     }
 
-/** Mekanikerna som behövs för att bemanna tjänsterna. */
+    /** The mechanics needed to staff the services. */
     public List<Mechanic> requiredFor(Collection<ServiceItem> services) {
         List<Mechanic> result = new ArrayList<Mechanic>();
         if (services == null || services.isEmpty()) {
@@ -92,7 +92,7 @@ public class MechanicRules {
         List<Mechanic> all = getAll();
         for (ServiceItem s : services) {
             Mechanic best = null;
-            // En tjänst utan krav ska den generella mekanikern ta, även om en specialist redan är vald.
+            // A service with no requirement should go to the generalist, even if a specialist is already picked.
             boolean anyQualified = s.requiresAnyMechanic();
             for (Mechanic m : result) {
                 if (isMechanicQualified(m, s) && (!anyQualified || isGeneralist(m))) {
@@ -124,8 +124,8 @@ public class MechanicRules {
                     }
                 }
             }
-            // Hittas ingen behörig mekaniker lämnas tjänsten utanför teamet. Att fylla på med en
-            // mekaniker som saknar behörigheten ger ett valt fält som kontrollen sedan underkänner.
+            // If no qualified mechanic is found the service is left out of the team. Padding with
+            // a mechanic who lacks the qualification gives a picked field the check then rejects.
             if (best != null && !result.contains(best)) {
                 result.add(best);
             }
@@ -133,8 +133,8 @@ public class MechanicRules {
         return result;
     }
 
-    /** Hur länge bilen håller verkstaden: den mekaniker som får mest arbete bestämmer.
-     *  Summerar man i stället alla tjänster får bilen ett fönster där den för länge sedan är klar. */
+    /** How long the car holds the shop: the mechanic who gets the most work decides.
+     *  Adding up every service instead gives the car a window where it was done long ago. */
     public int busyMinutes(Collection<ServiceItem> services, List<Mechanic> team) {
         if (services == null || services.isEmpty()) {
             return 60;
@@ -162,7 +162,7 @@ public class MechanicRules {
             return busiest;
         }
 
-        // Ingen mekaniker kunde pekas ut: summan är det enda vi vet om tiden.
+        // No mechanic could be pointed out: the sum is all we know about the time.
         int total = 0;
         for (ServiceItem service : services) {
             if (service != null) {
@@ -172,7 +172,7 @@ public class MechanicRules {
         return total > 0 ? total : 60;
     }
 
-    /** Första mekanikern i teamet som får utföra tjänsten. Samma val som arbetsordrarna gör. */
+        /** The first mechanic in the team who may perform the service. The same pick the work orders make. */
     private Mechanic firstQualifiedInTeam(List<Mechanic> team, ServiceItem service) {
         if (team == null) {
             return null;
@@ -185,7 +185,7 @@ public class MechanicRules {
         return null;
     }
 
-    /** Sant om mekanikern är generalist och kan ta tjänster utan krav. */
+        /** True if the mechanic is a generalist and can take services with no requirement. */
     public boolean isGeneralist(Mechanic mechanic) {
         if (mechanic == null) {
             return false;

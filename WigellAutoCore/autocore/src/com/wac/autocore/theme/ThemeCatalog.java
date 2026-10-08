@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Temakatalogen. Byggs om med themer.py convert. */
+/** The theme catalogue. Rebuilt with themer.py convert. */
 public final class ThemeCatalog {
 
     public static final String DEFAULT_SLUG = "emerald";
@@ -26,7 +26,6 @@ public final class ThemeCatalog {
         Collections.addAll(THEMES,
             new Theme("emerald", "Emerald", "/com/wac/autocore/theme/themes/emerald/emerald.css", false, "#025941"));
     }
-
 
     public static Theme bySlug(String slug) {
         for (Theme t : THEMES) {

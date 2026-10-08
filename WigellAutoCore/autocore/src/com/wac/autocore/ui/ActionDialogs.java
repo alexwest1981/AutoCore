@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Öppnar rätt dialog för varje entitet. */
+/** Opens the right dialog for each entity. */
 public final class ActionDialogs {
 
     private ActionDialogs() {}
@@ -69,8 +69,9 @@ public final class ActionDialogs {
         grid.setVgap(14);
         grid.setPadding(new Insets(18, 22, 18, 22));
         grid.setPrefWidth(480);
-        // Etikettkolumnen breddas efter sin längsta text, annars klipps långa etiketter. Bara
-        // fältkolumnen växer, så fälten tar resten utan att bli bredare än nödvändigt.
+        // The label column widens to its longest text, otherwise long labels get
+        // clipped. Only the field column grows, so the fields take the rest without
+        // becoming wider than they need to be.
         if (grid.getColumnConstraints().isEmpty()) {
             javafx.scene.layout.ColumnConstraints labelColumn = new javafx.scene.layout.ColumnConstraints();
             javafx.scene.layout.ColumnConstraints fieldColumn = new javafx.scene.layout.ColumnConstraints();
@@ -82,7 +83,7 @@ public final class ActionDialogs {
         return grid;
     }
 
-/** Låser OK-knappen tills varje fält har ett värde. */
+    /** Locks the OK button until every field has a value. */
     public static void requireFilled(Dialog<?> dialog, Node... fields) {
         final List<Node> required = new ArrayList<Node>();
         List<Observable> sources = new ArrayList<Observable>();
@@ -98,7 +99,7 @@ public final class ActionDialogs {
                 sources.toArray(new Observable[sources.size()])));
     }
 
-/** Låser OK-knappen tills ett eget villkor är sant. */
+    /** Locks the OK button until a caller-supplied condition is true. */
     public static void requireFilled(Dialog<?> dialog, ObservableBooleanValue filled) {
         Node ok = dialog.getDialogPane().lookupButton(ButtonType.OK);
         if (ok != null) {
@@ -106,7 +107,8 @@ public final class ActionDialogs {
         }
     }
 
-    /** Värdet som avgör om fältet är ifyllt, eller null för noder som inte går att fylla i. */
+    /** The value that decides whether the field is filled in, or null for nodes
+     *  that cannot be filled. */
     private static Observable valueSourceOf(Node field) {
         if (field instanceof TextInputControl) {
             return ((TextInputControl) field).textProperty();
@@ -137,7 +139,7 @@ public final class ActionDialogs {
         return false;
     }
 
-/** Bekräftelseruta med radbrytning, för Alertens textrad klipper av. */
+    /** Confirmation box with line breaks, because an Alert's text line clips. */
     public static Alert confirm(String title, String header, String message) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
@@ -150,7 +152,7 @@ public final class ActionDialogs {
         return alert;
     }
 
-/** Höjer dialogen när innehållet behöver mer plats. Bara uppåt. */
+    /** Grows the dialog when the content needs more room. Upwards only. */
     public static void growToFitContent(Dialog<?> dialog) {
         DialogPane pane = dialog.getDialogPane();
         if (pane.getScene() == null || pane.getScene().getWindow() == null) {
@@ -187,10 +189,6 @@ public final class ActionDialogs {
         alert.showAndWait();
     }
 
-    // =========================================================================
-    // 1. Kund (CustomerDialogs)
-    // =========================================================================
-
     public static void showCreateCustomerDialog(GarageSystem garage, Runnable onSuccess) {
         CustomerDialogs.showCreateCustomerDialog(garage, onSuccess);
     }
@@ -203,10 +201,6 @@ public final class ActionDialogs {
         CustomerDialogs.showDeleteCustomerConfirmation(garage, customer, onSuccess);
     }
 
-    // =========================================================================
-    // 2. Fordon (VehicleDialogs)
-    // =========================================================================
-
     public static void showCreateVehicleDialog(GarageSystem garage, Runnable onSuccess) {
         VehicleDialogs.showCreateVehicleDialog(garage, onSuccess);
     }
@@ -218,10 +212,6 @@ public final class ActionDialogs {
     public static void showDeleteVehicleConfirmation(GarageSystem garage, Vehicle vehicle, Runnable onSuccess) {
         VehicleDialogs.showDeleteVehicleConfirmation(garage, vehicle, onSuccess);
     }
-
-    // =========================================================================
-    // 3. Bokning (BookingDialogs)
-    // =========================================================================
 
     public static void showCreateBookingDialog(GarageSystem garage, Runnable onSuccess) {
         BookingDialogs.showCreateBookingDialog(garage, onSuccess);
@@ -243,10 +233,6 @@ public final class ActionDialogs {
     public static void showDeleteBookingConfirmation(GarageSystem garage, Booking booking, Runnable onSuccess) {
         BookingDialogs.showDeleteBookingConfirmation(garage, booking, onSuccess);
     }
-
-    // =========================================================================
-    // 4. Arbetsorder (WorkOrderDialogs)
-    // =========================================================================
 
     public static void showCreateWorkOrderDialog(GarageSystem garage, Runnable onSuccess) {
         WorkOrderDialogs.showCreateWorkOrderDialog(garage, onSuccess);
@@ -280,10 +266,6 @@ public final class ActionDialogs {
         WorkOrderDialogs.showCreateReclamationDialog(garage, workOrder, onSuccess);
     }
 
-    // =========================================================================
-    // 5. Fakturering & Betalning (BillingDialogs)
-    // =========================================================================
-
     public static void showCreateInvoiceDialog(GarageSystem garage, Runnable onSuccess) {
         BillingDialogs.showCreateInvoiceDialog(garage, onSuccess);
     }
@@ -304,11 +286,6 @@ public final class ActionDialogs {
         BillingDialogs.showInvoiceDocumentDialog(garage, invoice);
     }
 
-
-    // =========================================================================
-    // 6. Mekaniker (MechanicDialogs)
-    // =========================================================================
-
     public static void showCreateMechanicDialog(GarageSystem garage, Runnable onSuccess) {
         MechanicDialogs.showCreateMechanicDialog(garage, onSuccess);
     }
@@ -321,10 +298,6 @@ public final class ActionDialogs {
         MechanicDialogs.showDeleteMechanicConfirmation(garage, mechanic, onSuccess);
     }
 
-    // =========================================================================
-    // 7. Tjänster (ServiceItemDialogs)
-    // =========================================================================
-
     public static void showCreateServiceItemDialog(GarageSystem garage, Runnable onSuccess) {
         ServiceItemDialogs.showCreateServiceItemDialog(garage, onSuccess);
     }
@@ -336,10 +309,6 @@ public final class ActionDialogs {
     public static void showDeleteServiceItemConfirmation(GarageSystem garage, ServiceItem serviceItem, Runnable onSuccess) {
         ServiceItemDialogs.showDeleteServiceItemConfirmation(garage, serviceItem, onSuccess);
     }
-
-    // =========================================================================
-    // 8. Tidsluckor / Arbetsorderdetaljer (SlotDetailsDialog)
-    // =========================================================================
 
     public static void showSlotDetailsDialog(GarageSystem garage,
                                              TimeSlot slot,

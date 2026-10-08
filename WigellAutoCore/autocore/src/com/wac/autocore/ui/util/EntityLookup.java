@@ -14,7 +14,7 @@ import com.wac.autocore.service.GarageSystem;
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
 
-/** Läsbara namn på relaterade poster, via id. */
+/** Readable names for related records, looked up by id. */
 public final class EntityLookup {
 
     private EntityLookup() {}
@@ -170,14 +170,14 @@ public final class EntityLookup {
         return "-";
     }
 
-    /** Registreringsnumret på bilen som fakturan gäller. Fakturan hör till en arbetsorder. */
+    /** The registration number of the car the invoice is for. The invoice belongs to a work order. */
     public static String invoiceVehicleReg(GarageSystem garage, Invoice invoice) {
         if (garage == null || invoice == null) return "-";
         int bookingId = bookingIdForWorkOrder(garage, invoice.getWorkOrderId());
         return bookingId > 0 ? bookingVehicleReg(garage, bookingId) : "-";
     }
 
-    /** Registreringsnumret på bilen som betalningen gäller, via fakturan. */
+    /** The registration number of the car the payment is for, via the invoice. */
     public static String paymentVehicleReg(GarageSystem garage, Payment payment) {
         if (garage == null || payment == null) return "-";
         for (Invoice invoice : garage.getInvoices()) {
@@ -188,7 +188,7 @@ public final class EntityLookup {
         return "-";
     }
 
-    /** Bokningsnumret arbetsordern hör till, eller ett streck för ett utkast. */
+    /** The booking number the work order belongs to, or a dash for a draft. */
     public static String workOrderBookingRef(WorkOrder wo) {
         if (wo == null || wo.getBookingId() <= 0) return "-";
         return String.valueOf(wo.getBookingId());
@@ -200,7 +200,7 @@ public final class EntityLookup {
         return bookingVehicleReg(garage, wo.getBookingId());
     }
 
-    // Kunden som äger fordonet. Ett utkast har ingen bokning, bara ett fordon.
+    // The customer who owns the vehicle. A draft has no booking, only a vehicle.
     private static String vehicleCustomerName(GarageSystem garage, int vehicleId) {
         for (Vehicle v : garage.getVehicles()) {
             if (v.getId() == vehicleId) return customerName(garage, v.getCustomerId());
@@ -214,26 +214,25 @@ public final class EntityLookup {
         return bookingCustomerName(garage, wo.getBookingId());
     }
 
-
-    /** Bokningens valda tid som text, eller ett streck när ingen tid är vald. */
+    /** The booking's chosen time as text, or a dash when no time is chosen. */
     public static String bookingTime(Booking b) {
         if (b == null || b.getStartTime() == null) return "-";
         if (b.getEndTime() == null) return b.getStartTime().toString();
         return b.getStartTime() + " - " + b.getEndTime();
     }
 
-    /** Arbetsorderns datum, hämtat ur bokningen den skapades från. */
+    /** The work order's date, taken from the booking it was created from. */
     public static String workOrderDate(GarageSystem garage, WorkOrder wo) {
         Booking b = bookingForWorkOrder(garage, wo);
         return b == null || b.getDate() == null ? "-" : String.valueOf(b.getDate());
     }
 
-    /** Arbetsorderns tid, hämtad ur bokningen den skapades från. */
+    /** The work order's time, taken from the booking it was created from. */
     public static String workOrderTime(GarageSystem garage, WorkOrder wo) {
         return bookingTime(bookingForWorkOrder(garage, wo));
     }
 
-    /** Bokningen som arbetsordern hör till, eller null när den saknas. */
+    /** The booking the work order belongs to, or null when there is none. */
     private static Booking bookingForWorkOrder(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null || wo.getBookingId() <= 0) return null;
         for (Booking b : garage.getBookings()) {
@@ -242,7 +241,7 @@ public final class EntityLookup {
         return null;
     }
 
-    /** Bokningen som arbetsordern hör till, eller 0 om arbetsordern inte finns. */
+    /** The booking the work order belongs to, or 0 if the work order does not exist. */
     public static int bookingIdForWorkOrder(GarageSystem garage, int workOrderId) {
         if (garage == null || workOrderId <= 0) return 0;
         for (WorkOrder wo : garage.getWorkOrders()) {
@@ -253,7 +252,7 @@ public final class EntityLookup {
         return 0;
     }
 
-/** Fakturan som täcker arbetsordern. Den hör till bokningen, inte till en order. */
+    /** The invoice covering the work order. It belongs to the booking, not to one order. */
     public static Invoice invoiceForWorkOrder(GarageSystem garage, int workOrderId) {
         if (garage == null || workOrderId <= 0) return null;
 
@@ -277,8 +276,8 @@ public final class EntityLookup {
             }
         }
 
-// Fakturan kan ligga på en annan arbetsorder i samma bokning.
-        // så rader från andra bokningar får inte räknas hit.
+        // The invoice may sit on another work order in the same booking,
+        // so rows from other bookings must not be counted in here.
         for (Invoice inv : garage.getInvoices()) {
             if (bookingIdForWorkOrder(garage, inv.getWorkOrderId()) != order.getBookingId()) {
                 continue;
@@ -296,9 +295,9 @@ public final class EntityLookup {
     public static double workOrderServicePrice(GarageSystem garage, WorkOrder wo, int serviceItemId) {
         if (garage == null) return 0.0;
         if (wo != null) {
-            // Det frysta priset är priset som gällde när arbetet utfördes, och det ska
-            // visas även innan fakturan finns. Samma ordning som i detaljdialogen:
-            // fryst pris, sedan fakturaradens pris, sist katalogen.
+            // The frozen price is the price that applied when the work was done, and it is
+            // shown even before the invoice exists. Same order as in the details dialog:
+            // frozen price, then the invoice line's price, last the catalogue.
             Double frozenPrice = wo.getCompletedServicePrice(serviceItemId);
             if (frozenPrice != null) {
                 return frozenPrice.doubleValue();
@@ -320,7 +319,7 @@ public final class EntityLookup {
         return 0.0;
     }
 
-/** Tjänstenamnen på en arbetsorder, utan priser. Vyn är för mekanikerna. */
+    /** The service names on a work order, without prices. The view is for the mechanics. */
     public static String workOrderServices(GarageSystem garage, WorkOrder wo) {
         if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
             return "-";
@@ -405,8 +404,8 @@ public final class EntityLookup {
     public static double workOrderTotal(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null) return 0.0;
         if (wo.getServiceItemIds() == null) return 0.0;
-        // Summeras per tjänst med samma ordning som workOrderServicePrice, alltså
-        // fryst pris först. Då stämmer summan med det fakturan kommer att bygga.
+        // Summed per service in the same order as workOrderServicePrice, that is
+        // frozen price first. Then the sum matches what the invoice will add up to.
         double total = 0.0;
         for (Integer sid : wo.getServiceItemIds()) {
             total += workOrderServicePrice(garage, wo, sid.intValue());
@@ -424,7 +423,7 @@ public final class EntityLookup {
         return "-";
     }
 
-/** Kunden bakom en betalning, via faktura, arbetsorder, bokning och fordon. */
+    /** The customer behind a payment, via invoice, work order, booking and vehicle. */
     public static String paymentCustomerName(GarageSystem garage, Payment pay) {
         if (garage == null || pay == null) return "-";
         for (Invoice inv : garage.getInvoices()) {
@@ -435,7 +434,7 @@ public final class EntityLookup {
         return "-";
     }
 
-/** Total beräknad arbetstid för tjänsterna på arbetsordern. */
+    /** Total estimated work time for the services on the work order. */
     public static int workOrderTotalMinutes(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null || wo.getServiceItemIds() == null) {
             return 0;

@@ -17,20 +17,20 @@ import javafx.scene.layout.HBox;
 import java.util.List;
 import java.util.function.Function;
 
-/** Fabriksmetoder för tabeller med samma stil. */
+/** Factory methods for tables that share the same styling. */
 public final class TableFactory {
 
     private TableFactory() {}
 
-/** En TableView med sitt data, delad i sidor så listan aldrig växer ur rutan. */
+    /** A TableView with its data, split into pages so the list never outgrows the panel. */
     public static class FilterableTable<S> {
 
-        /** Rader per sida. Fler får ändå inte plats utan att rutan börjar scrolla. */
+        /** Rows per page. More would not fit without the panel starting to scroll anyway. */
         public static final int PAGE_SIZE = 20;
 
         private final TableView<S> tableView;
         private final ObservableList<S> baseList;
-        /** Raderna som visas just nu, alltså den aktuella sidan. */
+        /** The rows on screen right now, that is the current page. */
         private final ObservableList<S> pageItems;
         private int page;
 
@@ -50,7 +50,7 @@ public final class TableFactory {
             return tableView;
         }
 
-        /** Allt som finns, inte bara sidan som visas. */
+        /** Everything there is, not just the page on screen. */
         public ObservableList<S> getBaseList() {
             return baseList;
         }
@@ -72,7 +72,7 @@ public final class TableFactory {
             return pages < 1 ? 1 : pages;
         }
 
-        /** Första radnumret på sidan, räknat från 1. Tom lista ger 0. */
+        /** First row number on the page, counted from 1. An empty list gives 0. */
         public int getFirstRowNumber() {
             return baseList.isEmpty() ? 0 : page * PAGE_SIZE + 1;
         }
@@ -115,7 +115,7 @@ public final class TableFactory {
         return new FilterableTable<S>(data);
     }
 
-    /** Bläddringsraden under en tabell. Göms när allt får plats på en sida. */
+    /** The pager row below a table. Hidden when everything fits on one page. */
     public static <S> Node buildPager(FilterableTable<S> table) {
         Label showing = new Label();
         showing.getStyleClass().addAll("srow-sub", "small");
@@ -130,7 +130,7 @@ public final class TableFactory {
             boolean many = table.getPageCount() > 1;
             previous.setDisable(empty || !many || table.getPage() == 0);
             next.setDisable(empty || !many || table.getPage() >= table.getPageCount() - 1);
-            // Tom lista har inget att visa, men raden behåller sin höjd så panelen står still.
+            // An empty list has nothing to show, but the row keeps its height so the panel stays put.
             showing.setText(empty
                     ? ""
                     : com.wac.autocore.ui.i18n.I18n.get("list.showing",
@@ -154,81 +154,81 @@ public final class TableFactory {
         return row;
     }
 
-/** Luftmarginal: en kolumn med fast format får sin uppmätta bredd plus den här. */
+    /** Breathing room: a column of fixed width gets its measured width plus this. */
     public static final double AIR = 40;
 
-    /** ID-kolumnen ser likadan ut i varje tabell. "1042" behöver 47. */
+    /** The ID column looks the same in every table. "1042" needs 47. */
     public static final double W_ID = 55;
 
-    /** Registreringsnummer. 90 och inte 80, för reservtexten "Vehicle #12" behöver 86. */
+    /** Registration number. 90 and not 80, because the fallback text "Vehicle #12" needs 86. */
     public static final double W_REG_NR = 90;
 
-    /** Årsmodell, fyra siffror. "2012" behöver 47. */
+    /** Model year, four digits. "2012" needs 47. */
     public static final double W_YEAR = 55;
 
-    /** Kronbelopp. "24,995 kr" behöver 95. */
+    /** Amount in kronor. "24,995 kr" needs 95. */
     public static final double W_MONEY = 95;
 
-    /** Minuter. "270 min" är 52, men rubriken "Beräknad tid" är 73, så behovet är 90. */
+    /** Minutes. "270 min" is 52, but the heading "Beräknad tid" is 73, so the need is 90. */
     public static final double W_MINUTES = 90;
 
-    /** Klockslag i ett spann. "07:00 - 10:30" behöver 101. */
+    /** A time range. "07:00 - 10:30" needs 101. */
     public static final double W_TIME = 105;
 
-    /** Datum. "2026-10-05" behöver 88. */
+    /** Date. "2026-10-05" needs 88. */
     public static final double W_DATE = 100;
 
-    /** Datum och tid tillsammans. "2026-10-05 14:30" behöver 127. */
+    /** Date and time together. "2026-10-05 14:30" needs 127. */
     public static final double W_DATETIME = 135;
 
-/** Hänvisning till en annan post, som #1042. */
+    /** A reference to another record, like #1042. */
     public static final double W_REF = 95;
 
-    /** Statuschip. Det bredaste ordet, "Arbetsorder skapad", behöver 137. */
+    /** Status chip. The widest word, "Arbetsorder skapad", needs 137. */
     public static final double W_STATUS = 140;
 
-    /** Ja och nej-chip. Rubriken "Tillgänglig" behöver 80. */
+    /** Yes/no chip. The heading "Tillgänglig" needs 80. */
     public static final double W_FLAG = 90;
 
-    /** Telefonnummer. "070-123 45 67" behöver 101. */
+    /** Phone number. "070-123 45 67" needs 101. */
     public static final double W_PHONE = 110;
 
-    /** Bilmärke. Det längsta i startdatan, "Volkswagen", behöver 94. */
+    /** Car brand. The longest in the seed data, "Volkswagen", needs 94. */
     public static final double W_BRAND = 100;
 
-    /** Modellnamn. "V70" behöver 64. */
+    /** Model name. "V70" needs 64. */
     public static final double W_MODEL = 80;
 
-    /** Betalningstyp. "Kortbetalning" behöver 100. */
+    /** Payment type. "Kortbetalning" needs 100. */
     public static final double W_TYPE = 120;
 
-/** Personnamn, samma mått för Namn, Mekaniker och Kund. */
+    /** Person names, same width for Name, Mechanic and Customer. */
     public static final double W_PERSON_MIN = 130;
     public static final double W_PERSON_MAX = 260;
 
-    /** E-post. "anna.andersson@example.se" behöver 179. */
+    /** E-mail. "anna.andersson@example.se" needs 179. */
     public static final double W_EMAIL_MIN = 185;
     public static final double W_EMAIL_MAX = 320;
 
-    /** Beskrivning. Den längsta raden i startdatan behöver 161. */
+    /** Description. The longest line in the seed data needs 161. */
     public static final double W_TEXT_MIN = 150;
     public static final double W_TEXT_MAX = 400;
 
-    /** Tjänstelista med priser. "Bromsservice (2,495 kr), Årsservice (3,495 kr)" behöver 293. */
+    /** Service list with prices. "Bromsservice (2,495 kr), Årsservice (3,495 kr)" needs 293. */
     public static final double W_SERVICES_MIN = 240;
     public static final double W_SERVICES_MAX = 480;
 
-    /** Specialisering. "Bromsar och hjulupphängning" behöver 116. */
+    /** Specialization. "Bromsar och hjulupphängning" needs 116. */
     public static final double W_SPEC_MIN = 120;
     public static final double W_SPEC_MAX = 320;
 
-/** Kolumn för ett värde med fast format. Minst vad värdet behöver, högst det plus luft. */
+    /** Column for a value of fixed shape. At least what the value needs, at most that plus air. */
     public static <S> TableColumn<S, String> sizeCol(String title, double need,
                                                     Function<S, String> mapper) {
         return textCol(title, need, need + AIR, mapper);
     }
 
-    /** Statuschip med samma mått som sizeCol. */
+    /** Status chip with the same measurements as sizeCol. */
     public static <S> TableColumn<S, String> sizeBadge(String title, double need,
                                                       Function<S, String> mapper) {
         TableColumn<S, String> c = badgeCol(title, need, mapper);
@@ -237,7 +237,7 @@ public final class TableFactory {
         return c;
     }
 
-/** Textkolumn som får växa, men inte ta hela tabellen. */
+    /** Text column that may grow, but not take the whole table. */
     public static <S> TableColumn<S, String> textCol(String title, double minWidth, double maxWidth,
                                                      Function<S, String> mapper) {
         TableColumn<S, String> c = col(title, minWidth, mapper);
@@ -246,20 +246,19 @@ public final class TableFactory {
         return c;
     }
 
-/** ID-kolumnen, samma i alla tabeller. Ingen luftmarginal. */
+    /** The ID column, same in every table. No breathing room. */
     public static <S> TableColumn<S, String> idCol(Function<S, String> mapper) {
         return textCol(com.wac.autocore.ui.i18n.I18n.get("table.col.id"), W_ID, W_ID, mapper);
     }
 
-/** Standardtextkolumn. */
     public static <S> TableColumn<S, String> col(String title, double width,
                                                 Function<S, String> mapper) {
         TableColumn<S, String> c = new TableColumn<S, String>(title);
         c.setPrefWidth(width);
-        // Golvet är 70px, inte 40: en kolumn som pressas ihop till 40 klipper "2013" till "20…", och
-        // det är min-bredden (inte önskad bredd) som avgör hur långt tabellens
-        // CONSTRAINED_RESIZE_POLICY får krympa en kolumn. 70 räcker för fyrsiffriga id:n och korta
-        // värden; de långa textkolumnerna får ta resten.
+        // The floor is 70px, not 40: a column squeezed to 40 clips "2013" to "20…", and it is
+        // the min width (not the preferred width) that decides how far the table's
+        // CONSTRAINED_RESIZE_POLICY may shrink a column. 70 is enough for four-digit ids
+        // and short values; the long text columns take the rest.
         c.setMinWidth(Math.min(width, 70));
         if (width <= 70) {
             c.setMaxWidth(100);
@@ -268,13 +267,13 @@ public final class TableFactory {
         return c;
     }
 
-/** Statuskolumn med färgade märken. */
+    /** Status column with coloured badges. */
     public static <S> TableColumn<S, String> badgeCol(String title, double width,
                                                      Function<S, String> mapper) {
         TableColumn<S, String> c = new TableColumn<S, String>(title);
         c.setPrefWidth(width);
-        // Samma golv som textkolumnerna, men högre: en statuschip är bredare än sitt värde
-        // ("Genomförd" klipptes till "Geno…" när kolumnen pressades ihop).
+        // Same floor as the text columns, but higher: a status chip is wider than its value
+        // ("Genomförd" was clipped to "Geno…" when the column was squeezed).
         c.setMinWidth(Math.min(width, 95));
         c.setMaxWidth(Math.max(width * 1.5, 240));
         c.setCellValueFactory(cd -> new ReadOnlyStringWrapper(mapper.apply(cd.getValue())));

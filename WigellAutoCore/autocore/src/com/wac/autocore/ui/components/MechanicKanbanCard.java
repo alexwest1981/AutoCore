@@ -10,8 +10,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Ett mekanikerkort på kanban-tavlan: huvudet med vyväxlaren och kroppen
- * med dag-, vecka- eller månadsvyn. Själv tavlan byggs av KanbanBoard.
+ * A mechanic card on the Kanban board: the header with the view switcher and the body
+ * with the day, week or month view. The board itself is built by KanbanBoard.
  */
 public class MechanicKanbanCard {
 

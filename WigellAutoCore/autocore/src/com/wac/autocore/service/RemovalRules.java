@@ -7,7 +7,7 @@ import com.wac.autocore.model.WorkOrder;
 
 import java.util.List;
 
-/** Skydden mot att ta bort en rad som något annat pekar på. */
+/** The guards against deleting a row that something else points at. */
 public class RemovalRules {
 
     private final WorkOrderService workOrderService;
@@ -76,8 +76,8 @@ public class RemovalRules {
                 }
             }
         }
-        // Ett fordon vars jobb har fakturerats får inte tas bort. Fakturan pekar på arbetet,
-        // arbetet på bokningen och bokningen på fordonet. Kunden nekas via sina fordon.
+        // A vehicle whose jobs have been invoiced cannot be deleted. The invoice points at the
+        // work, the work at the booking, and the booking at the vehicle. The customer is refused through their vehicles.
         for (Booking b : bookings()) {
             if (b.getVehicleId() == vehicleId) {
                 for (WorkOrder wo : workOrders()) {
@@ -90,7 +90,7 @@ public class RemovalRules {
         return true;
     }
 
-    /** Sant om arbetsordern har en faktura. Fakturan pekar på arbetet, arbetet på bokningen. */
+    /** True if the work order has an invoice. The invoice points at the work, the work at the booking. */
     public boolean hasInvoiceForWorkOrder(int workOrderId) {
         for (Invoice invoice : invoices()) {
             if (invoice.getWorkOrderId() == workOrderId) {
@@ -106,8 +106,8 @@ public class RemovalRules {
                 if (!"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
                     return false;
                 }
-                // En slutförd order får inte lämna en faktura som pekar på en bokning
-                // som inte finns, alltså nekas borttagningen så länge fakturan finns.
+                // A finished order must not leave an invoice pointing at a booking that no longer
+                // exists, so the deletion is refused for as long as the invoice is there.
                 if (hasInvoiceForWorkOrder(wo.getId())) {
                     return false;
                 }
@@ -126,8 +126,8 @@ public class RemovalRules {
                 }
             }
         }
-        // Tjänsten får inte heller tas bort så länge den ligger i en bokning, oavsett
-        // arbetsorderns status. Annars pekar bokningsraden på en tjänst som inte finns.
+        // The service cannot be deleted either while it sits in a booking, whatever the work
+        // order's status. Otherwise the booking row points at a service that does not exist.
         for (Booking b : bookings()) {
             if (b.getServiceItemIds() != null) {
                 for (int id : b.getServiceItemIds()) {

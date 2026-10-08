@@ -7,7 +7,7 @@ import java.util.List;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
 
-/** Lägger temats stilmall på en scen. */
+/** Puts the theme's stylesheet on a scene. */
 public final class ThemeManager {
 
     private ThemeManager() {}
@@ -21,8 +21,7 @@ public final class ThemeManager {
         return currentScene;
     }
 
-
-/** Komponentlagret, en fil per område. Ordningen är den reglerna låg i, rör den inte. */
+    /** The component layer, one file per area. The order is the one the rules had, do not touch it. */
     private static final String[] COMPONENTS = {
         "/com/wac/autocore/theme/components.css",
         "/com/wac/autocore/theme/dashboard.css",

@@ -45,11 +45,9 @@ public class Invoice {
         return invoiceDate;
     }
 
-
     public double getAmount() {
         return amount;
     }
-
 
     public double getDiscount() {
         return discount;
@@ -76,15 +74,15 @@ public class Invoice {
         this.totalAmount = Math.round((amount - discount) * 100.0) / 100.0;
     }
 
-/** Momsen läggs bara på fakturan, inte i tabellerna. */
+    /** The VAT is added on the invoice only, not in the tables. */
     public static final double VAT_RATE = 0.25;
 
-    /** Momsen på det som ska betalas, avrundad till ören. */
+    /** The VAT on what is to be paid, rounded to the nearest öre. */
     public double getVatAmount() {
         return Math.round(this.totalAmount * VAT_RATE * 100.0) / 100.0;
     }
 
-    /** Att betala inklusive moms. Summan blir exakt de två raderna tillsammans. */
+    /** The amount due including VAT. The sum is exactly the two rows together. */
     public double getTotalIncludingVat() {
         return Math.round((this.totalAmount + getVatAmount()) * 100.0) / 100.0;
     }
@@ -96,7 +94,6 @@ public class Invoice {
     public void addLine(InvoiceLine line) {
         lines.add(line);
     }
-
 
     @Override
     public String toString() {

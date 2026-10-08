@@ -41,7 +41,6 @@ public class MonthDayStatus {
         return isWeekend;
     }
 
-
     public boolean isMechanicAvailable() {
         return isMechanicAvailable;
     }

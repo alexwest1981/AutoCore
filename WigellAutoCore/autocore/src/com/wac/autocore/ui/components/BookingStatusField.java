@@ -10,9 +10,9 @@ import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.UiFormatters;
 
 /**
- * Beskrivningen och statusen i bokningsformuläret. Statusen finns bara vid
- * redigering: är arbetet påbörjat får den inte gå tillbaka till Bokad eller
- * Bekräftad, och bokningen får inte avbokas, för då öppnas låset på tjänsterna igen.
+ * The description and the status in the booking form. The status only appears while
+ * editing: once the job has started it cannot go back to Booked or Confirmed, and the
+ * booking cannot be cancelled, because that unlocks the services again.
  */
 class BookingStatusField {
 
@@ -53,6 +53,6 @@ class BookingStatusField {
 
     TextField getDesc() { return desc; }
 
-    /** Statuslistan, eller null för en ny bokning. */
+    /** The status list, or null for a new booking. */
     ComboBox<String> getStatus() { return status; }
 }

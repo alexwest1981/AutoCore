@@ -143,7 +143,7 @@ public class WorkOrderRepository {
                 insert.setInt(2, serviceItemId);
                 insert.setInt(3, isCompleted);
 
-                // Spara priset som gällde när arbetet utfördes.
+                // Store the price that applied when the job was performed.
                 Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
                 if (frozenPrice == null) {
                     insert.setNull(4, Types.REAL);
@@ -186,7 +186,6 @@ public class WorkOrderRepository {
         }
     }
 
-
     private WorkOrder buildWorkOrder(ResultSet resultSet) throws SQLException {
         WorkOrder workOrder = new WorkOrder(
                 resultSet.getInt("id"),
@@ -203,7 +202,7 @@ public class WorkOrderRepository {
         if (status != null) {
             workOrder.setStatus(status);
         }
-        // En rad utan typ (äldre eller halvfärdig) behåller modellens standard i stället för tomt.
+        // A row with no type (older or half-finished) keeps the model's default instead of empty.
         if (type != null && !type.trim().isEmpty()) {
             workOrder.setType(type);
         }

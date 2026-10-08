@@ -12,25 +12,21 @@ import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.model.DayLoad;
 import com.wac.autocore.model.MonthDayStatus;
 
-/** Mekanikernas bokade timmar. */
+/** The mechanics' booked hours. */
 public class MechanicSchedule {
 
     public static final int START_HOUR = 7;
     public static final int END_HOUR = 16;
-    public static final int WORK_HOURS_PER_DAY = END_HOUR - START_HOUR; // 9 timmar (7-16)
+    public static final int WORK_HOURS_PER_DAY = END_HOUR - START_HOUR; // 9 hours (7-16)
 
-
-
-
-
-    // Singleton instance för delat tillstånd i UI
+    // Singleton instance for the shared state in the UI
     private static final MechanicSchedule INSTANCE = new MechanicSchedule();
 
     public static MechanicSchedule getInstance() {
         return INSTANCE;
     }
 
-    // Nyckel: "mechanicId:YYYY-MM-DD:hour"
+    // Key: "mechanicId:YYYY-MM-DD:hour"
     private final Map<String, TimeSlot> slots = new HashMap<String, TimeSlot>();
     private boolean seeded = false;
     private boolean databaseSyncEnabled = true;
@@ -43,7 +39,7 @@ public class MechanicSchedule {
         return mechanicId + ":" + date.toString() + ":" + hour;
     }
 
-/** Läser in arbetsordrarna från databasen och mappar dem till timluckor. */
+    /** Reads the work orders from the database and maps them onto hour slots. */
     public synchronized void syncFromDatabase() {
         if (!databaseSyncEnabled) return;
         String sql = "SELECT wo.id AS wo_id, wo.mechanic_id, wo.status AS wo_status, "
@@ -86,8 +82,8 @@ public class MechanicSchedule {
                 }
 
                 if (!alreadyBooked) {
-                    // Bokningens egen tid först. En drop-in bokas på timmen kunden kom och ska synas
-                    // där, inte i första bästa lucka.
+                    // The booking's own time first. A drop-in is booked on the hour the customer
+                    // arrived and should show there, not in the first slot that happens to be free.
                     if (bookAtStoredTime(mechId, date, rs.getString("start_time"), bId, woId, cust, reg, desc) < 0) {
                         for (int hour = START_HOUR + 1; hour < END_HOUR; hour++) {
                             String key = slotKey(mechId, date, hour);
@@ -101,7 +97,7 @@ public class MechanicSchedule {
                 }
             }
 
-            // Tider vars arbetsorder inte längre är aktiv lämnar schemat.
+            // Slots whose work order is no longer active leave the schedule.
             java.util.Iterator<java.util.Map.Entry<String, TimeSlot>> staleSlots = slots.entrySet().iterator();
             while (staleSlots.hasNext()) {
                 TimeSlot slot = staleSlots.next().getValue();
@@ -110,11 +106,11 @@ public class MechanicSchedule {
                 }
             }
         } catch (Exception ignored) {
-            // Schemat kan användas innan databasen hunnit bli klar.
+            // The schedule can be used before the database has become ready.
         }
     }
 
-/** Nästa datum efter afterDate då mekanikern har minst en bokad timme. */
+    /** The next date after afterDate on which the mechanic has at least one booked hour. */
     public synchronized LocalDate getNextBookingDate(int mechanicId, LocalDate afterDate) {
         syncFromDatabase();
         LocalDate nextDate = null;
@@ -131,7 +127,7 @@ public class MechanicSchedule {
         return nextDate;
     }
 
-    /** Lägger in exempelbokningar i schemat första gången vyn används. */
+    /** Puts the sample bookings into the schedule the first time the view is used. */
     public synchronized void initDefaultSeedData() {
         if (seeded) return;
         seeded = true;
@@ -139,12 +135,12 @@ public class MechanicSchedule {
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);
 
-// Exempel: mekaniker 1 har 08-10 och 13-14 i dag, alltså 3 timmar bokade.
+        // Example: mechanic 1 has 08-10 and 13-14 today, so 3 hours booked.
         bookSlotInternal(1, today, 8, 1, 1, "Anna Andersson", "ABC123", "seed.booking.oil_change_filter.description");
         bookSlotInternal(1, today, 9, 1, 1, "Anna Andersson", "ABC123", "seed.schedule.oil_change_continued.description");
         bookSlotInternal(1, today, 13, 2, 2, "Erik Eriksson", "DEF456", "seed.booking.front_brake_inspection.description");
 
-        // Mekaniker 1: Imorgon 08-12 och 13-16 -> 7h bokade (Röd / Full)
+        // Mechanic 1: tomorrow 08-12 and 13-16 -> 7h booked (red / full)
         for (int h = 8; h <= 11; h++) {
             bookSlotInternal(1, tomorrow, h, 3, 5, "Maria Svensson", "GHI789", "seed.booking.full_brake_overhaul.description");
         }
@@ -152,22 +148,22 @@ public class MechanicSchedule {
             bookSlotInternal(1, tomorrow, h, 3, 5, "Maria Svensson", "GHI789", "seed.booking.full_brake_overhaul.description");
         }
 
-        // Mekaniker 1: Dagen efter imorgon -> 1h bokad (Grön)
+        // Mechanic 1: the day after tomorrow -> 1h booked (green)
         bookSlotInternal(1, today.plusDays(2), 10, 1, 1, "Anna Andersson", "ABC123", "seed.schedule.oil_follow_up.description");
 
-        // Mekaniker 2 (Sara Nilsson): Idag 09-12 och 14-16 -> 5h bokade (Orange)
+        // Mechanic 2 (Sara Nilsson): today 09-12 and 14-16 -> 5h booked (orange)
         bookSlotInternal(2, today, 9, 4, 3, "Olof Palme", "XYZ999", "seed.booking.brake_calipers_pads.description");
         bookSlotInternal(2, today, 10, 4, 3, "Olof Palme", "XYZ999", "seed.booking.brake_calipers_pads.description");
         bookSlotInternal(2, today, 11, 4, 3, "Olof Palme", "XYZ999", "seed.schedule.brake_system_bleeding.description");
         bookSlotInternal(2, today, 14, 4, 3, "Olof Palme", "XYZ999", "seed.schedule.brake_hose_inspection.description");
         bookSlotInternal(2, today, 15, 4, 3, "Olof Palme", "XYZ999", "seed.schedule.final_brake_inspection.description");
 
-        // Mekaniker 2: Igår 08-09 (Grön)
+        // Mechanic 2: yesterday 08-09 (green)
         bookSlotInternal(2, today.minusDays(1), 8, 4, 3, "Olof Palme", "XYZ999", "seed.schedule.quick_brake_check.description");
 
-        // Mekaniker 3 (Mikael Berg): Idag 07-08 -> 1h (Grön)
+        // Mechanic 3 (Mikael Berg): today 07-08 -> 1h (green)
         bookSlotInternal(3, today, 7, 5, 4, "Sven Melander", "AAA001", "seed.booking.obd2_fault_codes.description");
-        // Mekaniker 3: Imorgon 10-15 -> 5h (Orange)
+        // Mechanic 3: tomorrow 10-15 -> 5h (orange)
         for (int h = 10; h <= 14; h++) {
             bookSlotInternal(3, tomorrow, h, 6, 6, "Gustav Vasa", "BBB002", "seed.booking.electronic_fault_diagnosis.description");
         }
@@ -185,9 +181,9 @@ public class MechanicSchedule {
         slots.put(slotKey(mechanicId, date, hour), slot);
     }
 
-    /** Bokar bokningens egen timme när den finns och är ledig, annars -1 så anroparen får leta en
-     *  ledig lucka. Är timmen tagen av någon annan flyttas ingen annans jobb undan för en drop-in;
-     *  då får jobbet en ledig timme i stället. */
+    /** Books the booking's own hour when it exists and is free, otherwise -1 so the caller has to
+     *  go looking for a free slot. If the hour is taken by someone else, nobody else's job is moved
+     *  out of the way for a drop-in; the job gets a free hour instead. */
     private int bookAtStoredTime(int mechanicId, LocalDate date, String startTime, int bookingId,
                                  int workOrderId, String customer, String vehicleReg, String desc) {
         if (startTime == null || startTime.trim().isEmpty()) {
@@ -210,7 +206,7 @@ public class MechanicSchedule {
         return hour;
     }
 
-/** Alla tidsslottar för en mekaniker en dag, 07:00 till 16:00. */
+    /** Every time slot for a mechanic on one day, 07:00 to 16:00. */
     public synchronized List<TimeSlot> getSlotsForDay(int mechanicId, LocalDate date) {
         syncFromDatabase();
         List<TimeSlot> result = new ArrayList<TimeSlot>();
@@ -225,7 +221,7 @@ public class MechanicSchedule {
         return result;
     }
 
-/** Bokar en timme för en mekaniker. */
+    /** Books one hour for a mechanic. */
     public synchronized boolean bookSlot(int mechanicId, LocalDate date, int hour, int bookingId, int workOrderId,
                                          String customer, String vehicleReg, String desc) {
         if (hour < START_HOUR || hour >= END_HOUR) {
@@ -234,7 +230,7 @@ public class MechanicSchedule {
         String key = slotKey(mechanicId, date, hour);
         TimeSlot existing = slots.get(key);
         if (existing != null && existing.isBooked()) {
-            return false; // Redan bokad
+            return false; // already booked
         }
 
         TimeSlot slot = new TimeSlot(mechanicId, date, hour);
@@ -248,7 +244,7 @@ public class MechanicSchedule {
         return true;
     }
 
-/** Avbokar alla timmar som hör till en bokning. */
+    /** Cancels every hour that belongs to a booking. */
     public synchronized boolean cancelSlotForBooking(int bookingId) {
         if (bookingId <= 0) return false;
         boolean removed = false;
@@ -263,7 +259,7 @@ public class MechanicSchedule {
         return removed;
     }
 
-/** Belastningen en dag, 0 till 9 timmar. */
+    /** The load on one day, 0 to 9 hours. */
     public synchronized DayLoad getDayLoad(int mechanicId, LocalDate date) {
         List<TimeSlot> daySlots = getSlotsForDay(mechanicId, date);
         int booked = 0;
@@ -275,19 +271,19 @@ public class MechanicSchedule {
 
         LoadLevel level;
         if (booked <= 2) {
-            level = LoadLevel.FREE;      // 0-2h (Grön)
+            level = LoadLevel.FREE;      // 0-2h (green)
         } else if (booked <= 4) {
-            level = LoadLevel.MODERATE;  // 3-4h (Gul)
+            level = LoadLevel.MODERATE;  // 3-4h (yellow)
         } else if (booked <= 6) {
-            level = LoadLevel.BUSY;      // 5-6h (Orange)
+            level = LoadLevel.BUSY;      // 5-6h (orange)
         } else {
-            level = LoadLevel.FULL;      // 7+h (Röd)
+            level = LoadLevel.FULL;      // 7+h (red)
         }
 
         return new DayLoad(date, mechanicId, booked, WORK_HOURS_PER_DAY, level, daySlots);
     }
 
-/** Belastningen per dag en hel vecka. */
+    /** The load per day for a whole week. */
     public synchronized List<DayLoad> getWeekLoads(int mechanicId, LocalDate weekStartDate) {
         LocalDate monday = weekStartDate.with(DayOfWeek.MONDAY);
         List<DayLoad> result = new ArrayList<DayLoad>();
@@ -298,7 +294,7 @@ public class MechanicSchedule {
         return result;
     }
 
-/** Månadens dagar med tillgänglighet. */
+    /** The month's days with availability. */
     public synchronized List<MonthDayStatus> getMonthDays(int mechanicId, YearMonth yearMonth, boolean mechanicAvailableFlag) {
         List<MonthDayStatus> result = new ArrayList<MonthDayStatus>();
         LocalDate firstOfMonth = yearMonth.atDay(1);
@@ -336,7 +332,7 @@ public class MechanicSchedule {
         return result;
     }
 
-/** Rensar en borttagen mekanikers timmar. */
+    /** Clears the hours of a removed mechanic. */
     public synchronized void removeSlotsForMechanic(int mechanicId) {
         java.util.Iterator<Map.Entry<String, TimeSlot>> it = slots.entrySet().iterator();
         while (it.hasNext()) {

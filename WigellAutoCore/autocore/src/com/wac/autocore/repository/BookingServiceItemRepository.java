@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Tabellen booking_service_items: tjänsterna på en bokning. */
+/** The booking_service_items table: the services on a booking. */
 public class BookingServiceItemRepository {
 
     public List<ServiceItem> findByBookingId(int bookingId) throws SQLException {
@@ -36,7 +36,7 @@ public class BookingServiceItemRepository {
                             resultSet.getString("description"),
                             resultSet.getDouble("price"),
                             resultSet.getInt("estimated_minutes"));
-                    // Kravet måste med, annars ser varje tjänst kravlös ut och alla mekaniker blir behöriga.
+                    // The requirement has to come along, otherwise every service looks requirement-free and every mechanic becomes qualified.
                     item.setSpecialization(resultSet.getString("specialization"));
                     items.add(item);
                 }
@@ -52,7 +52,7 @@ public class BookingServiceItemRepository {
         }
     }
 
-/** Sparar tjänsterna på en öppen anslutning, så allt går i samma transaktion. */
+    /** Saves the services on an open connection, so everything runs in one transaction. */
     public void save(Connection connection, Booking booking) throws SQLException {
         String deleteLinks = "DELETE FROM booking_service_items WHERE booking_id = ?";
         String insertLink = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id) VALUES (?, ?)";

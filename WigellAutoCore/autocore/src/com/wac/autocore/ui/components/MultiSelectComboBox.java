@@ -24,10 +24,10 @@ import javafx.scene.text.Text;
 import java.util.List;
 import java.util.function.Function;
 
-/** Flervalsfält med chips och kryssrutor. Listan ritas ovanpå vyn, inte i ett popup. */
+/** Multi-select field with chips and check boxes. The list is drawn on top of the view, not in a popup. */
 public class MultiSelectComboBox<T> extends HBox {
 
-    /** Nyckel på det lager vi lagt in i scenen, så att flera fält kan dela samma lager. */
+    /** Key for the layer we put into the scene, so several fields can share one layer. */
     private static final String LAYER_KEY = "multi-select-overlay-layer";
 
     private final ObservableList<T> items = FXCollections.observableArrayList();
@@ -35,19 +35,19 @@ public class MultiSelectComboBox<T> extends HBox {
     private final Function<T, String> labelProvider;
     private final Function<T, String> subLabelProvider;
     private final String placeholder;
-    /** Avgör när två poster är samma sak. Modellerna saknar equals, så sätt den till id:t. */
+    /** Decides when two items are the same thing. The models have no equals, so set it to the id. */
     private Function<T, Object> keyFunction = item -> item;
-    /** Chipset har mindre plats än listraden. Standard: samma text som raden. */
+    /** The chip has less room than the list row. Default: the same text as the row. */
     private Function<T, String> chipTextProvider;
 
     private final HBox chips = new HBox(6);
     private final ScrollPane chipScroll = new ScrollPane(chips);
     private final Label placeholderLabel = new Label();
-    /** Pilen: samma nodbygge som appens ComboBoxar, så att CSS ger den samma form och plats. */
+    /** The arrow: same node structure as the app's ComboBoxes, so CSS gives it the same shape and place. */
     private final Region caret = new Region();
     private final StackPane caretButton = new StackPane(caret);
     private final VBox rows = new VBox(2);
-    /** Rad och kryssruta per nyckel, så att en rad kan uppdateras utan att byggas om. */
+    /** Row and check box per key, so a row can be updated without being rebuilt. */
     private final java.util.Map<Object, HBox> rowByKey = new java.util.LinkedHashMap<Object, HBox>();
     private final java.util.Map<Object, CheckBox> checkBoxByKey = new java.util.LinkedHashMap<Object, CheckBox>();
     private final ScrollPane rowScroll = new ScrollPane(rows);
@@ -71,7 +71,7 @@ public class MultiSelectComboBox<T> extends HBox {
         getStyleClass().add("multi-select");
         setFocusTraversable(true);
         setAlignment(Pos.CENTER_LEFT);
-        // Höjd och luft kommer från multi-select-reglerna i components.css (31 px).
+        // Height and padding come from the multi-select rules in components.css (31 px).
 
         chips.setAlignment(Pos.CENTER_LEFT);
         chipScroll.getStyleClass().add("multi-select-scroll");
@@ -87,16 +87,17 @@ public class MultiSelectComboBox<T> extends HBox {
         caret.getStyleClass().add("arrow");
         caret.setMouseTransparent(true);
 
-        // Chipraden är den del som ska växa, så att pilen alltid hamnar vid fältets högerkant.
+        // The chip row is the part that grows, so the arrow always ends up at the field's right edge.
         HBox.setHgrow(chipScroll, Priority.ALWAYS);
         chipScroll.setMaxWidth(Double.MAX_VALUE);
-        // Klick var som helst i fältet öppnar listan. Filtret ligger på fältet och kör före barnen,
-        // så chipraden kan inte sluka klicket. Krysset på ett chip hoppas över.
+        // A click anywhere in the field opens the list. The filter sits on the field and runs
+        // before the children, so the chip row cannot swallow the click. The cross on a chip is
+        // passed over.
         addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
             if (isInsideClass((Node) e.getTarget(), "multi-select-chip-close")) {
                 return;
             }
-            // Fältet tar fokus själv, annars stjäl chipraden det och fokusringen uteblir.
+            // The field takes focus itself, otherwise the chip row steals it and the focus ring never shows.
             requestFocus();
             toggleList();
         });
@@ -113,22 +114,19 @@ public class MultiSelectComboBox<T> extends HBox {
 
         selected.addListener((javafx.collections.ListChangeListener<T>) c -> {
             renderChips();
-            // Raderna uppdateras på plats, de byggs inte om.
+            // The rows are updated in place, they are not rebuilt.
             updateRows();
         });
         renderChips();
         renderRows();
     }
 
-    // --- data -----------------------------------------------------------------
-
-
     public void setItems(List<T> values) {
         items.setAll(values);
         renderRows();
     }
 
-    /** De valda posterna, i den ordning de valdes. */
+    /** The selected items, in the order they were selected. */
     public ObservableList<T> getSelectedItems() {
         return selected;
     }
@@ -136,19 +134,18 @@ public class MultiSelectComboBox<T> extends HBox {
     public void setSelectedItems(List<T> values) {
         selected.clear();
         for (T item : values) {
-            // Dubbletter i indata ska inte kunna bli två val av samma sak.
+            // Duplicates in the input must not become two selections of the same thing.
             addSelectedItem(item);
         }
     }
 
-
-    /** Texten i chipset i fältet. Utan egen provider används radtexten. */
+    /** The text in the field's chip. Without a provider of its own, the row text is used. */
     public void setChipTextProvider(Function<T, String> provider) {
         this.chipTextProvider = provider;
         renderChips();
     }
 
-    /** Nyckeln per post, till exempel ServiceItem::getId. */
+    /** The key per item, for example ServiceItem::getId. */
     public void setKeyProvider(Function<T, Object> keyProvider) {
         if (keyProvider != null) {
             this.keyFunction = keyProvider;
@@ -157,12 +154,12 @@ public class MultiSelectComboBox<T> extends HBox {
         renderRows();
     }
 
-    /** Sant om posten redan är vald, jämfört med nyckeln. */
+    /** True if the item is already selected, compared by key. */
     public boolean isSelectedItem(T item) {
         return isSelectedKey(keyFunction.apply(item));
     }
 
-    /** Lägger till posten bara om nyckeln inte redan finns bland de valda. */
+    /** Adds the item only if the key is not already among the selected ones. */
     public boolean addSelectedItem(T item) {
         if (isSelectedItem(item)) {
             return false;
@@ -171,7 +168,7 @@ public class MultiSelectComboBox<T> extends HBox {
         return true;
     }
 
-    /** Tar bort posten med samma nyckel, oavsett vilken instans som ligger i listan. */
+    /** Removes the item with the same key, whichever instance sits in the list. */
     public boolean removeSelectedItem(T item) {
         Object key = keyFunction.apply(item);
         for (int i = 0; i < selected.size(); i++) {
@@ -183,16 +180,14 @@ public class MultiSelectComboBox<T> extends HBox {
         return false;
     }
 
-    // --- rendering ------------------------------------------------------------
-
     private void renderChips() {
         chips.getChildren().clear();
         for (T item : selected) {
             chips.getChildren().add(chip(item));
         }
         boolean empty = selected.isEmpty();
-        // Chipraden stannar i layouten även när den är tom, annars växer ingenting i fältet och
-        // pilen hamnar direkt efter platshållartexten i stället för vid högerkanten.
+        // The chip row stays in the layout even when it is empty, otherwise nothing in the field
+        // grows and the arrow lands right after the placeholder text instead of at the right edge.
         placeholderLabel.setVisible(empty);
         placeholderLabel.setManaged(empty);
         chipScroll.setVisible(!empty);
@@ -213,7 +208,7 @@ public class MultiSelectComboBox<T> extends HBox {
         HBox chip = new HBox(6, theLabel, close);
         chip.getStyleClass().add("multi-select-chip");
         chip.setAlignment(Pos.CENTER_LEFT);
-        // Chipsen ska hålla sin egen höjd inuti fältet, inte töjas till fältets.
+        // The chips keep their own height inside the field, they are not stretched to the field's.
         chip.setMaxHeight(Region.USE_PREF_SIZE);
         chip.setMinHeight(Region.USE_PREF_SIZE);
         return chip;
@@ -273,7 +268,7 @@ public class MultiSelectComboBox<T> extends HBox {
         return row;
     }
 
-    /** Sant om en post med den nyckeln ligger vald. */
+    /** True if an item with that key is selected. */
     private boolean isSelectedKey(Object key) {
         for (T chosenItem : selected) {
             if (java.util.Objects.equals(keyFunction.apply(chosenItem), key)) {
@@ -283,7 +278,7 @@ public class MultiSelectComboBox<T> extends HBox {
         return false;
     }
 
-    /** Kryssar i de rader som redan finns i stället för att bygga om listan. */
+    /** Ticks the rows that already exist instead of rebuilding the list. */
     private void updateRows() {
         for (java.util.Map.Entry<Object, HBox> e : rowByKey.entrySet()) {
             boolean chosenItem = isSelectedKey(e.getKey());
@@ -312,9 +307,7 @@ public class MultiSelectComboBox<T> extends HBox {
         return rowText(item);
     }
 
-    // --- listan ---------------------------------------------------------------
-
-    /** Öppnar listan om den är stängd, annars stänger den. */
+    /** Opens the list if it is closed, otherwise closes it. */
     public void toggleList() {
         if (open) {
             hideList();
@@ -323,7 +316,7 @@ public class MultiSelectComboBox<T> extends HBox {
         }
     }
 
-    /** Öppnar listan. Gör inget om den redan är open. */
+    /** Opens the list. Does nothing if it is already open. */
     public void showList() {
         if (open || getScene() == null) {
             return;
@@ -337,7 +330,7 @@ public class MultiSelectComboBox<T> extends HBox {
         overlay.setMouseTransparent(false);
         overlayLayer.getChildren().add(overlay);
 
-        // Bredden följer det längsta innehållet, så att inget namn klipps eller trycks ihop.
+        // The width follows the longest content, so no name gets clipped or squeezed.
         double textbredd = 0;
         for (T item : items) {
             Text measurer = new Text(rowText(item));
@@ -363,9 +356,9 @@ public class MultiSelectComboBox<T> extends HBox {
             getStyleClass().add("showing");
         }
 
-        // Placera listan direkt under fältet, i scenens koordinater, på hela pixlar. Får den inte
-        // plats där hamnar den ovanför i stället: i en dialog som är precis så hög som sitt innehåll
-        // ligger sista fältet nära nederkanten, och då klipptes nedersta raden av fönsterkanten.
+        // Place the list right below the field, in scene coordinates, on whole pixels. If it does
+        // not fit there it goes above instead: in a dialog that is exactly as tall as its content
+        // the last field sits near the bottom edge, and then the bottom row was clipped by the window.
         Bounds b = localToScene(getBoundsInLocal());
         panel.autosize();
         panel.applyCss();
@@ -376,8 +369,8 @@ public class MultiSelectComboBox<T> extends HBox {
         if (y + panelHeight > scene.getHeight()) {
             y = Math.round(b.getMinY()) - panelHeight - 2;
         }
-        // Går den inte in ens ovanför (mycket kort fönster) kläms den innanför kanten, så att
-        // sista raden alltid går att klicka.
+        // If it does not fit above either (a very short window) it is pressed inside the edge, so
+        // the last row is always clickable.
         x = Math.max(0, Math.min(x, scene.getWidth() - width));
         y = Math.max(0, Math.min(y, scene.getHeight() - panelHeight));
 
@@ -399,7 +392,7 @@ public class MultiSelectComboBox<T> extends HBox {
         scene.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, escape);
     }
 
-    /** Stänger listan om den är open. */
+    /** Closes the list if it is open. */
     public void hideList() {
         if (!open) {
             return;
@@ -431,7 +424,7 @@ public class MultiSelectComboBox<T> extends HBox {
         escape = null;
     }
 
-    /** Sant om noden eller någon av dess föräldrar har den stilmallen. */
+    /** True if the node or any of its parents has that stylesheet class. */
     private static boolean isInsideClass(Node target, String styleClass) {
         Node n = target;
         while (n != null) {
@@ -454,7 +447,7 @@ public class MultiSelectComboBox<T> extends HBox {
         return false;
     }
 
-    /** Lägger listan i ett lager ovanpå vyn. Skapas en gång och delas av scenens fält. */
+    /** Puts the list in a layer on top of the view. Created once and shared by the scene's fields. */
     private static StackPane overlayLayer(Scene scene) {
         Parent root = scene.getRoot();
         if (root instanceof StackPane && Boolean.TRUE.equals(root.getProperties().get(LAYER_KEY))) {
@@ -466,6 +459,5 @@ public class MultiSelectComboBox<T> extends HBox {
         scene.setRoot(overlayLayer);
         return overlayLayer;
     }
-
 
 }

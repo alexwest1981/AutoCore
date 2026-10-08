@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
 
-/** Markerar vilka arbeten på ordern som är utförda. Priset fryses i samma stund. */
+/** Marks which jobs on the order are done. The price is frozen at the same moment. */
 final class MarkPerformedDialog {
 
     private MarkPerformedDialog() {}

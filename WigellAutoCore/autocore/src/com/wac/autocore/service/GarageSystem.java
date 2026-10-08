@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-/** Ingången som gränssnittet och textversionen anropar. Kopplar vidare till tjänsterna. */
+/** The entry point the interface and the text version call. Passes on to the services. */
 public class GarageSystem {
 
     private final com.wac.autocore.ui.ConsolePrinter printer = new com.wac.autocore.ui.ConsolePrinter();
@@ -94,27 +94,27 @@ public class GarageSystem {
         return mechanicRules.qualifiedFor(services);
     }
 
-/** Mekanikerna som behövs för att bemanna tjänsterna. */
+    /** The mechanics needed to staff the services. */
     public List<Mechanic> getRequiredMechanics(Collection<ServiceItem> services) {
         return mechanicRules.requiredFor(services);
     }
 
-/** Jämför tjänstens krav med mekanikerns specialisering. Utan krav får alla utföra den. */
+    /** Compares the service's requirement with the mechanic's specialization. With no requirement anyone may do it. */
     public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {
         return mechanicRules.isMechanicQualified(mechanic, service);
     }
 
-    /** Hur länge bilen håller verkstaden: den mest belastade mekanikern bestämmer sluttiden. */
+    /** How long the car holds the shop: the busiest mechanic decides the end time. */
     public int busyMinutes(List<ServiceItem> services, List<Mechanic> mechanics) {
         return mechanicRules.busyMinutes(services, mechanics);
     }
 
-    /** Bokningar med utfört arbete kvar att fakturera. */
+    /** Bookings with finished work still to invoice. */
     public java.util.List<Booking> getInvoiceableBookings() {
         return billingService.getInvoiceableBookings();
     }
 
-    /** Sant om det finns bokningar med arbete som inte är slutfört än. */
+    /** True if there are bookings with work that is not finished yet. */
     public boolean hasBookingWithUnfinishedWork() {
         return billingService.hasBookingWithUnfinishedWork();
     }
@@ -184,23 +184,23 @@ public class GarageSystem {
         return workOrderService.createWorkOrder(bookingId, mechanicId);
     }
 
-/** Skapar en arbetsorder för ett urval av tjänsterna, så en bokning kan delas. */
+    /** Creates a work order for a selection of the services, so a booking can be split. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds) {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
     }
 
-    /** Skapar en arbetsorder av en viss typ: Standard, Reklamation eller Intern. */
+    /** Creates a work order of a given type: Standard, Reclamation or Internal. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds,
                                      String type) {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
     }
 
-    /** Skapar en reklamation på en tidigare utförd arbetsorder. */
+    /** Creates a reclamation on a previously performed work order. */
     public WorkOrder createReclamation(int originalWorkOrderId, String description) {
         return workOrderService.createReclamation(originalWorkOrderId, description);
     }
 
-    // Skapar ett utkast, alltså en arbetsorder utan bokning och utan tjänster.
+    // Creates a draft, that is a work order with no booking and no services.
     public WorkOrder createDraft(int vehicleId, String description) {
         return workOrderService.createDraft(vehicleId, description);
     }
@@ -211,16 +211,15 @@ public class GarageSystem {
                 plannedDate, customerInstructions, otherComments);
     }
 
-
-    /** Drop-in utan bokad tid: bokningsraden skapas först, i samma svep, så allt som slår upp
-     *  kund och fordon via bokningen fortsätter fungera. Mekanikerna kommer från formuläret,
-     *  som fyller på dem ur tjänsternas krav. */
+    /** Drop-in with no booked time: the booking row is created first, in the same sweep, so that
+     *  everything that looks up customer and vehicle through the booking keeps working. The
+     *  mechanics come from the form, which fills them in from the services' requirements. */
     public Booking createDropInBooking(int vehicleId, java.util.List<ServiceItem> services,
                                        java.util.List<Mechanic> mechanics) {
         return bookingService.createDropInBooking(vehicleId, services, mechanics);
     }
 
-    /** Tiden en drop-in skulle få just nu, eller null när teamets timmar är slut i dag. */
+    /** The time a drop-in would get right now, or null when the team's hours are out for the day. */
     public LocalTime dropInStartTime(java.util.List<ServiceItem> services,
                                      java.util.List<Mechanic> mechanics) {
         return bookingService.dropInStartTime(services, mechanics);
@@ -230,17 +229,17 @@ public class GarageSystem {
         return billingService.createInvoice(workOrderId, discountCode);
     }
 
-/** Fakturerar en arbetsorder, med en ny kostnad som egen rad. */
+    /** Invoices a work order, with a new charge as its own line. */
     public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
         return billingService.createInvoice(workOrderId, discountCode, extraName, extraAmount);
     }
 
-/** Fakturerar bokningen. Själva arbetet ligger i {@link BillingService}. */
+    /** Invoices the booking. The work itself sits in {@link BillingService}. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
         return billingService.createInvoiceForBooking(bookingId, discountCode);
     }
 
-/** Samma faktura, men med plats för en ny kostnad som reklamationen för med sig. */
+    /** The same invoice, but with room for a new charge the reclamation brings with it. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
         return billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
     }
@@ -256,7 +255,7 @@ public class GarageSystem {
         return createServiceItem(name, description, price, estimatedMinutes, "");
     }
 
-/** Samma som ovan, men med kravet på specialisering. */
+    /** As above, but with the requirement on specialization. */
     public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes,
                                          String specialization) throws SQLException {
         ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
@@ -264,13 +263,11 @@ public class GarageSystem {
         return item;
     }
 
-    // --- arbetsordern och betalningen ---
-
     public void startWorkOrder(int workOrderId) {
         workOrderService.startWorkOrder(workOrderId);
     }
 
-    /** Markerar tjänster som utförda och sparar deras aktuella priser. */
+    /** Marks services as performed and stores their current prices. */
     public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
         return workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
     }
@@ -370,7 +367,7 @@ public class GarageSystem {
         }
     }
 
-/** Nekar borttagningen med en förklaring. Reglerna finns i {@link RemovalRules}. */
+    /** Refuses the removal with an explanation. The rules live in {@link RemovalRules}. */
     private void refuseUnless(boolean allowed, String reason) {
         if (!allowed) {
             throw new IllegalStateException(reason);
@@ -395,7 +392,7 @@ public class GarageSystem {
         serviceItemRepository.delete(serviceItemId);
     }
 
-    /** Samma regel som för kunden, i den väg alla skrivare av en mekanikerrad går genom. */
+    /** The same rule as for the customer, on the path every writer of a mechanic row goes through. */
     private static void refuseUnlessStorableMechanic(String name, String phone) {
         String problem = Mechanic.validationProblem(name, phone);
         if (problem != null) {

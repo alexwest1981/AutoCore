@@ -25,11 +25,10 @@ import java.util.List;
 import java.util.Map;
 import com.wac.autocore.seed.SeedText;
 
-/** Översikten: mätetal, statusfördelning och de senaste posterna. */
+/** The overview: figures, status breakdown and the most recent records. */
 public final class OverviewView {
 
     private OverviewView() {}
-
 
     public static VBox build(GarageSystem garage, Runnable onRefresh, com.wac.autocore.ui.navigation.PageRouter router) {
         List<Booking> bookings = garage.getBookings();
@@ -42,8 +41,8 @@ public final class OverviewView {
                 active++;
             }
         }
-        // Summan måste vara ett decimaltal. Med heltal kapas öret bort för varje
-        // betalning, och intäkten blir lägre än det som faktiskt betalats in.
+        // The sum must be a decimal number. With integers the öre is cut off for every
+        // payment, and the revenue ends up lower than what was actually paid in.
         double revenue = 0.0;
         for (Payment p : payments) {
             if (p.isSuccessful()) {
@@ -213,7 +212,7 @@ public final class OverviewView {
         if (router != null) {
             router.setActiveTable(table);
         }
-        // Samma höjd som listsidorna, så rutan inte heller här hoppar mellan vyerna.
+        // The same height as the list pages, so the panel does not jump between views here either.
         UiComponents.fixTableHeight(t);
         return table;
     }

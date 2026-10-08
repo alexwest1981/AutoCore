@@ -9,10 +9,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Mekanikerna på en bokning. Fler än en när tjänsterna kräver olika specialister. */
+/** The mechanics on a booking. More than one when the services call for different specialists. */
 public class BookingMechanicRepository {
 
-    /** Ersätter bokningens mekaniker med listan. Tom lista rensar kopplingarna. */
+    /** Replaces the booking's mechanics with the list. An empty list clears the links. */
     public void saveForBooking(int bookingId, List<Integer> mechanicIds) throws SQLException {
         try (Connection connection = Db.getConnection()) {
             try (PreparedStatement delete = connection.prepareStatement(
@@ -37,7 +37,7 @@ public class BookingMechanicRepository {
         }
     }
 
-    /** Bokningens mekaniker, i den ordning de lades in. */
+        /** The booking's mechanics, in the order they were added. */
     public List<Integer> findMechanicIds(int bookingId) throws SQLException {
         List<Integer> ids = new ArrayList<Integer>();
         try (Connection connection = Db.getConnection();
