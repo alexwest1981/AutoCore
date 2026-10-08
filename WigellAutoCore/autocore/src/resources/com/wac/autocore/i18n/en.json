@@ -23,8 +23,7 @@
       "invoices": "Show invoices",
       "payments": "Show payments"
     },
-    "lang": {
-    }
+    "lang": {}
   },
   "overview": {
     "title": "Overview",
@@ -326,7 +325,7 @@
       "time_available": "Available",
       "time_busy": "Busy",
       "no_free_times": "No available times this day",
-        "only_free_times": "Only available times are shown",
+      "only_free_times": "Only available times are shown",
       "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
       "save_failed": "The booking could not be saved.",
       "desc_prompt": "E.g. Annual service and brake replacement",
@@ -418,7 +417,8 @@
       "edit_header": "Add the missing information",
       "planned_date": "Planned date",
       "customer_instructions": "Customer instructions",
-      "other_comments": "Other comments"
+      "other_comments": "Other comments",
+      "split_warning": "OK creates one order per mechanic. The new orders are added to the list."
     },
     "reclamation": {
       "title": "New reclamation",
@@ -494,8 +494,7 @@
       "phone_ten_digits": "The phone number must be exactly 10 digits (e.g. 070-1234567).",
       "email_format": "Enter a valid email address (e.g. name@example.com)."
     },
-    "success": {
-    },
+    "success": {},
     "confirm": {
       "title": "Confirm"
     }
@@ -525,8 +524,7 @@
     "week": {
       "title": "Week {0}"
     },
-    "month": {
-    },
+    "month": {},
     "slot": {
       "booked": "Booked",
       "click_to_expand": "Click to expand",

@@ -11,9 +11,8 @@ import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 
 /**
- * Fördelningen av en boknings tjänster på arbetsordrar: en post per mekaniker
- * med den mekanikerns tjänster. Vilka tjänster som hamnar hos vem följer av
- * behörigheten — bokningens mekaniker används när hen är behörig, annars den som är det.
+ * En post per mekaniker med den mekanikerns tjänster, fördelade efter behörighet.
+ * Används både för en bokning och för ett utkast.
  */
 public final class WorkOrderPlan {
 
@@ -40,18 +39,38 @@ public final class WorkOrderPlan {
             team.add(null);
         }
 
-        for (ServiceItem service : booking.getServiceItems()) {
+        return planWorkOrders(garage, team, booking.getServiceItems());
+    }
+
+    /** Planen för ett utkast: teamet och tjänsterna kommer från rutan, inte från en bokning. */
+    public static LinkedHashMap<Integer, List<ServiceItem>> planWorkOrders(
+            GarageSystem garage, List<Mechanic> team, List<ServiceItem> services) {
+
+        LinkedHashMap<Integer, List<ServiceItem>> plan = new LinkedHashMap<Integer, List<ServiceItem>>();
+
+        if (services == null) {
+            return plan;
+        }
+
+        for (ServiceItem service : services) {
+
             Mechanic who = mechanicForService(garage, team, service);
+
             if (who == null) {
                 continue;
             }
+
             List<ServiceItem> mine = plan.get(Integer.valueOf(who.getId()));
+
             if (mine == null) {
+
                 mine = new ArrayList<ServiceItem>();
+
                 plan.put(Integer.valueOf(who.getId()), mine);
             }
             mine.add(service);
         }
+
         return plan;
     }
 
