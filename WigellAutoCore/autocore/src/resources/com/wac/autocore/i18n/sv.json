@@ -233,6 +233,13 @@
     "footer_terms": "Betalningsvillkor: {0} dagar netto."
   },
   "dialog": {
+    "copy": {
+      "booking": {
+        "title": "Ny bokning utifrån en tidigare",
+        "header": "Tjänsterna är ifyllda. Kontrollera datum och tid.",
+        "action": "Kopiera bokning"
+      }
+    },
     "customer": {
       "create": {
         "title": "Ny kund",
