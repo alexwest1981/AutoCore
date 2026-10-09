@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.repository.CustomerRepository;
 
@@ -61,7 +62,7 @@ public class CustomerService {
     private static void refuseUnlessStorable(String name, String phone, String email) {
         String problem = Customer.validationProblem(name, phone, email);
         if (problem != null) {
-            throw new IllegalArgumentException("Customer data rejected: " + problem);
+            throw new ValidationException(problem);
         }
     }
 }

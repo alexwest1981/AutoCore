@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
@@ -386,7 +387,7 @@ public class GarageSystem {
     private static void refuseUnlessStorableMechanic(String name, String phone) {
         String problem = Mechanic.validationProblem(name, phone);
         if (problem != null) {
-            throw new IllegalArgumentException("Mechanic data rejected: " + problem);
+            throw new ValidationException(problem);
         }
     }
     public List<ServicePackage> getServicePackages() {

@@ -1,3 +1,4 @@
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.service.GarageSystem;
 
@@ -155,7 +156,7 @@ public class ConsoleApp {
 
         try {
             garageSystem.createCustomer(name, phone, email);
-        } catch (IllegalArgumentException rejected) {
+        } catch (AppException rejected) {
             System.out.println("Customer was not saved: " + rejected.getMessage());
         }
     }
