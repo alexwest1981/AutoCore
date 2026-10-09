@@ -165,11 +165,9 @@ final class EditDraftDialog {
             }
         });
 
-        for (Vehicle v : garage.getVehicles()) {
-            if (v.getId() == workOrder.getVehicleId()) {
-                vehicleBox.setValue(v);
-                break;
-            }
+        Vehicle v = garage.findVehicle(workOrder.getVehicleId());
+        if (v != null) {
+            vehicleBox.setValue(v);
         }
         return vehicleBox;
     }
@@ -186,11 +184,9 @@ final class EditDraftDialog {
         GridPane.setHgrow(mechanicBox, Priority.ALWAYS);
 
         List<Mechanic> chosen = new ArrayList<Mechanic>();
-        for (Mechanic m : garage.getMechanics()) {
-            if (m.getId() == workOrder.getMechanicId()) {
-                chosen.add(m);
-                break;
-            }
+        Mechanic m = garage.findMechanic(workOrder.getMechanicId());
+        if (m != null) {
+            chosen.add(m);
         }
         mechanicBox.setSelectedItems(chosen);
 

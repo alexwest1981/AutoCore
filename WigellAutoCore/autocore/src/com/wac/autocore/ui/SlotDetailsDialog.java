@@ -31,12 +31,7 @@ public final class SlotDetailsDialog {
 
         WorkOrder targetOrder = null;
         if (slot.getWorkOrderId() > 0) {
-            for (WorkOrder wo : garage.getWorkOrders()) {
-                if (wo.getId() == slot.getWorkOrderId()) {
-                    targetOrder = wo;
-                    break;
-                }
-            }
+            targetOrder = garage.findWorkOrder(slot.getWorkOrderId());
         }
         if (targetOrder == null && slot.getBookingId() > 0) {
             for (WorkOrder wo : garage.getWorkOrders()) {
@@ -50,20 +45,10 @@ public final class SlotDetailsDialog {
 
         Booking booking = null;
         if (targetOrder != null) {
-            for (Booking bk : garage.getBookings()) {
-                if (bk.getId() == targetOrder.getBookingId()) {
-                    booking = bk;
-                    break;
-                }
-            }
+            booking = garage.findBooking(targetOrder.getBookingId());
         }
         if (booking == null && slot.getBookingId() > 0) {
-            for (Booking bk : garage.getBookings()) {
-                if (bk.getId() == slot.getBookingId()) {
-                    booking = bk;
-                    break;
-                }
-            }
+            booking = garage.findBooking(slot.getBookingId());
         }
 
         final WorkOrder wo = targetOrder;
@@ -209,13 +194,7 @@ public final class SlotDetailsDialog {
 
     public static void showWorkOrderDetailsDialog(GarageSystem garage, int workOrderId,
                                                   PageRouter router, Runnable onRefresh) {
-        WorkOrder targetOrder = null;
-        for (WorkOrder wo : garage.getWorkOrders()) {
-            if (wo.getId() == workOrderId) {
-                targetOrder = wo;
-                break;
-            }
-        }
+        WorkOrder targetOrder = garage.findWorkOrder(workOrderId);
 
         if (targetOrder == null && !garage.getWorkOrders().isEmpty()) {
             targetOrder = garage.getWorkOrders().get(0);
@@ -227,13 +206,7 @@ public final class SlotDetailsDialog {
         }
 
         final WorkOrder wo = targetOrder;
-        Booking b = null;
-        for (Booking bk : garage.getBookings()) {
-            if (bk.getId() == wo.getBookingId()) {
-                b = bk;
-                break;
-            }
-        }
+        Booking b = garage.findBooking(wo.getBookingId());
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
         dialog.setTitle(I18n.get("kanban.drawer.work_order", wo.getId()));

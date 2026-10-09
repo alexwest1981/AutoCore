@@ -65,11 +65,9 @@ class BookingServicePicker {
 
     private void addServiceById(GarageSystem garage, int serviceId,
             ObservableList<ServiceItem> selectedServices) {
-        for (ServiceItem s : garage.getServiceItems()) {
-            if (s.getId() == serviceId) {
-                selectedServices.add(s);
-                return;
-            }
+        ServiceItem service = garage.findServiceItem(serviceId);
+        if (service != null) {
+            selectedServices.add(service);
         }
     }
 }

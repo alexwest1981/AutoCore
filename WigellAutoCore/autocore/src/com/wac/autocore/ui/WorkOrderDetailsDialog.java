@@ -156,13 +156,11 @@ final class WorkOrderDetailsDialog {
                 Double price = null;
                 int estMinutes = 0;
 
-                for (ServiceItem s : garage.getServiceItems()) {
-                    if (s.getId() == sid.intValue()) {
-                        name = s.getName();
-                        estMinutes = s.getEstimatedMinutes();
-                        price = s.getPrice();
-                        break;
-                    }
+                ServiceItem service = garage.findServiceItem(sid.intValue());
+                if (service != null) {
+                    name = service.getName();
+                    estMinutes = service.getEstimatedMinutes();
+                    price = service.getPrice();
                 }
 
                 Double frozenPrice = workOrder.getCompletedServicePrice(sid.intValue());
@@ -385,12 +383,9 @@ final class WorkOrderDetailsDialog {
 
     /** Fetches the order again and redraws the content, so the status shows right away. */
     private static void refreshDialog(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
-        WorkOrder updated = workOrder;
-        for (WorkOrder w : garage.getWorkOrders()) {
-            if (w.getId() == workOrder.getId()) {
-                updated = w;
-                break;
-            }
+        WorkOrder updated = garage.findWorkOrder(workOrder.getId());
+        if (updated == null) {
+            updated = workOrder;
         }
         dialog.getDialogPane().setContent(scrollContent(buildContent(garage, updated, dialog)));
         refitWindow(dialog);

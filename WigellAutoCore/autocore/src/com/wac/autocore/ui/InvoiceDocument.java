@@ -239,36 +239,13 @@ public final class InvoiceDocument {
     }
 
     private static Customer customerFor(GarageSystem garage, Invoice invoice) {
-        for (Booking booking : garage.getBookings()) {
-            if (booking.getId() != bookingIdFor(garage, invoice)) {
-                continue;
-            }
-            for (Vehicle vehicle : garage.getVehicles()) {
-                if (vehicle.getId() != booking.getVehicleId()) {
-                    continue;
-                }
-                for (Customer customer : garage.getCustomers()) {
-                    if (customer.getId() == vehicle.getCustomerId()) {
-                        return customer;
-                    }
-                }
-            }
-        }
-        return null;
+        Vehicle vehicle = vehicleFor(garage, invoice);
+        return vehicle == null ? null : garage.findCustomer(vehicle.getCustomerId());
     }
 
     private static Vehicle vehicleFor(GarageSystem garage, Invoice invoice) {
-        int bookingId = bookingIdFor(garage, invoice);
-        for (Booking booking : garage.getBookings()) {
-            if (booking.getId() == bookingId) {
-                for (Vehicle vehicle : garage.getVehicles()) {
-                    if (vehicle.getId() == booking.getVehicleId()) {
-                        return vehicle;
-                    }
-                }
-            }
-        }
-        return null;
+        Booking booking = garage.findBooking(bookingIdFor(garage, invoice));
+        return booking == null ? null : garage.findVehicle(booking.getVehicleId());
     }
 
     private static int bookingIdFor(GarageSystem garage, Invoice invoice) {
