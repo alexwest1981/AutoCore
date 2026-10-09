@@ -81,7 +81,8 @@ public final class I18n {
             try {
                 listener.accept(currentLanguage);
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("Could not tell a listener about language '"
+                        + currentLanguage + "': " + e.getMessage());
             }
         }
     }
