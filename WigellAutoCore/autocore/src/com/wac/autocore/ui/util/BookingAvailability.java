@@ -23,23 +23,30 @@ public final class BookingAvailability {
     /** True when the whole range touches a time already booked for the mechanic. */
     public static boolean isRangeBooked(GarageSystem garage, Mechanic mechanic, LocalDate date,
                                         LocalTime start, LocalTime end, int excludeBookingId) {
+
         if (mechanic == null || date == null || start == null || end == null) {
             return false;
         }
+
         // A broken row (end before start) must not silence the whole check.
         LocalTime rangeEnd = end.isAfter(start) ? end : start.plusHours(1);
 
         // Checked against the schedule (MechanicSchedule). An hour slot is [hour, hour + 1).
         MechanicSchedule schedule = MechanicSchedule.getInstance();
         List<TimeSlot> slots = schedule.getSlotsForDay(mechanic.getId(), date);
+
         for (TimeSlot s : slots) {
+
             if (!s.isBooked()) {
                 continue;
             }
+
             if (excludeBookingId > 0 && s.getBookingId() == excludeBookingId) {
                 continue;
             }
+
             LocalTime slotStart = LocalTime.of(s.getHour(), 0);
+
             if (slotStart.isBefore(rangeEnd) && start.isBefore(slotStart.plusHours(1))) {
                 return true;
             }
@@ -61,11 +68,14 @@ public final class BookingAvailability {
                 if (!b.getMechanicIds().contains(Integer.valueOf(mechanic.getId())) || !date.equals(b.getDate()) || b.getStartTime() == null) {
                     continue;
                 }
+
                 LocalTime bStart = b.getStartTime();
                 LocalTime bEnd = b.getEndTime() != null ? b.getEndTime() : bStart.plusHours(1);
+
                 if (!bEnd.isAfter(bStart)) {
                     bEnd = bStart.plusHours(1);
                 }
+
                 if (start.isBefore(bEnd) && bStart.isBefore(rangeEnd)) {
                     return true;
                 }
@@ -79,35 +89,50 @@ public final class BookingAvailability {
     public static boolean hasAvailableSlotOnDate(GarageSystem garage, Mechanic mechanic,
                                                  List<Mechanic> qualifiedMechanics,
                                                  LocalDate date, int durationMinutes, int excludeBookingId) {
+
         if (date == null || durationMinutes <= 0) {
             return false;
         }
+
         if (date.isBefore(LocalDate.now())) {
             return false;
         }
+
         if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
             return false;
         }
+
         if (durationMinutes > MAX_WORK_MINUTES_PER_DAY) {
             return false; // longer than a full working day (10 hours = 600 min)
         }
 
+        // On today's date the hours already gone cannot be booked, so the search starts at the
+        // current one. Any other day still starts at opening.
+        int firstHour = date.isEqual(LocalDate.now()) ? Math.max(7, LocalTime.now().getHour()) : 7;
+
         List<Mechanic> candidates = new ArrayList<Mechanic>();
+
         if (mechanic != null && mechanic.getId() > 0) {
             candidates.add(mechanic);
+
         } else if (qualifiedMechanics != null && !qualifiedMechanics.isEmpty()) {
             candidates.addAll(qualifiedMechanics);
+
         } else if (garage != null) {
             candidates.addAll(garage.getMechanics());
         }
 
         if (candidates.isEmpty()) {
-            for (int h = 7; h <= 16; h++) {
+
+            for (int h = firstHour; h <= 16; h++) {
+
                 LocalTime start = LocalTime.of(h, 0);
+
                 if (!start.plusMinutes(durationMinutes).isAfter(CLOSING_TIME)) {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -117,43 +142,55 @@ public final class BookingAvailability {
         boolean needsWholeTeam = mechanic != null && mechanic.getId() > 0
                 || qualifiedMechanics != null && !qualifiedMechanics.isEmpty();
 
-        for (int h = 7; h <= 16; h++) {
+        for (int h = firstHour; h <= 16; h++) {
+
             LocalTime start = LocalTime.of(h, 0);
             LocalTime end = start.plusMinutes(durationMinutes);
+
             if (end.isAfter(CLOSING_TIME)) {
                 break;
             }
+
             boolean slotAvailable = needsWholeTeam;
+
             for (Mechanic m : candidates) {
-                boolean booked = m.getId() > 0
-                        && isRangeBooked(garage, m, date, start, end, excludeBookingId);
+
+                boolean booked = m.getId() > 0 && isRangeBooked(garage, m, date, start, end, excludeBookingId);
+
                 if (needsWholeTeam && booked) {
                     slotAvailable = false;
                     break;
                 }
+
                 if (!needsWholeTeam && !booked) {
                     slotAvailable = true;
                     break;
                 }
             }
+
             if (slotAvailable) {
                 return true;
             }
         }
+
         return false;
     }
 
     public static boolean isTeamBooked(GarageSystem garage, List<Mechanic> team,
                                        LocalDate date, LocalTime startTime, LocalTime endTime,
                                        int excludeBookingId) {
+
         if (team == null || team.isEmpty()) {
             return false;
         }
+
         for (Mechanic m : team) {
+
             if (m.getId() > 0 && isRangeBooked(garage, m, date, startTime, endTime, excludeBookingId)) {
                 return true;
             }
         }
+
         return false;
     }
 }
