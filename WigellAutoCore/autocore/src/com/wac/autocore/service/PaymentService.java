@@ -61,23 +61,21 @@ public class PaymentService {
         }
 
         // The customer pays the whole amount including VAT. The invoice's own amounts are excluding VAT.
-        Payment payment = new Payment(0, invoiceId, invoice.getTotalIncludingVat(), paymentType);
+        Payment payment = new Payment(0, invoiceId, invoice.getTotalIncludingVat(), type);
 
         boolean successful = false;
 
-        if ("CARD".equalsIgnoreCase(paymentType)) {
+        if ("CARD".equalsIgnoreCase(type)) {
             System.out.println("Connecting directly to SuperCardPayment...");
             System.out.println("Card payment approved.");
             successful = true;
-        } else if ("SWISH".equalsIgnoreCase(paymentType)) {
+        } else if ("SWISH".equalsIgnoreCase(type)) {
             System.out.println("Calling Swish payment service...");
             System.out.println("Swish payment approved.");
             successful = true;
-        } else if ("CASH".equalsIgnoreCase(paymentType)) {
+        } else if ("CASH".equalsIgnoreCase(type)) {
             System.out.println("Registering cash payment...");
             successful = true;
-        } else {
-            System.out.println("Unknown payment type.");
         }
 
         payment.setSuccessful(successful);
