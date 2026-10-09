@@ -2,7 +2,6 @@ package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import javafx.geometry.Insets;
@@ -37,12 +36,7 @@ public final class KanbanBoard {
         Label sub = new Label(I18n.get("kanban.subtitle"));
         sub.getStyleClass().add("panel-sub");
 
-        Button addMechBtn = new Button("+ " + I18n.get("dialog.mechanic.create.title"));
-        addMechBtn.getStyleClass().addAll("secondary", "small");
-        addMechBtn.setMinWidth(Region.USE_PREF_SIZE);
-        addMechBtn.setOnAction(e -> javafx.application.Platform.runLater(() -> ActionDialogs.showCreateMechanicDialog(garage, onRefresh)));
-
-        HBox headLeft = new HBox(12, new VBox(2, title, sub), addMechBtn);
+        HBox headLeft = new HBox(12, new VBox(2, title, sub));
         headLeft.setAlignment(Pos.CENTER_LEFT);
 
         HBox boardHead = new HBox(12, headLeft);

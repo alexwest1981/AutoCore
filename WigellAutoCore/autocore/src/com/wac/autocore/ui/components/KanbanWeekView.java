@@ -43,14 +43,7 @@ class KanbanWeekView {
         dayLabel.setPrefWidth(60);
         dayLabel.setMaxWidth(55);
 
-        // Load pill
         String loadClass = "load-" + dl.getLevel().getCode();
-        Label pill = new Label(I18n.get("kanban.load." + dl.getLevel().getCode()));
-        pill.getStyleClass().addAll("kanban-load-pill-compact", loadClass);
-        pill.setMinWidth(95);
-        pill.setPrefWidth(95);
-        pill.setMaxWidth(85);
-        pill.setAlignment(Pos.CENTER);
 
         // Numbers (e.g. 3/9 h)
         Label countLabel = new Label(dl.getBookedHours() + "/" + dl.getTotalHours() + "h");
@@ -62,10 +55,14 @@ class KanbanWeekView {
         HBox hourBoxes = new HBox(2);
         hourBoxes.getStyleClass().add("kanban-hour-boxes");
         hourBoxes.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(hourBoxes, Priority.ALWAYS);
 
         for (TimeSlot slot : dl.getSlots()) {
             StackPane box = new StackPane();
             box.getStyleClass().add("kanban-hour-box");
+            // Boxarna delar på radens bredd i stället för att stå i sin egen smala kolumn.
+            HBox.setHgrow(box, Priority.ALWAYS);
+            box.setMaxWidth(Double.MAX_VALUE);
 
             String timeTooltip = String.format("%02d:00 - %02d:00", slot.getHour(), slot.getHour() + 1);
             if (slot.isBooked()) {
@@ -90,10 +87,7 @@ class KanbanWeekView {
             hourBoxes.getChildren().add(box);
         }
 
-        Region spr = new Region();
-        HBox.setHgrow(spr, Priority.ALWAYS);
-
-        HBox row = new HBox(6, dayLabel, pill, hourBoxes, spr, countLabel);
+        HBox row = new HBox(6, dayLabel, hourBoxes, countLabel);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add("kanban-week-row-compact");
         row.setCursor(Cursor.HAND);
