@@ -46,6 +46,28 @@ public class BookingServiceItemRepository {
         return items;
     }
 
+    /** The package name per service id. Services picked on their own are left out. */
+    public java.util.Map<Integer, String> findPackageNames(int bookingId) throws SQLException {
+        String sql = "SELECT service_item_id, package_name FROM booking_service_items "
+                + "WHERE booking_id = ? AND package_name IS NOT NULL";
+
+        java.util.Map<Integer, String> names = new java.util.LinkedHashMap<Integer, String>();
+
+        try (Connection connection = Db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, bookingId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    names.put(Integer.valueOf(resultSet.getInt("service_item_id")), resultSet.getString("package_name"));
+                }
+            }
+        }
+
+        return names;
+    }
+
     public void save(Booking booking) throws SQLException {
         try (Connection connection = Db.getConnection()) {
             save(connection, booking);
@@ -55,7 +77,8 @@ public class BookingServiceItemRepository {
     /** Saves the services on an open connection, so everything runs in one transaction. */
     public void save(Connection connection, Booking booking) throws SQLException {
         String deleteLinks = "DELETE FROM booking_service_items WHERE booking_id = ?";
-        String insertLink = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id) VALUES (?, ?)";
+        String insertLink = "INSERT OR IGNORE INTO booking_service_items (booking_id, service_item_id, package_name) "
+                + "VALUES (?, ?, ?)";
 
         try (PreparedStatement delete = connection.prepareStatement(deleteLinks);
              PreparedStatement insert = connection.prepareStatement(insertLink)) {
@@ -67,6 +90,9 @@ public class BookingServiceItemRepository {
                 if (serviceItemId != null && serviceItemId > 0) {
                     insert.setInt(1, booking.getId());
                     insert.setInt(2, serviceItemId);
+                    // An empty package name means the service was picked on its own, not through a package.
+                    String packageName = booking.getServicePackageName(serviceItemId);
+                    insert.setString(3, packageName.isEmpty() ? null : packageName);
                     insert.executeUpdate();
                 }
             }

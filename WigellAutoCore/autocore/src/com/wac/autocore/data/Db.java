@@ -88,6 +88,7 @@ public class Db {
             "CREATE TABLE IF NOT EXISTS booking_service_items ("
                 + "booking_id INTEGER NOT NULL, "
                 + "service_item_id INTEGER NOT NULL, "
+                + "package_name TEXT, "
                 + "PRIMARY KEY (booking_id, service_item_id))",
 
             "CREATE TABLE IF NOT EXISTS service_packages ("
@@ -218,6 +219,13 @@ public class Db {
             // Other comments that belong to the order but not to any of the other fields.
             try {
                 statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN other_comments TEXT");
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
+            }
+
+            // Make sure the package name exists, so a booking keeps the package it was made from.
+            try {
+                statement.executeUpdate("ALTER TABLE booking_service_items ADD COLUMN package_name TEXT");
             } catch (SQLException e) {
                 rethrowUnlessDuplicateColumn(e);
             }
