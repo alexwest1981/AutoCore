@@ -121,6 +121,8 @@ public class WorkOrderService {
 
         for (Integer serviceItemId : serviceItemIds) {
             workOrder.addServiceItem(serviceItemId);
+            // The package name follows the service from the booking, so the invoice can group it.
+            workOrder.setServicePackage(serviceItemId, booking.getServicePackageName(serviceItemId));
         }
 
         try {

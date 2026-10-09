@@ -16,7 +16,7 @@
       "customers": "Show customers",
       "vehicles": "Show vehicles",
       "bookings": "Show bookings",
-      "dropin": "Drop-in (no booking)",
+      "dropin": "Drop-in",
       "services": "Show services",
       "mechanics": "Show mechanics",
       "workorders": "Show work orders",
@@ -117,8 +117,8 @@
       "meta.one": "{0} invoice",
       "action_create": "+ Create Invoice",
       "action_pay": "Pay selected invoice",
-      "action_lines": "Show lines",
-      "action_print": "Print invoice"
+      "action_lines": "Details",
+      "action_print": "Show invoice"
     },
     "payments": {
       "title": "Payments",
@@ -157,6 +157,7 @@
       "amount": "Amount",
       "discount": "Discount",
       "total": "Total",
+      "total_incl_vat": "Total incl. VAT",
       "final_price": "Final price",
       "specialisation": "Specialisation",
       "available": "Available",
@@ -212,6 +213,7 @@
     "customer": "Bill to",
     "vehicle": "Vehicle",
     "booking": "Booking",
+    "other_services": "Other services",
     "col": {
       "description": "Description",
       "price": "Price",

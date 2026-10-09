@@ -185,8 +185,11 @@ public class BillingService {
                     if (workOrder.isReclamation()) {
                         linePrice = 0.0;
                     }
-                    lines.add(new InvoiceLine(0, 0, serviceItem.getId(),
-                            serviceItem.getName(), linePrice, 0.0));
+                    InvoiceLine invoiceLine = new InvoiceLine(0, 0, serviceItem.getId(),
+                            serviceItem.getName(), linePrice, 0.0);
+                    // The package follows the service from the order, so the invoice can group the lines.
+                    invoiceLine.setPackageName(workOrder.getServicePackageName(serviceItem.getId()));
+                    lines.add(invoiceLine);
                 }
             }
         }

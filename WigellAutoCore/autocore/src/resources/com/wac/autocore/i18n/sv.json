@@ -16,7 +16,7 @@
       "customers": "Visa kunder",
       "vehicles": "Visa fordon",
       "bookings": "Visa bokningar",
-      "dropin": "Drop-in (utan bokning)",
+      "dropin": "Drop-in",
       "services": "Visa tjänster",
       "mechanics": "Visa mekaniker",
       "workorders": "Visa arbetsordrar",
@@ -117,8 +117,8 @@
       "meta.one": "{0} faktura",
       "action_create": "+ Skapa faktura",
       "action_pay": "Betala vald faktura",
-      "action_lines": "Visa rader",
-      "action_print": "Skriv ut faktura"
+      "action_lines": "Detaljer",
+      "action_print": "Visa faktura"
     },
     "payments": {
       "title": "Betalningar",
@@ -157,6 +157,7 @@
       "amount": "Belopp",
       "discount": "Rabatt",
       "total": "Totalt",
+      "total_incl_vat": "Totalt inkl. moms",
       "final_price": "Slutpris",
       "specialisation": "Specialisering",
       "available": "Tillgänglig",
@@ -212,6 +213,7 @@
     "customer": "Faktureras till",
     "vehicle": "Fordon",
     "booking": "Bokning",
+    "other_services": "Övriga tjänster",
     "col": {
       "description": "Beskrivning",
       "price": "Pris",

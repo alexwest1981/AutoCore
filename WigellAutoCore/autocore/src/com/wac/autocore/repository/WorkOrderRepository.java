@@ -128,7 +128,7 @@ public class WorkOrderRepository {
 
     private void saveServiceItems(WorkOrder workOrder) throws SQLException {
         String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
-        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed, price) VALUES (?, ?, ?, ?)";
+        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed, price, package_name) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement delete = connection.prepareStatement(deleteLinks);
@@ -142,6 +142,8 @@ public class WorkOrderRepository {
                 insert.setInt(1, workOrder.getId());
                 insert.setInt(2, serviceItemId);
                 insert.setInt(3, isCompleted);
+                String packageName = workOrder.getServicePackageName(serviceItemId);
+                insert.setString(5, packageName.isEmpty() ? null : packageName);
 
                 // Store the price that applied when the job was performed.
                 Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
@@ -156,7 +158,7 @@ public class WorkOrderRepository {
     }
 
     private void loadServiceItems(WorkOrder workOrder) throws SQLException {
-        String sql = "SELECT service_item_id, completed, price FROM work_order_service_items WHERE work_order_id = ?";
+        String sql = "SELECT service_item_id, completed, price, package_name FROM work_order_service_items WHERE work_order_id = ?";
 
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -167,6 +169,7 @@ public class WorkOrderRepository {
                 List<Integer> services = new ArrayList<Integer>();
                 List<Integer> completed = new ArrayList<Integer>();
                 Map<Integer, Double> prices = new LinkedHashMap<Integer, Double>();
+                Map<Integer, String> packages = new LinkedHashMap<Integer, String>();
                 while (resultSet.next()) {
                     int sid = resultSet.getInt("service_item_id");
                     int comp = resultSet.getInt("completed");
@@ -178,10 +181,15 @@ public class WorkOrderRepository {
                     if (!resultSet.wasNull()) {
                         prices.put(Integer.valueOf(sid), Double.valueOf(price));
                     }
+                    String packageName = resultSet.getString("package_name");
+                    if (packageName != null) {
+                        packages.put(Integer.valueOf(sid), packageName);
+                    }
                 }
                 workOrder.setServiceItemIds(services);
                 workOrder.setCompletedServiceItems(completed);
                 workOrder.setCompletedServicePrices(prices);
+                workOrder.setServicePackages(packages);
             }
         }
     }

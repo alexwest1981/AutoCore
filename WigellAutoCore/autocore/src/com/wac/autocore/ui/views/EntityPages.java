@@ -188,7 +188,7 @@ public final class EntityPages {
                 TableFactory.sizeCol(I18n.get("table.col.date"), TableFactory.W_DATE, c -> String.valueOf(c.getInvoiceDate())),
                 TableFactory.sizeCol(I18n.get("table.col.amount"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getAmount())),
                 TableFactory.sizeCol(I18n.get("table.col.discount"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getDiscount())),
-                TableFactory.sizeCol(I18n.get("table.col.total"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getTotalIncludingVat())),
+                TableFactory.sizeCol(I18n.get("table.col.total_incl_vat"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getTotalIncludingVat())),
                 TableFactory.sizeBadge(I18n.get("table.col.paid"), TableFactory.W_FLAG, c -> c.isPaid() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 
@@ -259,7 +259,7 @@ public final class EntityPages {
                 TableFactory.sizeCol(I18n.get("table.col.invoice"), TableFactory.W_REF, c -> String.valueOf(c.getInvoiceId())),
                 TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.paymentVehicleReg(garage, c)),
                 TableFactory.textCol(I18n.get("table.col.customer"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.paymentCustomerName(garage, c)),
-                TableFactory.sizeCol(I18n.get("table.col.amount"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getAmount())),
+                TableFactory.sizeCol(I18n.get("table.col.total_incl_vat"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getAmount())),
                 TableFactory.sizeCol(I18n.get("table.col.type"), TableFactory.W_TYPE, c -> UiFormatters.paymentTypeWord(c.getPaymentType())),
                 TableFactory.sizeCol(I18n.get("table.col.datetime"), TableFactory.W_DATETIME, c -> UiFormatters.formatDateTime(c.getPaymentDate())),
                 TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> c.isSuccessful() ? I18n.get("status.successful") : I18n.get("status.failed")));

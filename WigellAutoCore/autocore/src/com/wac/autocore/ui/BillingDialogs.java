@@ -286,8 +286,23 @@ public final class BillingDialogs {
         grid.add(h4, 3, 0);
 
         int row = 1;
-        if (invoice.getLines() != null) {
-            for (InvoiceLine line : invoice.getLines()) {
+        java.util.LinkedHashMap<String, java.util.List<InvoiceLine>> groups =
+                com.wac.autocore.ui.components.UiComponents.groupLinesByPackage(invoice);
+        // The heading is only worth showing when at least one line came from a package.
+        boolean anyPackage = false;
+        for (String key : groups.keySet()) {
+            if (!key.isEmpty()) {
+                anyPackage = true;
+            }
+        }
+        for (java.util.Map.Entry<String, java.util.List<InvoiceLine>> group : groups.entrySet()) {
+            if (anyPackage) {
+                String heading = group.getKey().isEmpty() ? I18n.get("invoice.other_services") : group.getKey();
+                Label head = new Label(heading);
+                head.setStyle("-fx-font-weight: bold;");
+                grid.add(head, 0, row++);
+            }
+            for (InvoiceLine line : group.getValue()) {
                 grid.add(new Label(SeedText.resolve(line.getServiceName())), 0, row);
                 grid.add(new Label(UiFormatters.formatMoney(line.getPrice())), 1, row);
                 grid.add(new Label(UiFormatters.formatMoney(line.getDiscount())), 2, row);

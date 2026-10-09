@@ -243,6 +243,9 @@ public class BookingRepository {
                 booking.setLoadedServiceItems(singleList);
             }
         }
+
+        // The package names are set after the services, because loading the services clears them.
+        booking.setServicePackages(bookingServiceItemRepository.findPackageNames(booking.getId()));
     }
 
     private ServiceItem findServiceItemById(int id) throws SQLException {

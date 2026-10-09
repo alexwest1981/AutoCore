@@ -3,7 +3,9 @@ package com.wac.autocore.model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Booking {
 
@@ -19,6 +21,8 @@ public class Booking {
     private final List<ServiceItem> serviceItems = new ArrayList<ServiceItem>();
     private final List<Integer> serviceItemIds = new ArrayList<Integer>();
     private final List<Integer> mechanicIds = new ArrayList<Integer>();
+    /** The package each service came from, by service id. Empty when nothing came from a package. */
+    private final Map<Integer, String> servicePackages = new HashMap<Integer, String>();
 
     public Booking(int vehicleId, LocalDate date, String description) {
         this.vehicleId = vehicleId;
@@ -196,6 +200,7 @@ public class Booking {
     public void setLoadedServiceItems(List<ServiceItem> items) {
         this.serviceItems.clear();
         this.serviceItemIds.clear();
+        this.servicePackages.clear();
         if (items != null) {
             for (ServiceItem item : items) {
                 if (item != null) {
@@ -280,6 +285,19 @@ public class Booking {
             this.serviceItemId = this.serviceItemIds.get(0);
         } else {
             this.serviceItemId = 0;
+        }
+    }
+
+    /** The package name for one service, or an empty string when it was picked on its own. */
+    public String getServicePackageName(int serviceItemId) {
+        String name = servicePackages.get(Integer.valueOf(serviceItemId));
+        return name == null ? "" : name;
+    }
+
+    public void setServicePackages(Map<Integer, String> packages) {
+        this.servicePackages.clear();
+        if (packages != null) {
+            this.servicePackages.putAll(packages);
         }
     }
 
