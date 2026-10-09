@@ -132,6 +132,14 @@
 .multi-select-row.selected {
     -fx-background-color: #e5e7eb;
 }
+/* A row that is already on the booking by another route: shown, but not pickable. */
+.multi-select-row.blocked {
+    -fx-opacity: 0.45;
+    -fx-cursor: default;
+}
+.multi-select-row.blocked:hover {
+    -fx-background-color: transparent;
+}
 .multi-select-row-text {
     -fx-text-fill: #111827;
     -fx-font-size: 13px;
