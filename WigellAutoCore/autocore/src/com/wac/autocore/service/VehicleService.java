@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.VehicleRepository;
@@ -40,8 +41,7 @@ public class VehicleService {
         Customer customer = customerService.findById(customerId);
 
         if (customer == null) {
-            System.out.println("Customer with ID " + customerId + " does not exist.");
-            return null;
+            throw new NotFoundException("Customer with ID " + customerId + " does not exist.");
         }
 
         Vehicle vehicle = new Vehicle(0, registrationNumber, brand, model, year, customerId);

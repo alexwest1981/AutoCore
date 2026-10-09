@@ -189,7 +189,7 @@ public class BookingService {
                 .findFirst()
                 .orElse(null);
         if (serviceItem == null) {
-            System.out.println("Service item with ID " + serviceItemId + " does not exist ");
+            throw new NotFoundException("Service item with ID " + serviceItemId + " does not exist.");
         }
 
         int estimatedMinutes = workOrderService.getTotalEstimatedMinutes(serviceItemId);

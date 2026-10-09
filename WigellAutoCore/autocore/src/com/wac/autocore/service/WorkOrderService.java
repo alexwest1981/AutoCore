@@ -455,8 +455,7 @@ public class WorkOrderService {
         for (int serviceItemId : serviceItemIds) {
             ServiceItem serviceItem = findServiceItem(serviceItemId);
             if (serviceItem == null) {
-                System.out.println("Service item with ID " + serviceItemId + " does not exist.");
-                return false;
+                throw new NotFoundException("Service item with ID " + serviceItemId + " does not exist.");
             }
             // The price is frozen once. If the service is already marked it keeps its old price.
             Double alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
