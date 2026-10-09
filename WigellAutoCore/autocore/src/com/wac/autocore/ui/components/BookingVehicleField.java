@@ -6,6 +6,7 @@ import javafx.util.StringConverter;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
 
 /**
@@ -29,6 +30,9 @@ class BookingVehicleField {
             @Override
             public Vehicle fromString(String string) { return null; }
         });
+        // A new booking starts with nothing picked, so the field shows its prompt instead of the first
+        // vehicle in the register.
+        box.setPromptText(I18n.get("dialog.booking.vehicle_select"));
         if (existingBooking != null) {
             for (Vehicle v : box.getItems()) {
                 if (v.getId() == existingBooking.getVehicleId()) {
@@ -36,8 +40,6 @@ class BookingVehicleField {
                     break;
                 }
             }
-        } else {
-            box.getSelectionModel().selectFirst();
         }
     }
 

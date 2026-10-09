@@ -171,7 +171,7 @@ public class BookingFormPane extends GridPane {
 
         new BookingFormLayout(this, dropIn).layout(
                 vehicleBox,
-                packagePicker.getBox(),
+                packagePicker.getMulti(),
                 serviceMulti,
                 mechanicMulti, mechanicFilterHint,
                 scheduleField,
@@ -347,6 +347,7 @@ public class BookingFormPane extends GridPane {
 
     /** Redraws everything that follows from what is on the booking. */
     private void servicesChanged() {
+        packagePicker.setServicesOnBooking(getSelectedServices());
         servicesField.render();
         mechanics.update();
         scheduleField.refresh();
@@ -394,6 +395,12 @@ public class BookingFormPane extends GridPane {
         } else {
             selectedServices.remove(item);
         }
+    }
+
+    /** Drops a picked package. Its services are freed in the service picker again, and the list of
+     *  what is on the booking is redrawn. */
+    void removePackage(ServicePackage pkg) {
+        packagePicker.remove(pkg);
     }
 
     /**

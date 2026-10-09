@@ -446,6 +446,7 @@
         "header": "Create a work order for a customer without a booking"
       },
       "booking_select": "Select booking",
+      "type_select": "Select type",
       "plan_title": "Work orders to be created (one per mechanic)",
       "no_qualified": "No mechanic is qualified for the services on this booking",
       "create_failed": "No work orders could be created. Check that the booking has services and that the mechanics are available.",

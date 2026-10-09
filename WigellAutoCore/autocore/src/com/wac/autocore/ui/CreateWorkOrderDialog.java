@@ -70,6 +70,7 @@ final class CreateWorkOrderDialog {
 
         ComboBox<Booking> bookingBox = new ComboBox<Booking>();
         bookingBox.getItems().addAll(bookings);
+        bookingBox.setPromptText(I18n.get("dialog.workorder.booking_select"));
         bookingBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(bookingBox, Priority.ALWAYS);
         bookingBox.setConverter(new StringConverter<Booking>() {
@@ -82,9 +83,10 @@ final class CreateWorkOrderDialog {
         });
 
         // The type is the same for all work orders one run creates: one per mechanic, one type.
+        // Nothing is picked to begin with, so the field shows its prompt until one is chosen.
         ComboBox<String> typeBox = new ComboBox<String>();
         typeBox.getItems().addAll(WorkOrder.TYPES);
-        typeBox.setValue(WorkOrder.TYPES.get(0));
+        typeBox.setPromptText(I18n.get("dialog.workorder.type_select"));
         typeBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(typeBox, Priority.ALWAYS);
         typeBox.setConverter(new StringConverter<String>() {
@@ -147,8 +149,6 @@ final class CreateWorkOrderDialog {
 
         if (defaultBooking != null && bookings.contains(defaultBooking)) {
             bookingBox.getSelectionModel().select(defaultBooking);
-        } else {
-            bookingBox.getSelectionModel().selectFirst();
         }
         syncFromBooking.accept(bookingBox.getValue());
 
@@ -160,12 +160,13 @@ final class CreateWorkOrderDialog {
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // OK is locked until the chosen booking has something to do — a work order without
-        // services cannot be created anyway.
-        javafx.beans.property.BooleanProperty bookingHasServices = new javafx.beans.property.SimpleBooleanProperty();
-        bookingHasServices.set(WorkOrderPlan.hasServices(bookingBox.getValue()));
-        bookingBox.valueProperty().addListener((obs, oldB, newB) -> bookingHasServices.set(WorkOrderPlan.hasServices(newB)));
-        ActionDialogs.requireFilled(dialog, bookingHasServices);
+        // OK is locked until the chosen booking has something to do and a type is picked — a work
+        // order without services, or without a type, cannot be created anyway.
+        javafx.beans.property.BooleanProperty bookingReady = new javafx.beans.property.SimpleBooleanProperty();
+        bookingReady.bind(javafx.beans.binding.Bindings.createBooleanBinding(
+                () -> WorkOrderPlan.hasServices(bookingBox.getValue()) && typeBox.getValue() != null,
+                bookingBox.valueProperty(), typeBox.valueProperty()));
+        ActionDialogs.requireFilled(dialog, bookingReady);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {

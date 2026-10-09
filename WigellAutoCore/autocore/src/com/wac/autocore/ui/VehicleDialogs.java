@@ -39,7 +39,8 @@ public final class VehicleDialogs {
 
         ComboBox<Customer> customerBox = new ComboBox<Customer>();
         customerBox.getItems().addAll(customers);
-        customerBox.getSelectionModel().selectFirst();
+        // Shows its prompt until an owner is picked, the same as the fields in the booking form.
+        customerBox.setPromptText(I18n.get("dialog.vehicle.customer_select"));
         customerBox.setConverter(new StringConverter<Customer>() {
             @Override
             public String toString(Customer c) {

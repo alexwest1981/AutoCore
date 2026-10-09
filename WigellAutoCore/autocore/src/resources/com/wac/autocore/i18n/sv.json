@@ -446,6 +446,7 @@
         "header": "Skapa arbetsorder för en kund utan bokning"
       },
       "booking_select": "Välj bokning",
+      "type_select": "Välj typ",
       "plan_title": "Arbetsordrar som skapas (en per mekaniker)",
       "no_qualified": "Ingen mekaniker är behörig för bokningens tjänster",
       "create_failed": "Inga arbetsordrar kunde skapas. Kontrollera att bokningen har tjänster och att mekanikerna är tillgängliga.",

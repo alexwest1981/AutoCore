@@ -101,7 +101,8 @@
 .combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
     -fx-background-color: transparent;
     -fx-text-fill: #111827;
-    -fx-padding: 4px 6px;
+    /* Utan sidopadding hamnar texten pa samma indrag som .multi-select, 2 px kant + 6 px padding. */
+    -fx-padding: 4px 0;
     -fx-alignment: CENTER_LEFT;
 }
 .combo-box .arrow, .combo-box-base .arrow, .choice-box .arrow {
