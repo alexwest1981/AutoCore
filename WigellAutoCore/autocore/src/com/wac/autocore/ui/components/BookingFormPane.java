@@ -366,6 +366,9 @@ public class BookingFormPane extends GridPane {
             }
             descField.setText(sb.toString());
         }
+        // The list of services and packages is what makes the form taller, so the dialog is told to
+        // grow here, after everything else has been redrawn.
+        contentGrown();
     }
 
     /** The packages picked so far. Their services are in the list above; this is only used to group
