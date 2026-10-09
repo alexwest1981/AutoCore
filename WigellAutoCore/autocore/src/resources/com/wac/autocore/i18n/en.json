@@ -117,7 +117,7 @@
       "meta.one": "{0} invoice",
       "action_create": "+ Create Invoice",
       "action_pay": "Pay selected invoice",
-      "action_lines": "Show lines",
+      "action_lines": "Details",
       "action_print": "Show invoice"
     },
     "payments": {

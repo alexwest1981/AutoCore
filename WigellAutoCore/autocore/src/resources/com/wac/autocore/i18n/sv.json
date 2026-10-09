@@ -117,7 +117,7 @@
       "meta.one": "{0} faktura",
       "action_create": "+ Skapa faktura",
       "action_pay": "Betala vald faktura",
-      "action_lines": "Visa rader",
+      "action_lines": "Detaljer",
       "action_print": "Visa faktura"
     },
     "payments": {
