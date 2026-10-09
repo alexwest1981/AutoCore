@@ -339,6 +339,8 @@
       "desc_prompt": "T.ex. Årlig service och bromsbyte",
       "add_service": "Lägg till",
       "no_services_selected": "Inga tjänster valda än",
+      "packages_and_services": "Paket och tjänster",
+      "services_not_in_package": "Tjänst - ej paket",
       "total_time": "Beräknad total arbetstid: {0} minuter",
       "total_price": "Beräknat pris: {0}",
       "services_locked_work_started": "Tjänster kan inte ändras eftersom arbetet har påbörjats",

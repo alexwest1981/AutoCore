@@ -37,6 +37,9 @@ public class MultiSelectComboBox<T> extends HBox {
     private final String placeholder;
     /** Decides when two items are the same thing. The models have no equals, so set it to the id. */
     private Function<T, Object> keyFunction = item -> item;
+    /** Keys the field will not pick. The row stays in the list but greyed out, so it is visible that
+     *  the item is already on the booking by some other route. */
+    private final java.util.Set<Object> blockedKeys = new java.util.HashSet<Object>();
     /** The chip has less room than the list row. Default: the same text as the row. */
     private Function<T, String> chipTextProvider;
 
@@ -159,9 +162,25 @@ public class MultiSelectComboBox<T> extends HBox {
         return isSelectedKey(keyFunction.apply(item));
     }
 
-    /** Adds the item only if the key is not already among the selected ones. */
+    /** Marks the items that cannot be picked, compared by key. Anything already picked among them is
+     *  dropped, otherwise the chip would contradict the row. */
+    public void setBlockedItems(List<T> values) {
+        blockedKeys.clear();
+        for (T item : values) {
+            blockedKeys.add(keyFunction.apply(item));
+        }
+        for (int i = selected.size() - 1; i >= 0; i--) {
+            if (blockedKeys.contains(keyFunction.apply(selected.get(i)))) {
+                selected.remove(i);
+            }
+        }
+        renderChips();
+        renderRows();
+    }
+
+    /** Adds the item only if the key is not already among the selected ones or blocked. */
     public boolean addSelectedItem(T item) {
-        if (isSelectedItem(item)) {
+        if (isSelectedItem(item) || blockedKeys.contains(keyFunction.apply(item))) {
             return false;
         }
         selected.add(item);
@@ -252,17 +271,22 @@ public class MultiSelectComboBox<T> extends HBox {
         HBox row = new HBox(10, check, labels);
         row.getStyleClass().add("multi-select-row");
         row.setAlignment(Pos.CENTER_LEFT);
+        boolean blocked = blockedKeys.contains(keyFunction.apply(item));
         if (isSelectedItem(item)) {
             row.getStyleClass().add("selected");
         }
-        row.setOnMouseClicked(e -> {
-            if (isSelectedItem(item)) {
-                removeSelectedItem(item);
-            } else {
-                addSelectedItem(item);
-            }
-            e.consume();
-        });
+        if (blocked) {
+            row.getStyleClass().add("blocked");
+        } else {
+            row.setOnMouseClicked(e -> {
+                if (isSelectedItem(item)) {
+                    removeSelectedItem(item);
+                } else {
+                    addSelectedItem(item);
+                }
+                e.consume();
+            });
+        }
         rowByKey.put(keyFunction.apply(item), row);
         checkBoxByKey.put(keyFunction.apply(item), check);
         return row;

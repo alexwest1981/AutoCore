@@ -190,7 +190,7 @@ public final class I18n {
             // Find the colon ':'
             while (i < len && json.charAt(i) != ':') i++;
             if (i >= len) break;
-            i++; // förbi ':'
+            i++; // past the ':'
 
             // Find the start of the value
             while (i < len && Character.isWhitespace(json.charAt(i))) i++;
@@ -216,7 +216,7 @@ public final class I18n {
                         else if (c == '}') {
                             depth--;
                             if (depth == 0) {
-                                i++; // inkludera '}'
+                                i++; // include the '}'
                                 break;
                             }
                         }

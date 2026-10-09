@@ -3,6 +3,7 @@ package com.wac.autocore.ui.components;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
+import com.wac.autocore.model.ServicePackage;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.seed.SeedText;
@@ -32,13 +33,17 @@ import javafx.util.StringConverter;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The form for creating and changing a booking.
  */
 public class BookingFormPane extends GridPane {
 
+    private final GarageSystem garage;
+    private final Booking existingBooking;
     private final ComboBox<Vehicle> vehicleBox;
     private final DatePicker datePicker;
     private final BookingScheduleField scheduleField;
@@ -46,7 +51,7 @@ public class BookingFormPane extends GridPane {
     private final ObservableList<ServiceItem> selectedServices = FXCollections.observableArrayList();
     private final BookingServicesField servicesField;
     private final BookingPackagePicker packagePicker;
-    private final Label totalSummaryLabel;
+    private final BookingMechanicsField mechanics;
     private final ComboBox<Mechanic> mechanicBox;
     private MultiSelectComboBox<Mechanic> mechanicMulti;
     private final Label mechanicFilterHint;
@@ -94,6 +99,8 @@ public class BookingFormPane extends GridPane {
     public BookingFormPane(GarageSystem garage, Booking existingBooking,
                            LocalDate initialDate, Mechanic defaultMechanic, Integer defaultHour,
                            boolean dropIn, boolean forCopy) {
+        this.garage = garage;
+        this.existingBooking = existingBooking;
         this.excludeId = existingBooking != null && !forCopy ? existingBooking.getId() : 0;
         this.dropIn = dropIn;
         this.dropInTimeLabel.setWrapText(true);
@@ -114,11 +121,11 @@ public class BookingFormPane extends GridPane {
 
         this.vehicleBox = new BookingVehicleField(garage, existingBooking).getBox();
         this.servicesField = new BookingServicesField(this, isServicesLocked);
-        this.totalSummaryLabel = servicesField.getSummary();
         this.serviceMulti = new BookingServicePicker(garage, existingBooking, selectedServices, isServicesLocked).getMulti();
-        this.packagePicker = new BookingPackagePicker(garage, serviceMulti, isServicesLocked);
+        this.packagePicker = new BookingPackagePicker(garage, isServicesLocked);
+        this.packagePicker.setOnChanged(this::packagePicked);
 
-        BookingMechanicsField mechanics = new BookingMechanicsField(garage, this);
+        this.mechanics = new BookingMechanicsField(garage, this);
         this.mechanicFilterHint = mechanics.getHint();
         this.mechanicBox = mechanics.getBox();
         this.mechanicMulti = mechanics.getMulti();
@@ -138,22 +145,7 @@ public class BookingFormPane extends GridPane {
         this.statusBox = statusField.getStatus();
 
         // The list of picked services drives the summary, the mechanic filter and the calendar.
-        selectedServices.addListener((ListChangeListener<ServiceItem>) c -> {
-            servicesField.render();
-            mechanics.update();
-            scheduleField.refresh();
-            refreshDropInTime(garage);
-            // A new booking gets the service names as its description; in edit mode the text
-            // already there is kept.
-            if (existingBooking == null && !dropIn) {
-                StringBuilder sb = new StringBuilder();
-                for (ServiceItem s : selectedServices) {
-                    if (sb.length() > 0) sb.append(", ");
-                    sb.append(SeedText.resolve(s.getName()));
-                }
-                descField.setText(sb.toString());
-            }
-        });
+        selectedServices.addListener((ListChangeListener<ServiceItem>) c -> servicesChanged());
 
         // First run
         servicesField.render();
@@ -177,11 +169,12 @@ public class BookingFormPane extends GridPane {
         new BookingFormLayout(this, dropIn).layout(
                 vehicleBox,
                 packagePicker.getBox(),
-                serviceMulti, totalSummaryLabel,
+                serviceMulti,
                 mechanicMulti, mechanicFilterHint,
                 scheduleField,
                 datePicker, startTimeBox, durationLabel,
                 descField, statusBox, dropInTimeLabel,
+                servicesField,
                 isServicesLocked);
     }
 
@@ -191,7 +184,7 @@ public class BookingFormPane extends GridPane {
         if (!dropIn) {
             return;
         }
-        List<ServiceItem> services = new ArrayList<ServiceItem>(selectedServices);
+        List<ServiceItem> services = getSelectedServices();
         List<Mechanic> team = getSelectedMechanics();
         LocalTime start = services.isEmpty() || team.isEmpty()
                 ? null : garage.dropInStartTime(services, team);
@@ -211,7 +204,7 @@ public class BookingFormPane extends GridPane {
      * Vehicle, date and either a description or a service. A new booking requires a service.
      */
     private boolean requiredFieldsFilled(int excludeBookingId) {
-        boolean hasServices = !selectedServices.isEmpty();
+        boolean hasServices = !getSelectedServices().isEmpty();
         if (getSelectedVehicle() == null || getSelectedDate() == null) {
             return false;
         }
@@ -269,7 +262,7 @@ public class BookingFormPane extends GridPane {
 
         // Qualification check: every picked service needs at least one qualified mechanic in the team
         List<Mechanic> team = getSelectedMechanics();
-        for (ServiceItem s : selectedServices) {
+        for (ServiceItem s : getSelectedServices()) {
             boolean hasQualified = false;
             for (Mechanic m : team) {
                 if (garage.isMechanicQualified(m, s)) {
@@ -308,8 +301,73 @@ public class BookingFormPane extends GridPane {
         return datePicker.getValue();
     }
 
+    /**
+     * Everything on the booking: the services the packages bring, then the ones picked on their own.
+     * This is what gets saved and priced. The picker's own list holds only the latter.
+     */
     public List<ServiceItem> getSelectedServices() {
-        return new ArrayList<ServiceItem>(selectedServices);
+        List<ServiceItem> all = new ArrayList<ServiceItem>();
+        Set<Integer> seen = new HashSet<Integer>();
+        for (ServiceItem item : servicesFromPackages()) {
+            if (seen.add(item.getId())) {
+                all.add(item);
+            }
+        }
+        for (ServiceItem item : selectedServices) {
+            if (seen.add(item.getId())) {
+                all.add(item);
+            }
+        }
+        return all;
+    }
+
+    /** Every service a picked package brings, without duplicates. */
+    private List<ServiceItem> servicesFromPackages() {
+        List<ServiceItem> items = new ArrayList<ServiceItem>();
+        Set<Integer> seen = new HashSet<Integer>();
+        for (ServicePackage pkg : packagePicker.getChosen()) {
+            for (ServiceItem item : pkg.getServiceItems()) {
+                if (seen.add(item.getId())) {
+                    items.add(item);
+                }
+            }
+        }
+        return items;
+    }
+
+    /** A picked package puts its services on the booking, so they are blocked in the picker instead
+     *  of sitting there as chips of their own. */
+    private void packagePicked() {
+        serviceMulti.setBlockedItems(servicesFromPackages());
+        servicesChanged();
+    }
+
+    /** Redraws everything that follows from what is on the booking. */
+    private void servicesChanged() {
+        servicesField.render();
+        mechanics.update();
+        scheduleField.refresh();
+        refreshDropInTime(garage);
+        // A new booking gets the package and service names as its description; in edit mode the
+        // text already there is kept.
+        if (existingBooking == null && !dropIn) {
+            StringBuilder sb = new StringBuilder();
+            for (ServicePackage pkg : packagePicker.getChosen()) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(SeedText.resolve(pkg.getName()));
+            }
+            for (ServiceItem s : getSelectedServices()) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(SeedText.resolve(s.getName()));
+            }
+            descField.setText(sb.toString());
+        }
+    }
+
+    /** The packages picked so far. Their services are in the list above; this is only used to group
+     *  them, so the basket can tell a service from a package from one picked on its own. */
+    List<ServicePackage> getChosenPackages() {
+        return new ArrayList<ServicePackage>(packagePicker.getChosen());
     }
 
     // The removal has to go through the field, getSelectedServices hands out a copy of the list.
@@ -325,12 +383,13 @@ public class BookingFormPane extends GridPane {
      * The first picked service, or null.
      */
     public ServiceItem getSelectedService() {
-        return selectedServices.isEmpty() ? null : selectedServices.get(0);
+        List<ServiceItem> all = getSelectedServices();
+        return all.isEmpty() ? null : all.get(0);
     }
 
     public int getTotalEstimatedMinutes() {
         int total = 0;
-        for (ServiceItem s : selectedServices) {
+        for (ServiceItem s : getSelectedServices()) {
             if (s != null) total += s.getEstimatedMinutes();
         }
         return total;
