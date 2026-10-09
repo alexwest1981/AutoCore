@@ -187,6 +187,7 @@
     "next": "Next"
   },
   "status": {
+    "not_performed": "Not performed",
     "booked": "Booked",
     "in_progress": "In progress",
     "completed": "Completed",
