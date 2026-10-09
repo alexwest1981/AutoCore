@@ -118,6 +118,9 @@ public class WorkOrderService {
 
         WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
         workOrder.setType(type);
+        // The order is about the car the booking is for, so it carries the same vehicle. Without
+        // this the work order's own vehicle stayed at zero and only the booking's copy was shown.
+        workOrder.setVehicleId(booking.getVehicleId());
 
         for (Integer serviceItemId : serviceItemIds) {
             workOrder.addServiceItem(serviceItemId);

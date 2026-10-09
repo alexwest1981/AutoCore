@@ -60,7 +60,7 @@ class KanbanWeekView {
         for (TimeSlot slot : dl.getSlots()) {
             StackPane box = new StackPane();
             box.getStyleClass().add("kanban-hour-box");
-            // Boxarna delar på radens bredd i stället för att stå i sin egen smala kolumn.
+            // The boxes share the width of the row instead of sitting in a narrow column of their own.
             HBox.setHgrow(box, Priority.ALWAYS);
             box.setMaxWidth(Double.MAX_VALUE);
 

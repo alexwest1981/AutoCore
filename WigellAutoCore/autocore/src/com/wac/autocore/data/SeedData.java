@@ -131,6 +131,7 @@ public class SeedData {
             bookingRepository.save(sixthBooking);
 
             WorkOrder firstOrder = new WorkOrder(0, firstBooking.getId(), johan.getId());
+            firstOrder.setVehicleId(firstBooking.getVehicleId());
             firstOrder.addServiceItem(oilChange.getId());
             firstOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(firstOrder);
@@ -140,12 +141,14 @@ public class SeedData {
             bookingRepository.save(firstBooking);
 
             WorkOrder secondOrder = new WorkOrder(0, secondBooking.getId(), sara.getId());
+            secondOrder.setVehicleId(secondBooking.getVehicleId());
             secondOrder.addServiceItem(brakeService.getId());
             workOrderRepository.save(secondOrder);
             secondBooking.setStatus("WORK_ORDER_CREATED");
             bookingRepository.save(secondBooking);
 
             WorkOrder thirdOrder = new WorkOrder(0, fourthBooking.getId(), sara.getId());
+            thirdOrder.setVehicleId(fourthBooking.getVehicleId());
             thirdOrder.addServiceItem(brakeService.getId());
             thirdOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(thirdOrder);
@@ -153,6 +156,7 @@ public class SeedData {
             bookingRepository.save(fourthBooking);
 
             WorkOrder fourthOrder = new WorkOrder(0, fifthBooking.getId(), mikael.getId());
+            fourthOrder.setVehicleId(fifthBooking.getVehicleId());
             fourthOrder.addServiceItem(diagnostics.getId());
             fourthOrder.setStatus("IN_PROGRESS");
             workOrderRepository.save(fourthOrder);
@@ -160,6 +164,7 @@ public class SeedData {
             bookingRepository.save(fifthBooking);
 
             WorkOrder fifthOrder = new WorkOrder(0, thirdBooking.getId(), sara.getId());
+            fifthOrder.setVehicleId(thirdBooking.getVehicleId());
             fifthOrder.addServiceItem(brakeService.getId());
             fifthOrder.addServiceItem(annualService.getId());
             workOrderRepository.save(fifthOrder);
@@ -167,6 +172,7 @@ public class SeedData {
             bookingRepository.save(thirdBooking);
 
             WorkOrder sixthOrder = new WorkOrder(0, sixthBooking.getId(), mikael.getId());
+            sixthOrder.setVehicleId(sixthBooking.getVehicleId());
             sixthOrder.addServiceItem(diagnostics.getId());
             workOrderRepository.save(sixthOrder);
             sixthBooking.setStatus("WORK_ORDER_CREATED");

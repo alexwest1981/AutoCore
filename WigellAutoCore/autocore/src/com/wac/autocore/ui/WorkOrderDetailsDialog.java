@@ -195,7 +195,7 @@ final class WorkOrderDetailsDialog {
                     statusChip.setText(I18n.get("status.completed"));
                     statusChip.getStyleClass().add("green");
                 } else if ("COMPLETED".equals(workOrder.getStatus())) {
-                    // Tjänsten utfördes aldrig, men ordern är avslutad.
+                    // The service was never performed, but the order is closed.
                     statusChip.setText(I18n.get("status.not_performed"));
                     statusChip.getStyleClass().add("grey");
                 } else {
