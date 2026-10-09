@@ -54,7 +54,7 @@ class BookingFormLayout {
 
         int rowIdx = 0;
 
-        // Fordon
+        // Vehicle
         grid.add(new Label(I18n.get("dialog.booking.vehicle_select") + ":"), 0, rowIdx);
         GridPane.setHgrow(vehicleBox, Priority.ALWAYS);
         grid.add(vehicleBox, 1, rowIdx++);
@@ -63,7 +63,7 @@ class BookingFormLayout {
         GridPane.setHgrow(packageBox, Priority.ALWAYS);
         grid.add(packageBox, 1, rowIdx++);
 
-        // Tjänster
+        // Services
         Label serviceLbl = new Label(I18n.get("dialog.booking.service_select") + ":");
         GridPane.setValignment(serviceLbl, VPos.TOP);
         serviceLbl.setPadding(new Insets(6, 0, 0, 0));
@@ -80,7 +80,7 @@ class BookingFormLayout {
         }
         grid.add(serviceCol, 1, rowIdx++);
 
-        // Mekaniker
+        // Mechanics
         Label mechLbl = new Label(I18n.get("dialog.booking.mechanic_select") + ":");
         GridPane.setValignment(mechLbl, VPos.TOP);
         mechLbl.setPadding(new Insets(6, 0, 0, 0));
@@ -164,7 +164,7 @@ class BookingFormLayout {
             grid.add(timeCol, 1, rowIdx++);
         }
 
-        // Beskrivning
+        // Description
         grid.add(new Label(I18n.get("table.col.description") + ":"), 0, rowIdx);
         GridPane.setHgrow(descField, Priority.ALWAYS);
         grid.add(descField, 1, rowIdx++);

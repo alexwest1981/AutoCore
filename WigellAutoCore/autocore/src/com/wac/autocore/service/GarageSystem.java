@@ -47,8 +47,6 @@ public class GarageSystem {
         Db.ensureReady();
     }
 
-    // --- läsa ---
-
     public List<Customer> getCustomers() {
         return customerService.getAll();
     }
@@ -119,8 +117,6 @@ public class GarageSystem {
         return billingService.hasBookingWithUnfinishedWork();
     }
 
-    // --- textversionen ---
-
     public void showCustomers() {
         printer.printCustomers(customerService.getAll());
     }
@@ -152,8 +148,6 @@ public class GarageSystem {
     public void showPayments() {
         printer.printPayments(paymentService.getAll());
     }
-
-    // --- skapa ---
 
     public Customer createCustomer(String name, String phone, String email) {
         return customerService.createCustomer(name, phone, email);
@@ -288,8 +282,6 @@ public class GarageSystem {
         return paymentService.processPayment(invoiceId, paymentType);
     }
 
-    // --- uppdatera ---
-
     public void updateCustomer(Customer customer) throws SQLException {
         customerService.updateCustomer(customer);
     }
@@ -314,8 +306,6 @@ public class GarageSystem {
     public void updateServiceItem(ServiceItem item) throws SQLException {
         serviceItemRepository.save(item);
     }
-
-    // --- ta bort ---
 
     public boolean canDeleteMechanic(int mechanicId) {
         return removalRules.canDeleteMechanic(mechanicId);
@@ -399,8 +389,6 @@ public class GarageSystem {
             throw new IllegalArgumentException("Mechanic data rejected: " + problem);
         }
     }
-    // --- Servicepaket ---
-
     public List<ServicePackage> getServicePackages() {
         return servicePackageService.getAll();
     }
