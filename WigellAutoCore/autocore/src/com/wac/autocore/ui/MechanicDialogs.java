@@ -25,73 +25,35 @@ public final class MechanicDialogs {
     private MechanicDialogs() {}
 
     public static void showCreateMechanicDialog(GarageSystem garage, Runnable onSuccess) {
-        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.mechanic.create.title"));
-        dialog.setHeaderText(I18n.get("dialog.mechanic.create.header"));
-        ActionDialogs.styleDialog(dialog);
-
-        GridPane grid = ActionDialogs.createGrid();
-
-        TextField nameField = new TextField();
-        nameField.setPromptText(I18n.get("dialog.mechanic.name_prompt"));
-        TextField phoneField = new TextField();
-        phoneField.setPromptText(I18n.get("dialog.mechanic.phone_prompt"));
-        ComboBox<String> specBox = createSpecializationBox(garage, null);
-
-        grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
-        grid.add(nameField, 1, 0);
-        grid.add(new Label(I18n.get("dialog.customer.phone") + ":"), 0, 1);
-        grid.add(phoneField, 1, 1);
-        grid.add(new Label(I18n.get("table.col.specialisation") + ":"), 0, 2);
-        grid.add(specBox, 1, 2);
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        ActionDialogs.requireFilled(dialog, nameField, phoneField);
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                String name = nameField.getText().trim();
-                String phone = phoneField.getText().trim();
-
-                String problem = Mechanic.validationProblem(name, phone);
-                if (problem != null) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
-                    return;
-                }
-
-                try {
-                    garage.createMechanic(name, phone, specializationToStore(chosenSpecialization(specBox)));
-                } catch (SQLException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                } catch (IllegalArgumentException rejected) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), rejected.getMessage());
-                    return;
-                }
-
-                if (onSuccess != null) onSuccess.run();
-            }
-        });
+        showMechanicForm(garage, null, onSuccess);
     }
 
     public static void showEditMechanicDialog(GarageSystem garage, Mechanic mechanic, Runnable onSuccess) {
         if (mechanic == null) return;
 
+        showMechanicForm(garage, mechanic, onSuccess);
+    }
+
+    /** One form for both, because create and edit ask for the same fields. */
+    private static void showMechanicForm(GarageSystem garage, Mechanic existing, Runnable onSuccess) {
+        boolean editing = existing != null;
+
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.mechanic.edit.title"));
-        dialog.setHeaderText(I18n.get("dialog.mechanic.edit.header"));
+        dialog.setTitle(I18n.get(editing ? "dialog.mechanic.edit.title" : "dialog.mechanic.create.title"));
+        dialog.setHeaderText(I18n.get(editing ? "dialog.mechanic.edit.header" : "dialog.mechanic.create.header"));
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
 
-        TextField nameField = new TextField(mechanic.getName());
-        nameField.setPromptText(I18n.get("dialog.mechanic.name_prompt"));
-        TextField phoneField = new TextField(mechanic.getPhone() != null ? mechanic.getPhone() : "");
-        phoneField.setPromptText(I18n.get("dialog.mechanic.phone_prompt"));
-        ComboBox<String> specBox = createSpecializationBox(garage, SeedText.resolve(mechanic.getSpecialization()));
+        TextField nameField = ActionDialogs.field("dialog.mechanic.name_prompt", editing ? existing.getName() : null);
+        TextField phoneField = ActionDialogs.field("dialog.mechanic.phone_prompt", editing ? existing.getPhone() : null);
+        ComboBox<String> specBox = createSpecializationBox(garage,
+                editing ? SeedText.resolve(existing.getSpecialization()) : null);
+
         CheckBox availBox = new CheckBox(I18n.get("dialog.mechanic.available"));
-        availBox.setSelected(mechanic.isAvailable());
+        if (editing) {
+            availBox.setSelected(existing.isAvailable());
+        }
 
         grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
         grid.add(nameField, 1, 0);
@@ -99,38 +61,51 @@ public final class MechanicDialogs {
         grid.add(phoneField, 1, 1);
         grid.add(new Label(I18n.get("table.col.specialisation") + ":"), 0, 2);
         grid.add(specBox, 1, 2);
-        grid.add(new Label(I18n.get("table.col.status") + ":"), 0, 3);
-        grid.add(availBox, 1, 3);
+        // The availability belongs to a mechanic that already exists, so the create form leaves it out.
+        if (editing) {
+            grid.add(new Label(I18n.get("table.col.status") + ":"), 0, 3);
+            grid.add(availBox, 1, 3);
+        }
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         ActionDialogs.requireFilled(dialog, nameField, phoneField);
 
         dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                String name = nameField.getText().trim();
-                String phone = phoneField.getText().trim();
-
-                String problem = Mechanic.validationProblem(name, phone);
-                if (problem != null) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
-                    return;
-                }
-
-                mechanic.setName(name);
-                mechanic.setPhone(phone);
-                mechanic.setSpecialization(specializationToStore(chosenSpecialization(specBox)));
-                mechanic.setAvailable(availBox.isSelected());
-
-                try {
-                    garage.updateMechanic(mechanic);
-                } catch (SQLException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                }
-
-                if (onSuccess != null) onSuccess.run();
+            if (response != ButtonType.OK) {
+                return;
             }
+
+            String name = nameField.getText().trim();
+            String phone = phoneField.getText().trim();
+
+            String problem = Mechanic.validationProblem(name, phone);
+            if (problem != null) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
+                return;
+            }
+
+            String specialization = specializationToStore(chosenSpecialization(specBox));
+
+            try {
+                if (editing) {
+                    existing.setName(name);
+                    existing.setPhone(phone);
+                    existing.setSpecialization(specialization);
+                    existing.setAvailable(availBox.isSelected());
+                    garage.updateMechanic(existing);
+                } else {
+                    garage.createMechanic(name, phone, specialization);
+                }
+            } catch (SQLException e) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                return;
+            } catch (IllegalArgumentException rejected) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), rejected.getMessage());
+                return;
+            }
+
+            if (onSuccess != null) onSuccess.run();
         });
     }
 
@@ -154,9 +129,8 @@ public final class MechanicDialogs {
         if (garage != null) {
             for (ServiceItem s : garage.getServiceItems()) {
                 String serviceName = SeedText.resolve(s.getName());
-                if (serviceName != null && !serviceName.trim().isEmpty() && !suggestions.contains(serviceName.trim())) {
+                if (serviceName != null && !serviceName.trim().isEmpty() && !suggestions.contains(serviceName.trim()))
                     suggestions.add(serviceName.trim());
-                }
             }
         }
         return suggestions;

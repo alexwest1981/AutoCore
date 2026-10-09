@@ -20,67 +20,34 @@ public final class CustomerDialogs {
     private CustomerDialogs() {}
 
     public static void showCreateCustomerDialog(GarageSystem garage, Runnable onSuccess) {
-        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.customer.create.title"));
-        dialog.setHeaderText(I18n.get("dialog.customer.create.header"));
-        ActionDialogs.styleDialog(dialog);
-
-        GridPane grid = ActionDialogs.createGrid();
-
-        TextField nameField = new TextField();
-        nameField.setPromptText(I18n.get("dialog.customer.name_prompt"));
-        TextField phoneField = new TextField();
-        phoneField.setPromptText(I18n.get("dialog.customer.phone_prompt"));
-        TextField emailField = new TextField();
-        emailField.setPromptText(I18n.get("dialog.customer.email_prompt"));
-
-        grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
-        grid.add(nameField, 1, 0);
-        grid.add(new Label(I18n.get("dialog.customer.phone") + ":"), 0, 1);
-        grid.add(phoneField, 1, 1);
-        grid.add(new Label(I18n.get("dialog.customer.email") + ":"), 0, 2);
-        grid.add(emailField, 1, 2);
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        ActionDialogs.requireFilled(dialog, nameField, phoneField);
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                String name = nameField.getText().trim();
-                String phone = phoneField.getText().trim();
-                String email = emailField.getText().trim();
-
-                String problem = Customer.validationProblem(name, phone, email);
-                if (problem != null) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
-                    return;
-                }
-
-                garage.createCustomer(name, phone, email);
-                if (onSuccess != null) onSuccess.run();
-            }
-        });
+        showCustomerForm(garage, null, onSuccess);
     }
 
     public static void showEditCustomerDialog(GarageSystem garage, Customer customer, Runnable onSuccess) {
         if (customer == null) return;
 
+        showCustomerForm(garage, customer, onSuccess);
+    }
+
+    /** One form for both, because create and edit ask for the same three fields. */
+    private static void showCustomerForm(GarageSystem garage, Customer existing, Runnable onSuccess) {
+        boolean editing = existing != null;
+
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.customer.edit.title"));
-        dialog.setHeaderText(I18n.get("dialog.customer.edit.header"));
+        dialog.setTitle(I18n.get(editing ? "dialog.customer.edit.title" : "dialog.customer.create.title"));
+        dialog.setHeaderText(I18n.get(editing ? "dialog.customer.edit.header" : "dialog.customer.create.header"));
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
 
-        TextField nameField = new TextField(customer.getName());
-        nameField.setPromptText(I18n.get("dialog.customer.name_prompt"));
-        TextField phoneField = new TextField(customer.getPhone() != null ? customer.getPhone() : "");
-        phoneField.setPromptText(I18n.get("dialog.customer.phone_prompt"));
-        TextField emailField = new TextField(customer.getEmail() != null ? customer.getEmail() : "");
-        emailField.setPromptText(I18n.get("dialog.customer.email_prompt"));
+        TextField nameField = ActionDialogs.field("dialog.customer.name_prompt", editing ? existing.getName() : null);
+        TextField phoneField = ActionDialogs.field("dialog.customer.phone_prompt", editing ? existing.getPhone() : null);
+        TextField emailField = ActionDialogs.field("dialog.customer.email_prompt", editing ? existing.getEmail() : null);
+
         CheckBox vipBox = new CheckBox(I18n.get("table.col.vip"));
-        vipBox.setSelected(customer.isVip());
+        if (editing) {
+            vipBox.setSelected(existing.isVip());
+        }
 
         grid.add(new Label(I18n.get("dialog.customer.name") + ":"), 0, 0);
         grid.add(nameField, 1, 0);
@@ -88,39 +55,47 @@ public final class CustomerDialogs {
         grid.add(phoneField, 1, 1);
         grid.add(new Label(I18n.get("dialog.customer.email") + ":"), 0, 2);
         grid.add(emailField, 1, 2);
-        grid.add(new Label(I18n.get("table.col.vip") + ":"), 0, 3);
-        grid.add(vipBox, 1, 3);
+        // The vip flag belongs to a customer that already exists, so the create form leaves it out.
+        if (editing) {
+            grid.add(new Label(I18n.get("table.col.vip") + ":"), 0, 3);
+            grid.add(vipBox, 1, 3);
+        }
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         ActionDialogs.requireFilled(dialog, nameField, phoneField);
 
         dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                String name = nameField.getText().trim();
-                String phone = phoneField.getText().trim();
-                String email = emailField.getText().trim();
-
-                String problem = Customer.validationProblem(name, phone, email);
-                if (problem != null) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
-                    return;
-                }
-
-                customer.setName(name);
-                customer.setPhone(phone);
-                customer.setEmail(email);
-                customer.setVip(vipBox.isSelected());
-
-                try {
-                    garage.updateCustomer(customer);
-                } catch (SQLException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                }
-
-                if (onSuccess != null) onSuccess.run();
+            if (response != ButtonType.OK) {
+                return;
             }
+
+            String name = nameField.getText().trim();
+            String phone = phoneField.getText().trim();
+            String email = emailField.getText().trim();
+
+            String problem = Customer.validationProblem(name, phone, email);
+            if (problem != null) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
+                return;
+            }
+
+            try {
+                if (editing) {
+                    existing.setName(name);
+                    existing.setPhone(phone);
+                    existing.setEmail(email);
+                    existing.setVip(vipBox.isSelected());
+                    garage.updateCustomer(existing);
+                } else {
+                    garage.createCustomer(name, phone, email);
+                }
+            } catch (SQLException e) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                return;
+            }
+
+            if (onSuccess != null) onSuccess.run();
         });
     }
 

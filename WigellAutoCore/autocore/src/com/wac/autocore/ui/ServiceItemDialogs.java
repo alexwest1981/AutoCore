@@ -21,89 +21,40 @@ public final class ServiceItemDialogs {
     private ServiceItemDialogs() {}
 
     public static void showCreateServiceItemDialog(GarageSystem garage, Runnable onSuccess) {
-        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.service.create.title"));
-        dialog.setHeaderText(I18n.get("dialog.service.create.header"));
-        ActionDialogs.styleDialog(dialog);
-
-        GridPane grid = ActionDialogs.createGrid();
-
-        TextField nameField = new TextField();
-        nameField.setPromptText(I18n.get("dialog.service.name_prompt"));
-        TextField descField = new TextField();
-        descField.setPromptText(I18n.get("dialog.service.desc_prompt"));
-        TextField priceField = new TextField();
-        priceField.setPromptText(I18n.get("dialog.service.price_prompt"));
-        TextField timeField = new TextField();
-        timeField.setPromptText(I18n.get("dialog.service.time_prompt"));
-        ComboBox<String> specBox = requirementBox(garage);
-
-        grid.add(new Label(I18n.get("table.col.name") + ":"), 0, 0);
-        grid.add(nameField, 1, 0);
-        grid.add(new Label(I18n.get("table.col.description") + ":"), 0, 1);
-        grid.add(descField, 1, 1);
-        grid.add(new Label(I18n.get("table.col.price") + ":"), 0, 2);
-        grid.add(priceField, 1, 2);
-        grid.add(new Label(I18n.get("table.col.time") + ":"), 0, 3);
-        grid.add(timeField, 1, 3);
-        grid.add(new Label(I18n.get("dialog.service.spec_label") + ":"), 0, 4);
-        grid.add(specBox, 1, 4);
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        ActionDialogs.requireFilled(dialog, nameField, priceField, timeField);
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                String name = nameField.getText().trim();
-                String desc = descField.getText().trim();
-                String priceStr = priceField.getText().trim();
-                String timeStr = timeField.getText().trim();
-
-                if (name.isEmpty() || priceStr.isEmpty() || timeStr.isEmpty()) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
-                    return;
-                }
-
-                Double price = parsePrice(priceStr);
-                Integer time = parseMinutes(timeStr);
-                if (price == null || time == null) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
-                    return;
-                }
-
-                try {
-                    garage.createServiceItem(name, desc, price, time, requirementKey(specBox));
-                } catch (SQLException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                }
-
-                if (onSuccess != null) onSuccess.run();
-            }
-        });
+        showServiceItemForm(garage, null, onSuccess);
     }
 
     public static void showEditServiceItemDialog(GarageSystem garage, ServiceItem serviceItem, Runnable onSuccess) {
         if (serviceItem == null) return;
 
+        showServiceItemForm(garage, serviceItem, onSuccess);
+    }
+
+    /** One form for both, because create and edit ask for the same fields. */
+    private static void showServiceItemForm(GarageSystem garage, ServiceItem existing, Runnable onSuccess) {
+        boolean editing = existing != null;
+
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.service.edit.title"));
-        dialog.setHeaderText(I18n.get("dialog.service.edit.header"));
+        dialog.setTitle(I18n.get(editing ? "dialog.service.edit.title" : "dialog.service.create.title"));
+        dialog.setHeaderText(I18n.get(editing ? "dialog.service.edit.header" : "dialog.service.create.header"));
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
 
-        TextField nameField = new TextField(serviceItem.getName() != null ? SeedText.resolve(serviceItem.getName()) : "");
-        nameField.setPromptText(I18n.get("dialog.service.name_prompt"));
-        TextField descField = new TextField(serviceItem.getDescription() != null ? SeedText.resolve(serviceItem.getDescription()) : "");
-        descField.setPromptText(I18n.get("dialog.service.desc_prompt"));
-        TextField priceField = new TextField(String.valueOf(serviceItem.getPrice()));
-        priceField.setPromptText(I18n.get("dialog.service.price_prompt"));
-        TextField timeField = new TextField(String.valueOf(serviceItem.getEstimatedMinutes()));
-        timeField.setPromptText(I18n.get("dialog.service.time_prompt"));
+        // An existing service can carry a seed key instead of plain text, so it is resolved first.
+        TextField nameField = ActionDialogs.field("dialog.service.name_prompt",
+                editing && existing.getName() != null ? SeedText.resolve(existing.getName()) : null);
+        TextField descField = ActionDialogs.field("dialog.service.desc_prompt",
+                editing && existing.getDescription() != null ? SeedText.resolve(existing.getDescription()) : null);
+        TextField priceField = ActionDialogs.field("dialog.service.price_prompt",
+                editing ? String.valueOf(existing.getPrice()) : null);
+        TextField timeField = ActionDialogs.field("dialog.service.time_prompt",
+                editing ? String.valueOf(existing.getEstimatedMinutes()) : null);
+
         ComboBox<String> specBox = requirementBox(garage);
-        showRequirement(specBox, serviceItem);
+        if (editing) {
+            showRequirement(specBox, existing);
+        }
 
         grid.add(new Label(I18n.get("table.col.name") + ":"), 0, 0);
         grid.add(nameField, 1, 0);
@@ -121,39 +72,44 @@ public final class ServiceItemDialogs {
         ActionDialogs.requireFilled(dialog, nameField, priceField, timeField);
 
         dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                String name = nameField.getText().trim();
-                String desc = descField.getText().trim();
-                String priceStr = priceField.getText().trim();
-                String timeStr = timeField.getText().trim();
-
-                if (name.isEmpty() || priceStr.isEmpty() || timeStr.isEmpty()) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
-                    return;
-                }
-
-                Double price = parsePrice(priceStr);
-                Integer time = parseMinutes(timeStr);
-                if (price == null || time == null) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
-                    return;
-                }
-
-                serviceItem.setName(name);
-                serviceItem.setDescription(desc);
-                serviceItem.setPrice(price);
-                serviceItem.setEstimatedMinutes(time);
-                serviceItem.setSpecialization(requirementKey(specBox));
-
-                try {
-                    garage.updateServiceItem(serviceItem);
-                } catch (SQLException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                }
-
-                if (onSuccess != null) onSuccess.run();
+            if (response != ButtonType.OK) {
+                return;
             }
+
+            String name = nameField.getText().trim();
+            String desc = descField.getText().trim();
+            String priceStr = priceField.getText().trim();
+            String timeStr = timeField.getText().trim();
+
+            if (name.isEmpty() || priceStr.isEmpty() || timeStr.isEmpty()) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+                return;
+            }
+
+            Double price = parsePrice(priceStr);
+            Integer time = parseMinutes(timeStr);
+            if (price == null || time == null) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
+                return;
+            }
+
+            try {
+                if (editing) {
+                    existing.setName(name);
+                    existing.setDescription(desc);
+                    existing.setPrice(price);
+                    existing.setEstimatedMinutes(time);
+                    existing.setSpecialization(requirementKey(specBox));
+                    garage.updateServiceItem(existing);
+                } else {
+                    garage.createServiceItem(name, desc, price, time, requirementKey(specBox));
+                }
+            } catch (SQLException e) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                return;
+            }
+
+            if (onSuccess != null) onSuccess.run();
         });
     }
 
@@ -237,7 +193,7 @@ public final class ServiceItemDialogs {
             box.getSelectionModel().selectFirst();
             return;
         }
-        String text = com.wac.autocore.seed.SeedText.resolve(stored);
+        String text = SeedText.resolve(stored);
         for (String option : box.getItems()) {
             if (option.equals(text)) {
                 box.getSelectionModel().select(option);
