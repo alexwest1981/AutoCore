@@ -16,7 +16,7 @@
       "customers": "Show customers",
       "vehicles": "Show vehicles",
       "bookings": "Show bookings",
-      "dropin": "Drop-in (no booking)",
+      "dropin": "Drop-in",
       "services": "Show services",
       "mechanics": "Show mechanics",
       "workorders": "Show work orders",
