@@ -307,8 +307,7 @@ public class WorkOrderService {
     public boolean startWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "IN_PROGRESS")) {
@@ -339,8 +338,7 @@ public class WorkOrderService {
     public boolean completeWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "COMPLETED")) {
@@ -387,8 +385,7 @@ public class WorkOrderService {
         WorkOrder workOrder = findById(workOrderId);
 
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "CONFIRMED")) {
@@ -408,8 +405,7 @@ public class WorkOrderService {
         WorkOrder workOrder = findById(workOrderId);
 
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "CANCELLED")) {
@@ -444,8 +440,7 @@ public class WorkOrderService {
     public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!"IN_PROGRESS".equals(workOrder.getStatus())) {
