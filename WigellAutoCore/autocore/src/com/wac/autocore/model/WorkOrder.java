@@ -1,5 +1,6 @@
 package com.wac.autocore.model;
 
+import com.wac.autocore.exception.RuleViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -200,7 +201,8 @@ public class WorkOrder {
 
     public void markServiceAsCompleted(int serviceItemId) {
         if (!this.serviceItemIds.contains(serviceItemId)) {
-            throw new IllegalArgumentException("Tjänsten med ID " + serviceItemId + " tillhör inte denna arbetsorder.");
+            throw new RuleViolationException(
+                    "Tjänsten med ID " + serviceItemId + " tillhör inte denna arbetsorder.");
         }
         if (!this.completedServiceItems.contains(serviceItemId)) {
             this.completedServiceItems.add(serviceItemId);

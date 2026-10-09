@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.exception.MechanicUnavailableException;
 import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
@@ -78,8 +79,8 @@ public class BookingService {
             throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
         if (services == null || services.isEmpty() || team == null || team.isEmpty()) {
-            System.out.println("A drop-in booking needs at least one service item and one mechanic.");
-            return null;
+            throw new RuleViolationException(
+                    "A drop-in booking needs at least one service item and one mechanic.");
         }
 
         List<Integer> mechanicIds = mechanicIdsOf(team);
