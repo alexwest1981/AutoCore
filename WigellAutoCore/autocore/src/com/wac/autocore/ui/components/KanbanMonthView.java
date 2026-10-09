@@ -51,7 +51,7 @@ class KanbanMonthView {
             String loadClass = "load-" + s.getLevel().getCode();
             cell.getStyleClass().addAll("workday", loadClass);
 
-            String tip = s.getDate().toString() + " · " + s.getBookedHours() + "/9h (" + I18n.get("kanban.load." + s.getLevel().getCode()) + ")";
+            String tip = s.getDate().toString() + " · " + s.getBookedHours() + "/9h";
             javafx.scene.control.Tooltip.install(cell, new javafx.scene.control.Tooltip(tip));
         }
 

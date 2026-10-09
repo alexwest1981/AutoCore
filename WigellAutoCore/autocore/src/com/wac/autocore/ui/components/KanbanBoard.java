@@ -2,7 +2,6 @@ package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import javafx.geometry.Insets;
@@ -37,21 +36,10 @@ public final class KanbanBoard {
         Label sub = new Label(I18n.get("kanban.subtitle"));
         sub.getStyleClass().add("panel-sub");
 
-        Button addMechBtn = new Button("+ " + I18n.get("dialog.mechanic.create.title"));
-        addMechBtn.getStyleClass().addAll("secondary", "small");
-        addMechBtn.setMinWidth(Region.USE_PREF_SIZE);
-        addMechBtn.setOnAction(e -> javafx.application.Platform.runLater(() -> ActionDialogs.showCreateMechanicDialog(garage, onRefresh)));
-
-        Region spr1 = new Region();
-        HBox.setHgrow(spr1, Priority.ALWAYS);
-
-        // Load legend
-        HBox legend = buildCompactLegend();
-
-        HBox headLeft = new HBox(12, new VBox(2, title, sub), addMechBtn);
+        HBox headLeft = new HBox(12, new VBox(2, title, sub));
         headLeft.setAlignment(Pos.CENTER_LEFT);
 
-        HBox boardHead = new HBox(12, headLeft, spr1, legend);
+        HBox boardHead = new HBox(12, headLeft);
         boardHead.setAlignment(Pos.CENTER_LEFT);
         boardHead.setPadding(new Insets(0, 0, 8, 0));
 
@@ -181,29 +169,4 @@ public final class KanbanBoard {
         return board;
     }
 
-    private static HBox buildCompactLegend() {
-        HBox legend = new HBox(10);
-        legend.setAlignment(Pos.CENTER_RIGHT);
-        legend.getChildren().addAll(
-                createDot("load-free", I18n.get("kanban.load.free")),
-                createDot("load-moderate", I18n.get("kanban.load.moderate")),
-                createDot("load-busy", I18n.get("kanban.load.busy")),
-                createDot("load-full", I18n.get("kanban.load.full"))
-        );
-        return legend;
-    }
-
-    private static HBox createDot(String cssClass, String label) {
-        Region dot = new Region();
-        dot.getStyleClass().addAll("kanban-legend-dot", cssClass);
-        dot.setPrefSize(8, 8);
-        dot.setMaxSize(8, 8);
-
-        Label lbl = new Label(label);
-        lbl.getStyleClass().add("kanban-legend-text");
-
-        HBox box = new HBox(4, dot, lbl);
-        box.setAlignment(Pos.CENTER);
-        return box;
-    }
 }
