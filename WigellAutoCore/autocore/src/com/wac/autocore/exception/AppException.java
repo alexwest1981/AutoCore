@@ -1,9 +1,6 @@
 package com.wac.autocore.exception;
 
-/**
- * The parent of every error the application raises itself, so a caller can catch our own
- * failures in one place instead of guessing at the type.
- */
+/** The parent of the app's own errors, so a caller can catch them in one place. */
 public class AppException extends RuntimeException {
 
     public AppException(String message) {

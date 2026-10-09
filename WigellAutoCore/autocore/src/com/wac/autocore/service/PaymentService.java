@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Payment;
 import com.wac.autocore.repository.InvoiceRepository;
@@ -101,8 +102,7 @@ public class PaymentService {
         try {
             return invoiceRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read invoice " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read invoice " + id, e);
         }
     }
 }

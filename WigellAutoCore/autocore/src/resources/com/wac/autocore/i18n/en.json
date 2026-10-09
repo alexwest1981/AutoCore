@@ -557,6 +557,9 @@
     }
   },
   "view": {
+    "error": {
+      "read_failed": "Could not read the data. Check that the database is in place and open the page again."
+    },
     "notice": {
       "workorders.one": "Booking without a work order",
       "workorders.many": "Bookings without a work order",

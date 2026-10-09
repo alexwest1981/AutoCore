@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
@@ -41,8 +42,7 @@ public class BookingService {
         try {
             return bookingRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read booking: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read booking", e);
         }
     }
 
@@ -217,8 +217,7 @@ public class BookingService {
             Vehicle v = vehicleRepository.findById(id);
             return v;
         } catch (SQLException e) {
-            System.out.println("Could not read vehicle: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read vehicle", e);
         }
     }
     private boolean isMechanicOccupied(int mechanicId, LocalDate date, LocalTime newStart, LocalTime newEnd) throws SQLException {

@@ -557,6 +557,9 @@
     }
   },
   "view": {
+    "error": {
+      "read_failed": "Kunde inte läsa uppgifterna. Kontrollera att databasen finns på plats och öppna sidan igen."
+    },
     "notice": {
       "workorders.one": "Bokning som saknar en arbetsorder",
       "workorders.many": "Bokningar som saknar en arbetsorder",

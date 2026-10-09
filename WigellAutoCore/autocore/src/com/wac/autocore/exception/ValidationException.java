@@ -1,9 +1,6 @@
 package com.wac.autocore.exception;
 
-/**
- * A filled-in value cannot be stored. It carries the key suffix instead of finished text, so
- * whoever catches it can show the sentence in the language the user picked.
- */
+/** A value that cannot be stored. Carries the text key, not the finished sentence. */
 public class ValidationException extends AppException {
 
     private final String keySuffix;

@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
@@ -40,8 +41,7 @@ public class WorkOrderService {
         try {
             return workOrderRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read work order " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read work order " + id, e);
         }
     }
 
@@ -498,8 +498,7 @@ public class WorkOrderService {
         try {
             return bookingRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read booking " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read booking " + id, e);
         }
     }
 
@@ -507,8 +506,7 @@ public class WorkOrderService {
         try {
             return mechanicRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read mechanic " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read mechanic " + id, e);
         }
     }
 
@@ -516,8 +514,7 @@ public class WorkOrderService {
         try {
             return serviceItemRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read service item " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read service item " + id, e);
         }
     }
 
@@ -525,8 +522,7 @@ public class WorkOrderService {
         try {
             return vehicleRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read vehicle " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read vehicle " + id, e);
         }
     }
 
