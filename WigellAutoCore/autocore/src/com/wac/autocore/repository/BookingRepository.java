@@ -171,11 +171,22 @@ public class BookingRepository {
     private Booking buildBooking(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("date");
 
+        LocalDate bookingDate = null;
+
+        if (dateText != null) {
+
+            try {
+                bookingDate = LocalDate.parse(dateText);
+            } catch (java.time.format.DateTimeParseException e) {
+                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+            }
+        }
+
         // Create the booking object first
         Booking booking = new Booking(
                 resultSet.getInt("id"),
                 resultSet.getInt("vehicle_id"),
-                dateText == null ? null : LocalDate.parse(dateText),
+                bookingDate,
                 resultSet.getString("description")
         );
 

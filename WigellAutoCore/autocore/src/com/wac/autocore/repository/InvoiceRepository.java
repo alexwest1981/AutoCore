@@ -127,10 +127,20 @@ public class InvoiceRepository {
     private Invoice buildInvoice(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("invoice_date");
 
+        LocalDate invoiceDate = null;
+
+        if (dateText != null) {
+            try {
+                invoiceDate = LocalDate.parse(dateText);
+            } catch (java.time.format.DateTimeParseException e) {
+                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+            }
+        }
+
         Invoice invoice = new Invoice(
                 resultSet.getInt("id"),
                 resultSet.getInt("work_order_id"),
-                dateText == null ? null : LocalDate.parse(dateText),
+                invoiceDate,
                 resultSet.getDouble("amount")
         );
 

@@ -124,8 +124,14 @@ public class PaymentRepository {
         );
 
         String dateText = resultSet.getString("payment_date");
+
         if (dateText != null) {
-            payment.setPaymentDate(LocalDateTime.parse(dateText));
+
+            try {
+                payment.setPaymentDate(LocalDateTime.parse(dateText));
+            } catch (java.time.format.DateTimeParseException e) {
+                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+            }
         }
 
         payment.setSuccessful(resultSet.getBoolean("successful"));
