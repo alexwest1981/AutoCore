@@ -8,6 +8,8 @@ public class InvoiceLine {
     private String serviceName;
     private double price;
     private double discount;
+    /** The package the service came from, or empty when it was booked on its own. */
+    private String packageName = "";
 
     public InvoiceLine(int id, int invoiceId, int serviceItemId,
                        String serviceName, double price, double discount) {
@@ -53,6 +55,14 @@ public class InvoiceLine {
 
     public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    public String getPackageName() {
+        return packageName == null ? "" : packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName == null ? "" : packageName;
     }
 
     public double getFinalPrice() {

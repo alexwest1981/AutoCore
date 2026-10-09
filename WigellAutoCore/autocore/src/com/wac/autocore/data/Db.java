@@ -129,7 +129,8 @@ public class Db {
                 + "service_item_id INTEGER, "
                 + "service_name TEXT NOT NULL, "
                 + "price REAL NOT NULL, "
-                + "discount REAL DEFAULT 0)",
+                + "discount REAL DEFAULT 0, "
+                + "package_name TEXT)",
 
             "CREATE TABLE IF NOT EXISTS payments ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -234,6 +235,13 @@ public class Db {
             // The order inherits the package names from the booking it was created from.
             try {
                 statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN package_name TEXT");
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
+            }
+
+            // The invoice line keeps the package name, frozen the way the price is.
+            try {
+                statement.executeUpdate("ALTER TABLE invoice_lines ADD COLUMN package_name TEXT");
             } catch (SQLException e) {
                 rethrowUnlessDuplicateColumn(e);
             }
