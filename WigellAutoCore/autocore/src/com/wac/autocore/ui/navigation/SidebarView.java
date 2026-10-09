@@ -115,13 +115,9 @@ public class SidebarView {
         }
     }
 
-    private Image loadLogoImage() {
-        return com.wac.autocore.ui.components.UiComponents.loadLogoImage();
-    }
-
     private VBox buildSidebar() {
         Node brandNode;
-        Image logoImg = loadLogoImage();
+        Image logoImg = com.wac.autocore.ui.components.UiComponents.loadLogoImage();
         if (logoImg != null && !logoImg.isError()) {
             ImageView logoView = new ImageView(logoImg);
             logoView.setPreserveRatio(true);

@@ -11,7 +11,7 @@ public class Customer {
     public Customer(int id, String name, String phone, String email) {
         this.id = id;
         this.name = name;
-        this.phone = normalizePhone(phone);
+        this.phone = ContactRules.normalizePhone(phone);
         this.email = email;
         this.vip = false;
     }
@@ -37,7 +37,7 @@ public class Customer {
     }
 
     public void setPhone(String phone) {
-        this.phone = normalizePhone(phone);
+        this.phone = ContactRules.normalizePhone(phone);
     }
 
     public String getEmail() {
@@ -59,11 +59,6 @@ public class Customer {
     /** Suffix in {@code dialog.validation.<suffix>}, or null when the row can be saved. */
     public static String validationProblem(String name, String phone, String email) {
         return ContactRules.problemWith(name, phone, email);
-    }
-
-    /** Se {@link ContactRules#normalizePhone}. */
-    public static String normalizePhone(String raw) {
-        return ContactRules.normalizePhone(raw);
     }
 
     @Override
