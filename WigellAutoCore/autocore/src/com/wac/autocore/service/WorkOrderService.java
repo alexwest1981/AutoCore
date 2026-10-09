@@ -76,6 +76,7 @@ public class WorkOrderService {
 
     /** Creates a work order of a given type. Standard, reclamation or internal work. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type) {
+
         if (type == null || !WorkOrder.TYPES.contains(type)) {
             System.out.println("Unknown work order type: " + type);
             return null;
@@ -93,10 +94,17 @@ public class WorkOrderService {
         }
 
         for (WorkOrder existingOrder : getAll()) {
+
+            if ("CANCELLED".equals(existingOrder.getStatus())) {
+                continue;
+            }
+
             if (existingOrder.getBookingId() != bookingId) {
                 continue;
             }
+
             for (Integer serviceItemId : serviceItemIds) {
+
                 if (existingOrder.getServiceItemIds().contains(serviceItemId)) {
                     System.out.println("Service " + serviceItemId + " is already on work order "
                             + existingOrder.getId() + ".");
@@ -250,18 +258,26 @@ public class WorkOrderService {
     /** True if the service already sits on a work order for the same booking. The catalogue is shared. */
     private boolean isClaimed(int bookingId, int serviceItemId) {
         for (WorkOrder order : getAll()) {
+
+            if ("CANCELLED".equals(order.getStatus())) {
+                continue;
+            }
+
             if (order.getBookingId() != bookingId) {
                 continue;
             }
+
             if (order.getServiceItemIds().contains(Integer.valueOf(serviceItemId))) {
                 return true;
             }
         }
+
         return false;
     }
 
     // The only place that decides which status changes are allowed. Anything not listed is refused.
     private boolean canChangeStatus(String from, String to) {
+
         if ("IN_PROGRESS".equals(from) && "COMPLETED".equals(to)) {
             return true;
         }
