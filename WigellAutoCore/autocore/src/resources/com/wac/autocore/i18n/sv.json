@@ -187,6 +187,7 @@
     "next": "Nästa"
   },
   "status": {
+    "not_performed": "Ej utförd",
     "booked": "Bokad",
     "in_progress": "Pågående",
     "completed": "Slutförd",
