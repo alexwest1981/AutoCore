@@ -24,15 +24,6 @@ public class PaymentService {
         }
     }
 
-    public Payment findById(int id) {
-        try {
-            return paymentRepository.findById(id);
-        } catch (SQLException e) {
-            System.out.println("Could not read payment " + id + ": " + e.getMessage());
-            return null;
-        }
-    }
-
     public Payment processPayment(int invoiceId, String paymentType) {
         Invoice invoice = findInvoice(invoiceId);
         if (invoice == null) {

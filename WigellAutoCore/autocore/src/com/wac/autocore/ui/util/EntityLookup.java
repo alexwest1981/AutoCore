@@ -355,52 +355,6 @@ public final class EntityLookup {
         return sb.toString();
     }
 
-    public static String workOrderServicesWithPrices(GarageSystem garage, WorkOrder wo) {
-        if (wo == null || wo.getServiceItemIds() == null || wo.getServiceItemIds().isEmpty() || garage == null) {
-            return "-";
-        }
-        Invoice invoice = invoiceForWorkOrder(garage, wo.getId());
-        StringBuilder sb = new StringBuilder();
-        for (Integer sid : wo.getServiceItemIds()) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-            String name = null;
-            Double frozenPrice = wo.getCompletedServicePrice(sid.intValue());
-            Double price = frozenPrice;
-            if (invoice != null && invoice.getLines() != null) {
-                for (InvoiceLine line : invoice.getLines()) {
-                    if (line.getServiceItemId() == sid) {
-                        name = line.getServiceName();
-                        if (price == null) {
-                            price = line.getPrice();
-                        }
-                        break;
-                    }
-                }
-            }
-            if (name == null) {
-                for (ServiceItem s : garage.getServiceItems()) {
-                    if (s.getId() == sid) {
-                        name = s.getName();
-                        if (price == null) {
-                            price = s.getPrice();
-                        }
-                        break;
-                    }
-                }
-            }
-            if (name == null) {
-                name = "Service #" + sid;
-            }
-            sb.append(SeedText.resolve(name));
-            if (price != null) {
-                sb.append(" (").append(UiFormatters.formatMoney(price)).append(")");
-            }
-        }
-        return sb.toString();
-    }
-
     public static double workOrderTotal(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null) return 0.0;
         if (wo.getServiceItemIds() == null) return 0.0;

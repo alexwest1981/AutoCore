@@ -22,8 +22,7 @@
       "workorders": "Show work orders",
       "invoices": "Show invoices",
       "payments": "Show payments"
-    },
-    "lang": {}
+    }
   },
   "overview": {
     "title": "Overview",
@@ -197,11 +196,7 @@
   "common": {
     "yes": "Yes",
     "no": "No",
-    "currency": "kr",
-    "save": "Save",
-    "cancel": "Cancel",
-    "close": "Close",
-    "action": "Action"
+    "close": "Close"
   },
   "invoice": {
     "title": "INVOICE",
@@ -331,7 +326,6 @@
       "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
       "save_failed": "The booking could not be saved.",
       "desc_prompt": "E.g. Annual service and brake replacement",
-      "add_service": "Add",
       "no_services_selected": "No services selected yet",
       "packages_and_services": "Packages and services",
       "services_not_in_package": "Service - not in a package",
@@ -504,7 +498,6 @@
       "phone_ten_digits": "The phone number must be exactly 10 digits (e.g. 070-1234567).",
       "email_format": "Enter a valid email address (e.g. name@example.com)."
     },
-    "success": {},
     "confirm": {
       "title": "Confirm"
     }
@@ -515,10 +508,6 @@
     "today": "Today",
     "action": {
       "book_hour": "Book this slot"
-    },
-    "status": {
-      "available": "Available",
-      "busy": "Busy"
     },
     "view": {
       "day": "Day",
@@ -534,7 +523,6 @@
     "week": {
       "title": "Week {0}"
     },
-    "month": {},
     "slot": {
       "booked": "Booked",
       "click_to_expand": "Click to expand",

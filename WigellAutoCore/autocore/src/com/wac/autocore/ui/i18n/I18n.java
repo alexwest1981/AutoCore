@@ -25,11 +25,7 @@ public final class I18n {
 
     static {
         loadLanguage(DEFAULT_LANG);
-        if (!DEFAULT_LANG.equals(LANG_EN)) {
-            fallbackDictionary.putAll(loadDictionary(LANG_EN));
-        } else {
-            fallbackDictionary.putAll(activeDictionary);
-        }
+        fallbackDictionary.putAll(activeDictionary);
         com.wac.autocore.seed.SeedText.setLanguage(DEFAULT_LANG);
     }
 

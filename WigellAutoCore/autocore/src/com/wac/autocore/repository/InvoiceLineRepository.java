@@ -70,12 +70,6 @@ public class InvoiceLineRepository {
         }
     }
 
-    public void deleteByInvoiceId(int invoiceId) throws SQLException {
-        try (Connection connection = Db.getConnection()) {
-            deleteByInvoiceId(connection, invoiceId);
-        }
-    }
-
     public void deleteByInvoiceId(Connection connection, int invoiceId) throws SQLException {
         String sql = "DELETE FROM invoice_lines WHERE invoice_id = ?";
 

@@ -29,7 +29,6 @@ public class MechanicSchedule {
     // Key: "mechanicId:YYYY-MM-DD:hour"
     private final Map<String, TimeSlot> slots = new HashMap<String, TimeSlot>();
     private boolean seeded = false;
-    private boolean databaseSyncEnabled = true;
 
     public MechanicSchedule() {
         initDefaultSeedData();
@@ -41,7 +40,6 @@ public class MechanicSchedule {
 
     /** Reads the work orders from the database and maps them onto hour slots. */
     public synchronized void syncFromDatabase() {
-        if (!databaseSyncEnabled) return;
         String sql = "SELECT wo.id AS wo_id, wo.mechanic_id, wo.status AS wo_status, "
                 + "b.id AS booking_id, b.date, b.start_time, b.description, "
                 + "v.registration_number, c.name AS customer_name "

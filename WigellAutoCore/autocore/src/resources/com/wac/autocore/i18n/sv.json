@@ -22,8 +22,7 @@
       "workorders": "Visa arbetsordrar",
       "invoices": "Visa fakturor",
       "payments": "Visa betalningar"
-    },
-    "lang": {}
+    }
   },
   "overview": {
     "title": "Översikt",
@@ -197,11 +196,7 @@
   "common": {
     "yes": "Ja",
     "no": "Nej",
-    "currency": "kr",
-    "save": "Spara",
-    "cancel": "Avbryt",
-    "close": "Stäng",
-    "action": "Åtgärd"
+    "close": "Stäng"
   },
   "invoice": {
     "title": "FAKTURA",
@@ -331,7 +326,6 @@
       "slot_busy_error": "Den valda tiden är redan upptagen hos denna mekaniker. Vänligen välj en ledig tid.",
       "save_failed": "Bokningen kunde inte sparas.",
       "desc_prompt": "T.ex. Årlig service och bromsbyte",
-      "add_service": "Lägg till",
       "no_services_selected": "Inga tjänster valda än",
       "packages_and_services": "Paket och tjänster",
       "services_not_in_package": "Tjänst - ej paket",
@@ -504,7 +498,6 @@
       "phone_ten_digits": "Telefonnumret måste vara exakt 10 siffror (t.ex. 070-1234567).",
       "email_format": "Ange en giltig e-postadress (t.ex. namn@exempel.se)."
     },
-    "success": {},
     "confirm": {
       "title": "Bekräfta"
     }
@@ -515,10 +508,6 @@
     "today": "Idag",
     "action": {
       "book_hour": "Boka denna timme"
-    },
-    "status": {
-      "available": "Tillgänglig",
-      "busy": "Upptagen"
     },
     "view": {
       "day": "Dag",
@@ -534,7 +523,6 @@
     "week": {
       "title": "Vecka {0}"
     },
-    "month": {},
     "slot": {
       "booked": "Bokad",
       "click_to_expand": "Klicka för att fälla ut",

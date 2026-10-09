@@ -48,7 +48,7 @@ class KanbanMonthView {
         } else if (!s.isMechanicAvailable()) {
             cell.getStyleClass().add("unavailable");
         } else {
-            String loadClass = "load-" + s.getLevel().getCode();
+            String loadClass = "load-" + s.getLevel().name().toLowerCase();
             cell.getStyleClass().addAll("workday", loadClass);
 
             String tip = s.getDate().toString() + " · " + s.getBookedHours() + "/9h";

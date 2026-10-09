@@ -99,12 +99,6 @@ public class BookingServiceItemRepository {
         }
     }
 
-    public void deleteByBookingId(int bookingId) throws SQLException {
-        try (Connection connection = Db.getConnection()) {
-            deleteByBookingId(connection, bookingId);
-        }
-    }
-
     public void deleteByBookingId(Connection connection, int bookingId) throws SQLException {
         String sql = "DELETE FROM booking_service_items WHERE booking_id = ?";
 

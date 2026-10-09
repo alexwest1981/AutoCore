@@ -11,20 +11,16 @@ public final class ThemeCatalog {
 
     public static final class Theme {
         public final String slug;
-        public final String name;
         public final String stylesheet;
-        public final boolean dark;
-        public final String accent;
-        public Theme(String slug, String name, String stylesheet, boolean dark, String accent) {
-            this.slug = slug; this.name = name; this.stylesheet = stylesheet;
-            this.dark = dark; this.accent = accent;
+        public Theme(String slug, String stylesheet) {
+            this.slug = slug; this.stylesheet = stylesheet;
         }
     }
 
     private static final List<Theme> THEMES = new ArrayList<Theme>();
     static {
         Collections.addAll(THEMES,
-            new Theme("emerald", "Emerald", "/com/wac/autocore/theme/themes/emerald/emerald.css", false, "#025941"));
+            new Theme("emerald", "/com/wac/autocore/theme/themes/emerald/emerald.css"));
     }
 
     public static Theme bySlug(String slug) {
