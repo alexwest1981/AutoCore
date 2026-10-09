@@ -99,12 +99,7 @@ public final class WorkOrderPlan {
 
     /** The mechanic with the given id, or null. */
     static Mechanic mechanicById(GarageSystem garage, int mechanicId) {
-        for (Mechanic m : garage.getMechanics()) {
-            if (m.getId() == mechanicId) {
-                return m;
-            }
-        }
-        return null;
+        return garage.findMechanic(mechanicId);
     }
 
     /** The booking's mechanic if qualified, otherwise the first qualified one. */

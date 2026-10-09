@@ -20,54 +20,29 @@ public final class EntityLookup {
     private EntityLookup() {}
 
     public static String customerName(GarageSystem garage, int id) {
-        if (garage == null) {
-            return "Customer #" + id;
-        }
-        for (Customer c : garage.getCustomers()) {
-            if (c.getId() == id) {
-                return c.getName();
-            }
-        }
-        return "Customer #" + id;
+        Customer customer = garage == null ? null : garage.findCustomer(id);
+        return customer == null ? "Customer #" + id : customer.getName();
     }
 
     public static String vehicleReg(GarageSystem garage, int id) {
-        if (garage == null) {
-            return "Vehicle #" + id;
-        }
-        for (Vehicle v : garage.getVehicles()) {
-            if (v.getId() == id) {
-                return v.getRegistrationNumber();
-            }
-        }
-        return "Vehicle #" + id;
+        Vehicle vehicle = garage == null ? null : garage.findVehicle(id);
+        return vehicle == null ? "Vehicle #" + id : vehicle.getRegistrationNumber();
     }
 
     public static String mechanicName(GarageSystem garage, int id) {
         if (id <= 0) {
             return "-";
         }
-        if (garage == null) {
-            return "Mechanic #" + id;
-        }
-        for (Mechanic m : garage.getMechanics()) {
-            if (m.getId() == id) {
-                return m.getName();
-            }
-        }
-        return "Mechanic #" + id;
+        Mechanic mechanic = garage == null ? null : garage.findMechanic(id);
+        return mechanic == null ? "Mechanic #" + id : mechanic.getName();
     }
 
     public static String serviceName(GarageSystem garage, int id) {
         if (garage == null || id <= 0) {
             return "-";
         }
-        for (ServiceItem s : garage.getServiceItems()) {
-            if (s.getId() == id) {
-                return SeedText.resolve(s.getName());
-            }
-        }
-        return "Service #" + id;
+        ServiceItem service = garage.findServiceItem(id);
+        return service == null ? "Service #" + id : SeedText.resolve(service.getName());
     }
 
     public static String serviceNames(GarageSystem garage, List<Integer> ids) {
@@ -79,14 +54,8 @@ public final class EntityLookup {
             if (sb.length() > 0) {
                 sb.append(", ");
             }
-            String found = null;
-            for (ServiceItem s : garage.getServiceItems()) {
-                if (s.getId() == sid) {
-                    found = SeedText.resolve(s.getName());
-                    break;
-                }
-            }
-            sb.append(found != null ? found : "Service #" + sid);
+            ServiceItem service = garage.findServiceItem(sid.intValue());
+            sb.append(service == null ? "Service #" + sid : SeedText.resolve(service.getName()));
         }
         return sb.toString();
     }
@@ -118,11 +87,9 @@ public final class EntityLookup {
         if (min > 0) return min;
         if (garage != null && b.getServiceItemIds() != null) {
             for (int sid : b.getServiceItemIds()) {
-                for (ServiceItem s : garage.getServiceItems()) {
-                    if (s.getId() == sid) {
-                        min += s.getEstimatedMinutes();
-                        break;
-                    }
+                ServiceItem service = garage.findServiceItem(sid);
+                if (service != null) {
+                    min += service.getEstimatedMinutes();
                 }
             }
         }
@@ -135,11 +102,9 @@ public final class EntityLookup {
         if (cost > 0.0) return cost;
         if (garage != null && b.getServiceItemIds() != null) {
             for (int sid : b.getServiceItemIds()) {
-                for (ServiceItem s : garage.getServiceItems()) {
-                    if (s.getId() == sid) {
-                        cost += s.getPrice();
-                        break;
-                    }
+                ServiceItem service = garage.findServiceItem(sid);
+                if (service != null) {
+                    cost += service.getPrice();
                 }
             }
         }
@@ -148,26 +113,15 @@ public final class EntityLookup {
 
     public static String bookingVehicleReg(GarageSystem garage, int bookingId) {
         if (garage == null) return "Booking #" + bookingId;
-        for (com.wac.autocore.model.Booking b : garage.getBookings()) {
-            if (b.getId() == bookingId) {
-                return vehicleReg(garage, b.getVehicleId());
-            }
-        }
-        return "Booking #" + bookingId;
+        Booking b = garage.findBooking(bookingId);
+        return b == null ? "Booking #" + bookingId : vehicleReg(garage, b.getVehicleId());
     }
 
     public static String bookingCustomerName(GarageSystem garage, int bookingId) {
         if (garage == null) return "-";
-        for (com.wac.autocore.model.Booking b : garage.getBookings()) {
-            if (b.getId() == bookingId) {
-                for (Vehicle v : garage.getVehicles()) {
-                    if (v.getId() == b.getVehicleId()) {
-                        return customerName(garage, v.getCustomerId());
-                    }
-                }
-            }
-        }
-        return "-";
+        Booking b = garage.findBooking(bookingId);
+        Vehicle v = b == null ? null : garage.findVehicle(b.getVehicleId());
+        return v == null ? "-" : customerName(garage, v.getCustomerId());
     }
 
     /** The registration number of the car the invoice is for. The invoice belongs to a work order. */
@@ -180,12 +134,8 @@ public final class EntityLookup {
     /** The registration number of the car the payment is for, via the invoice. */
     public static String paymentVehicleReg(GarageSystem garage, Payment payment) {
         if (garage == null || payment == null) return "-";
-        for (Invoice invoice : garage.getInvoices()) {
-            if (invoice.getId() == payment.getInvoiceId()) {
-                return invoiceVehicleReg(garage, invoice);
-            }
-        }
-        return "-";
+        Invoice invoice = garage.findInvoice(payment.getInvoiceId());
+        return invoice == null ? "-" : invoiceVehicleReg(garage, invoice);
     }
 
     /** The booking number the work order belongs to, or a dash for a draft. */
@@ -202,10 +152,8 @@ public final class EntityLookup {
 
     // The customer who owns the vehicle. A draft has no booking, only a vehicle.
     private static String vehicleCustomerName(GarageSystem garage, int vehicleId) {
-        for (Vehicle v : garage.getVehicles()) {
-            if (v.getId() == vehicleId) return customerName(garage, v.getCustomerId());
-        }
-        return "-";
+        Vehicle v = garage.findVehicle(vehicleId);
+        return v == null ? "-" : customerName(garage, v.getCustomerId());
     }
 
     public static String workOrderCustomerName(GarageSystem garage, WorkOrder wo) {
@@ -235,34 +183,21 @@ public final class EntityLookup {
     /** The booking the work order belongs to, or null when there is none. */
     private static Booking bookingForWorkOrder(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null || wo.getBookingId() <= 0) return null;
-        for (Booking b : garage.getBookings()) {
-            if (b.getId() == wo.getBookingId()) return b;
-        }
-        return null;
+        return garage.findBooking(wo.getBookingId());
     }
 
     /** The booking the work order belongs to, or 0 if the work order does not exist. */
     public static int bookingIdForWorkOrder(GarageSystem garage, int workOrderId) {
         if (garage == null || workOrderId <= 0) return 0;
-        for (WorkOrder wo : garage.getWorkOrders()) {
-            if (wo.getId() == workOrderId) {
-                return wo.getBookingId();
-            }
-        }
-        return 0;
+        WorkOrder order = garage.findWorkOrder(workOrderId);
+        return order == null ? 0 : order.getBookingId();
     }
 
     /** The invoice covering the work order. It belongs to the booking, not to one order. */
     public static Invoice invoiceForWorkOrder(GarageSystem garage, int workOrderId) {
         if (garage == null || workOrderId <= 0) return null;
 
-        WorkOrder order = null;
-        for (WorkOrder wo : garage.getWorkOrders()) {
-            if (wo.getId() == workOrderId) {
-                order = wo;
-                break;
-            }
-        }
+        WorkOrder order = garage.findWorkOrder(workOrderId);
         if (order == null) return null;
 
         List<Integer> performed = order.getCompletedServiceItems();
@@ -311,12 +246,8 @@ public final class EntityLookup {
                 }
             }
         }
-        for (ServiceItem s : garage.getServiceItems()) {
-            if (s.getId() == serviceItemId) {
-                return s.getPrice();
-            }
-        }
-        return 0.0;
+        ServiceItem service = garage.findServiceItem(serviceItemId);
+        return service == null ? 0.0 : service.getPrice();
     }
 
     /** The service names on a work order, without prices. The view is for the mechanics. */
@@ -340,12 +271,8 @@ public final class EntityLookup {
                 }
             }
             if (name == null) {
-                for (ServiceItem s : garage.getServiceItems()) {
-                    if (s.getId() == sid) {
-                        name = s.getName();
-                        break;
-                    }
-                }
+                ServiceItem service = garage.findServiceItem(sid.intValue());
+                name = service == null ? null : service.getName();
             }
             if (name == null) {
                 name = "Service #" + sid;
@@ -369,23 +296,15 @@ public final class EntityLookup {
 
     public static String invoiceCustomerName(GarageSystem garage, Invoice inv) {
         if (garage == null || inv == null) return "-";
-        for (WorkOrder wo : garage.getWorkOrders()) {
-            if (wo.getId() == inv.getWorkOrderId()) {
-                return workOrderCustomerName(garage, wo);
-            }
-        }
-        return "-";
+        WorkOrder wo = garage.findWorkOrder(inv.getWorkOrderId());
+        return wo == null ? "-" : workOrderCustomerName(garage, wo);
     }
 
     /** The customer behind a payment, via invoice, work order, booking and vehicle. */
     public static String paymentCustomerName(GarageSystem garage, Payment pay) {
         if (garage == null || pay == null) return "-";
-        for (Invoice inv : garage.getInvoices()) {
-            if (inv.getId() == pay.getInvoiceId()) {
-                return invoiceCustomerName(garage, inv);
-            }
-        }
-        return "-";
+        Invoice inv = garage.findInvoice(pay.getInvoiceId());
+        return inv == null ? "-" : invoiceCustomerName(garage, inv);
     }
 
     /** Total estimated work time for the services on the work order. */
@@ -395,11 +314,9 @@ public final class EntityLookup {
         }
         int total = 0;
         for (Integer sid : wo.getServiceItemIds()) {
-            for (ServiceItem s : garage.getServiceItems()) {
-                if (s.getId() == sid.intValue()) {
-                    total += s.getEstimatedMinutes();
-                    break;
-                }
+            ServiceItem service = garage.findServiceItem(sid.intValue());
+            if (service != null) {
+                total += service.getEstimatedMinutes();
             }
         }
         return total;

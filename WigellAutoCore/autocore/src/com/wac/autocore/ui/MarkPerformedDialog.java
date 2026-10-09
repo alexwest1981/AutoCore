@@ -40,12 +40,10 @@ final class MarkPerformedDialog {
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
             String name = "Service #" + serviceItemId;
             double price = 0.0;
-            for (ServiceItem s : garage.getServiceItems()) {
-                if (s.getId() == serviceItemId.intValue()) {
-                    name = SeedText.resolve(s.getName());
-                    price = s.getPrice();
-                    break;
-                }
+            ServiceItem s = garage.findServiceItem(serviceItemId.intValue());
+            if (s != null) {
+                name = SeedText.resolve(s.getName());
+                price = s.getPrice();
             }
             CheckBox box = new CheckBox(name + " (" + UiFormatters.formatMoney(price) + ")");
 

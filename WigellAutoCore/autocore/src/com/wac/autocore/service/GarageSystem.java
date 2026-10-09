@@ -86,6 +86,86 @@ public class GarageSystem {
         return paymentService.getAll();
     }
 
+    /** The customer with that id, or null when there is none. */
+    public Customer findCustomer(int id) {
+        for (Customer row : getCustomers()) {
+            if (row.getId() == id) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    /** The vehicle with that id, or null when there is none. */
+    public Vehicle findVehicle(int id) {
+        for (Vehicle row : getVehicles()) {
+            if (row.getId() == id) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    /** The mechanic with that id, or null when there is none. */
+    public Mechanic findMechanic(int id) {
+        for (Mechanic row : getMechanics()) {
+            if (row.getId() == id) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    /** The service with that id, or null when there is none. */
+    public ServiceItem findServiceItem(int id) {
+        for (ServiceItem row : getServiceItems()) {
+            if (row.getId() == id) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    /** The booking with that id, or null when there is none. */
+    public Booking findBooking(int id) {
+        for (Booking row : getBookings()) {
+            if (row.getId() == id) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    /** The work order with that id, or null when there is none. */
+    public WorkOrder findWorkOrder(int id) {
+        for (WorkOrder row : getWorkOrders()) {
+            if (row.getId() == id) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    /** The invoice with that id, or null when there is none. */
+    public Invoice findInvoice(int id) {
+        for (Invoice row : getInvoices()) {
+            if (row.getId() == id) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    /** The payment with that id, or null when there is none. */
+    public Payment findPayment(int id) {
+        for (Payment row : getPayments()) {
+            if (row.getId() == id) {
+                return row;
+            }
+        }
+        return null;
+    }
+
     public List<Mechanic> getQualifiedMechanics(ServiceItem service) {
         return mechanicRules.qualifiedFor(service);
     }
