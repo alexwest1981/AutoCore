@@ -47,14 +47,18 @@ public final class BookingAvailability {
 
         // Checked against the stored bookings in GarageSystem
         if (garage != null) {
+
             for (Booking b : garage.getBookings()) {
+
                 if (excludeBookingId > 0 && b.getId() == excludeBookingId) {
                     continue;
                 }
+
                 if ("CANCELLED".equalsIgnoreCase(b.getStatus())) {
                     continue;
                 }
-                if (b.getMechanicId() != mechanic.getId() || !date.equals(b.getDate()) || b.getStartTime() == null) {
+
+                if (!b.getMechanicIds().contains(Integer.valueOf(mechanic.getId())) || !date.equals(b.getDate()) || b.getStartTime() == null) {
                     continue;
                 }
                 LocalTime bStart = b.getStartTime();
