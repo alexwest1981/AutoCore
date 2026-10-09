@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
@@ -48,8 +49,7 @@ public class WorkOrderService {
     public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
-            System.out.println("Booking with ID " + bookingId + " does not exist.");
-            return null;
+            throw new NotFoundException("Booking with ID " + bookingId + " does not exist.");
         }
 
         // The services no work order has taken yet. If all are already taken there is nothing
@@ -84,8 +84,7 @@ public class WorkOrderService {
 
         Booking booking = findBooking(bookingId);
         if (booking == null) {
-            System.out.println("Booking with ID " + bookingId + " does not exist.");
-            return null;
+            throw new NotFoundException("Booking with ID " + bookingId + " does not exist.");
         }
 
         if (serviceItemIds == null || serviceItemIds.isEmpty()) {
@@ -115,8 +114,7 @@ public class WorkOrderService {
 
         Mechanic mechanic = findMechanic(mechanicId);
         if (mechanic == null) {
-            System.out.println("Mechanic with ID " + mechanicId + " does not exist.");
-            return null;
+            throw new NotFoundException("Mechanic with ID " + mechanicId + " does not exist.");
         }
 
         if (!mechanic.isAvailable()) {
@@ -160,8 +158,7 @@ public class WorkOrderService {
         WorkOrder original = findById(originalWorkOrderId);
 
         if (original == null) {
-            System.out.println("Work order with ID " + originalWorkOrderId + " does not exist.");
-            return null;
+            throw new NotFoundException("Work order with ID " + originalWorkOrderId + " does not exist.");
         }
 
         // Only work that has actually been performed can be reclaimed.
@@ -172,8 +169,7 @@ public class WorkOrderService {
 
         Mechanic mechanic = findMechanic(original.getMechanicId());
         if (mechanic == null) {
-            System.out.println("Mechanic with ID " + original.getMechanicId() + " does not exist.");
-            return null;
+            throw new NotFoundException("Mechanic with ID " + original.getMechanicId() + " does not exist.");
         }
 
         if (!mechanic.isAvailable()) {
@@ -208,8 +204,7 @@ public class WorkOrderService {
     public WorkOrder createDraft(int vehicleId, String description) {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
+            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
 
         WorkOrder workOrder = new WorkOrder(0, 0, 0);
@@ -233,8 +228,7 @@ public class WorkOrderService {
         WorkOrder workOrder = findById(workOrderId);
 
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return null;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         workOrder.setVehicleId(vehicleId);

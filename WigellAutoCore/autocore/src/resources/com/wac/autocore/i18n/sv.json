@@ -558,7 +558,8 @@
   },
   "view": {
     "error": {
-      "read_failed": "Kunde inte läsa uppgifterna. Kontrollera att databasen finns på plats och öppna sidan igen."
+      "read_failed": "Kunde inte läsa uppgifterna. Kontrollera att databasen finns på plats och öppna sidan igen.",
+      "action_failed": "Kunde inte utföra åtgärden. Försök igen, och säg till om det upprepas."
     },
     "notice": {
       "workorders.one": "Bokning som saknar en arbetsorder",

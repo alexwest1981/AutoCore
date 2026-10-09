@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
@@ -49,8 +50,7 @@ public class BillingService {
     public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
         WorkOrder workOrder = findWorkOrder(workOrderId);
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return null;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!"COMPLETED".equals(workOrder.getStatus())) {
@@ -87,8 +87,7 @@ public class BillingService {
     public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
-            System.out.println("Booking with ID " + bookingId + " does not exist.");
-            return null;
+            throw new NotFoundException("Booking with ID " + bookingId + " does not exist.");
         }
 
         // One invoice covers all the work on the booking, so if something is left to do it waits.

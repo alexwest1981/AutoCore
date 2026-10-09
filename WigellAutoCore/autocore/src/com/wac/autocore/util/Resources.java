@@ -11,22 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * One way to find a resource file and read it as a flat map of dot-notated keys.
- *
- * The dictionaries, the seed texts and the theme all live on the classpath in the finished build,
- * but while developing they are also read straight from the source tree and from the output folder
- * IntelliJ writes to. Each caller passes its own candidates in the order it wants them tried, and
- * this class holds the four places looked in and the one json reader.
+ * One way to find a resource file and read it as a flat map of dot-notated keys. The candidates
+ * come from the caller, because the build and the source tree are laid out differently.
  */
 public final class Resources {
 
     private Resources() {}
 
-    /**
-     * The first of the candidates that can be read, or null. A candidate that starts with a slash
-     * is a classpath resource, anything else is a classpath resource without the slash and then a
-     * file relative to the working directory.
-     */
+    /** The first candidate that can be read, or null. A leading slash means classpath. */
     public static URL find(String... candidates) {
         if (candidates == null) {
             return null;
@@ -63,7 +55,10 @@ public final class Resources {
         return null;
     }
 
-    /** The json file as dot-notated keys, empty when it cannot be read. */
+    /**
+     * The json file as dot-notated keys, empty when it cannot be read. The reader is hand-written
+     * because the project ships no json library.
+     */
     public static Map<String, String> json(URL url) {
         Map<String, String> result = new HashMap<String, String>();
         if (url == null) {
@@ -94,13 +89,13 @@ public final class Resources {
         int len = json.length();
 
         while (i < len) {
-            // Skip whitespace and commas
+            
             while (i < len && (Character.isWhitespace(json.charAt(i)) || json.charAt(i) == ',')) {
                 i++;
             }
             if (i >= len) break;
 
-            // Read the key (must start with a quote)
+            
             if (json.charAt(i) != '"') {
                 i++;
                 continue;
@@ -112,21 +107,21 @@ public final class Resources {
             }
             String rawKey = json.substring(keyStart, i);
             String key = unescapeJson(rawKey);
-            i++; // past the closing quote
+            i++; 
 
-            // Find the colon ':'
+            
             while (i < len && json.charAt(i) != ':') i++;
             if (i >= len) break;
-            i++; // past the ':'
+            i++; 
 
-            // Find the start of the value
+            
             while (i < len && Character.isWhitespace(json.charAt(i))) i++;
             if (i >= len) break;
 
             String fullKey = prefix.isEmpty() ? key : prefix + "." + key;
 
             if (json.charAt(i) == '{') {
-                // Find the matching brace
+                
                 int objStart = i;
                 int depth = 0;
                 boolean inStr = false;
@@ -143,7 +138,7 @@ public final class Resources {
                         else if (c == '}') {
                             depth--;
                             if (depth == 0) {
-                                i++; // include the '}'
+                                i++; 
                                 break;
                             }
                         }
@@ -160,9 +155,8 @@ public final class Resources {
                 }
                 String rawVal = json.substring(valStart, i);
                 out.put(fullKey, unescapeJson(rawVal));
-                i++; // past the closing quote
+                i++;
             } else {
-                // Primitive value (number, boolean etc)
                 int valStart = i;
                 while (i < len && json.charAt(i) != ',' && json.charAt(i) != '}' && !Character.isWhitespace(json.charAt(i))) {
                     i++;

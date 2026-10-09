@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Payment;
@@ -28,8 +29,7 @@ public class PaymentService {
     public Payment processPayment(int invoiceId, String paymentType) {
         Invoice invoice = findInvoice(invoiceId);
         if (invoice == null) {
-            System.out.println("Invoice with ID " + invoiceId + " does not exist.");
-            return null;
+            throw new NotFoundException("Invoice with ID " + invoiceId + " does not exist.");
         }
 
         if (invoice.isPaid()) {

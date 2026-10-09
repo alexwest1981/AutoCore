@@ -223,7 +223,11 @@ public class ConsoleApp {
         int mechanicId = readInt("Mechanic ID: ");
 
         // The work order gets the booking's services.
-        garageSystem.createWorkOrder(bookingId, mechanicId);
+        try {
+            garageSystem.createWorkOrder(bookingId, mechanicId);
+        } catch (AppException rejected) {
+            System.out.println(rejected.getMessage());
+        }
     }
 
     private static void startWorkOrder() {
@@ -235,7 +239,11 @@ public class ConsoleApp {
 
         int workOrderId = readInt("Work order ID: ");
 
-        garageSystem.startWorkOrder(workOrderId);
+        try {
+            garageSystem.startWorkOrder(workOrderId);
+        } catch (AppException rejected) {
+            System.out.println(rejected.getMessage());
+        }
     }
 
     private static void completeWorkOrder() {
@@ -247,7 +255,11 @@ public class ConsoleApp {
 
         int workOrderId = readInt("Work order ID: ");
 
-        garageSystem.completeWorkOrder(workOrderId);
+        try {
+            garageSystem.completeWorkOrder(workOrderId);
+        } catch (AppException rejected) {
+            System.out.println(rejected.getMessage());
+        }
     }
 
     private static void createInvoice() {

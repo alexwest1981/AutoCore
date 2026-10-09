@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
@@ -50,8 +51,7 @@ public class BookingService {
 
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
+            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
 
         Booking booking = new Booking(vehicleId, date, description);
@@ -74,8 +74,7 @@ public class BookingService {
 
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
+            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
         if (services == null || services.isEmpty() || team == null || team.isEmpty()) {
             System.out.println("A drop-in booking needs at least one service item and one mechanic.");
@@ -182,8 +181,7 @@ public class BookingService {
     public Booking createBooking(int vehicleId, LocalDate date, String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
+            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
 
         ServiceItem serviceItem = serviceItemRepository.findAll().stream()

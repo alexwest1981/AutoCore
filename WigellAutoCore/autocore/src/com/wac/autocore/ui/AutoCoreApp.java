@@ -26,6 +26,7 @@ public class AutoCoreApp extends Application {
     public void start(Stage primaryStage) {
         // The database is already ready: Main runs Db.ensureReady() and the garage field above
         // does the same in its constructor. An initTables() here gave a second "Databas redo".
+        installErrorBoundary();
         restoreLanguage();
         persistLanguageChanges();
 
@@ -67,6 +68,23 @@ public class AutoCoreApp extends Application {
         primaryStage.show();
 
         router.navigate("overview");
+    }
+
+    /**
+     * Shows our own failures as a sentence instead of a stack trace. One place covers every screen.
+     */
+    public static void installErrorBoundary() {
+        Thread.setDefaultUncaughtExceptionHandler((thread, failure) -> {
+            failure.printStackTrace();
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), errorMessageFor(failure));
+        });
+    }
+
+    /** What the user reads: one sentence about the action, then the technical line. */
+    public static String errorMessageFor(Throwable failure) {
+        String reason = failure instanceof com.wac.autocore.exception.AppException
+                ? failure.getMessage() : failure.toString();
+        return I18n.get("view.error.action_failed") + "\n\n" + reason;
     }
 
     /** Reads the last chosen language from the settings. */
