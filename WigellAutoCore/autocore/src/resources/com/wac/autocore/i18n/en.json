@@ -220,6 +220,7 @@
     "customer": "Bill to",
     "vehicle": "Vehicle",
     "booking": "Booking",
+    "other_services": "Other services",
     "col": {
       "description": "Description",
       "price": "Price",

@@ -220,6 +220,7 @@
     "customer": "Faktureras till",
     "vehicle": "Fordon",
     "booking": "Bokning",
+    "other_services": "Övriga tjänster",
     "col": {
       "description": "Beskrivning",
       "price": "Pris",

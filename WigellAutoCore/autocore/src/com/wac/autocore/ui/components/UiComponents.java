@@ -183,4 +183,25 @@ public final class UiComponents {
         row.getChildren().addAll(number, message);
         return row;
     }
+
+    /** The invoice lines grouped by package, in the order the lines appear. The empty key holds the
+     *  lines that came without a package. Both dialogs use this, so they group the same way. */
+    public static java.util.LinkedHashMap<String, java.util.List<com.wac.autocore.model.InvoiceLine>> groupLinesByPackage(
+            com.wac.autocore.model.Invoice invoice) {
+        java.util.LinkedHashMap<String, java.util.List<com.wac.autocore.model.InvoiceLine>> groups =
+                new java.util.LinkedHashMap<String, java.util.List<com.wac.autocore.model.InvoiceLine>>();
+        if (invoice == null || invoice.getLines() == null) {
+            return groups;
+        }
+        for (com.wac.autocore.model.InvoiceLine line : invoice.getLines()) {
+            String key = line.getPackageName();
+            java.util.List<com.wac.autocore.model.InvoiceLine> group = groups.get(key);
+            if (group == null) {
+                group = new java.util.ArrayList<com.wac.autocore.model.InvoiceLine>();
+                groups.put(key, group);
+            }
+            group.add(line);
+        }
+        return groups;
+    }
 }

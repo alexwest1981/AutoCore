@@ -173,8 +173,21 @@ public final class InvoiceDocument {
                 right(label(I18n.get("invoice.col.sum"), 10, true, MUTED)));
 
         int row = 1;
-        if (invoice.getLines() != null) {
-            for (InvoiceLine line : invoice.getLines()) {
+        java.util.LinkedHashMap<String, java.util.List<InvoiceLine>> groups =
+                com.wac.autocore.ui.components.UiComponents.groupLinesByPackage(invoice);
+        // The heading is only worth showing when at least one line came from a package.
+        boolean anyPackage = false;
+        for (String key : groups.keySet()) {
+            if (!key.isEmpty()) {
+                anyPackage = true;
+            }
+        }
+        for (java.util.Map.Entry<String, java.util.List<InvoiceLine>> group : groups.entrySet()) {
+            if (anyPackage) {
+                String heading = group.getKey().isEmpty() ? I18n.get("invoice.other_services") : group.getKey();
+                addRow(grid, row++, label(heading, 11, true, INK));
+            }
+            for (InvoiceLine line : group.getValue()) {
                 addRow(grid, row++,
                         label(com.wac.autocore.seed.SeedText.resolve(line.getServiceName()), 11, false, INK),
                         right(label(UiFormatters.formatMoney(line.getPrice()), 11, false, INK)),
