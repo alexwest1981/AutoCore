@@ -1,5 +1,6 @@
 package com.wac.autocore.data;
 
+import com.wac.autocore.exception.DatabaseInitException;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -292,7 +293,7 @@ public class Db {
         } catch (SQLException e) {
             // Halfway through means a database that looks whole but is missing columns, and
             // then it is better to stop than to fill in seed data on top of the mess.
-            throw new IllegalStateException("Databasen kunde inte förberedas: " + e.getMessage(), e);
+            throw new DatabaseInitException("Databasen kunde inte förberedas: " + e.getMessage(), e);
         }
 
         normalizeRegistrationNumbers();
