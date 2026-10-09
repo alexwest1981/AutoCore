@@ -444,13 +444,12 @@ public class WorkOrderService {
         }
 
         if (!"IN_PROGRESS".equals(workOrder.getStatus())) {
-            System.out.println("Services can only be marked as performed on a work order in progress.");
-            return false;
+            throw new RuleViolationException("Services on work order " + workOrderId
+                    + " cannot be marked as performed. Its status is " + workOrder.getStatus() + ".");
         }
 
         if (serviceItemIds == null || serviceItemIds.length == 0) {
-            System.out.println("No services given for work order " + workOrderId + ".");
-            return false;
+            throw new RuleViolationException("No services were given for work order " + workOrderId + ".");
         }
 
         for (int serviceItemId : serviceItemIds) {
