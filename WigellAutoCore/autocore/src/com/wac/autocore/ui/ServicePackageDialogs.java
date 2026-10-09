@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
 import com.wac.autocore.seed.SeedText;
@@ -87,8 +88,11 @@ public final class ServicePackageDialogs {
                 } else {
                     garage.createServicePackage(name, desc, items);
                 }
-            } catch (IllegalArgumentException | SQLException e) {
+            } catch (SQLException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                return;
+            } catch (ValidationException rejected) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(rejected.getMessageKey()));
                 return;
             }
             if (onSuccess != null) onSuccess.run();
