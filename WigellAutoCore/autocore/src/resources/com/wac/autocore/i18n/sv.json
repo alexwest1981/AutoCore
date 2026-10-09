@@ -118,7 +118,7 @@
       "action_create": "+ Skapa faktura",
       "action_pay": "Betala vald faktura",
       "action_lines": "Visa rader",
-      "action_print": "Skriv ut faktura"
+      "action_print": "Visa faktura"
     },
     "payments": {
       "title": "Betalningar",

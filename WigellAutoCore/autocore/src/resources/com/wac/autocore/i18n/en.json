@@ -118,7 +118,7 @@
       "action_create": "+ Create Invoice",
       "action_pay": "Pay selected invoice",
       "action_lines": "Show lines",
-      "action_print": "Print invoice"
+      "action_print": "Show invoice"
     },
     "payments": {
       "title": "Payments",
