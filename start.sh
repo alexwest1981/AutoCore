@@ -155,6 +155,8 @@ SRC_DIR="WigellAutoCore/autocore/src"
 RES_DIR="WigellAutoCore/autocore/src/resources"
 OUT_DIR="out/production/Systemarkitektur"
 JDBC_JAR="WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
+JSON_JAR="WigellAutoCore/autocore/lib/json-20231013.jar"
+LIBS="$JDBC_JAR$CP_SEP$JSON_JAR"
 
 # Startklassen går att välja: ./start.sh kör GUI:t, ./start.sh ConsoleApp kör textversionen.
 MAIN_CLASS="${1:-Main}"
@@ -170,7 +172,7 @@ fi
 SOURCES_FILE="$OUT_DIR/sources.txt"
 find "$SRC_DIR" -name "*.java" > "$SOURCES_FILE"
 
-"$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" -cp "$JDBC_JAR" @"$SOURCES_FILE"
+"$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" -cp "$LIBS" @"$SOURCES_FILE"
 rm -f "$SOURCES_FILE"
 
 # På Linux med Wayland kräver JavaFX 8 XWayland (GDK_BACKEND=x11) för att förhindra krasch i GTK
@@ -178,5 +180,5 @@ if [ "$IS_WINDOWS" = false ] && [ "$IS_MACOS" = false ]; then
     export GDK_BACKEND=x11
 fi
 
-exec "$JAVA_BIN" -cp "$OUT_DIR$CP_SEP$JDBC_JAR" "$MAIN_CLASS" "$@"
+exec "$JAVA_BIN" -cp "$OUT_DIR$CP_SEP$LIBS" "$MAIN_CLASS" "$@"
 

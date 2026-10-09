@@ -1,5 +1,7 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.DuplicateRegistrationNumberException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Vehicle;
 
@@ -17,7 +19,7 @@ public class VehicleRepository {
     public void save(Vehicle vehicle) throws SQLException {
         String registrationNumber = vehicle.getRegistrationNumber();
         if (registrationNumber == null || registrationNumber.trim().isEmpty()) {
-            throw new IllegalStateException("Fordonet saknar registreringsnummer.");
+            throw new RuleViolationException("Fordonet saknar registreringsnummer.");
         }
 
         if (vehicle.getId() == 0 || findById(vehicle.getId()) == null) {
@@ -62,8 +64,8 @@ public class VehicleRepository {
              PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             if (registrationNumberTaken(connection, vehicle.getRegistrationNumber(), 0)) {
-                throw new IllegalStateException("Registreringsnumret " + vehicle.getRegistrationNumber()
-                        + " tillhör redan ett annat fordon.");
+                throw new DuplicateRegistrationNumberException("Registreringsnumret "
+                        + vehicle.getRegistrationNumber() + " tillhör redan ett annat fordon.");
             }
 
             statement.setString(1, vehicle.getRegistrationNumber());
@@ -89,8 +91,8 @@ public class VehicleRepository {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             if (registrationNumberTaken(connection, vehicle.getRegistrationNumber(), vehicle.getId())) {
-                throw new IllegalStateException("Registreringsnumret " + vehicle.getRegistrationNumber()
-                        + " tillhör redan ett annat fordon.");
+                throw new DuplicateRegistrationNumberException("Registreringsnumret "
+                        + vehicle.getRegistrationNumber() + " tillhör redan ett annat fordon.");
             }
 
             statement.setString(1, vehicle.getRegistrationNumber());

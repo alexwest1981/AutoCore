@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.service.GarageSystem;
@@ -100,8 +101,8 @@ public final class MechanicDialogs {
             } catch (SQLException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
-            } catch (IllegalArgumentException rejected) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), rejected.getMessage());
+            } catch (ValidationException rejected) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(rejected.getMessageKey()));
                 return;
             }
 

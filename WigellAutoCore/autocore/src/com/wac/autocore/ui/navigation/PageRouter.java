@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.navigation;
 
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.WorkOrder;
@@ -86,24 +87,31 @@ public class PageRouter {
         activeTable = null;
         pageBox.getChildren().clear();
 
-        if ("overview".equals(key)) {
-            pageBox.getChildren().add(OverviewView.build(garage, () -> navigate("overview"), this));
-        } else if ("customers".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildCustomersPage(garage, this));
-        } else if ("vehicles".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildVehiclesPage(garage, this));
-        } else if ("bookings".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildBookingsPage(garage, this));
-        } else if ("workorders".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildWorkOrdersPage(garage, this));
-        } else if ("services".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildServicesPage(garage, this));
-        } else if ("mechanics".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildMechanicsPage(garage, this));
-        } else if ("invoices".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildInvoicesPage(garage, this));
-        } else if ("payments".equals(key)) {
-            pageBox.getChildren().add(EntityPages.buildPaymentsPage(garage, this));
+        try {
+            if ("overview".equals(key)) {
+                pageBox.getChildren().add(OverviewView.build(garage, () -> navigate("overview"), this));
+            } else if ("customers".equals(key)) {
+                pageBox.getChildren().add(EntityPages.buildCustomersPage(garage, this));
+            } else if ("vehicles".equals(key)) {
+                pageBox.getChildren().add(EntityPages.buildVehiclesPage(garage, this));
+            } else if ("bookings".equals(key)) {
+                pageBox.getChildren().add(EntityPages.buildBookingsPage(garage, this));
+            } else if ("workorders".equals(key)) {
+                pageBox.getChildren().add(EntityPages.buildWorkOrdersPage(garage, this));
+            } else if ("services".equals(key)) {
+                pageBox.getChildren().add(EntityPages.buildServicesPage(garage, this));
+            } else if ("mechanics".equals(key)) {
+                pageBox.getChildren().add(EntityPages.buildMechanicsPage(garage, this));
+            } else if ("invoices".equals(key)) {
+                pageBox.getChildren().add(EntityPages.buildInvoicesPage(garage, this));
+            } else if ("payments".equals(key)) {
+                pageBox.getChildren().add(EntityPages.buildPaymentsPage(garage, this));
+            }
+        } catch (AppException unreadable) {
+            // A page that cannot be read should say so instead of coming up empty.
+            pageBox.getChildren().clear();
+            pageBox.getChildren().add(com.wac.autocore.ui.components.UiComponents.mutedNote(
+                    com.wac.autocore.ui.i18n.I18n.get("view.error.read_failed")));
         }
     }
 

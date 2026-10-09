@@ -1,5 +1,7 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.repository.CustomerRepository;
 
@@ -25,8 +27,7 @@ public class CustomerService {
         try {
             return customerRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read customer " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read customer " + id, e);
         }
     }
 
@@ -61,7 +62,7 @@ public class CustomerService {
     private static void refuseUnlessStorable(String name, String phone, String email) {
         String problem = Customer.validationProblem(name, phone, email);
         if (problem != null) {
-            throw new IllegalArgumentException("Customer data rejected: " + problem);
+            throw new ValidationException(problem);
         }
     }
 }

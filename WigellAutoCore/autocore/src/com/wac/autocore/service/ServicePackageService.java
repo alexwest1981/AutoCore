@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
 import com.wac.autocore.repository.ServicePackageRepository;
@@ -50,10 +51,10 @@ public class ServicePackageService {
 
     private static void refuseUnlessValid(String name, List<ServiceItem> serviceItems) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Ett servicepaket måste ha ett namn.");
+            throw new ValidationException("package_name_required");
         }
         if (serviceItems == null || serviceItems.isEmpty()) {
-            throw new IllegalArgumentException("Ett servicepaket måste innehålla minst en tjänst.");
+            throw new ValidationException("package_items_required");
         }
     }
 }

@@ -1,5 +1,9 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.MechanicUnavailableException;
+import com.wac.autocore.exception.NotFoundException;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
@@ -41,8 +45,7 @@ public class BookingService {
         try {
             return bookingRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read booking: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read booking", e);
         }
     }
 
@@ -50,8 +53,7 @@ public class BookingService {
 
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
+            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
 
         Booking booking = new Booking(vehicleId, date, description);
@@ -74,12 +76,11 @@ public class BookingService {
 
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
+            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
         if (services == null || services.isEmpty() || team == null || team.isEmpty()) {
-            System.out.println("A drop-in booking needs at least one service item and one mechanic.");
-            return null;
+            throw new RuleViolationException(
+                    "A drop-in booking needs at least one service item and one mechanic.");
         }
 
         List<Integer> mechanicIds = mechanicIdsOf(team);
@@ -182,8 +183,7 @@ public class BookingService {
     public Booking createBooking(int vehicleId, LocalDate date, String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
+            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
 
         ServiceItem serviceItem = serviceItemRepository.findAll().stream()
@@ -191,7 +191,7 @@ public class BookingService {
                 .findFirst()
                 .orElse(null);
         if (serviceItem == null) {
-            System.out.println("Service item with ID " + serviceItemId + " does not exist ");
+            throw new NotFoundException("Service item with ID " + serviceItemId + " does not exist.");
         }
 
         int estimatedMinutes = workOrderService.getTotalEstimatedMinutes(serviceItemId);
@@ -199,7 +199,7 @@ public class BookingService {
         LocalTime endTime = (estimatedMinutes > 0) ? startTime.plusMinutes(estimatedMinutes) : startTime.plusMinutes(60);
 
         if (isMechanicOccupied(mechanicId, date, startTime, endTime)) {
-            throw new IllegalArgumentException("Mekanikern är redan bokad under denna tid (" + startTime + " - " + endTime + ")!");
+            throw new MechanicUnavailableException("Mekanikern är redan bokad under denna tid (" + startTime + " - " + endTime + ")!");
         }
 
         Booking booking = new Booking(vehicleId, date, description, startTime, endTime, mechanicId, serviceItemId);
@@ -217,8 +217,7 @@ public class BookingService {
             Vehicle v = vehicleRepository.findById(id);
             return v;
         } catch (SQLException e) {
-            System.out.println("Could not read vehicle: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read vehicle", e);
         }
     }
     private boolean isMechanicOccupied(int mechanicId, LocalDate date, LocalTime newStart, LocalTime newEnd) throws SQLException {

@@ -1,5 +1,7 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
@@ -360,7 +362,7 @@ public class GarageSystem {
     /** Refuses the removal with an explanation. The rules live in {@link RemovalRules}. */
     private void refuseUnless(boolean allowed, String reason) {
         if (!allowed) {
-            throw new IllegalStateException(reason);
+            throw new RuleViolationException(reason);
         }
     }
 
@@ -386,7 +388,7 @@ public class GarageSystem {
     private static void refuseUnlessStorableMechanic(String name, String phone) {
         String problem = Mechanic.validationProblem(name, phone);
         if (problem != null) {
-            throw new IllegalArgumentException("Mechanic data rejected: " + problem);
+            throw new ValidationException(problem);
         }
     }
     public List<ServicePackage> getServicePackages() {

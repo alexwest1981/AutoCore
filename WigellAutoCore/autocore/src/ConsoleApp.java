@@ -1,3 +1,4 @@
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.service.GarageSystem;
 
@@ -155,7 +156,7 @@ public class ConsoleApp {
 
         try {
             garageSystem.createCustomer(name, phone, email);
-        } catch (IllegalArgumentException rejected) {
+        } catch (AppException rejected) {
             System.out.println("Customer was not saved: " + rejected.getMessage());
         }
     }
@@ -222,7 +223,11 @@ public class ConsoleApp {
         int mechanicId = readInt("Mechanic ID: ");
 
         // The work order gets the booking's services.
-        garageSystem.createWorkOrder(bookingId, mechanicId);
+        try {
+            garageSystem.createWorkOrder(bookingId, mechanicId);
+        } catch (AppException rejected) {
+            System.out.println(rejected.getMessage());
+        }
     }
 
     private static void startWorkOrder() {
@@ -234,7 +239,11 @@ public class ConsoleApp {
 
         int workOrderId = readInt("Work order ID: ");
 
-        garageSystem.startWorkOrder(workOrderId);
+        try {
+            garageSystem.startWorkOrder(workOrderId);
+        } catch (AppException rejected) {
+            System.out.println(rejected.getMessage());
+        }
     }
 
     private static void completeWorkOrder() {
@@ -246,7 +255,11 @@ public class ConsoleApp {
 
         int workOrderId = readInt("Work order ID: ");
 
-        garageSystem.completeWorkOrder(workOrderId);
+        try {
+            garageSystem.completeWorkOrder(workOrderId);
+        } catch (AppException rejected) {
+            System.out.println(rejected.getMessage());
+        }
     }
 
     private static void createInvoice() {

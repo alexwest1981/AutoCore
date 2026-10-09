@@ -496,6 +496,8 @@
       "invalid_year": "Vänligen ange en giltig årsmodell (t.ex. 2022).",
       "name_digits": "Namnet får inte innehålla siffror.",
       "phone_ten_digits": "Telefonnumret måste vara exakt 10 siffror (t.ex. 070-1234567).",
+      "package_name_required": "Ett servicepaket måste ha ett namn.",
+      "package_items_required": "Ett servicepaket måste innehålla minst en tjänst.",
       "email_format": "Ange en giltig e-postadress (t.ex. namn@exempel.se)."
     },
     "confirm": {
@@ -557,6 +559,10 @@
     }
   },
   "view": {
+    "error": {
+      "read_failed": "Kunde inte läsa uppgifterna. Kontrollera att databasen finns på plats och öppna sidan igen.",
+      "action_failed": "Kunde inte utföra åtgärden. Försök igen, och säg till om det upprepas."
+    },
     "notice": {
       "workorders.one": "Bokning som saknar en arbetsorder",
       "workorders.many": "Bokningar som saknar en arbetsorder",

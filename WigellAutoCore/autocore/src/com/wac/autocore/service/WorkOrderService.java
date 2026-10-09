@@ -1,5 +1,8 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.NotFoundException;
+import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
@@ -40,16 +43,14 @@ public class WorkOrderService {
         try {
             return workOrderRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read work order " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read work order " + id, e);
         }
     }
 
     public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
-            System.out.println("Booking with ID " + bookingId + " does not exist.");
-            return null;
+            throw new NotFoundException("Booking with ID " + bookingId + " does not exist.");
         }
 
         // The services no work order has taken yet. If all are already taken there is nothing
@@ -84,8 +85,7 @@ public class WorkOrderService {
 
         Booking booking = findBooking(bookingId);
         if (booking == null) {
-            System.out.println("Booking with ID " + bookingId + " does not exist.");
-            return null;
+            throw new NotFoundException("Booking with ID " + bookingId + " does not exist.");
         }
 
         if (serviceItemIds == null || serviceItemIds.isEmpty()) {
@@ -115,8 +115,7 @@ public class WorkOrderService {
 
         Mechanic mechanic = findMechanic(mechanicId);
         if (mechanic == null) {
-            System.out.println("Mechanic with ID " + mechanicId + " does not exist.");
-            return null;
+            throw new NotFoundException("Mechanic with ID " + mechanicId + " does not exist.");
         }
 
         if (!mechanic.isAvailable()) {
@@ -163,8 +162,7 @@ public class WorkOrderService {
         WorkOrder original = findById(originalWorkOrderId);
 
         if (original == null) {
-            System.out.println("Work order with ID " + originalWorkOrderId + " does not exist.");
-            return null;
+            throw new NotFoundException("Work order with ID " + originalWorkOrderId + " does not exist.");
         }
 
         // Only work that has actually been performed can be reclaimed.
@@ -175,8 +173,7 @@ public class WorkOrderService {
 
         Mechanic mechanic = findMechanic(original.getMechanicId());
         if (mechanic == null) {
-            System.out.println("Mechanic with ID " + original.getMechanicId() + " does not exist.");
-            return null;
+            throw new NotFoundException("Mechanic with ID " + original.getMechanicId() + " does not exist.");
         }
 
         if (!mechanic.isAvailable()) {
@@ -211,8 +208,7 @@ public class WorkOrderService {
     public WorkOrder createDraft(int vehicleId, String description) {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
-            System.out.println("Vehicle with ID " + vehicleId + " does not exist.");
-            return null;
+            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
 
         WorkOrder workOrder = new WorkOrder(0, 0, 0);
@@ -236,8 +232,7 @@ public class WorkOrderService {
         WorkOrder workOrder = findById(workOrderId);
 
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return null;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         workOrder.setVehicleId(vehicleId);
@@ -315,13 +310,12 @@ public class WorkOrderService {
     public boolean startWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "IN_PROGRESS")) {
-            System.out.println("Work order cannot be started.");
-            return false;
+            throw new RuleViolationException("Work order " + workOrderId + " cannot be started. Its status is "
+                    + workOrder.getStatus() + ".");
         }
 
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
@@ -347,13 +341,12 @@ public class WorkOrderService {
     public boolean completeWorkOrder(int workOrderId) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "COMPLETED")) {
-            System.out.println("Only work orders in progress can be completed.");
-            return false;
+            throw new RuleViolationException("Work order " + workOrderId + " cannot be completed. Its status is "
+                    + workOrder.getStatus() + ".");
         }
 
         // The price is frozen even when the order is finished without anyone having marked the
@@ -395,13 +388,12 @@ public class WorkOrderService {
         WorkOrder workOrder = findById(workOrderId);
 
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "CONFIRMED")) {
-            System.out.println("Only drafts can be confirmed.");
-            return false;
+            throw new RuleViolationException("Work order " + workOrderId + " cannot be confirmed. Its status is "
+                    + workOrder.getStatus() + ".");
         }
 
         workOrder.setStatus("CONFIRMED");
@@ -416,13 +408,12 @@ public class WorkOrderService {
         WorkOrder workOrder = findById(workOrderId);
 
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "CANCELLED")) {
-            System.out.println("Only drafts and work orders in progress can be cancelled.");
-            return false;
+            throw new RuleViolationException("Work order " + workOrderId + " cannot be cancelled. Its status is "
+                    + workOrder.getStatus() + ".");
         }
 
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
@@ -452,25 +443,22 @@ public class WorkOrderService {
     public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
         WorkOrder workOrder = findById(workOrderId);
         if (workOrder == null) {
-            System.out.println("Work order with ID " + workOrderId + " does not exist.");
-            return false;
+            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
         if (!"IN_PROGRESS".equals(workOrder.getStatus())) {
-            System.out.println("Services can only be marked as performed on a work order in progress.");
-            return false;
+            throw new RuleViolationException("Services on work order " + workOrderId
+                    + " cannot be marked as performed. Its status is " + workOrder.getStatus() + ".");
         }
 
         if (serviceItemIds == null || serviceItemIds.length == 0) {
-            System.out.println("No services given for work order " + workOrderId + ".");
-            return false;
+            throw new RuleViolationException("No services were given for work order " + workOrderId + ".");
         }
 
         for (int serviceItemId : serviceItemIds) {
             ServiceItem serviceItem = findServiceItem(serviceItemId);
             if (serviceItem == null) {
-                System.out.println("Service item with ID " + serviceItemId + " does not exist.");
-                return false;
+                throw new NotFoundException("Service item with ID " + serviceItemId + " does not exist.");
             }
             // The price is frozen once. If the service is already marked it keeps its old price.
             Double alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
@@ -501,8 +489,7 @@ public class WorkOrderService {
         try {
             return bookingRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read booking " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read booking " + id, e);
         }
     }
 
@@ -510,8 +497,7 @@ public class WorkOrderService {
         try {
             return mechanicRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read mechanic " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read mechanic " + id, e);
         }
     }
 
@@ -519,8 +505,7 @@ public class WorkOrderService {
         try {
             return serviceItemRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read service item " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read service item " + id, e);
         }
     }
 
@@ -528,8 +513,7 @@ public class WorkOrderService {
         try {
             return vehicleRepository.findById(id);
         } catch (SQLException e) {
-            System.out.println("Could not read vehicle " + id + ": " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not read vehicle " + id, e);
         }
     }
 

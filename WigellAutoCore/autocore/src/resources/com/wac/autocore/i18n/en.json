@@ -496,6 +496,8 @@
       "invalid_year": "Please enter a valid model year (e.g. 2022).",
       "name_digits": "The name cannot contain digits.",
       "phone_ten_digits": "The phone number must be exactly 10 digits (e.g. 070-1234567).",
+      "package_name_required": "A service package must have a name.",
+      "package_items_required": "A service package must contain at least one service.",
       "email_format": "Enter a valid email address (e.g. name@example.com)."
     },
     "confirm": {
@@ -557,6 +559,10 @@
     }
   },
   "view": {
+    "error": {
+      "read_failed": "Could not read the data. Check that the database is in place and open the page again.",
+      "action_failed": "Could not carry out the action. Try again, and say so if it repeats."
+    },
     "notice": {
       "workorders.one": "Booking without a work order",
       "workorders.many": "Bookings without a work order",
