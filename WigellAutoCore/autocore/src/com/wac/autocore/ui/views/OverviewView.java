@@ -58,7 +58,16 @@ public final class OverviewView {
                 I18n.get("overview.section.recent_workorders_sub"),
                 new VBox(0, recent.getTableView(), TableFactory.buildPager(recent)));
 
-        return new VBox(18, head, quickBar, kanbanBoard, bookingsPanel(garage, bookings), recentPanel);
+        // Bokningarna får en fast bredd och den senaste listan tar resten av ytan.
+        VBox bookingsCard = bookingsPanel(garage, bookings);
+        bookingsCard.setMinWidth(420);
+        bookingsCard.setPrefWidth(460);
+        bookingsCard.setMaxWidth(460);
+        HBox.setHgrow(recentPanel, Priority.ALWAYS);
+        HBox bottomRow = new HBox(18, bookingsCard, recentPanel);
+        bottomRow.setAlignment(Pos.TOP_LEFT);
+
+        return new VBox(18, head, quickBar, kanbanBoard, bottomRow);
     }
 
     private static VBox bookingsPanel(GarageSystem garage, List<Booking> bookings) {
@@ -129,6 +138,11 @@ public final class OverviewView {
         }
         // The same height as the list pages, so the panel does not jump between views here either.
         UiComponents.fixTableHeight(t);
+        // Översikten ska rymmas utan att man scrollar, så tabellen får färre rader än en full sida.
+        double overviewHeight = 36 + (10 * 32) + 2;
+        t.setPrefHeight(overviewHeight);
+        t.setMinHeight(overviewHeight);
+        t.setMaxHeight(overviewHeight);
         return table;
     }
 }
