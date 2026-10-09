@@ -157,7 +157,7 @@ public final class EntityPages {
                 I18n.get("entity.workorders.title"),
                 PageFormatters.meta("entity.workorders.meta", garage.getWorkOrders().size()),
                 I18n.get("entity.workorders.subtitle"),
-                new javafx.scene.layout.HBox(10,
+                new javafx.scene.layout.VBox(6,
                         UiComponents.viewNotice(
                                 PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
                                 I18n.get("view.notice.workorders.one"),
