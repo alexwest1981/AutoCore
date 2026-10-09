@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.MechanicUnavailableException;
 import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
@@ -197,7 +198,7 @@ public class BookingService {
         LocalTime endTime = (estimatedMinutes > 0) ? startTime.plusMinutes(estimatedMinutes) : startTime.plusMinutes(60);
 
         if (isMechanicOccupied(mechanicId, date, startTime, endTime)) {
-            throw new IllegalArgumentException("Mekanikern är redan bokad under denna tid (" + startTime + " - " + endTime + ")!");
+            throw new MechanicUnavailableException("Mekanikern är redan bokad under denna tid (" + startTime + " - " + endTime + ")!");
         }
 
         Booking booking = new Booking(vehicleId, date, description, startTime, endTime, mechanicId, serviceItemId);
