@@ -80,6 +80,8 @@ public class BookingRepository {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             bookingServiceItemRepository.deleteByBookingId(connection, id);
+            // The mechanic links point at this booking, and nothing else clears them.
+            bookingMechanicRepository.deleteByBookingId(connection, id);
 
             statement.setInt(1, id);
             statement.executeUpdate();
