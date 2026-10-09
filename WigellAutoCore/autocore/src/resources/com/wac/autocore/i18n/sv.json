@@ -543,7 +543,8 @@
       "work_order": "Arbetsorder #{0}",
       "booked": "Bokad tid",
       "open_order": "Öppna i arbetsordrar ↗",
-      "create_order": "Skapa arbetsorder ↗"
+      "create_order": "Skapa arbetsorder ↗",
+      "no_vehicle": "Kunde inte skapa bokningen: registreringsnumret matchar ingen bil."
     },
     "specialization": {
       "general_service": "Allmän service",

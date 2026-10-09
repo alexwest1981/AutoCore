@@ -543,7 +543,8 @@
       "work_order": "Work Order #{0}",
       "booked": "Booked appointment",
       "open_order": "Open in Work Orders ↗",
-      "create_order": "Create Work Order ↗"
+      "create_order": "Create Work Order ↗",
+      "no_vehicle": "Could not create the booking: the registration number matches no vehicle."
     },
     "specialization": {
       "general_service": "General service",
