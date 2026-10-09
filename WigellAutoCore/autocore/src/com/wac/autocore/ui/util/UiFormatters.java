@@ -154,7 +154,7 @@ public final class UiFormatters {
         }
         if (s.equals("Booked") || s.equals("Bokad") || s.equals("Created") || s.equals("Skapad")
                 || s.equals("Work order created") || s.equals("Arbetsorder skapad") || s.equals("Confirmed")
-        || s.equals("Bekräftad") || s.equals("Cancelled") || s.equals("Avbokad")) {
+                || s.equals("Bekräftad") || s.equals("Cancelled") || s.equals("Avbokad")) {
             return "info";
         }
         return "";

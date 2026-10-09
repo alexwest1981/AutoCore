@@ -75,7 +75,6 @@ public class MechanicKanbanCard {
 
         this.cardContainer.getChildren().addAll(header.getBox(), bodyContent);
 
-        I18n.addListener(lang -> render());
         render();
     }
 
