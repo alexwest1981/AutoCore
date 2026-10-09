@@ -105,7 +105,7 @@ public final class UiComponents {
         return buildEntityPage(title, sub, eyebrow, null, data, actions);
     }
 
-    /** The same page but with the notice in the header, carrying the number the sidebar shows. */
+    /** The same page but with a notice row under the header, carrying the number the sidebar shows. */
     public static VBox buildEntityPage(String title, String sub, String eyebrow, Node notice,
                                        TableFactory.FilterableTable<?> data, Node... actions) {
         TableView<?> table = data.getTableView();
@@ -116,13 +116,6 @@ public final class UiComponents {
 
         HBox topRow = new HBox(12, titles);
         topRow.setAlignment(Pos.CENTER_LEFT);
-
-        // The notice sits in the header instead of on a line of its own. The row height is then
-        // set by the title block, which is already the tallest, so the table stays in the same
-        // place in every view — without reserving any space. At zero the notice is hidden.
-        if (notice != null) {
-            topRow.getChildren().add(notice);
-        }
 
         if (actions != null && actions.length > 0) {
             for (Node act : actions) {
@@ -151,7 +144,12 @@ public final class UiComponents {
         inner.getStyleClass().add("panel");
         inner.setPadding(new Insets(4, 6, 6, 6));
 
-        return new VBox(18, topRow, inner);
+        // Notisen ligger på en egen rad under sidhuvudet. Ligger den i sidhuvudet kläms den
+        // ihop av knappraden, som tar allt ledigt utrymme.
+        if (notice == null) {
+            return new VBox(18, topRow, inner);
+        }
+        return new VBox(18, topRow, notice, inner);
     }
 
     /** A fixed height for a table page, even when the list is short — then the panel stays put

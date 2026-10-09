@@ -495,7 +495,7 @@
 /* 9 timboxar i veckovyn */
 .kanban-hour-boxes {
     -fx-alignment: CENTER_LEFT;
-    -fx-spacing: 3px;
+    -fx-spacing: 8px;
 }
 .kanban-hour-box {
     -fx-min-width: 11px;

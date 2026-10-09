@@ -28,12 +28,6 @@
   "overview": {
     "title": "Översikt",
     "meta": "Verkstadens aktuella status",
-    "kpi": {
-      "workorders": "Aktiva arbetsordrar",
-      "revenue": "Total intäkt",
-      "bookings": "Bokningar",
-      "mechanics": "Mekaniker i tjänst"
-    },
     "action": {
       "booking": "+ Ny bokning",
       "workorder": "+ Ny arbetsorder",
@@ -41,8 +35,6 @@
       "payment": "+ Registrera betalning"
     },
     "section": {
-      "workorders_by_status": "Arbetsordrar efter status",
-      "workorders_by_status_sub": "Fördelning över samtliga arbetsordrar",
       "upcoming_bookings": "Kommande bokningar",
       "upcoming_bookings_sub": "Närmast schemalagda jobb",
       "recent_workorders": "Senaste arbetsordrarna",
@@ -551,12 +543,6 @@
       "booked": "Bokad tid",
       "open_order": "Öppna i arbetsordrar ↗",
       "create_order": "Skapa arbetsorder ↗"
-    },
-    "load": {
-      "free": "Låg arbetsbelastning",
-      "moderate": "Medel arbetsbelastning",
-      "busy": "Hög arbetsbelastning",
-      "full": "Full arbetsbelastning"
     },
     "specialization": {
       "general_service": "Allmän service",

@@ -28,12 +28,6 @@
   "overview": {
     "title": "Overview",
     "meta": "Current status of the workshop",
-    "kpi": {
-      "workorders": "Active work orders",
-      "revenue": "Total revenue",
-      "bookings": "Bookings",
-      "mechanics": "Mechanics on duty"
-    },
     "action": {
       "booking": "+ New booking",
       "workorder": "+ New work order",
@@ -41,8 +35,6 @@
       "payment": "+ Register payment"
     },
     "section": {
-      "workorders_by_status": "Work orders by status",
-      "workorders_by_status_sub": "Distribution across all work orders",
       "upcoming_bookings": "Upcoming bookings",
       "upcoming_bookings_sub": "Next scheduled jobs",
       "recent_workorders": "Recent work orders",
@@ -551,12 +543,6 @@
       "booked": "Booked appointment",
       "open_order": "Open in Work Orders ↗",
       "create_order": "Create Work Order ↗"
-    },
-    "load": {
-      "free": "Low workload",
-      "moderate": "Moderate workload",
-      "busy": "Heavy workload",
-      "full": "Fully booked"
     },
     "specialization": {
       "general_service": "General service",

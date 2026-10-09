@@ -1,8 +1,6 @@
 package com.wac.autocore.ui.views;
 
 import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
@@ -33,28 +31,6 @@ public final class OverviewView {
     public static VBox build(GarageSystem garage, Runnable onRefresh, com.wac.autocore.ui.navigation.PageRouter router) {
         List<Booking> bookings = garage.getBookings();
         List<WorkOrder> workOrders = garage.getWorkOrders();
-        List<Payment> payments = garage.getPayments();
-
-        long active = 0;
-        for (WorkOrder wo : workOrders) {
-            if (!"COMPLETED".equals(wo.getStatus())) {
-                active++;
-            }
-        }
-        // The sum must be a decimal number. With integers the öre is cut off for every
-        // payment, and the revenue ends up lower than what was actually paid in.
-        double revenue = 0.0;
-        for (Payment p : payments) {
-            if (p.isSuccessful()) {
-                revenue += p.getAmount();
-            }
-        }
-        int avail = 0;
-        for (Mechanic m : garage.getMechanics()) {
-            if (m.isAvailable()) {
-                avail++;
-            }
-        }
 
         VBox head = UiComponents.pageHead(I18n.get("overview.title"), I18n.get("overview.meta"),
                 "AutoCore \u00b7 " + UiFormatters.todayFormatted());
@@ -75,20 +51,6 @@ public final class OverviewView {
         quickBar.setAlignment(Pos.CENTER_LEFT);
         quickBar.setMinWidth(Region.USE_PREF_SIZE);
 
-        HBox kpis = new HBox(14);
-        kpis.setAlignment(Pos.CENTER_LEFT);
-        kpis.getChildren().addAll(
-                UiComponents.kpi(I18n.get("overview.kpi.workorders"), String.valueOf(active)),
-                UiComponents.kpi(I18n.get("overview.kpi.revenue"), UiFormatters.formatMoney(revenue)),
-                UiComponents.kpi(I18n.get("overview.kpi.bookings"), String.valueOf(bookings.size())),
-                UiComponents.kpi(I18n.get("overview.kpi.mechanics"), avail + "/" + garage.getMechanics().size()));
-
-        HBox panels = new HBox(14);
-        panels.setAlignment(Pos.CENTER_LEFT);
-        panels.getChildren().addAll(
-                statusPanel(workOrders),
-                bookingsPanel(garage, bookings));
-
         VBox kanbanBoard = com.wac.autocore.ui.components.KanbanBoard.build(garage, router, onRefresh);
 
         TableFactory.FilterableTable<WorkOrder> recent = buildRecentOrdersTable(garage, workOrders, router);
@@ -96,54 +58,16 @@ public final class OverviewView {
                 I18n.get("overview.section.recent_workorders_sub"),
                 new VBox(0, recent.getTableView(), TableFactory.buildPager(recent)));
 
-        return new VBox(18, head, quickBar, kpis, kanbanBoard, panels, recentPanel);
-    }
+        // Bokningarna får en fast bredd och den senaste listan tar resten av ytan.
+        VBox bookingsCard = bookingsPanel(garage, bookings);
+        bookingsCard.setMinWidth(420);
+        bookingsCard.setPrefWidth(460);
+        bookingsCard.setMaxWidth(460);
+        HBox.setHgrow(recentPanel, Priority.ALWAYS);
+        HBox bottomRow = new HBox(18, bookingsCard, recentPanel);
+        bottomRow.setAlignment(Pos.TOP_LEFT);
 
-    private static VBox statusPanel(List<WorkOrder> workOrders) {
-        Label title = new Label(I18n.get("overview.section.workorders_by_status"));
-        title.getStyleClass().add("panel-title");
-        Label sub = new Label(I18n.get("overview.section.workorders_by_status_sub"));
-        sub.getStyleClass().add("panel-sub");
-
-        Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
-        counts.put(I18n.get("status.completed"), 0);
-        counts.put(I18n.get("status.in_progress"), 0);
-        counts.put(I18n.get("status.work_order_created"), 0);
-        counts.put(I18n.get("status.created"), 0);
-        counts.put(I18n.get("status.booked"), 0);
-        for (WorkOrder wo : workOrders) {
-            String w = UiFormatters.statusWord(wo.getStatus());
-            counts.put(w, counts.containsKey(w) ? counts.get(w) + 1 : 1);
-        }
-
-        VBox list = new VBox(9);
-        for (Map.Entry<String, Integer> e : counts.entrySet()) {
-            if (e.getValue() == 0) {
-                continue;
-            }
-            Label dot = new Label();
-            dot.getStyleClass().addAll("sdot", UiFormatters.dotClass(e.getKey()));
-            Label name = new Label(e.getKey());
-            name.getStyleClass().add("srow-title");
-            Label n = new Label(String.valueOf(e.getValue()));
-            n.getStyleClass().add("srow-sub");
-            Region spr = new Region();
-            HBox.setHgrow(spr, Priority.ALWAYS);
-            HBox row = new HBox(10, dot, name, spr, n);
-            row.getStyleClass().add("srow");
-            list.getChildren().add(row);
-        }
-        if (list.getChildren().isEmpty()) {
-            list.getChildren().add(UiComponents.mutedNote(I18n.get("overview.empty.workorders")));
-        }
-
-        VBox box = new VBox(12, title, sub, list);
-        box.getStyleClass().add("panel");
-        box.setMinWidth(280);
-        box.setPrefWidth(450);
-        box.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(box, Priority.ALWAYS);
-        return box;
+        return new VBox(18, head, quickBar, kanbanBoard, bottomRow);
     }
 
     private static VBox bookingsPanel(GarageSystem garage, List<Booking> bookings) {
@@ -214,6 +138,11 @@ public final class OverviewView {
         }
         // The same height as the list pages, so the panel does not jump between views here either.
         UiComponents.fixTableHeight(t);
+        // Översikten ska rymmas utan att man scrollar, så tabellen får färre rader än en full sida.
+        double overviewHeight = 36 + (10 * 32) + 2;
+        t.setPrefHeight(overviewHeight);
+        t.setMinHeight(overviewHeight);
+        t.setMaxHeight(overviewHeight);
         return table;
     }
 }
