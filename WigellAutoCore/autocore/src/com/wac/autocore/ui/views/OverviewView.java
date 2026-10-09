@@ -58,7 +58,7 @@ public final class OverviewView {
                 I18n.get("overview.section.recent_workorders_sub"),
                 new VBox(0, recent.getTableView(), TableFactory.buildPager(recent)));
 
-        // Bokningarna får en fast bredd och den senaste listan tar resten av ytan.
+        // The bookings get a fixed width and the latest list takes the rest of the space.
         VBox bookingsCard = bookingsPanel(garage, bookings);
         bookingsCard.setMinWidth(420);
         bookingsCard.setPrefWidth(460);
@@ -138,7 +138,7 @@ public final class OverviewView {
         }
         // The same height as the list pages, so the panel does not jump between views here either.
         UiComponents.fixTableHeight(t);
-        // Översikten ska rymmas utan att man scrollar, så tabellen får färre rader än en full sida.
+        // The overview has to fit without scrolling, so the table gets fewer rows than a full page.
         double overviewHeight = 36 + (10 * 32) + 2;
         t.setPrefHeight(overviewHeight);
         t.setMinHeight(overviewHeight);

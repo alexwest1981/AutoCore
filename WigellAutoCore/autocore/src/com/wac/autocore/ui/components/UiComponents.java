@@ -144,8 +144,8 @@ public final class UiComponents {
         inner.getStyleClass().add("panel");
         inner.setPadding(new Insets(4, 6, 6, 6));
 
-        // Notisen ligger på en egen rad under sidhuvudet. Ligger den i sidhuvudet kläms den
-        // ihop av knappraden, som tar allt ledigt utrymme.
+        // The notice sits on a row of its own under the heading. Inside the heading it gets
+        // squeezed by the button row, which takes all the free space.
         if (notice == null) {
             return new VBox(18, topRow, inner);
         }
