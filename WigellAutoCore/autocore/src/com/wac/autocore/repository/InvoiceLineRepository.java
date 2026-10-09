@@ -1,6 +1,5 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 
@@ -9,45 +8,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 /** The invoice_lines table: the rows a sent invoice is built from. */
 public class InvoiceLineRepository {
 
+    private static final String COLUMNS = "id, invoice_id, service_item_id, service_name, price, discount, package_name";
+
     public List<InvoiceLine> findByInvoiceId(int invoiceId) throws SQLException {
-        String sql = "SELECT id, invoice_id, service_item_id, service_name, price, discount, package_name " +
-                "FROM invoice_lines WHERE invoice_id = ? ORDER BY id";
-
-        List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, invoiceId);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    InvoiceLine line = new InvoiceLine(
-                            resultSet.getInt("id"),
-                            resultSet.getInt("invoice_id"),
-                            resultSet.getInt("service_item_id"),
-                            resultSet.getString("service_name"),
-                            resultSet.getDouble("price"),
-                            resultSet.getDouble("discount"));
-                    line.setPackageName(resultSet.getString("package_name"));
-                    lines.add(line);
-                }
-            }
-        }
-
-        return lines;
+        return Queries.read("SELECT " + COLUMNS + " FROM invoice_lines WHERE invoice_id = ? ORDER BY id",
+                statement -> statement.setInt(1, invoiceId), InvoiceLineRepository::build);
     }
 
     /** Saves the rows on an open connection, so everything runs in one transaction. */
     public void saveLines(Connection connection, Invoice invoice) throws SQLException {
-        String sql = "INSERT INTO invoice_lines (invoice_id, service_item_id, service_name, price, discount, package_name) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO invoice_lines (invoice_id, service_item_id, service_name, price, discount, package_name) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (InvoiceLine line : invoice.getLines()) {
@@ -77,5 +53,19 @@ public class InvoiceLineRepository {
             statement.setInt(1, invoiceId);
             statement.executeUpdate();
         }
+    }
+
+    private static InvoiceLine build(ResultSet resultSet) throws SQLException {
+        InvoiceLine line = new InvoiceLine(
+                resultSet.getInt("id"),
+                resultSet.getInt("invoice_id"),
+                resultSet.getInt("service_item_id"),
+                resultSet.getString("service_name"),
+                resultSet.getDouble("price"),
+                resultSet.getDouble("discount"));
+
+        line.setPackageName(resultSet.getString("package_name"));
+
+        return line;
     }
 }

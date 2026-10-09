@@ -11,12 +11,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 public class InvoiceRepository {
 
-    private final InvoiceLineRepository invoiceLineRepository = new InvoiceLineRepository();
+    private static final String COLUMNS = "id, work_order_id, invoice_date, amount, discount, total_amount, paid";
+
+    private static final InvoiceLineRepository invoiceLineRepository = new InvoiceLineRepository();
 
     public void save(Invoice invoice) throws SQLException {
         if (invoice.getId() == 0 || findById(invoice.getId()) == null) {
@@ -27,44 +28,18 @@ public class InvoiceRepository {
     }
 
     public List<Invoice> findAll() throws SQLException {
-        List<Invoice> invoices = new ArrayList<Invoice>();
-        String sql = "SELECT id, work_order_id, invoice_date, amount, discount, total_amount, paid FROM invoices";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-
-            while (resultSet.next()) {
-                invoices.add(buildInvoice(resultSet));
-            }
-        }
-
-        return invoices;
+        return Queries.read("SELECT " + COLUMNS + " FROM invoices", InvoiceRepository::build);
     }
 
     public Invoice findById(int id) throws SQLException {
-        String sql = "SELECT id, work_order_id, invoice_date, amount, discount, total_amount, paid FROM invoices WHERE id = ?";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, id);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return buildInvoice(resultSet);
-                }
-            }
-        }
-
-        return null;
+        return Queries.readOne("SELECT " + COLUMNS + " FROM invoices WHERE id = ?",
+                statement -> statement.setInt(1, id), InvoiceRepository::build);
     }
 
     public void delete(int id) throws SQLException {
-        String sql = "DELETE FROM invoices WHERE id = ?";
-
+        // The lines point at this invoice and nothing else clears them, so both go in one connection.
         try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement("DELETE FROM invoices WHERE id = ?")) {
 
             invoiceLineRepository.deleteByInvoiceId(connection, id);
 
@@ -77,6 +52,7 @@ public class InvoiceRepository {
         String sql = "INSERT INTO invoices (work_order_id, invoice_date, amount, discount, total_amount, paid) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
+        // The invoice and its lines go in through one connection, so an invoice never sits without them.
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -102,9 +78,7 @@ public class InvoiceRepository {
         String sql = "UPDATE invoices SET work_order_id = ?, invoice_date = ?, amount = ?, discount = ?, "
                 + "total_amount = ?, paid = ? WHERE id = ?";
 
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
+        Queries.write(sql, statement -> {
             statement.setInt(1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setDouble(3, invoice.getAmount());
@@ -112,8 +86,7 @@ public class InvoiceRepository {
             statement.setDouble(5, invoice.getTotalAmount());
             statement.setBoolean(6, invoice.isPaid());
             statement.setInt(7, invoice.getId());
-            statement.executeUpdate();
-        }
+        });
     }
 
     private void setDate(PreparedStatement statement, int position, LocalDate date) throws SQLException {
@@ -124,11 +97,13 @@ public class InvoiceRepository {
         }
     }
 
-    private Invoice buildInvoice(ResultSet resultSet) throws SQLException {
+    private static Invoice build(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("invoice_date");
 
         LocalDate invoiceDate = null;
 
+        // A row written before the format was fixed can hold anything, and one bad row must not
+        // stop the list.
         if (dateText != null) {
             try {
                 invoiceDate = LocalDate.parse(dateText);

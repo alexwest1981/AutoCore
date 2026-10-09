@@ -9,10 +9,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ServicePackageRepository {
+
+    private static final String COLUMNS = "id, name, description";
+
+    private static final String ITEM_COLUMNS =
+            "s.id, s.name, s.description, s.price, s.estimated_minutes, s.specialization";
 
     public void save(ServicePackage servicePackage) throws SQLException {
         if (servicePackage.getId() == 0) {
@@ -24,40 +28,29 @@ public class ServicePackageRepository {
     }
 
     private void insert(ServicePackage servicePackage) throws SQLException {
-        String sql = "INSERT INTO service_packages (name, description) VALUES (?, ?)";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
+        int id = Queries.insert("INSERT INTO service_packages (name, description) VALUES (?, ?)", statement -> {
             statement.setString(1, servicePackage.getName());
             statement.setString(2, servicePackage.getDescription());
-            statement.executeUpdate();
+        });
 
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    servicePackage.setId(generatedKeys.getInt(1));
-                }
-            }
+        if (id > 0) {
+            servicePackage.setId(id);
         }
     }
 
     private void update(ServicePackage servicePackage) throws SQLException {
-        String sql = "UPDATE service_packages SET name = ?, description = ? WHERE id = ?";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
+        Queries.write("UPDATE service_packages SET name = ?, description = ? WHERE id = ?", statement -> {
             statement.setString(1, servicePackage.getName());
             statement.setString(2, servicePackage.getDescription());
             statement.setInt(3, servicePackage.getId());
-            statement.executeUpdate();
-        }
+        });
     }
 
     private void saveItems(ServicePackage servicePackage) throws SQLException {
         String deleteLinks = "DELETE FROM service_package_items WHERE package_id = ?";
         String insertLink = "INSERT OR IGNORE INTO service_package_items (package_id, service_item_id) VALUES (?, ?)";
 
+        // One connection for the removal and the inserts, so a package never sits without its items.
         try (Connection connection = Db.getConnection();
              PreparedStatement delete = connection.prepareStatement(deleteLinks);
              PreparedStatement insert = connection.prepareStatement(insertLink)) {
@@ -74,47 +67,23 @@ public class ServicePackageRepository {
     }
 
     private List<ServiceItem> findItems(int packageId) throws SQLException {
-        String sql = "SELECT s.id, s.name, s.description, s.price, s.estimated_minutes, s.specialization "
-                + "FROM service_package_items spi "
+        String sql = "SELECT " + ITEM_COLUMNS + " FROM service_package_items spi "
                 + "JOIN service_items s ON spi.service_item_id = s.id "
                 + "WHERE spi.package_id = ? "
                 + "ORDER BY s.id ASC";
 
-        List<ServiceItem> items = new ArrayList<ServiceItem>();
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, packageId);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    items.add(new ServiceItem(
-                            resultSet.getInt("id"),
-                            resultSet.getString("name"),
-                            resultSet.getString("description"),
-                            resultSet.getDouble("price"),
-                            resultSet.getInt("estimated_minutes"),
-                            resultSet.getString("specialization")));
-                }
-            }
-        }
-        return items;
+        return Queries.read(sql, statement -> statement.setInt(1, packageId), resultSet -> new ServiceItem(
+                resultSet.getInt("id"),
+                resultSet.getString("name"),
+                resultSet.getString("description"),
+                resultSet.getDouble("price"),
+                resultSet.getInt("estimated_minutes"),
+                resultSet.getString("specialization")));
     }
 
     public List<ServicePackage> findAll() throws SQLException {
-        String sql = "SELECT id, name, description FROM service_packages ORDER BY name";
-        List<ServicePackage> packages = new ArrayList<ServicePackage>();
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-
-            while (resultSet.next()) {
-                packages.add(buildPackage(resultSet));
-
-            }
-        }
+        List<ServicePackage> packages = Queries.read("SELECT " + COLUMNS + " FROM service_packages ORDER BY name",
+                ServicePackageRepository::build);
 
         for (ServicePackage servicePackage : packages) {
             servicePackage.setServiceItems(findItems(servicePackage.getId()));
@@ -123,20 +92,8 @@ public class ServicePackageRepository {
     }
 
     public ServicePackage findById(int id) throws SQLException {
-        String sql = "SELECT id, name, description FROM service_packages WHERE id = ?";
-        ServicePackage servicePackage = null;
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, id);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    servicePackage = buildPackage(resultSet);
-                }
-            }
-        }
+        ServicePackage servicePackage = Queries.readOne("SELECT " + COLUMNS + " FROM service_packages WHERE id = ?",
+                statement -> statement.setInt(1, id), ServicePackageRepository::build);
 
         if (servicePackage != null) {
             servicePackage.setServiceItems(findItems(servicePackage.getId()));
@@ -145,6 +102,7 @@ public class ServicePackageRepository {
     }
 
     public void delete(int id) throws SQLException {
+        // The item links point at this package and nothing else clears them, so both go in one connection.
         try (Connection connection = Db.getConnection();
              PreparedStatement deleteItems = connection.prepareStatement(
                      "DELETE FROM service_package_items WHERE package_id = ?");
@@ -159,7 +117,7 @@ public class ServicePackageRepository {
         }
     }
 
-    private ServicePackage buildPackage(ResultSet resultSet) throws SQLException {
+    private static ServicePackage build(ResultSet resultSet) throws SQLException {
         return new ServicePackage(
                 resultSet.getInt("id"),
                 resultSet.getString("name"),

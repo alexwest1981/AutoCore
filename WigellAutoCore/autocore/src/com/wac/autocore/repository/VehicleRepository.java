@@ -7,10 +7,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class VehicleRepository {
+
+    private static final String COLUMNS = "id, registration_number, brand, model, year, customer_id";
 
     /** Saves the vehicle. The number is already normalized in the model. */
     public void save(Vehicle vehicle) throws SQLException {
@@ -41,55 +42,24 @@ public class VehicleRepository {
     }
 
     public List<Vehicle> findAll() throws SQLException {
-        List<Vehicle> vehicles = new ArrayList<Vehicle>();
-        String sql = "SELECT id, registration_number, brand, model, year, customer_id FROM vehicles";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-        ResultSet resultSet = statement.executeQuery()) {
-
-            while (resultSet.next()) {
-                vehicles.add(buildVehicle(resultSet));
-            }
-        }
-
-        return vehicles;
+        return Queries.read("SELECT " + COLUMNS + " FROM vehicles", VehicleRepository::build);
     }
 
     public Vehicle findById(int id) throws SQLException {
-        String sql = "SELECT id, registration_number, brand, model, year, customer_id FROM vehicles WHERE id = ?";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1,id);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return buildVehicle(resultSet);
-                }
-            }
-        }
-
-        return null;
+        return Queries.readOne("SELECT " + COLUMNS + " FROM vehicles WHERE id = ?",
+                statement -> statement.setInt(1, id), VehicleRepository::build);
     }
 
     public void delete(int id) throws SQLException {
-        String sql = "DELETE FROM vehicles WHERE id = ?";
-
-        try (Connection connection = Db.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1,id);
-            statement.executeUpdate();
-        }
+        Queries.write("DELETE FROM vehicles WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
     private void insert(Vehicle vehicle) throws SQLException {
         String sql = "INSERT INTO vehicles (registration_number, brand, model, year, customer_id) VALUES (?, ?, ?, ?, ?)";
 
+        // The check and the write share a connection, so the number cannot be taken in between.
         try (Connection connection = Db.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             if (registrationNumberTaken(connection, vehicle.getRegistrationNumber(), 0)) {
                 throw new IllegalStateException("Registreringsnumret " + vehicle.getRegistrationNumber()
@@ -112,10 +82,11 @@ public class VehicleRepository {
     }
 
     private void update(Vehicle vehicle) throws SQLException {
-        String sql = "UPDATE vehicles SET registration_number = ?, brand = ?, model = ?, year = ?, customer_id = ? WHERE id = ?";
+        String sql = "UPDATE vehicles SET registration_number = ?, brand = ?, model = ?, year = ?, customer_id = ? "
+                + "WHERE id = ?";
 
         try (Connection connection = Db.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             if (registrationNumberTaken(connection, vehicle.getRegistrationNumber(), vehicle.getId())) {
                 throw new IllegalStateException("Registreringsnumret " + vehicle.getRegistrationNumber()
@@ -132,8 +103,8 @@ public class VehicleRepository {
         }
     }
 
-    private Vehicle buildVehicle(ResultSet resultSet) throws SQLException {
-        Vehicle vehicle = new Vehicle(
+    private static Vehicle build(ResultSet resultSet) throws SQLException {
+        return new Vehicle(
                 resultSet.getInt("id"),
                 resultSet.getString("registration_number"),
                 resultSet.getString("brand"),
@@ -141,7 +112,5 @@ public class VehicleRepository {
                 resultSet.getInt("year"),
                 resultSet.getInt("customer_id")
         );
-
-        return vehicle;
     }
 }

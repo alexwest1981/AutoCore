@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -15,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 public class WorkOrderRepository {
+
+    private static final String COLUMNS = "id, booking_id, mechanic_id, status, type, vehicle_id, description, "
+            + "original_work_order_id, planned_date, customer_instructions, other_comments";
 
     public void save(WorkOrder workOrder) throws SQLException {
         if (workOrder.getId() == 0 || findById(workOrder.getId()) == null) {
@@ -26,50 +28,21 @@ public class WorkOrderRepository {
     }
 
     public List<WorkOrder> findAll() throws SQLException {
-        List<WorkOrder> workOrders = new ArrayList<WorkOrder>();
-        String sql = "SELECT id, booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id, planned_date, customer_instructions, other_comments FROM work_orders";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-
-            while (resultSet.next()) {
-                WorkOrder workOrder = buildWorkOrder(resultSet);
-                loadServiceItems(workOrder);
-                workOrders.add(workOrder);
-            }
-        }
-
-        return workOrders;
+        return Queries.read("SELECT " + COLUMNS + " FROM work_orders", resultSet -> build(resultSet));
     }
 
     public WorkOrder findById(int id) throws SQLException {
-        String sql = "SELECT id, booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id, planned_date, customer_instructions, other_comments FROM work_orders WHERE id = ?";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, id);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    WorkOrder workOrder = buildWorkOrder(resultSet);
-                    loadServiceItems(workOrder);
-                    return workOrder;
-                }
-            }
-        }
-
-        return null;
+        return Queries.readOne("SELECT " + COLUMNS + " FROM work_orders WHERE id = ?",
+                statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
     public void delete(int id) throws SQLException {
-        String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
-        String deleteOrder = "DELETE FROM work_orders WHERE id = ?";
-
+        // The service rows point at this work order and nothing else clears them, so both go in one
+        // connection.
         try (Connection connection = Db.getConnection();
-             PreparedStatement links = connection.prepareStatement(deleteLinks);
-             PreparedStatement order = connection.prepareStatement(deleteOrder)) {
+             PreparedStatement links = connection.prepareStatement(
+                     "DELETE FROM work_order_service_items WHERE work_order_id = ?");
+             PreparedStatement order = connection.prepareStatement("DELETE FROM work_orders WHERE id = ?")) {
 
             links.setInt(1, id);
             links.executeUpdate();
@@ -80,11 +53,11 @@ public class WorkOrderRepository {
     }
 
     private void insert(WorkOrder workOrder) throws SQLException {
-        String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, original_work_order_id, planned_date, customer_instructions, other_comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, "
+                + "original_work_order_id, planned_date, customer_instructions, other_comments) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
+        int id = Queries.insert(sql, statement -> {
             statement.setInt(1, workOrder.getBookingId());
             statement.setInt(2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
@@ -95,22 +68,19 @@ public class WorkOrderRepository {
             statement.setString(8, workOrder.getPlannedDate());
             statement.setString(9, workOrder.getCustomerInstructions());
             statement.setString(10, workOrder.getOtherComments());
-            statement.executeUpdate();
+        });
 
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    workOrder.setId(generatedKeys.getInt(1));
-                }
-            }
+        if (id > 0) {
+            workOrder.setId(id);
         }
     }
 
     private void update(WorkOrder workOrder) throws SQLException {
-        String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, description = ?, original_work_order_id = ?, planned_date = ?, customer_instructions = ?, other_comments = ? WHERE id = ?";
+        String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, "
+                + "description = ?, original_work_order_id = ?, planned_date = ?, customer_instructions = ?, "
+                + "other_comments = ? WHERE id = ?";
 
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
+        Queries.write(sql, statement -> {
             statement.setInt(1, workOrder.getBookingId());
             statement.setInt(2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
@@ -122,14 +92,15 @@ public class WorkOrderRepository {
             statement.setString(9, workOrder.getCustomerInstructions());
             statement.setString(10, workOrder.getOtherComments());
             statement.setInt(11, workOrder.getId());
-            statement.executeUpdate();
-        }
+        });
     }
 
     private void saveServiceItems(WorkOrder workOrder) throws SQLException {
         String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
-        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed, price, package_name) VALUES (?, ?, ?, ?, ?)";
+        String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed, price, "
+                + "package_name) VALUES (?, ?, ?, ?, ?)";
 
+        // One connection for the removal and the inserts, so a work order never sits without its rows.
         try (Connection connection = Db.getConnection();
              PreparedStatement delete = connection.prepareStatement(deleteLinks);
              PreparedStatement insert = connection.prepareStatement(insertLink)) {
@@ -158,8 +129,10 @@ public class WorkOrderRepository {
     }
 
     private void loadServiceItems(WorkOrder workOrder) throws SQLException {
-        String sql = "SELECT service_item_id, completed, price, package_name FROM work_order_service_items WHERE work_order_id = ?";
+        String sql = "SELECT service_item_id, completed, price, package_name FROM work_order_service_items "
+                + "WHERE work_order_id = ?";
 
+        // One row carries four values that end up in four lists, so the loop stays here.
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -194,7 +167,7 @@ public class WorkOrderRepository {
         }
     }
 
-    private WorkOrder buildWorkOrder(ResultSet resultSet) throws SQLException {
+    private WorkOrder build(ResultSet resultSet) throws SQLException {
         WorkOrder workOrder = new WorkOrder(
                 resultSet.getInt("id"),
                 resultSet.getInt("booking_id"),
@@ -219,6 +192,8 @@ public class WorkOrderRepository {
         workOrder.setPlannedDate(resultSet.getString("planned_date"));
         workOrder.setCustomerInstructions(resultSet.getString("customer_instructions"));
         workOrder.setOtherComments(resultSet.getString("other_comments"));
+
+        loadServiceItems(workOrder);
 
         return workOrder;
     }
