@@ -251,6 +251,15 @@ public class Db {
 
             // Warranty was renamed to reclamation once the requirement was pinned down.
             statement.executeUpdate("UPDATE work_orders SET type = 'RECLAMATION' WHERE type = 'WARRANTY'");
+
+            // Work orders used to be created without a vehicle, so the column sat at zero even
+            // though the booking had one. Fill it from the booking the order came from; a booking
+            // with no vehicle of its own leaves the row alone.
+            String vehicleSql = "(SELECT b.vehicle_id FROM bookings b WHERE b.id = work_orders.booking_id)";
+            statement.executeUpdate("UPDATE work_orders SET vehicle_id = " + vehicleSql
+                    + " WHERE (vehicle_id IS NULL OR vehicle_id = 0) AND booking_id > 0 AND "
+                    + vehicleSql + " > 0");
+
             // Services created before the requirement existed get theirs here, so an existing
             // database ends up with the same set as a freshly created one.
             statement.executeUpdate("UPDATE service_items SET specialization = 'seed.mechanic.brakes.specialization' "
