@@ -1,18 +1,20 @@
 package com.wac.autocore.util;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 /**
- * One way to find a resource file and read it as a flat map of dot-notated keys. The candidates
- * come from the caller, because the build and the source tree are laid out differently.
+ * Reads a text file as keys and values. The caller says where the file can be, because the
+ * project looks different in the editor and in a finished build.
  */
 public final class Resources {
 
@@ -56,154 +58,36 @@ public final class Resources {
     }
 
     /**
-     * The json file as dot-notated keys, empty when it cannot be read. The reader is hand-written
-     * because the project ships no json library.
+     * The json file as keys and values, empty when it cannot be read. org.json does the reading,
+     * so the file may be written however it wants.
      */
     public static Map<String, String> json(URL url) {
         Map<String, String> result = new HashMap<String, String>();
         if (url == null) {
             return Collections.unmodifiableMap(result);
         }
-        try (InputStream in = url.openStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            parseJsonObject("", sb.toString().trim(), result);
+
+        try (Reader reader = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)) {
+            collect(new JSONObject(new JSONTokener(reader)), "", result);
         } catch (Exception e) {
             System.err.println("Kunde inte läsa " + url + ": " + e.getMessage());
         }
         return Collections.unmodifiableMap(result);
     }
 
-    /** Reads a flat JSON into dot-notated keys: nav.overview. */
-    static void parseJsonObject(String prefix, String json, Map<String, String> out) {
-        if (json == null) return;
-        json = json.trim();
-        if (!json.startsWith("{") || !json.endsWith("}")) return;
-        json = json.substring(1, json.length() - 1).trim();
-
-        int i = 0;
-        int len = json.length();
-
-        while (i < len) {
-            
-            while (i < len && (Character.isWhitespace(json.charAt(i)) || json.charAt(i) == ',')) {
-                i++;
-            }
-            if (i >= len) break;
-
-            
-            if (json.charAt(i) != '"') {
-                i++;
-                continue;
-            }
-            int keyStart = ++i;
-            while (i < len && json.charAt(i) != '"') {
-                if (json.charAt(i) == '\\') i++;
-                i++;
-            }
-            String rawKey = json.substring(keyStart, i);
-            String key = unescapeJson(rawKey);
-            i++; 
-
-            
-            while (i < len && json.charAt(i) != ':') i++;
-            if (i >= len) break;
-            i++; 
-
-            
-            while (i < len && Character.isWhitespace(json.charAt(i))) i++;
-            if (i >= len) break;
-
-            String fullKey = prefix.isEmpty() ? key : prefix + "." + key;
-
-            if (json.charAt(i) == '{') {
-                
-                int objStart = i;
-                int depth = 0;
-                boolean inStr = false;
-                while (i < len) {
-                    char c = json.charAt(i);
-                    if (c == '\\' && inStr) {
-                        i += 2;
-                        continue;
-                    }
-                    if (c == '"') {
-                        inStr = !inStr;
-                    } else if (!inStr) {
-                        if (c == '{') depth++;
-                        else if (c == '}') {
-                            depth--;
-                            if (depth == 0) {
-                                i++; 
-                                break;
-                            }
-                        }
-                    }
-                    i++;
-                }
-                String subJson = json.substring(objStart, i);
-                parseJsonObject(fullKey, subJson, out);
-            } else if (json.charAt(i) == '"') {
-                int valStart = ++i;
-                while (i < len && json.charAt(i) != '"') {
-                    if (json.charAt(i) == '\\') i++;
-                    i++;
-                }
-                String rawVal = json.substring(valStart, i);
-                out.put(fullKey, unescapeJson(rawVal));
-                i++;
+    /** Stores every value together with the key it sits under. */
+    private static void collect(JSONObject object, String prefix, Map<String, String> out) {
+        String[] keys = JSONObject.getNames(object);
+        if (keys == null) {
+            return;
+        }
+        for (String key : keys) {
+            Object value = object.get(key);
+            if (value instanceof JSONObject) {
+                collect((JSONObject) value, prefix + key + ".", out);
             } else {
-                int valStart = i;
-                while (i < len && json.charAt(i) != ',' && json.charAt(i) != '}' && !Character.isWhitespace(json.charAt(i))) {
-                    i++;
-                }
-                String rawVal = json.substring(valStart, i).trim();
-                out.put(fullKey, rawVal);
+                out.put(prefix + key, String.valueOf(value));
             }
         }
-    }
-
-    private static String unescapeJson(String s) {
-        if (s == null || s.indexOf('\\') == -1) return s;
-        StringBuilder sb = new StringBuilder(s.length());
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '\\' && i + 1 < s.length()) {
-                char next = s.charAt(++i);
-                switch (next) {
-                    case '"': sb.append('"'); break;
-                    case '\\': sb.append('\\'); break;
-                    case '/': sb.append('/'); break;
-                    case 'b': sb.append('\b'); break;
-                    case 'f': sb.append('\f'); break;
-                    case 'n': sb.append('\n'); break;
-                    case 'r': sb.append('\r'); break;
-                    case 't': sb.append('\t'); break;
-                    case 'u':
-                        if (i + 4 < s.length()) {
-                            String hex = s.substring(i + 1, i + 5);
-                            try {
-                                sb.append((char) Integer.parseInt(hex, 16));
-                                i += 4;
-                            } catch (NumberFormatException e) {
-                                sb.append("\\u");
-                            }
-                        } else {
-                            sb.append("\\u");
-                        }
-                        break;
-                    default:
-                        sb.append('\\').append(next);
-                        break;
-                }
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
     }
 }

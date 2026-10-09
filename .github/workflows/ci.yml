@@ -32,5 +32,5 @@ jobs:
           find WigellAutoCore/autocore/src -name '*.java' > out/ci/sources.txt
           javac -d out/ci \
             -sourcepath WigellAutoCore/autocore/src \
-            -cp WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar \
+            -cp WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar:WigellAutoCore/autocore/lib/json-20231013.jar \
             @out/ci/sources.txt

@@ -37,7 +37,7 @@ Körningen behöver en bildskärm. Saknas den, sätt `GDK_BACKEND=x11` och en `D
 
 ```
 WigellAutoCore/autocore/
-├── lib/            sqlite-jdbc
+├── lib/            sqlite-jdbc, json
 ├── src/
 │   ├── Main.java           JavaFX-appen
 │   ├── ConsoleApp.java     Konsolversionen
