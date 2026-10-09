@@ -22,8 +22,7 @@
       "workorders": "Visa arbetsordrar",
       "invoices": "Visa fakturor",
       "payments": "Visa betalningar"
-    },
-    "lang": {}
+    }
   },
   "overview": {
     "title": "Översikt",
@@ -441,6 +440,7 @@
         "header": "Skapa arbetsorder för en kund utan bokning"
       },
       "booking_select": "Välj bokning",
+      "type_select": "Välj typ",
       "plan_title": "Arbetsordrar som skapas (en per mekaniker)",
       "no_qualified": "Ingen mekaniker är behörig för bokningens tjänster",
       "create_failed": "Inga arbetsordrar kunde skapas. Kontrollera att bokningen har tjänster och att mekanikerna är tillgängliga.",
@@ -498,7 +498,6 @@
       "phone_ten_digits": "Telefonnumret måste vara exakt 10 siffror (t.ex. 070-1234567).",
       "email_format": "Ange en giltig e-postadress (t.ex. namn@exempel.se)."
     },
-    "success": {},
     "confirm": {
       "title": "Bekräfta"
     }
@@ -524,7 +523,6 @@
     "week": {
       "title": "Vecka {0}"
     },
-    "month": {},
     "slot": {
       "booked": "Bokad",
       "click_to_expand": "Klicka för att fälla ut",
@@ -534,7 +532,8 @@
       "work_order": "Arbetsorder #{0}",
       "booked": "Bokad tid",
       "open_order": "Öppna i arbetsordrar ↗",
-      "create_order": "Skapa arbetsorder ↗"
+      "create_order": "Skapa arbetsorder ↗",
+      "no_vehicle": "Kunde inte skapa bokningen: registreringsnumret matchar ingen bil."
     },
     "specialization": {
       "general_service": "Allmän service",

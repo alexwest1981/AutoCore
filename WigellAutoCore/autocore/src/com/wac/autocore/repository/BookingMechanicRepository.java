@@ -4,22 +4,27 @@ import com.wac.autocore.data.Db;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /** The mechanics on a booking. More than one when the services call for different specialists. */
 public class BookingMechanicRepository {
 
+    /** Drops a booking's mechanic links, on a connection the caller owns. */
+    public void deleteByBookingId(Connection connection, int bookingId) throws SQLException {
+        try (PreparedStatement delete = connection.prepareStatement(
+                "DELETE FROM booking_mechanics WHERE booking_id = ?")) {
+            delete.setInt(1, bookingId);
+            delete.executeUpdate();
+        }
+    }
+
     /** Replaces the booking's mechanics with the list. An empty list clears the links. */
     public void saveForBooking(int bookingId, List<Integer> mechanicIds) throws SQLException {
+        // One connection for the removal and the insert, so the booking never sits without its
+        // mechanics if the second half fails.
         try (Connection connection = Db.getConnection()) {
-            try (PreparedStatement delete = connection.prepareStatement(
-                    "DELETE FROM booking_mechanics WHERE booking_id = ?")) {
-                delete.setInt(1, bookingId);
-                delete.executeUpdate();
-            }
+            deleteByBookingId(connection, bookingId);
             if (mechanicIds == null || mechanicIds.isEmpty()) {
                 return;
             }
@@ -37,20 +42,9 @@ public class BookingMechanicRepository {
         }
     }
 
-        /** The booking's mechanics, in the order they were added. */
+    /** The booking's mechanics, in the order they were added. */
     public List<Integer> findMechanicIds(int bookingId) throws SQLException {
-        List<Integer> ids = new ArrayList<Integer>();
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT mechanic_id FROM booking_mechanics WHERE booking_id = ? ORDER BY mechanic_id")) {
-            statement.setInt(1, bookingId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    ids.add(Integer.valueOf(resultSet.getInt("mechanic_id")));
-                }
-            }
-        }
-        return ids;
+        return Queries.read("SELECT mechanic_id FROM booking_mechanics WHERE booking_id = ? ORDER BY mechanic_id",
+                statement -> statement.setInt(1, bookingId), resultSet -> Integer.valueOf(resultSet.getInt("mechanic_id")));
     }
-
 }

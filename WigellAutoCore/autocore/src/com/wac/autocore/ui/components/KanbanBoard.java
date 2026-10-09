@@ -100,9 +100,6 @@ public final class KanbanBoard {
                 if (activeFilter[0] == null || activeFilter[0].equalsIgnoreCase(SeedText.resolve(m.getSpecialization()))) {
                     MechanicKanbanCard card = new MechanicKanbanCard(garage, i, router, onRefresh);
                     VBox cardView = card.getView();
-                    cardView.setMinWidth(360);
-                    cardView.setPrefWidth(400);
-                    cardView.setMaxWidth(400);
                     HBox.setHgrow(cardView, Priority.NEVER);
                     cardsRow.getChildren().add(cardView);
                     count++;
@@ -118,6 +115,8 @@ public final class KanbanBoard {
             countLabel.setText(I18n.get("kanban.filter.showing", count, mechanics.size()));
             scroll.setHvalue(0.0);
         };
+
+        I18n.addListener(lang -> populateCards.run());
 
         // Collect the unique specializations and count mechanics per category
         Map<String, Integer> specCounts = new LinkedHashMap<String, Integer>();

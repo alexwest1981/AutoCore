@@ -31,15 +31,6 @@ public class VehicleService {
         }
     }
 
-    public Vehicle findById(int id) {
-        try {
-            return vehicleRepository.findById(id);
-        } catch (SQLException e) {
-            System.out.println("Could not read vehicle " + id + ": " + e.getMessage());
-            return null;
-        }
-    }
-
     public Vehicle createVehicle(String registrationNumber,
                                  String brand,
                                  String model,

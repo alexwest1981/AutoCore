@@ -22,8 +22,7 @@
       "workorders": "Show work orders",
       "invoices": "Show invoices",
       "payments": "Show payments"
-    },
-    "lang": {}
+    }
   },
   "overview": {
     "title": "Overview",
@@ -441,6 +440,7 @@
         "header": "Create a work order for a customer without a booking"
       },
       "booking_select": "Select booking",
+      "type_select": "Select type",
       "plan_title": "Work orders to be created (one per mechanic)",
       "no_qualified": "No mechanic is qualified for the services on this booking",
       "create_failed": "No work orders could be created. Check that the booking has services and that the mechanics are available.",
@@ -498,7 +498,6 @@
       "phone_ten_digits": "The phone number must be exactly 10 digits (e.g. 070-1234567).",
       "email_format": "Enter a valid email address (e.g. name@example.com)."
     },
-    "success": {},
     "confirm": {
       "title": "Confirm"
     }
@@ -524,7 +523,6 @@
     "week": {
       "title": "Week {0}"
     },
-    "month": {},
     "slot": {
       "booked": "Booked",
       "click_to_expand": "Click to expand",
@@ -534,7 +532,8 @@
       "work_order": "Work Order #{0}",
       "booked": "Booked appointment",
       "open_order": "Open in Work Orders ↗",
-      "create_order": "Create Work Order ↗"
+      "create_order": "Create Work Order ↗",
+      "no_vehicle": "Could not create the booking: the registration number matches no vehicle."
     },
     "specialization": {
       "general_service": "General service",

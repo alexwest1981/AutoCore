@@ -21,15 +21,6 @@ public class ServicePackageService {
         }
     }
 
-    public ServicePackage findById(int id) {
-        try {
-            return packageRepository.findById(id);
-        } catch (SQLException e) {
-            System.out.println("Could not read service package " + id + ": " + e.getMessage());
-            return null;
-        }
-    }
-
     public ServicePackage createPackage(String name, String description, List<ServiceItem> serviceItems) {
         refuseUnlessValid(name, serviceItems);
 

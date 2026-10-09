@@ -57,6 +57,7 @@ public final class BillingDialogs {
 
         ComboBox<Booking> bookingBox = new ComboBox<Booking>();
         bookingBox.getItems().addAll(invoiceable);
+        bookingBox.setPromptText(I18n.get("dialog.invoice.booking_select"));
         bookingBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(bookingBox, Priority.ALWAYS);
         if (preselected != null) {
@@ -66,9 +67,6 @@ public final class BillingDialogs {
                     break;
                 }
             }
-        }
-        if (bookingBox.getSelectionModel().getSelectedItem() == null) {
-            bookingBox.getSelectionModel().selectFirst();
         }
         bookingBox.setConverter(new StringConverter<Booking>() {
             @Override
@@ -192,12 +190,11 @@ public final class BillingDialogs {
 
         ComboBox<Invoice> invoiceBox = new ComboBox<Invoice>();
         invoiceBox.getItems().addAll(unpaid);
+        invoiceBox.setPromptText(I18n.get("dialog.payment.invoice_select"));
         invoiceBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(invoiceBox, Priority.ALWAYS);
         if (preselected != null && unpaid.contains(preselected)) {
             invoiceBox.getSelectionModel().select(preselected);
-        } else {
-            invoiceBox.getSelectionModel().selectFirst();
         }
         invoiceBox.setConverter(new StringConverter<Invoice>() {
             @Override
@@ -212,7 +209,7 @@ public final class BillingDialogs {
         typeBox.getItems().addAll("SWISH", "CARD", "CASH");
         typeBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(typeBox, Priority.ALWAYS);
-        typeBox.getSelectionModel().select("SWISH");
+        typeBox.setPromptText(I18n.get("dialog.payment.method"));
         // The stored value stays as SWISH in the database, but the list shows "Swish".
         typeBox.setConverter(new StringConverter<String>() {
             @Override
@@ -232,6 +229,8 @@ public final class BillingDialogs {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        // Both fields start empty, so OK is locked until an invoice and a payment type are picked.
+        ActionDialogs.requireFilled(dialog, invoiceBox, typeBox);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {

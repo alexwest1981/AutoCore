@@ -162,17 +162,12 @@ public class MultiSelectComboBox<T> extends HBox {
         return isSelectedKey(keyFunction.apply(item));
     }
 
-    /** Marks the items that cannot be picked, compared by key. Anything already picked among them is
-     *  dropped, otherwise the chip would contradict the row. */
+    /** Marks the items that cannot be picked, compared by key. An item that was picked before it
+     *  got blocked stays picked, so lifting the block brings it back on the booking. */
     public void setBlockedItems(List<T> values) {
         blockedKeys.clear();
         for (T item : values) {
             blockedKeys.add(keyFunction.apply(item));
-        }
-        for (int i = selected.size() - 1; i >= 0; i--) {
-            if (blockedKeys.contains(keyFunction.apply(selected.get(i)))) {
-                selected.remove(i);
-            }
         }
         renderChips();
         renderRows();
@@ -201,10 +196,17 @@ public class MultiSelectComboBox<T> extends HBox {
 
     private void renderChips() {
         chips.getChildren().clear();
+        int shown = 0;
         for (T item : selected) {
+            // A service the booking already holds through a package is listed under that package, so
+            // it is not shown as a chip too. Dropping the package brings the chip back.
+            if (blockedKeys.contains(keyFunction.apply(item))) {
+                continue;
+            }
             chips.getChildren().add(chip(item));
+            shown++;
         }
-        boolean empty = selected.isEmpty();
+        boolean empty = shown == 0;
         // The chip row stays in the layout even when it is empty, otherwise nothing in the field
         // grows and the arrow lands right after the placeholder text instead of at the right edge.
         placeholderLabel.setVisible(empty);

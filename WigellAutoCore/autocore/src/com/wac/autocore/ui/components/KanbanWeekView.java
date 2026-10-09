@@ -43,7 +43,7 @@ class KanbanWeekView {
         dayLabel.setPrefWidth(60);
         dayLabel.setMaxWidth(55);
 
-        String loadClass = "load-" + dl.getLevel().getCode();
+        String loadClass = "load-" + dl.getLevel().name().toLowerCase();
 
         // Numbers (e.g. 3/9 h)
         Label countLabel = new Label(dl.getBookedHours() + "/" + dl.getTotalHours() + "h");

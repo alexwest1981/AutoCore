@@ -17,6 +17,12 @@ import java.util.List;
 
 public class BookingRepository {
 
+    private static final String COLUMNS = "id, vehicle_id, date, description, status, start_time, end_time, "
+            + "mechanic_id, service_item_id";
+
+    private static final String SERVICE_ITEM_COLUMNS =
+            "id, name, description, price, estimated_minutes, specialization";
+
     private final BookingServiceItemRepository bookingServiceItemRepository = new BookingServiceItemRepository();
     private final BookingMechanicRepository bookingMechanicRepository = new BookingMechanicRepository();
 
@@ -32,54 +38,22 @@ public class BookingRepository {
     }
 
     public List<Booking> findAll() throws SQLException {
-        List<Booking> bookings = new ArrayList<Booking>();
-        String sql = "SELECT id, vehicle_id, date, description, status, start_time, end_time, " +
-                "mechanic_id, service_item_id FROM bookings";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-
-            while (resultSet.next()) {
-                Booking booking = buildBooking(resultSet);
-                loadServiceItems(booking);
-        loadMechanics(booking);
-                bookings.add(booking);
-            }
-        }
-
-        return bookings;
+        return Queries.read("SELECT " + COLUMNS + " FROM bookings", resultSet -> build(resultSet));
     }
 
     public Booking findById(int id) throws SQLException {
-        String sql = "SELECT id, vehicle_id, date, description, status, start_time, end_time, " +
-                "mechanic_id, service_item_id FROM bookings WHERE id = ?";
-
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, id);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    Booking booking = buildBooking(resultSet);
-                    loadServiceItems(booking);
-        loadMechanics(booking);
-                    return booking;
-                }
-            }
-        }
-
-        return null;
+        return Queries.readOne("SELECT " + COLUMNS + " FROM bookings WHERE id = ?",
+                statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
     public void delete(int id) throws SQLException {
-        String sql = "DELETE FROM bookings WHERE id = ?";
-
+        // The service rows and the mechanic links point at this booking, and nothing else clears
+        // them, so all three go in one connection.
         try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement("DELETE FROM bookings WHERE id = ?")) {
 
             bookingServiceItemRepository.deleteByBookingId(connection, id);
+            bookingMechanicRepository.deleteByBookingId(connection, id);
 
             statement.setInt(1, id);
             statement.executeUpdate();
@@ -87,71 +61,43 @@ public class BookingRepository {
     }
 
     private void insert(Booking booking) throws SQLException {
-        String sql = "INSERT INTO bookings (vehicle_id, date, description, status, start_time, " +
-                "end_time, mechanic_id, service_item_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO bookings (vehicle_id, date, description, status, start_time, "
+                + "end_time, mechanic_id, service_item_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
+        int id = Queries.insert(sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
             statement.setString(4, booking.getStatus());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
+            setMechanicId(statement, 7, booking.getMechanicId());
+            setServiceItemId(statement, 8, booking.getServiceItemId());
+        });
 
-            if (booking.getMechanicId() == 0) {
-                statement.setNull(7, java.sql.Types.INTEGER);
-            } else {
-                statement.setInt(7, booking.getMechanicId());
-            }
-            if (booking.getServiceItemId() == 0) {
-                statement.setNull(8, java.sql.Types.INTEGER);
-            } else {
-                statement.setInt(8, booking.getServiceItemId());
-            }
-
-            statement.executeUpdate();
-
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    booking.setId(generatedKeys.getInt(1));
-                }
-            }
+        if (id > 0) {
+            booking.setId(id);
         }
     }
 
     private void update(Booking booking) throws SQLException {
-        String sql = "UPDATE bookings SET vehicle_id = ?, date = ?, description = ?, status = ?, " +
-                "start_time = ?, end_time = ?, mechanic_id = ?, service_item_id = ? WHERE id = ?";
+        String sql = "UPDATE bookings SET vehicle_id = ?, date = ?, description = ?, status = ?, "
+                + "start_time = ?, end_time = ?, mechanic_id = ?, service_item_id = ? WHERE id = ?";
 
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
+        Queries.write(sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
             statement.setString(4, booking.getStatus());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
-            if (booking.getMechanicId() == 0) {
-                statement.setNull(7, java.sql.Types.INTEGER);
-            } else {
-                statement.setInt(7, booking.getMechanicId());
-            }
-
-            if (booking.getServiceItemId() == 0) {
-                statement.setNull(8, java.sql.Types.INTEGER);
-            } else {
-                statement.setInt(8, booking.getServiceItemId());
-            }
-
+            setMechanicId(statement, 7, booking.getMechanicId());
+            setServiceItemId(statement, 8, booking.getServiceItemId());
             statement.setInt(9, booking.getId());
-            statement.executeUpdate();
-        }
+        });
     }
 
-    private void setTime(PreparedStatement statement, int position, LocalTime time) throws SQLException {
+    private static void setTime(PreparedStatement statement, int position, LocalTime time) throws SQLException {
         if (time == null) {
             statement.setNull(position, Types.VARCHAR);
         }
@@ -160,7 +106,7 @@ public class BookingRepository {
         }
     }
 
-    private void setDate(PreparedStatement statement, int position, LocalDate date) throws SQLException {
+    private static void setDate(PreparedStatement statement, int position, LocalDate date) throws SQLException {
         if (date == null) {
             statement.setNull(position, Types.VARCHAR);
         } else {
@@ -168,14 +114,43 @@ public class BookingRepository {
         }
     }
 
-    private Booking buildBooking(ResultSet resultSet) throws SQLException {
+    /** A missing mechanic or service is stored as NULL, not as a zero that points at nothing. */
+    private static void setMechanicId(PreparedStatement statement, int position, int mechanicId) throws SQLException {
+        if (mechanicId == 0) {
+            statement.setNull(position, Types.INTEGER);
+        } else {
+            statement.setInt(position, mechanicId);
+        }
+    }
+
+    private static void setServiceItemId(PreparedStatement statement, int position, int serviceItemId) throws SQLException {
+        if (serviceItemId == 0) {
+            statement.setNull(position, Types.INTEGER);
+        } else {
+            statement.setInt(position, serviceItemId);
+        }
+    }
+
+    private Booking build(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("date");
 
-        // Create the booking object first
+        LocalDate bookingDate = null;
+
+        // A row written before the format was fixed can hold anything, and one bad row must not
+        // stop the list.
+        if (dateText != null) {
+
+            try {
+                bookingDate = LocalDate.parse(dateText);
+            } catch (java.time.format.DateTimeParseException e) {
+                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+            }
+        }
+
         Booking booking = new Booking(
                 resultSet.getInt("id"),
                 resultSet.getInt("vehicle_id"),
-                dateText == null ? null : LocalDate.parse(dateText),
+                bookingDate,
                 resultSet.getString("description")
         );
 
@@ -217,6 +192,9 @@ public class BookingRepository {
             booking.setServiceItemId(serviceItemId);
         }
 
+        loadServiceItems(booking);
+        loadMechanics(booking);
+
         return booking;
     }
 
@@ -248,26 +226,20 @@ public class BookingRepository {
         booking.setServicePackages(bookingServiceItemRepository.findPackageNames(booking.getId()));
     }
 
-    private ServiceItem findServiceItemById(int id) throws SQLException {
-        String sql = "SELECT id, name, description, price, estimated_minutes, specialization FROM service_items WHERE id = ?";
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, id);
-            try (ResultSet rs = statement.executeQuery()) {
-                if (rs.next()) {
+    private static ServiceItem findServiceItemById(int id) throws SQLException {
+        return Queries.readOne("SELECT " + SERVICE_ITEM_COLUMNS + " FROM service_items WHERE id = ?",
+                statement -> statement.setInt(1, id), resultSet -> {
                     ServiceItem item = new ServiceItem(
-                            rs.getInt("id"),
-                            rs.getString("name"),
-                            rs.getString("description"),
-                            rs.getDouble("price"),
-                            rs.getInt("estimated_minutes")
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getString("description"),
+                            resultSet.getDouble("price"),
+                            resultSet.getInt("estimated_minutes")
                     );
-                    // The requirement has to come along, otherwise the service looks requirement-free and every mechanic becomes qualified.
-                    item.setSpecialization(rs.getString("specialization"));
+                    // The requirement has to come along, otherwise the service looks
+                    // requirement-free and every mechanic looks qualified for it.
+                    item.setSpecialization(resultSet.getString("specialization"));
                     return item;
-                }
-            }
-        }
-        return null;
+                });
     }
 }

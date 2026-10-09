@@ -19,6 +19,7 @@ import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -84,6 +85,16 @@ public final class ActionDialogs {
     }
 
     /** Locks the OK button until every field has a value. */
+    /** A text field with its prompt, and the value filled in when the form edits something. */
+    public static TextField field(String promptKey, String value) {
+        TextField field = new TextField();
+        field.setPromptText(com.wac.autocore.ui.i18n.I18n.get(promptKey));
+        if (value != null) {
+            field.setText(value);
+        }
+        return field;
+    }
+
     public static void requireFilled(Dialog<?> dialog, Node... fields) {
         final List<Node> required = new ArrayList<Node>();
         List<Observable> sources = new ArrayList<Observable>();

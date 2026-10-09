@@ -80,7 +80,7 @@ class BookingServicesField {
             if (kept.isEmpty()) {
                 continue;
             }
-            container.getChildren().add(heading(SeedText.resolve(pkg.getName())));
+            container.getChildren().add(packageHeading(pkg));
             for (ServiceItem item : kept) {
                 container.getChildren().add(serviceRow(item, true));
             }
@@ -119,6 +119,28 @@ class BookingServicesField {
         return label;
     }
 
+    /** The heading over a package's services. The button next to it drops the package, and with it
+     *  the services it brought, which is the only way to take them off the booking. */
+    private HBox packageHeading(ServicePackage pkg) {
+        HBox row = new HBox(6);
+        row.setPadding(new Insets(2, 2, 0, 2));
+
+        Label nameLbl = new Label(SeedText.resolve(pkg.getName()));
+        nameLbl.setStyle("-fx-text-fill: -wac-accent; -fx-font-size: 11px; -fx-font-weight: bold;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        row.getChildren().addAll(nameLbl, spacer);
+
+        if (!locked) {
+            Button removeBtn = new Button("✕");
+            removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f87171; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4; -fx-font-weight: bold;");
+            removeBtn.setOnAction(ev -> form.removePackage(pkg));
+            row.getChildren().add(removeBtn);
+        }
+        return row;
+    }
+
     private HBox serviceRow(ServiceItem item, boolean fromPackage) {
         HBox row = new HBox(8);
         row.setStyle("-fx-background-color: -wac-card; -fx-border-color: -wac-line; -fx-border-radius: 4; -fx-background-radius: 4; -fx-alignment: center-left;");
@@ -135,7 +157,8 @@ class BookingServicesField {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         row.getChildren().addAll(nameLbl, detailLbl, spacer);
 
-        // A service that comes from a package is removed by dropping the package, not one by one.
+        // A service that came in with a package leaves with the package, so it has no button of its
+        // own here.
         if (!locked && !fromPackage) {
             Button removeBtn = new Button("✕");
             removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f87171; -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 0 4; -fx-font-weight: bold;");

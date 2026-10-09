@@ -55,7 +55,7 @@ final class CreateDraftDialog {
                 return null;
             }
         });
-        vehicleBox.getSelectionModel().selectFirst();
+        vehicleBox.setPromptText(I18n.get("dialog.booking.vehicle_select"));
 
         TextArea description = new TextArea();
         description.setPrefRowCount(3);

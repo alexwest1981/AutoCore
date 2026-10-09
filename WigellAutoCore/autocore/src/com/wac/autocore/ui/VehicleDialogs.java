@@ -24,92 +24,44 @@ public final class VehicleDialogs {
     private VehicleDialogs() {}
 
     public static void showCreateVehicleDialog(GarageSystem garage, Runnable onSuccess) {
-        List<Customer> customers = garage.getCustomers();
-        if (customers.isEmpty()) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
-            return;
-        }
-
-        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.vehicle.create.title"));
-        dialog.setHeaderText(I18n.get("dialog.vehicle.create.header"));
-        ActionDialogs.styleDialog(dialog);
-
-        GridPane grid = ActionDialogs.createGrid();
-
-        ComboBox<Customer> customerBox = new ComboBox<Customer>();
-        customerBox.getItems().addAll(customers);
-        customerBox.getSelectionModel().selectFirst();
-        customerBox.setConverter(new StringConverter<Customer>() {
-            @Override
-            public String toString(Customer c) {
-                return c == null ? "" : c.getId() + " - " + c.getName() + " (" + c.getPhone() + ")";
-            }
-            @Override
-            public Customer fromString(String string) { return null; }
-        });
-
-        TextField regField = new TextField();
-        regField.setPromptText(I18n.get("dialog.vehicle.reg_prompt"));
-        TextField brandField = new TextField();
-        brandField.setPromptText(I18n.get("dialog.vehicle.brand_prompt"));
-        TextField modelField = new TextField();
-        modelField.setPromptText(I18n.get("dialog.vehicle.model_prompt"));
-        TextField yearField = new TextField();
-        yearField.setPromptText(I18n.get("dialog.vehicle.year_prompt"));
-
-        grid.add(new Label(I18n.get("dialog.vehicle.customer_select") + ":"), 0, 0);
-        grid.add(customerBox, 1, 0);
-        grid.add(new Label(I18n.get("dialog.vehicle.reg_nr") + ":"), 0, 1);
-        grid.add(regField, 1, 1);
-        grid.add(new Label(I18n.get("dialog.vehicle.brand") + ":"), 0, 2);
-        grid.add(brandField, 1, 2);
-        grid.add(new Label(I18n.get("dialog.vehicle.model") + ":"), 0, 3);
-        grid.add(modelField, 1, 3);
-        grid.add(new Label(I18n.get("dialog.vehicle.year") + ":"), 0, 4);
-        grid.add(yearField, 1, 4);
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        ActionDialogs.requireFilled(dialog, customerBox, regField, brandField, modelField, yearField);
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                Customer owner = customerBox.getValue();
-                String reg = regField.getText().trim().toUpperCase();
-                String brand = brandField.getText().trim();
-                String model = modelField.getText().trim();
-                String yearStr = yearField.getText().trim();
-
-                if (!validateVehicleInput(owner, reg, brand, model, yearStr)) {
-                    return;
-                }
-
-                int year = Integer.parseInt(yearStr.trim());
-                garage.createVehicle(reg, brand, model, year, owner.getId());
-                if (onSuccess != null) onSuccess.run();
-            }
-        });
+        showVehicleForm(garage, null, onSuccess);
     }
 
     public static void showEditVehicleDialog(GarageSystem garage, Vehicle vehicle, Runnable onSuccess) {
         if (vehicle == null) return;
 
+        showVehicleForm(garage, vehicle, onSuccess);
+    }
+
+    /** One form for both, because create and edit ask for the same fields. */
+    private static void showVehicleForm(GarageSystem garage, Vehicle existing, Runnable onSuccess) {
+        boolean editing = existing != null;
+
         List<Customer> customers = garage.getCustomers();
+        if (!editing && customers.isEmpty()) {
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
+            return;
+        }
+
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.vehicle.edit.title"));
-        dialog.setHeaderText(I18n.get("dialog.vehicle.edit.header"));
+        dialog.setTitle(I18n.get(editing ? "dialog.vehicle.edit.title" : "dialog.vehicle.create.title"));
+        dialog.setHeaderText(I18n.get(editing ? "dialog.vehicle.edit.header" : "dialog.vehicle.create.header"));
         ActionDialogs.styleDialog(dialog);
 
         GridPane grid = ActionDialogs.createGrid();
 
         ComboBox<Customer> customerBox = new ComboBox<Customer>();
         customerBox.getItems().addAll(customers);
-        for (Customer c : customers) {
-            if (c.getId() == vehicle.getCustomerId()) {
-                customerBox.getSelectionModel().select(c);
-                break;
+        if (editing) {
+            for (Customer c : customers) {
+                if (c.getId() == existing.getCustomerId()) {
+                    customerBox.getSelectionModel().select(c);
+                    break;
+                }
             }
+        } else {
+            // Shows its prompt until an owner is picked, the same as the fields in the booking form.
+            customerBox.setPromptText(I18n.get("dialog.vehicle.customer_select"));
         }
         customerBox.setConverter(new StringConverter<Customer>() {
             @Override
@@ -120,14 +72,12 @@ public final class VehicleDialogs {
             public Customer fromString(String string) { return null; }
         });
 
-        TextField regField = new TextField(vehicle.getRegistrationNumber());
-        regField.setPromptText(I18n.get("dialog.vehicle.reg_prompt"));
-        TextField brandField = new TextField(vehicle.getBrand() != null ? vehicle.getBrand() : "");
-        brandField.setPromptText(I18n.get("dialog.vehicle.brand_prompt"));
-        TextField modelField = new TextField(vehicle.getModel() != null ? vehicle.getModel() : "");
-        modelField.setPromptText(I18n.get("dialog.vehicle.model_prompt"));
-        TextField yearField = new TextField(String.valueOf(vehicle.getYear()));
-        yearField.setPromptText(I18n.get("dialog.vehicle.year_prompt"));
+        TextField regField = ActionDialogs.field("dialog.vehicle.reg_prompt",
+                editing ? existing.getRegistrationNumber() : null);
+        TextField brandField = ActionDialogs.field("dialog.vehicle.brand_prompt", editing ? existing.getBrand() : null);
+        TextField modelField = ActionDialogs.field("dialog.vehicle.model_prompt", editing ? existing.getModel() : null);
+        TextField yearField = ActionDialogs.field("dialog.vehicle.year_prompt",
+                editing ? String.valueOf(existing.getYear()) : null);
 
         grid.add(new Label(I18n.get("dialog.vehicle.customer_select") + ":"), 0, 0);
         grid.add(customerBox, 1, 0);
@@ -145,33 +95,39 @@ public final class VehicleDialogs {
         ActionDialogs.requireFilled(dialog, customerBox, regField, brandField, modelField, yearField);
 
         dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                Customer cust = customerBox.getValue();
-                String reg = regField.getText().trim().toUpperCase();
-                String brand = brandField.getText().trim();
-                String model = modelField.getText().trim();
-                String yearStr = yearField.getText().trim();
-
-                if (!validateVehicleInput(cust, reg, brand, model, yearStr)) {
-                    return;
-                }
-
-                int year = Integer.parseInt(yearStr.trim());
-                vehicle.setCustomerId(cust.getId());
-                vehicle.setRegistrationNumber(reg);
-                vehicle.setBrand(brand);
-                vehicle.setModel(model);
-                vehicle.setYear(year);
-
-                try {
-                    garage.updateVehicle(vehicle);
-                } catch (SQLException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
-                    return;
-                }
-
-                if (onSuccess != null) onSuccess.run();
+            if (response != ButtonType.OK) {
+                return;
             }
+
+            Customer owner = customerBox.getValue();
+            String reg = regField.getText().trim().toUpperCase();
+            String brand = brandField.getText().trim();
+            String model = modelField.getText().trim();
+            String yearStr = yearField.getText().trim();
+
+            if (!validateVehicleInput(owner, reg, brand, model, yearStr)) {
+                return;
+            }
+
+            int year = Integer.parseInt(yearStr.trim());
+
+            try {
+                if (editing) {
+                    existing.setCustomerId(owner.getId());
+                    existing.setRegistrationNumber(reg);
+                    existing.setBrand(brand);
+                    existing.setModel(model);
+                    existing.setYear(year);
+                    garage.updateVehicle(existing);
+                } else {
+                    garage.createVehicle(reg, brand, model, year, owner.getId());
+                }
+            } catch (SQLException e) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                return;
+            }
+
+            if (onSuccess != null) onSuccess.run();
         });
     }
 

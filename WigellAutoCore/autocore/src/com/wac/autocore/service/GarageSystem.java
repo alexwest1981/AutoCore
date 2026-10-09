@@ -393,10 +393,6 @@ public class GarageSystem {
         return servicePackageService.getAll();
     }
 
-    public ServicePackage findServicePackage(int id) {
-        return servicePackageService.findById(id);
-    }
-
     public ServicePackage createServicePackage(String name, String description, List<ServiceItem> serviceItems) {
         return servicePackageService.createPackage(name, description, serviceItems);
     }

@@ -39,15 +39,6 @@ public class BillingService {
         }
     }
 
-    public Invoice findById(int id) {
-        try {
-            return invoiceRepository.findById(id);
-        } catch (SQLException e) {
-            System.out.println("Could not read invoice " + id + ": " + e.getMessage());
-            return null;
-        }
-    }
-
     /** With no new charge: the console and other calls that have no reclamation. */
     public Invoice createInvoice(int workOrderId, String discountCode) {
         return createInvoice(workOrderId, discountCode, null, 0.0);

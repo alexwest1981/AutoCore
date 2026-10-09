@@ -37,7 +37,7 @@ class BookingFormLayout {
     }
 
     void layout(ComboBox<Vehicle> vehicleBox,
-                ComboBox<ServicePackage> packageBox,
+                MultiSelectComboBox<ServicePackage> packageMulti,
                 MultiSelectComboBox<ServiceItem> serviceMulti,
                 MultiSelectComboBox<Mechanic> mechanicMulti, Label mechanicFilterHint,
                 BookingScheduleField scheduleField,
@@ -60,8 +60,8 @@ class BookingFormLayout {
         grid.add(vehicleBox, 1, rowIdx++);
 
         grid.add(new Label(I18n.get("dialog.booking.package_select") + ":"), 0, rowIdx);
-        GridPane.setHgrow(packageBox, Priority.ALWAYS);
-        grid.add(packageBox, 1, rowIdx++);
+        GridPane.setHgrow(packageMulti, Priority.ALWAYS);
+        grid.add(packageMulti, 1, rowIdx++);
 
         // Services
         Label serviceLbl = new Label(I18n.get("dialog.booking.service_select") + ":");

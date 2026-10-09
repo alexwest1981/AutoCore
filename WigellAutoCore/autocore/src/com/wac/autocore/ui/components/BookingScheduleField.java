@@ -168,7 +168,12 @@ class BookingScheduleField {
         // Only the times that can be booked: those that fit before closing and are free for the
         // picked mechanic. Busy times are not shown at all, and if none are left the field is locked.
         List<LocalTime> freeTimes = new ArrayList<LocalTime>();
-        for (int h = 7; h <= 16; h++) {
+        // On today's date the hours already gone cannot be booked, so the list starts at the
+        // current one. Any other day still starts at opening.
+        LocalDate pickedDate = datePicker.getValue();
+        int firstHour = pickedDate != null && pickedDate.isEqual(LocalDate.now())
+                ? Math.max(7, LocalTime.now().getHour()) : 7;
+        for (int h = firstHour; h <= 16; h++) {
         LocalTime t = LocalTime.of(h, 0);
         if (t.plusMinutes(duration).isAfter(BookingAvailability.CLOSING_TIME)) {
         continue;
