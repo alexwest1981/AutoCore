@@ -215,7 +215,7 @@ public final class BookingDialogs {
 
                 // The status is set last, because a change back to Booked unlocks the services
                 // again. Once the job has started it cannot go back.
-                if (booking.isWorkStarted() && !statusTillaten(status)
+                if (booking.isWorkStarted() && !statusAllowed(status)
                         && !status.equalsIgnoreCase(booking.getStatus())) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"),
                             I18n.get("dialog.booking.status_locked_work_started"));
@@ -316,7 +316,7 @@ public final class BookingDialogs {
     }
 
     /** The statuses that may be set once the work has already started. */
-    private static boolean statusTillaten(String status) {
+    private static boolean statusAllowed(String status) {
         return "IN_PROGRESS".equalsIgnoreCase(status)
                 || "COMPLETED".equalsIgnoreCase(status);
     }

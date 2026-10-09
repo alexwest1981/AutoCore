@@ -1,6 +1,7 @@
 package com.wac.autocore.service;
 
 import com.wac.autocore.exception.NotFoundException;
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
@@ -311,8 +312,8 @@ public class WorkOrderService {
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "IN_PROGRESS")) {
-            System.out.println("Work order cannot be started.");
-            return false;
+            throw new RuleViolationException("Work order " + workOrderId + " cannot be started. Its status is "
+                    + workOrder.getStatus() + ".");
         }
 
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
@@ -343,8 +344,8 @@ public class WorkOrderService {
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "COMPLETED")) {
-            System.out.println("Only work orders in progress can be completed.");
-            return false;
+            throw new RuleViolationException("Work order " + workOrderId + " cannot be completed. Its status is "
+                    + workOrder.getStatus() + ".");
         }
 
         // The price is frozen even when the order is finished without anyone having marked the
@@ -391,8 +392,8 @@ public class WorkOrderService {
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "CONFIRMED")) {
-            System.out.println("Only drafts can be confirmed.");
-            return false;
+            throw new RuleViolationException("Work order " + workOrderId + " cannot be confirmed. Its status is "
+                    + workOrder.getStatus() + ".");
         }
 
         workOrder.setStatus("CONFIRMED");
@@ -412,8 +413,8 @@ public class WorkOrderService {
         }
 
         if (!canChangeStatus(workOrder.getStatus(), "CANCELLED")) {
-            System.out.println("Only drafts and work orders in progress can be cancelled.");
-            return false;
+            throw new RuleViolationException("Work order " + workOrderId + " cannot be cancelled. Its status is "
+                    + workOrder.getStatus() + ".");
         }
 
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
