@@ -95,8 +95,7 @@ class BookingPackagePicker {
         multi.setBlockedItems(covered);
     }
 
-    /** Drops a picked package. Its services leave the booking with it, since they are on it only
-     *  because the package is. */
+    /** Drops a picked package. Its services leave the booking with it, since they are on it only because the package is. */
     void remove(ServicePackage picked) {
         multi.removeSelectedItem(picked);
     }

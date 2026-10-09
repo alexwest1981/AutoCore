@@ -1,5 +1,7 @@
 package com.wac.autocore.theme;
 
+import com.wac.autocore.util.Resources;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,20 +36,11 @@ public final class ThemeManager {
         "/com/wac/autocore/theme/multiselect.css",
     };
 
+    /** The stylesheet from the classpath, or straight from the source tree during development. */
     private static URL resolveResource(String path) {
         if (path == null) return null;
-        URL url = ThemeManager.class.getResource(path);
-        if (url != null) return url;
-        String cleanPath = path.startsWith("/") ? path.substring(1) : path;
-        url = ThemeManager.class.getClassLoader().getResource(cleanPath);
-        if (url != null) return url;
-        java.io.File file = new java.io.File("WigellAutoCore/autocore/src/resources" + (path.startsWith("/") ? path : "/" + path));
-        if (file.exists()) {
-            try {
-                return file.toURI().toURL();
-            } catch (java.net.MalformedURLException ignored) {}
-        }
-        return null;
+        String slashPath = path.startsWith("/") ? path : "/" + path;
+        return Resources.find(path, "WigellAutoCore/autocore/src/resources" + slashPath);
     }
 
     public static void apply(Scene scene, String slug) {
