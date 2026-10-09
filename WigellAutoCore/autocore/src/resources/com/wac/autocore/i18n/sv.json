@@ -157,6 +157,7 @@
       "amount": "Belopp",
       "discount": "Rabatt",
       "total": "Totalt",
+      "total_incl_vat": "Totalt inkl. moms",
       "final_price": "Slutpris",
       "specialisation": "Specialisering",
       "available": "Tillgänglig",

@@ -157,6 +157,7 @@
       "amount": "Amount",
       "discount": "Discount",
       "total": "Total",
+      "total_incl_vat": "Total incl. VAT",
       "final_price": "Final price",
       "specialisation": "Specialisation",
       "available": "Available",
