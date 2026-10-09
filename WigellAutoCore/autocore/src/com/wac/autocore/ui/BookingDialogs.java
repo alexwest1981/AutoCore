@@ -94,6 +94,7 @@ public final class BookingDialogs {
                                 I18n.get("dialog.booking.services_locked_work_started"));
                         return;
                     }
+                    b.setServicePackages(form.getServicePackageNames());
                     if (chosenMech != null) {
                         b.setMechanicId(chosenMech.getId());
                         b.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
@@ -188,6 +189,7 @@ public final class BookingDialogs {
                                 I18n.get("dialog.booking.services_locked_work_started"));
                         return;
                     }
+                    b.setServicePackages(form.getServicePackageNames());
 
                     b.setMechanicId(chosenMech != null ? chosenMech.getId() : 0);
                     b.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
@@ -284,6 +286,7 @@ public final class BookingDialogs {
                 } else if (chosenServices.isEmpty() && chosenService == null) {
                     booking.setServiceItems(java.util.Collections.emptyList());
                 }
+                booking.setServicePackages(form.getServicePackageNames());
 
                 // The status is set last, because a change back to Booked unlocks the services
                 // again. Once the job has started it cannot go back.

@@ -11,6 +11,9 @@ import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.BookingAvailability;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
@@ -368,6 +371,20 @@ public class BookingFormPane extends GridPane {
      *  them, so the basket can tell a service from a package from one picked on its own. */
     List<ServicePackage> getChosenPackages() {
         return new ArrayList<ServicePackage>(packagePicker.getChosen());
+    }
+
+    /** The package name for each service that came from a package, by service id. The first package
+     *  that brings a service owns it, so a service shared by two packages is named once. */
+    public Map<Integer, String> getServicePackageNames() {
+        Map<Integer, String> names = new HashMap<Integer, String>();
+        for (ServicePackage pkg : packagePicker.getChosen()) {
+            for (ServiceItem item : pkg.getServiceItems()) {
+                if (!names.containsKey(Integer.valueOf(item.getId()))) {
+                    names.put(Integer.valueOf(item.getId()), SeedText.resolve(pkg.getName()));
+                }
+            }
+        }
+        return names;
     }
 
     // The removal has to go through the field, getSelectedServices hands out a copy of the list.
