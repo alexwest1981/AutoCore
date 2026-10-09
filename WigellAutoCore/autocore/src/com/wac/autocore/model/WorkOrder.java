@@ -22,6 +22,8 @@ public class WorkOrder {
     private List<Integer> serviceItemIds;
     private final List<Integer> completedServiceItems = new ArrayList<Integer>();
     private final Map<Integer, Double> completedServicePrices = new LinkedHashMap<Integer, Double>();
+    /** The package each service came from, carried over from the booking. */
+    private final Map<Integer, String> servicePackages = new LinkedHashMap<Integer, String>();
     private String status;
     private String plannedDate;
     private String customerInstructions;
@@ -172,6 +174,27 @@ public class WorkOrder {
         completedServicePrices.clear();
         if (prices != null) {
             completedServicePrices.putAll(prices);
+        }
+    }
+
+    /** The package name for one service, or an empty string when it came without a package. */
+    public String getServicePackageName(int serviceItemId) {
+        String name = servicePackages.get(Integer.valueOf(serviceItemId));
+        return name == null ? "" : name;
+    }
+
+    public void setServicePackage(int serviceItemId, String packageName) {
+        if (packageName == null || packageName.isEmpty()) {
+            servicePackages.remove(Integer.valueOf(serviceItemId));
+            return;
+        }
+        servicePackages.put(Integer.valueOf(serviceItemId), packageName);
+    }
+
+    public void setServicePackages(Map<Integer, String> packages) {
+        servicePackages.clear();
+        if (packages != null) {
+            servicePackages.putAll(packages);
         }
     }
 

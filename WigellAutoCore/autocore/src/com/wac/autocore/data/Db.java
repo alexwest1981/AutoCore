@@ -111,6 +111,7 @@ public class Db {
                 + "service_item_id INTEGER NOT NULL, "
                 + "completed INTEGER NOT NULL DEFAULT 0, "
                 + "price REAL, "
+                + "package_name TEXT, "
                 + "PRIMARY KEY (work_order_id, service_item_id))",
 
             "CREATE TABLE IF NOT EXISTS invoices ("
@@ -226,6 +227,13 @@ public class Db {
             // Make sure the package name exists, so a booking keeps the package it was made from.
             try {
                 statement.executeUpdate("ALTER TABLE booking_service_items ADD COLUMN package_name TEXT");
+            } catch (SQLException e) {
+                rethrowUnlessDuplicateColumn(e);
+            }
+
+            // The order inherits the package names from the booking it was created from.
+            try {
+                statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN package_name TEXT");
             } catch (SQLException e) {
                 rethrowUnlessDuplicateColumn(e);
             }
