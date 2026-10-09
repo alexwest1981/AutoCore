@@ -543,12 +543,6 @@
       "open_order": "Öppna i arbetsordrar ↗",
       "create_order": "Skapa arbetsorder ↗"
     },
-    "load": {
-      "free": "Låg arbetsbelastning",
-      "moderate": "Medel arbetsbelastning",
-      "busy": "Hög arbetsbelastning",
-      "full": "Full arbetsbelastning"
-    },
     "specialization": {
       "general_service": "Allmän service",
       "brakes": "Bromsar",

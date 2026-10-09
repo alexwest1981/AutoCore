@@ -543,12 +543,6 @@
       "open_order": "Open in Work Orders ↗",
       "create_order": "Create Work Order ↗"
     },
-    "load": {
-      "free": "Low workload",
-      "moderate": "Moderate workload",
-      "busy": "Heavy workload",
-      "full": "Fully booked"
-    },
     "specialization": {
       "general_service": "General service",
       "brakes": "Brakes",
