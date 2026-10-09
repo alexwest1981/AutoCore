@@ -156,96 +156,44 @@ public class Db {
             }
 
             // Make sure the completed column exists when migrating.
-            try {
-                statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN completed INTEGER NOT NULL DEFAULT 0");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_order_service_items ADD COLUMN completed INTEGER NOT NULL DEFAULT 0");
 
             // Make sure the price column exists, so a performed job keeps its price.
-            try {
-                statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN price REAL");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_order_service_items ADD COLUMN price REAL");
 
             // The requirement hangs on a key: the service says which specialization it needs.
             // Empty means the service can be done by anyone.
-            try {
-                statement.executeUpdate("ALTER TABLE service_items ADD COLUMN specialization TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE service_items ADD COLUMN specialization TEXT");
 
             // The vehicle sits on the work order, so a draft can be created before the booking exists.
-            try {
-                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN vehicle_id INTEGER");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_orders ADD COLUMN vehicle_id INTEGER");
 
             // The customer's own description of the problem, the one thing a draft needs.
-            try {
-                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN description TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_orders ADD COLUMN description TEXT");
 
             // The work order's type: standard, reclamation or internal work.
-            try {
-                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN type TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_orders ADD COLUMN type TEXT");
 
             // The reference a reclamation has to the work order it concerns. Empty for all others.
-            try {
-                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN original_work_order_id INTEGER");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_orders ADD COLUMN original_work_order_id INTEGER");
 
             // The planned date on a draft, which has no booking yet to borrow a date from.
-            try {
-                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN planned_date TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_orders ADD COLUMN planned_date TEXT");
 
             // The customer's instructions, filled in when the customer has something to say about the job.
-            try {
-                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN customer_instructions TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_orders ADD COLUMN customer_instructions TEXT");
 
             // Other comments that belong to the order but not to any of the other fields.
-            try {
-                statement.executeUpdate("ALTER TABLE work_orders ADD COLUMN other_comments TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_orders ADD COLUMN other_comments TEXT");
 
             // Make sure the package name exists, so a booking keeps the package it was made from.
-            try {
-                statement.executeUpdate("ALTER TABLE booking_service_items ADD COLUMN package_name TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE booking_service_items ADD COLUMN package_name TEXT");
 
             // The order inherits the package names from the booking it was created from.
-            try {
-                statement.executeUpdate("ALTER TABLE work_order_service_items ADD COLUMN package_name TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE work_order_service_items ADD COLUMN package_name TEXT");
 
             // The invoice line keeps the package name, frozen the way the price is.
-            try {
-                statement.executeUpdate("ALTER TABLE invoice_lines ADD COLUMN package_name TEXT");
-            } catch (SQLException e) {
-                rethrowUnlessDuplicateColumn(e);
-            }
+            addColumn(statement, "ALTER TABLE invoice_lines ADD COLUMN package_name TEXT");
 
             // Orders created before the type existed are ordinary jobs.
             statement.executeUpdate("UPDATE work_orders SET type = 'STANDARD' WHERE type IS NULL OR type = ''");
@@ -307,6 +255,15 @@ public class Db {
 
         normalizeRegistrationNumbers();
         SeedData.seedIfEmpty();
+    }
+
+    /** Adds a column, and lets "the column already exists" through. */
+    private static void addColumn(Statement statement, String sql) throws SQLException {
+        try {
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            rethrowUnlessDuplicateColumn(e);
+        }
     }
 
     /** Lets "the column already exists" through and sends every other error on. */
