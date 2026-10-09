@@ -197,11 +197,7 @@
   "common": {
     "yes": "Yes",
     "no": "No",
-    "currency": "kr",
-    "save": "Save",
-    "cancel": "Cancel",
-    "close": "Close",
-    "action": "Action"
+    "close": "Close"
   },
   "invoice": {
     "title": "INVOICE",
@@ -331,7 +327,6 @@
       "slot_busy_error": "The selected time is already booked for this mechanic. Please choose an available time.",
       "save_failed": "The booking could not be saved.",
       "desc_prompt": "E.g. Annual service and brake replacement",
-      "add_service": "Add",
       "no_services_selected": "No services selected yet",
       "packages_and_services": "Packages and services",
       "services_not_in_package": "Service - not in a package",
@@ -514,10 +509,6 @@
     "today": "Today",
     "action": {
       "book_hour": "Book this slot"
-    },
-    "status": {
-      "available": "Available",
-      "busy": "Busy"
     },
     "view": {
       "day": "Day",

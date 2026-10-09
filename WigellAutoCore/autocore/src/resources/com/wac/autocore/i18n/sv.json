@@ -197,11 +197,7 @@
   "common": {
     "yes": "Ja",
     "no": "Nej",
-    "currency": "kr",
-    "save": "Spara",
-    "cancel": "Avbryt",
-    "close": "Stäng",
-    "action": "Åtgärd"
+    "close": "Stäng"
   },
   "invoice": {
     "title": "FAKTURA",
@@ -331,7 +327,6 @@
       "slot_busy_error": "Den valda tiden är redan upptagen hos denna mekaniker. Vänligen välj en ledig tid.",
       "save_failed": "Bokningen kunde inte sparas.",
       "desc_prompt": "T.ex. Årlig service och bromsbyte",
-      "add_service": "Lägg till",
       "no_services_selected": "Inga tjänster valda än",
       "packages_and_services": "Paket och tjänster",
       "services_not_in_package": "Tjänst - ej paket",
@@ -514,10 +509,6 @@
     "today": "Idag",
     "action": {
       "book_hour": "Boka denna timme"
-    },
-    "status": {
-      "available": "Tillgänglig",
-      "busy": "Upptagen"
     },
     "view": {
       "day": "Dag",
