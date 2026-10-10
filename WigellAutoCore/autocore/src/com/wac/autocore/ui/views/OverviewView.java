@@ -2,6 +2,7 @@ package com.wac.autocore.ui.views;
 
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.components.TableFactory;
@@ -19,7 +20,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
-import com.wac.autocore.seed.SeedText;
 
 /** The overview: figures, status breakdown and the most recent records. */
 public final class OverviewView {
