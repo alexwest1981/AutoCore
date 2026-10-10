@@ -18,9 +18,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import com.wac.autocore.seed.SeedText;
 
 /** The overview: figures, status breakdown and the most recent records. */
