@@ -1,4 +1,4 @@
-/* Tema Emerald. Byggt ur auto-core (3).zip. */
+/* Emerald theme. Built from auto-core (3).zip. */
 
 .root {
     -wac-page: #edf3ef;
@@ -181,7 +181,7 @@ TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused,
 .combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
     -fx-background-color: transparent;
     -fx-text-fill: -wac-text;
-    /* Utan sidopadding hamnar texten pa samma indrag som .multi-select, 2 px kant + 6 px padding. */
+    /* Without side padding the text lines up with .multi-select: 2 px border + 6 px padding. */
     -fx-padding: 4px 0;
     -fx-alignment: CENTER_LEFT;
 }
@@ -189,7 +189,7 @@ TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused,
     -fx-background-color: #6b7280;
 }
 
-/* DatePicker utan dubbla ramar */
+/* DatePicker without double borders */
 DatePicker, .date-picker {
     -fx-background-color: #ffffff;
     -fx-border-color: -wac-line;

@@ -1,4 +1,4 @@
-/* 5. Listor och tabeller. */
+/* 5. Lists and tables. */
 .status-row, .booking-row, .activity-row, .activity-item, .srow {
     -fx-padding: 10;
     -fx-background-radius: 10;
@@ -32,7 +32,7 @@
 }
 .activity-icon-positive { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
 
-/* Statusprickar — både temats namn (.sdot) och designernas (.status-dot) */
+/* Status dots — both the theme's name (.sdot) and the designers' (.status-dot) */
 .status-dot, .sdot, .notification-dot {
     -fx-background-radius: 999;
     -fx-min-width: 8;
@@ -47,7 +47,7 @@
 .status-dot.danger,  .sdot.danger  { -fx-background-color: -wac-danger; }
 .notification-dot { -fx-background-color: -wac-danger; }
 
-/* Tabell (temats TableView + v2:s orders-table) */
+/* Table (the theme's TableView + v2's orders-table) */
 .orders-table {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -98,7 +98,7 @@
 .orders-table .table-row-cell:selected .table-cell { -fx-text-fill: -wac-on-accent; }
 .cell-sub { -fx-text-fill: -wac-muted; -fx-font-size: 11px; }
 
-/* Tabellhuvud: Tydlig mörkgrå list med vit text som en distinkt början på alla tabeller */
+/* Table header: a clear dark grey list with white text as a distinct start to every table */
 TableView .column-header-background,
 .table-view .column-header-background {
     -fx-background-color: #282d2b;
@@ -139,7 +139,7 @@ TableView .column-header .arrow,
     -fx-background-color: #ffffff;
 }
 
-/* Tabellceller: padding 8 8 och vänsterjustering som matchar kolumnhuvudet. */
+/* Table cells: padding 8 8 and left alignment matching the column header. */
 TableColumn,
 TableView .table-cell,
 .table-view .table-cell {
@@ -172,7 +172,7 @@ TableView .table-row-cell:selected .table-cell,
 TableView .table-row-cell:selected:focused .table-cell,
 .table-view .table-row-cell:selected:focused .table-cell { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }
 
-/* Modenas list-cell sätter en textfärg som inte alltid finns, så -wac-text tvingas fram. */
+/* Modena's list-cell sets a text colour that is not always there, so -wac-text is forced through. */
 .list-cell { -fx-text-fill: -wac-text; -fx-background-color: transparent; }
 .list-cell:filled:hover { -fx-background-color: -wac-surface; -fx-text-fill: -wac-text; }
 .list-cell:selected { -fx-background-color: -wac-accent-soft; -fx-text-fill: -wac-text; }

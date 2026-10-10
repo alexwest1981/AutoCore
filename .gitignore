@@ -1,8 +1,8 @@
 # IDE / Editor files
-# .idea-mappar ignoreras, utom i projektroten och där bara modulfilen,
-# projektbiblioteken och modullistan. Det är de filerna som pekar ut
-# databasdrivrutinen, så att Run-knappen i IntelliJ fungerar efter en pull.
-# workspace.xml lämnas utanför, den ändras hela tiden och har maskinlokala sökvägar.
+# .idea folders are ignored, except in the project root and there only the module file,
+# the project libraries and the module list. Those files point out the database driver,
+# so that the Run button in IntelliJ keeps working after a pull.
+# workspace.xml is left out: it changes constantly and holds machine-local paths.
 .idea/
 !/.idea/
 /.idea/*
@@ -23,14 +23,14 @@ out/
 bin/
 target/
 *.class
-# Fillistan start.sh genererar for javac, skapas och raderas vid varje korning
+# The file list start.sh generates for javac; created and deleted on every run
 sources.txt
 
-# Lokal databas, skapas av appen och ska inte versionshanteras.
-# Snedstrecket först ankrar regeln till repo-roten, annars träffar den
-# även källkodsmappen com/wac/autocore/data/ och då försvinner nya filer där.
-# Utan snedstreck sist träffar regeln även en länk, inte bara en mapp: databasen ligger
-# på NVMe och data är en länk dit.
+# Local database, created by the app and not to be version controlled.
+# The leading slash anchors the rule to the repository root; otherwise it would
+# also match the source folder com/wac/autocore/data/ and new files there would vanish.
+# Without a trailing slash the rule also matches a link, not just a folder: the database
+# lives on the NVMe and data is a link to it.
 /data
 *.db
 
@@ -39,7 +39,7 @@ sources.txt
 *.pdf
 RetrospektDagbok.md
 
-# Personliga testrapporter och lokala resultat
+# Personal test reports and local results
 rapport.md
 rapport*.md
 ARKITEKTUR_OCH_DESIGNMONSTER.md

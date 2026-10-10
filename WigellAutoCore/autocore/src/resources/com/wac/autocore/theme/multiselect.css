@@ -1,7 +1,7 @@
-/* Flervalsfält: valda poster som chips, en kryssruta per rad. */
+/* Multi-select field: chosen entries as chips, one check box per row. */
 .multi-select {
     -fx-background-color: white;
-    /* Samma kant som appens egna ComboBoxar: -wac-line, 2 px. */
+    /* Same border as the app's own ComboBoxes: -wac-line, 2 px. */
     -fx-border-color: -wac-line;
     -fx-border-width: 2;
     -fx-border-radius: 8;
@@ -17,11 +17,11 @@
 .multi-select:hover {
     -fx-border-color: -wac-ring;
 }
-/* Grön kant bara medan listan är öppen. Fältet har inget eget fokusläge. */
+/* Green border only while the list is open. The field has no focus state of its own. */
 .multi-select.showing {
     -fx-border-color: -wac-ring;
 }
-/* Två kort i bokningsformuläret: kalendern och tiden. Samma kant och rundning som fälten. */
+/* The two cards in the booking form: the calendar and the time. Same border and radius as the fields. */
 .booking-card {
     -fx-background-color: white;
     -fx-border-color: -wac-line;
@@ -40,20 +40,20 @@
     -fx-text-fill: -wac-muted;
     -fx-font-size: 13px;
 }
-/* Pilen: samma nodbygge som appens ComboBoxar. */
-/* Pilknappen: luften ar appens egen, mott ur en riktig ComboBox i samma scen. */
+/* The arrow: the same node build as the app's ComboBoxes. */
+/* The arrow button: the inset is the app's own, measured from a real ComboBox in the same scene. */
 .multi-select .arrow-button {
     -fx-background-color: transparent;
     -fx-padding: 6.5 10.2 6.5 10.8;
     -fx-max-height: 23;
 }
-/* Pilens form och mått är JavaFX egna. Bara färgen är appens. */
+/* The arrow's shape and size are JavaFX's own. Only the colour is the app's. */
 .multi-select .arrow {
     -fx-background-color: #6b7280;
     -fx-shape: "M 0 0 h 7 l -3.5 4 z";
     -fx-padding: 2.2 4.05 2.2 4.05;
     -fx-background-insets: 1 0 -1 0, 0;
-    /* Appens pil ritar sex rader, alltsa 9 x 6 px. Utan tak blir den 10 px hog. */
+    /* The app's arrow draws six rows, i.e. 9 x 6 px. Without a cap it becomes 10 px tall. */
     -fx-max-height: 6;
     -fx-pref-height: 6;
 }
@@ -77,7 +77,7 @@
     -fx-opacity: 0;
 }
 
-/* Chipsen: samma gröna ton som märkena, i fältets höjd. */
+/* The chips: the same green tone as the badges, at the field's height. */
 .multi-select-chip {
     -fx-background-color: -wac-accent-soft;
     -fx-background-radius: 4;
@@ -99,7 +99,7 @@
     -fx-text-fill: -wac-danger;
 }
 
-/* Rullistan: identisk med .combo-box-popup > .list-view och .list-cell. */
+/* The scroll list: identical to .combo-box-popup > .list-view and .list-cell. */
 .multi-select-popup {
     -fx-background-color: white;
     -fx-border-color: #d1d5db;

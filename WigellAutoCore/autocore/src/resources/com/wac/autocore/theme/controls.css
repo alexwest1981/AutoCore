@@ -1,4 +1,4 @@
-/* 6. Knappar, länkar, filter och notiser. */
+/* 6. Buttons, links, filters and notices. */
 .primary-button, .create-button, .new-button, .wide-action, .quick-action {
     -fx-background-color: -wac-accent;
     -fx-text-fill: -wac-on-accent;
@@ -71,7 +71,7 @@
     -fx-font-size: 12px;
 }
 
-/* 7. Ikonrutor, chips och profil. */
+/* 7. Icon tiles, chips and profile. */
 .profile-chip, .year-select, .small-select {
     -fx-background-color: -wac-surface;
     -fx-background-radius: 999;
@@ -102,7 +102,7 @@
     -fx-font-size: 12px;
 }
 
-/* 8. Flikar. */
+/* 8. Tabs. */
 .tabs {
     -fx-spacing: 6;
     -fx-background-color: -wac-surface;
@@ -121,7 +121,7 @@
     -fx-text-fill: -wac-on-accent;
 }
 
-/* 9. Sidofält och navigering. */
+/* 9. Sidebar and navigation. */
 .bg-rail, .bg-sidebar, .sidebar-rail { -fx-background-color: -wac-sidebar; }
 .sidebar-logo, .brand-mark {
     -fx-background-color: -wac-accent;

@@ -1,4 +1,4 @@
-/* 10. Skuggor och sektionsrubriker. */
+/* 10. Shadows and section headings. */
 .shadow-soft {
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 10, 0.10, 0, 2);
 }
@@ -27,7 +27,7 @@
 }
 .muted, .muted-text { -fx-text-fill: -wac-muted; }
 
-/* 11. Aktivitetsmärken och diagramvarianter. */
+/* 11. Activity badges and chart variants. */
 .activity-badge {
     -fx-background-color: -wac-surface;
     -fx-text-fill: -wac-muted;
@@ -46,7 +46,7 @@
     -fx-font-size: 12px;
 }
 
-/* 12. Mobilmeny. */
+/* 12. Mobile menu. */
 .mobile-menu, .sidebar-close {
     -fx-background-color: -wac-surface;
     -fx-text-fill: -wac-text;
@@ -55,7 +55,7 @@
     -fx-cursor: hand;
 }
 
-/* 13. Dialoger och modaler. */
+/* 13. Dialogs and modals. */
 .dialog-pane {
     -fx-background-color: -wac-card;
     -fx-border-color: -wac-line;
@@ -130,7 +130,7 @@
     -fx-background-color: -wac-accent-hover;
 }
 
-/* 14. Datumväljarens popup. */
+/* 14. The date picker popup. */
 .date-picker-popup {
     -fx-background-color: -wac-line, -wac-card;
     -fx-background-insets: 0, 1;
@@ -168,7 +168,7 @@
     -fx-background-color: -wac-accent-soft;
 }
 
-/* Bokningskalendern. Färgerna måste stå här, -wac-* tappas tyst i en inline-style. */
+/* The booking calendar. The colours have to live here; -wac-* is dropped silently in an inline style. */
 .booking-calendar {
     -fx-background-color: -wac-card;
     -fx-border-color: -wac-line;
@@ -180,5 +180,3 @@
     -fx-background-color: -wac-accent;
     -fx-text-fill: -wac-on-accent;
 }
-
-/* ============================================================

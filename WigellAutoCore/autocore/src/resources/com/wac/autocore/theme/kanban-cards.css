@@ -1,4 +1,4 @@
-/* 20. Kanban-drawern, bokningen utfälld under dagen. */
+/* 20. The kanban drawer, with the booking unfolded under the day. */
 .kanban-inline-drawer {
     -fx-background-color: -wac-card;
     -fx-background-radius: 8px;
@@ -8,12 +8,12 @@
     -fx-padding: 14px 16px;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.10), 8, 0, 0, 3);
 }
-/* Chipsen inuti rutan följer rutans storlek, inte den globala badge-storleken. */
+/* The chips inside the box follow the box's size, not the global badge size. */
 .kanban-inline-drawer .badge {
     -fx-font-size: 12px;
     -fx-padding: 3px 10px;
 }
-/* Rutan är uppbyggd som rubrik, avdelare, etikettrader och fot. Det här är dess egna stilar. */
+/* The box is built as heading, divider, label rows and footer. These are its own styles. */
 .kanban-drawer-time  { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: -wac-accent; }
 .kanban-drawer-ref   { -fx-font-size: 12px; -fx-text-fill: -wac-muted; }
 .kanban-drawer-line  { -fx-background-color: -wac-line; -fx-min-height: 1px; -fx-pref-height: 1px; -fx-max-height: 1px; }

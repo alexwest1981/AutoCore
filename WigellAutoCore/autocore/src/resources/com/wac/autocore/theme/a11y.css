@@ -1,4 +1,4 @@
-/* 15. WCAG 2.1: fokusmarkering och kontrast. */
+/* 15. WCAG 2.1: focus marking and contrast. */
 .button:focused, .nav-item:focused,
 .text-field:focused, .combo-box:focused, .date-picker:focused {
     -fx-border-color: -wac-ring;
@@ -20,7 +20,7 @@
     -fx-prompt-text-fill: -wac-muted;
 }
 
-/* 18. Språkväxlaren i sidofältet. */
+/* 18. The language switch in the sidebar. */
 .sidebar-lang-container {
     -fx-border-color: rgba(255, 255, 255, 0.08) transparent transparent transparent;
     -fx-border-width: 1 0 0 0;

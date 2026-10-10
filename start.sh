@@ -5,14 +5,14 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
 # ==============================================================================
-# VARFÖR JAVA 8 (JDK 8)?
-# Projektets arkitektur- och kurskriterier kräver att den befintliga Java-
-# versionen (Java 8) bibehålls. Den JDK som används måste dessutom innehålla
-# JavaFX (t.ex. BellSoft Liberica JDK 8 Full eller motsvarande distribution
-# med inbyggd JavaFX-runtime).
+# WHY JAVA 8 (JDK 8)?
+# The project's architecture and the course criteria require the existing Java
+# version (Java 8) to be kept. The JDK used must also ship JavaFX (BellSoft
+# Liberica JDK 8 Full or an equivalent distribution with a bundled JavaFX
+# runtime).
 # ==============================================================================
 
-# 1. Identifiera operativsystem och sätt rätt klassvägsseparator
+# 1. Identify the operating system and set the right classpath separator
 IS_WINDOWS=false
 IS_MACOS=false
 CP_SEP=":"
@@ -31,7 +31,7 @@ case "$(uname -s 2>/dev/null || echo "unknown")" in
         ;;
 esac
 
-# Hjälpfunktion för att kontrollera om en sökväg är en giltig Java 8 JDK
+# Helper: check that a path is a valid Java 8 JDK
 is_jdk8() {
     local home="$1"
     [ -n "$home" ] || return 1
@@ -45,7 +45,7 @@ is_jdk8() {
     return 0
 }
 
-# 2. Hitta en Java 8 JDK
+# 2. Find a Java 8 JDK
 FOUND_JDK=""
 
 if [ -n "$JDK8_HOME" ] && is_jdk8 "$JDK8_HOME"; then
@@ -82,7 +82,7 @@ fi
 
 if [ -z "$FOUND_JDK" ]; then
     CANDIDATES=(
-        # Linux & allmänna
+        # Linux & general
         "$HOME/.jdks"/jdk8*
         "$HOME/.jdks"/*1.8*
         "$HOME/.jdks"/*8*
@@ -158,13 +158,13 @@ JDBC_JAR="WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 JSON_JAR="WigellAutoCore/autocore/lib/json-20231013.jar"
 LIBS="$JDBC_JAR$CP_SEP$JSON_JAR"
 
-# Startklassen går att välja: ./start.sh kör GUI:t, ./start.sh ConsoleApp kör textversionen.
+# The start class is selectable: ./start.sh runs the GUI, ./start.sh ConsoleApp runs the text version.
 MAIN_CLASS="${1:-Main}"
 shift || true
 
 mkdir -p "$OUT_DIR"
 
-# Kopiera resurser (CSS-teman, JSON-språkfiler etc.) till out
+# Copy resources (CSS themes, JSON language files etc.) to out
 if [ -d "$RES_DIR" ]; then
     cp -R "$RES_DIR/." "$OUT_DIR/" 2>/dev/null || cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
 fi
@@ -175,7 +175,7 @@ find "$SRC_DIR" -name "*.java" > "$SOURCES_FILE"
 "$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" -cp "$LIBS" @"$SOURCES_FILE"
 rm -f "$SOURCES_FILE"
 
-# På Linux med Wayland kräver JavaFX 8 XWayland (GDK_BACKEND=x11) för att förhindra krasch i GTK
+# On Linux with Wayland, JavaFX 8 needs XWayland (GDK_BACKEND=x11) to avoid a crash in GTK
 if [ "$IS_WINDOWS" = false ] && [ "$IS_MACOS" = false ]; then
     export GDK_BACKEND=x11
 fi

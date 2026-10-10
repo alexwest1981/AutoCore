@@ -1,7 +1,7 @@
-/* Fallback för -wac-tokens, så JavaFX alltid hittar en färg innan temat laddats. */
+/* Fallback for -wac tokens, so JavaFX always finds a colour before the theme is loaded. */
 
 .root {
-/* Fallback för -wac-tokens. */
+/* Fallback for -wac tokens. */
     -wac-card:                     #1f1f23;
     -wac-header:                   #18181b;
     -wac-sidebar:                  #18181b;
@@ -35,7 +35,7 @@
     -wac-bg:                       #111113;
     -wac-surface:                  #18181b;
 
-    /* Modena standard-lookups mappade till WAC-tokens */
+    /* Modena's standard lookups mapped to WAC tokens */
     -fx-accent:                    -wac-accent;
     -fx-focus-color:               -wac-ring;
     -fx-faint-focus-color:         transparent;
@@ -45,9 +45,9 @@
     -fx-font-family:               "System";
 }
 
-/* Combobox-popup: temaväljaren och alla andra ComboBoxar. */
+/* ComboBox popup: the theme selector and every other ComboBox. */
 
-/* Popup-listan: fast vit bakgrund, svart text */
+/* The popup list: solid white background, black text */
 .combo-box-popup > .list-view {
     -fx-background-color: white;
     -fx-border-color: #d1d5db;
@@ -56,7 +56,7 @@
     -fx-border-width: 1;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 12, 0.10, 0, 4);
 }
-/* Raderna ligger i listans VirtualFlow, så väljaren måste vara nedtonad. */
+/* The rows live in the list's VirtualFlow, so the selector has to be dimmed. */
 .combo-box-popup > .list-view .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: #111827;
@@ -75,7 +75,7 @@
     -fx-text-fill: #111827;
 }
 
-/* Alla ComboBoxar: ren vit bakgrund, skarp kant och neutral text */
+/* All ComboBoxes: clean white background, sharp border and neutral text */
 .combo-box, .combo-box-base, .choice-box {
     -fx-background-color: white;
     -fx-border-color: #d1d5db;
@@ -101,7 +101,7 @@
 .combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
     -fx-background-color: transparent;
     -fx-text-fill: #111827;
-    /* Utan sidopadding hamnar texten pa samma indrag som .multi-select, 2 px kant + 6 px padding. */
+    /* Without side padding the text lines up with .multi-select: 2 px border + 6 px padding. */
     -fx-padding: 4px 0;
     -fx-alignment: CENTER_LEFT;
 }
@@ -109,4 +109,4 @@
     -fx-background-color: #6b7280;
 }
 
-/* Resten av komponentlagret ligger i de andra css-filerna, en per område. */
+/* The rest of the component layer lives in the other CSS files, one per area. */

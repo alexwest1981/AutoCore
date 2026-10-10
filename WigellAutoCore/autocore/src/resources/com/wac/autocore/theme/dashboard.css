@@ -1,4 +1,4 @@
-/* 1. Kort. */
+/* 1. Cards. */
 .metric-card, .kpi-card, .main-card, .activity-card, .chart-card,
 .occupancy-card, .panel {
     -fx-background-color: -wac-card;
@@ -9,7 +9,7 @@
     -fx-padding: 18;
 }
 
-/* 2. KPI: värde, etikett, trend och ikon. */
+/* 2. KPI: value, label, trend and icon. */
 .kpi-grid, .metric-grid, .action-grid, .activity-grid, .quick-grid {
     -fx-hgap: 14;
     -fx-vgap: 14;
@@ -35,7 +35,7 @@
     -fx-text-fill: -wac-danger;
 }
 
-/* Ikonrutan: rundad ruta med accentfärgad glasyta */
+/* The icon tile: a rounded box with an accent-coloured glass surface */
 .kpi-icon, .metric-icon, .icon-tile {
     -fx-background-color: -wac-accent-soft;
     -fx-background-radius: 10;
@@ -52,7 +52,7 @@
 .icon-tile-lime  { -fx-background-color: -wac-success-soft; -fx-text-fill: -wac-success; }
 .icon-tile-pale  { -fx-background-color: -wac-surface;      -fx-text-fill: -wac-muted; }
 
-/* Ring och beläggningsmätare */
+/* Ring and load gauge */
 .metric-ring, .donut-ring, .donut {
     -fx-background-color: transparent;
     -fx-border-color: -wac-accent;
@@ -79,7 +79,7 @@
 }
 .metric-pips-empty { -fx-background-color: -wac-line; }
 
-/* 3. Stapeldiagram. */
+/* 3. Bar chart. */
 .chart, .big-chart, .bars, .chart-bars {
     -fx-background-color: transparent;
     -fx-min-height: 150;
@@ -112,7 +112,7 @@
     -fx-font-size: 11px;
 }
 
-/* Förklaringar */
+/* Legends */
 .chart-legend, .legend {
     -fx-spacing: 12;
     -fx-alignment: CENTER_LEFT;

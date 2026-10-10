@@ -1,7 +1,7 @@
-# Gemensamma editorinställningar (läses av IntelliJ, VS Code m.fl.)
+# Shared editor settings (read by IntelliJ, VS Code and others)
 root = true
 
-# Windows PowerShell 5.1 läser en .ps1-fil utan BOM som Cp1252, och då går
-# å, ä, ö, ✔ och ❌ sönder och skriptet får parse-fel. Spara alltid med BOM.
+# Windows PowerShell 5.1 reads a .ps1 file without a BOM as Cp1252, and then
+# å, ä, ö, ✔ and ❌ break and the script fails to parse. Always save with a BOM.
 [*.ps1]
 charset = utf-8-bom

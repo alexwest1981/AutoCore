@@ -1,4 +1,4 @@
-/* 19. Mekaniker-kanban: dag, vecka och månad. */
+/* 19. Mechanic kanban: day, week and month. */
 .kanban-card {
     -fx-padding: 18px 20px;
     -fx-spacing: 14px;
@@ -116,7 +116,7 @@
     -fx-font-style: italic;
 }
 
-/* Veckovy */
+/* Week view */
 .kanban-week-col {
     -fx-background-color: -wac-card;
     -fx-border-color: -wac-line;
@@ -154,7 +154,7 @@
     -fx-alignment: CENTER;
 }
 
-/* Belastningsfärger (Grön -> Gul -> Orange -> Röd) */
+/* Load colours (green -> yellow -> orange -> red) */
 .load-free {
     -fx-background-color: #10b981;
     -fx-text-fill: #ffffff;
@@ -185,7 +185,7 @@
     -fx-text-fill: -wac-muted;
 }
 
-/* Månadsvy */
+/* Month view */
 .kanban-month-head {
     -fx-font-weight: bold;
     -fx-font-size: 11px;
@@ -231,7 +231,7 @@
     -fx-text-fill: -wac-muted;
 }
 
-/* Kompakt Kanban-kort (flera mekaniker samtidigt sida vid sida) */
+/* Compact kanban card (several mechanics side by side) */
 .kanban-board-panel {
     -fx-padding: 18px 20px;
     -fx-spacing: 14px;
@@ -492,7 +492,7 @@
     -fx-text-fill: -wac-muted;
     -fx-alignment: CENTER_RIGHT;
 }
-/* 9 timboxar i veckovyn */
+/* 9 time boxes in the week view */
 .kanban-hour-boxes {
     -fx-alignment: CENTER_LEFT;
     -fx-spacing: 8px;
