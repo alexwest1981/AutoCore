@@ -43,7 +43,7 @@ import java.util.Set;
 /**
  * The form for creating and changing a booking.
  */
-public class BookingFormPane extends GridPane {
+public class BookingFormPane extends GridPane implements ScheduleSource {
 
     private final GarageSystem garage;
     private final Booking existingBooking;
@@ -177,7 +177,7 @@ public class BookingFormPane extends GridPane {
                 serviceMulti,
                 mechanicMulti, mechanicFilterHint,
                 scheduleField,
-                datePicker, startTimeBox, durationLabel,
+                datePicker, startTimeBox,
                 descField, statusBox, dropInTimeLabel,
                 servicesField,
                 isServicesLocked);

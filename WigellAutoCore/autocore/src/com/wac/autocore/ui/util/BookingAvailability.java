@@ -85,6 +85,24 @@ public final class BookingAvailability {
         return false;
     }
 
+    /** The message key for why the day cannot be booked, or null when it can. The booking form and
+     *  the draft dialog share this, so both calendars strike out the same days. */
+    public static String unbookableReason(GarageSystem garage, LocalDate date, Mechanic mechanic,
+                                          List<Mechanic> qualifiedMechanics, int durationMinutes,
+                                          int excludeBookingId) {
+        if (date == null || date.isBefore(LocalDate.now())) {
+            return "dialog.booking.date_past";
+        }
+        if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            return "dialog.booking.date_weekend";
+        }
+        if (durationMinutes > MAX_WORK_MINUTES_PER_DAY) {
+            return "dialog.booking.duration_too_long";
+        }
+        return hasAvailableSlotOnDate(garage, mechanic, qualifiedMechanics, date, durationMinutes,
+                excludeBookingId) ? null : "dialog.booking.date_fully_booked";
+    }
+
     /** True if there is at least one free start time for the whole job that day. */
     public static boolean hasAvailableSlotOnDate(GarageSystem garage, Mechanic mechanic,
                                                  List<Mechanic> qualifiedMechanics,

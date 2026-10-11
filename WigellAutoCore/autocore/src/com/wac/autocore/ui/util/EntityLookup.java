@@ -169,15 +169,26 @@ public final class EntityLookup {
         return b.getStartTime() + " - " + b.getEndTime();
     }
 
-    /** The work order's date, taken from the booking it was created from. */
+    /** The work order's date, from the booking it was created from, or the plan on a draft. */
     public static String workOrderDate(GarageSystem garage, WorkOrder wo) {
         Booking b = bookingForWorkOrder(garage, wo);
-        return b == null || b.getDate() == null ? "-" : String.valueOf(b.getDate());
+        if (b != null && b.getDate() != null) {
+            return String.valueOf(b.getDate());
+        }
+        return wo != null && text(wo.getPlannedDate()) ? wo.getPlannedDate() : "-";
     }
 
-    /** The work order's time, taken from the booking it was created from. */
+    /** The work order's time, from the booking, or the planned hour on a draft. */
     public static String workOrderTime(GarageSystem garage, WorkOrder wo) {
-        return bookingTime(bookingForWorkOrder(garage, wo));
+        Booking b = bookingForWorkOrder(garage, wo);
+        if (b != null) {
+            return bookingTime(b);
+        }
+        return wo != null && text(wo.getPlannedTime()) ? wo.getPlannedTime() : "-";
+    }
+
+    private static boolean text(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     /** The booking the work order belongs to, or null when there is none. */

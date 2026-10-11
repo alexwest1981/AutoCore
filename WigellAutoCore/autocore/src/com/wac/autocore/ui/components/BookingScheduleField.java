@@ -24,7 +24,7 @@ import com.wac.autocore.ui.util.UiFormatters;
  * The date, the start time and the end time in the booking form.
  * The calendar greys out days that cannot hold the whole job, and the time list shows free times only.
  */
-class BookingScheduleField {
+public class BookingScheduleField {
 
     private final DatePicker datePicker;
     private final ComboBox<LocalTime> startTimeBox = new ComboBox<LocalTime>();
@@ -37,8 +37,8 @@ class BookingScheduleField {
     private final Runnable ensureValidDate;
     private final Runnable refreshTimeBox;
 
-    BookingScheduleField(GarageSystem garage, BookingFormPane form, ComboBox<Mechanic> mechanicBox,
-                         int excludeId, Booking existingBooking, LocalDate initialDate) {
+    public BookingScheduleField(GarageSystem garage, ScheduleSource source, ComboBox<Mechanic> mechanicBox,
+                                int excludeId, Booking existingBooking, LocalDate initialDate) {
         LocalDate initialDateVal = existingBooking != null && existingBooking.getDate() != null
         ? existingBooking.getDate()
         : (initialDate != null ? initialDate : LocalDate.now().plusDays(1));
@@ -49,7 +49,7 @@ class BookingScheduleField {
         // The calendar's days. The factory is set once, and the cells read the current services and
         // times each time they are drawn, so refresh() can update them when the selection changes.
         this.datePicker.setDayCellFactory(picker -> {
-        BookingDayCell cell = new BookingDayCell(garage, excludeId, form);
+        BookingDayCell cell = new BookingDayCell(garage, excludeId, source);
         dayCells.add(cell);
         return cell;
         });
@@ -89,9 +89,9 @@ class BookingScheduleField {
         };
 
         Runnable ensureValidDate = () -> {
-        int duration = form.getTotalEstimatedMinutes() > 0 ? form.getTotalEstimatedMinutes() : 60;
-        List<Mechanic> team = form.getSelectedMechanics();   // the mechanics picked in the field
-        Mechanic m = form.getSelectedMechanic();
+        int duration = source.getTotalEstimatedMinutes() > 0 ? source.getTotalEstimatedMinutes() : 60;
+        List<Mechanic> team = source.getSelectedMechanics();   // the mechanics picked in the field
+        Mechanic m = source.getSelectedMechanic();
         LocalDate current = datePicker.getValue();
         if (current == null || !BookingAvailability.hasAvailableSlotOnDate(garage, m, team, current, duration, excludeId)) {
         LocalDate check = LocalDate.now().plusDays(1);
@@ -109,17 +109,17 @@ class BookingScheduleField {
 
         Function<LocalTime, Boolean> isBusyFunc = time -> {
         if (time == null) return false;
-        int duration = form.getTotalEstimatedMinutes() > 0 ? form.getTotalEstimatedMinutes() : 60;
+        int duration = source.getTotalEstimatedMinutes() > 0 ? source.getTotalEstimatedMinutes() : 60;
         LocalTime end = time.plusMinutes(duration);
         if (end.isAfter(BookingAvailability.CLOSING_TIME)) {
         return true;
         }
         LocalDate d = datePicker.getValue();
-        List<Mechanic> team = form.getSelectedMechanics();   // the mechanics picked in the field
+        List<Mechanic> team = source.getSelectedMechanics();   // the mechanics picked in the field
         if (team != null && !team.isEmpty()) {
         return BookingAvailability.isTeamBooked(garage, team, d, time, end, excludeId);
         }
-        Mechanic m = form.getSelectedMechanic();
+        Mechanic m = source.getSelectedMechanic();
         return BookingAvailability.isRangeBooked(garage, m, d, time, end, excludeId);
         };
 
@@ -139,7 +139,7 @@ class BookingScheduleField {
 
         Runnable updateDuration = () -> {
         LocalTime start = startTimeBox.getValue();
-        int totalMin = form.getTotalEstimatedMinutes();
+        int totalMin = source.getTotalEstimatedMinutes();
         if (start != null && totalMin > 0) {
         LocalTime end = start.plusMinutes(totalMin);
         if (end.isAfter(BookingAvailability.CLOSING_TIME)) {
@@ -164,7 +164,7 @@ class BookingScheduleField {
         };
 
         Runnable refreshTimeBox = () -> {
-        int duration = form.getTotalEstimatedMinutes() > 0 ? form.getTotalEstimatedMinutes() : 60;
+        int duration = source.getTotalEstimatedMinutes() > 0 ? source.getTotalEstimatedMinutes() : 60;
         // Only the times that can be booked: those that fit before closing and are free for the
         // picked mechanic. Busy times are not shown at all, and if none are left the field is locked.
         List<LocalTime> freeTimes = new ArrayList<LocalTime>();
@@ -201,10 +201,12 @@ class BookingScheduleField {
 
         // Wire up the listeners
         this.datePicker.valueProperty().addListener((obs, o, n) -> refreshTimeBox.run());
+        if (mechanicBox != null) {
         mechanicBox.valueProperty().addListener((obs, o, n) -> {
         setupDatePickerCells.run();
         refreshTimeBox.run();
         });
+        }
         this.startTimeBox.valueProperty().addListener((obs, o, n) -> updateDuration.run());
         this.setupDatePickerCells = setupDatePickerCells;
         this.ensureValidDate = ensureValidDate;
@@ -213,17 +215,17 @@ class BookingScheduleField {
         this.calendarHintLabel = calendarHintLabel;
     }
 
-    DatePicker getDatePicker() { return datePicker; }
+    public DatePicker getDatePicker() { return datePicker; }
 
-    ComboBox<LocalTime> getStartTimeBox() { return startTimeBox; }
+    public ComboBox<LocalTime> getStartTimeBox() { return startTimeBox; }
 
-    Label getDurationLabel() { return durationLabel; }
+    public Label getDurationLabel() { return durationLabel; }
 
-    Node getCalendarNode() { return calendarNode; }
+    public Node getCalendarNode() { return calendarNode; }
 
-    Label getDateHeader() { return dateHeaderLabel; }
+    public Label getDateHeader() { return dateHeaderLabel; }
 
-    Label getCalendarHint() { return calendarHintLabel; }
+    public Label getCalendarHint() { return calendarHintLabel; }
 
     /** Picks the first free time, otherwise 08:00. */
     private void selectFirstAvailableTime(List<LocalTime> timeOptions, Function<LocalTime, Boolean> isBusyFunc) {
@@ -249,7 +251,7 @@ class BookingScheduleField {
     }
 
     /** Re-reads the days, the date and the times. */
-    void refresh() {
+    public void refresh() {
         setupDatePickerCells.run();
         ensureValidDate.run();
         refreshTimeBox.run();

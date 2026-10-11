@@ -1,6 +1,5 @@
 package com.wac.autocore.ui.components;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,12 +16,12 @@ class BookingDayCell extends DateCell {
 
     private final GarageSystem garage;
     private final int excludeId;
-    private final BookingFormPane form;
+    private final ScheduleSource source;
 
-    BookingDayCell(GarageSystem garage, int excludeId, BookingFormPane form) {
+    BookingDayCell(GarageSystem garage, int excludeId, ScheduleSource source) {
         this.garage = garage;
         this.excludeId = excludeId;
-        this.form = form;
+        this.source = source;
     }
 
     @Override
@@ -31,26 +30,16 @@ class BookingDayCell extends DateCell {
         if (empty || date == null) {
             return;
         }
-        if (date.isBefore(LocalDate.now())) {
-            unbookable("-fx-background-color: #f1f5f9; -fx-text-fill: #94a3b8; -fx-opacity: 0.45;",
-                    "dialog.booking.date_past");
-            return;
-        }
-        if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            unbookable("-fx-background-color: #f1f5f9; -fx-text-fill: #94a3b8; -fx-opacity: 0.45;",
-                    "dialog.booking.date_weekend");
-            return;
-        }
-        int duration = form.getTotalEstimatedMinutes() > 0 ? form.getTotalEstimatedMinutes() : 60;
-        if (duration > BookingAvailability.MAX_WORK_MINUTES_PER_DAY) {
-            unbookable("-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-opacity: 0.50;",
-                    "dialog.booking.duration_too_long");
-            return;
-        }
-        List<Mechanic> team = form.getSelectedMechanics();   // the mechanics picked in the field
-        if (!BookingAvailability.hasAvailableSlotOnDate(garage, form.getSelectedMechanic(), team, date, duration, excludeId)) {
-            unbookable("-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-opacity: 0.50;",
-                    "dialog.booking.date_fully_booked");
+        int duration = source.getTotalEstimatedMinutes() > 0 ? source.getTotalEstimatedMinutes() : 60;
+        List<Mechanic> team = source.getSelectedMechanics();   // the mechanics picked in the field
+        String reason = BookingAvailability.unbookableReason(garage, date, source.getSelectedMechanic(), team,
+                duration, excludeId);
+        if (reason != null) {
+            boolean tooLong = "dialog.booking.duration_too_long".equals(reason)
+                    || "dialog.booking.date_fully_booked".equals(reason);
+            unbookable(tooLong
+                    ? "-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-opacity: 0.50;"
+                    : "-fx-background-color: #f1f5f9; -fx-text-fill: #94a3b8; -fx-opacity: 0.45;", reason);
             return;
         }
         setDisable(false);

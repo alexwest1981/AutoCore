@@ -282,9 +282,10 @@ public class GarageSystem {
     }
 
     public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
-            List<Integer> serviceItemIds, String plannedDate, String customerInstructions, String otherComments) {
+            List<Integer> serviceItemIds, String plannedDate, String plannedTime, String customerInstructions,
+            String otherComments) {
         return workOrderService.updateDraft(workOrderId, vehicleId, description, mechanicId, serviceItemIds,
-                plannedDate, customerInstructions, otherComments);
+                plannedDate, plannedTime, customerInstructions, otherComments);
     }
 
     /** Drop-in with no booked time: the booking row is created first, in the same sweep, so that

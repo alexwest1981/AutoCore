@@ -27,6 +27,7 @@ public class WorkOrder {
     private final Map<Integer, String> servicePackages = new LinkedHashMap<Integer, String>();
     private String status;
     private String plannedDate;
+    private String plannedTime;
     private String customerInstructions;
     private String otherComments;
     private String type;
@@ -124,6 +125,15 @@ public class WorkOrder {
 
     public void setPlannedDate(String plannedDate) {
         this.plannedDate = plannedDate;
+    }
+
+    /** The planned hour on a draft, as text, empty when the plan is a day without a time. */
+    public String getPlannedTime() {
+        return plannedTime;
+    }
+
+    public void setPlannedTime(String plannedTime) {
+        this.plannedTime = plannedTime;
     }
 
     public String getCustomerInstructions() {
