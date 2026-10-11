@@ -333,6 +333,19 @@ public class WorkOrderService {
             saveBooking(booking);
         }
 
+        // The price is frozen when the work starts, not when it is finished. A price change
+        // while the job is running must not reach this order.
+        Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
+        for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+            if (!priser.containsKey(serviceItemId)) {
+                ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
+                if (serviceItem != null) {
+                    priser.put(serviceItemId, Double.valueOf(serviceItem.getPrice()));
+                }
+            }
+        }
+        workOrder.setCompletedServicePrices(priser);
+
         workOrder.setStatus("IN_PROGRESS");
         saveWorkOrder(workOrder);
 
