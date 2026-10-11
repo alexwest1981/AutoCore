@@ -1,6 +1,7 @@
 package com.wac.autocore.ui;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,7 +13,10 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.components.BookingFormLayout;
+import com.wac.autocore.ui.components.BookingScheduleField;
 import com.wac.autocore.ui.components.MultiSelectComboBox;
+import com.wac.autocore.ui.components.ScheduleSource;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
@@ -21,7 +25,6 @@ import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -58,9 +61,41 @@ final class EditDraftDialog {
         MultiSelectComboBox<ServiceItem> serviceBox = createServiceBox(garage, workOrder);
         MultiSelectComboBox<Mechanic> mechanicBox = createMechanicBox(garage, workOrder);
         Label mechanicHint = createMechanicHint();
-        DatePicker datePicker = createDatePicker(workOrder);
         TextArea instructions = createInstructionsField(workOrder);
         TextArea otherComments = createCommentsField(workOrder);
+
+        // The plan uses the booking form's own schedule field, so the calendar, the date line, the
+        // hint and the time list behave the same in both places. Only the skin's calendar node goes
+        // into the layout: putting the date picker itself there makes JavaFX build a second skin and
+        // the form dies with "duplicate children added" (the same trap BookingFormLayout warns about).
+        final ScheduleSource source = new ScheduleSource() {
+            @Override
+            public int getTotalEstimatedMinutes() {
+                int minutes = 0;
+                for (ServiceItem service : serviceBox.getSelectedItems()) {
+                    minutes += service.getEstimatedMinutes();
+                }
+                return minutes;
+            }
+
+            @Override
+            public Mechanic getSelectedMechanic() {
+                List<Mechanic> chosen = mechanicBox.getSelectedItems();
+                return chosen.isEmpty() ? null : chosen.get(0);
+            }
+
+            @Override
+            public List<Mechanic> getSelectedMechanics() {
+                return mechanicBox.getSelectedItems();
+            }
+        };
+        BookingScheduleField schedule = new BookingScheduleField(garage, source, null, 0, null,
+                plannedDateOf(workOrder));
+        if (workOrder.getPlannedTime() != null && !workOrder.getPlannedTime().isEmpty()) {
+            schedule.getStartTimeBox().setValue(LocalTime.parse(workOrder.getPlannedTime()));
+        }
+        // The field draws nothing by itself: the booking form calls this once after it is built too.
+        schedule.refresh();
 
         // The team follows the services only when the user changes them, not when the dialog opens.
         serviceBox.getSelectedItems().addListener((ListChangeListener<ServiceItem>) change ->
@@ -68,6 +103,10 @@ final class EditDraftDialog {
 
         mechanicBox.getSelectedItems().addListener((ListChangeListener<Mechanic>) change ->
                 updateHint(garage, serviceBox.getSelectedItems(), mechanicBox, mechanicHint));
+
+        // The days and the times follow the services and the team, the same way the booking form does.
+        serviceBox.getSelectedItems().addListener((ListChangeListener<ServiceItem>) change -> schedule.refresh());
+        mechanicBox.getSelectedItems().addListener((ListChangeListener<Mechanic>) change -> schedule.refresh());
 
         GridPane grid = ActionDialogs.createGrid();
         // The grid inherits 480 from the helper, the field column only gets room once the ceiling is raised.
@@ -81,8 +120,13 @@ final class EditDraftDialog {
         grid.add(new Label(I18n.get("table.col.mechanic") + ":"), 0, 3);
         grid.add(mechanicBox, 1, 3);
         grid.add(mechanicHint, 1, 4);
-        grid.add(new Label(I18n.get("dialog.draft.planned_date") + ":"), 0, 5);
-        grid.add(datePicker, 1, 5);
+        // The block is the booking form's own, so both dialogs place the calendar and the time the
+        // same way. The draft has no packages card, so the time takes the second column.
+        Label dateTimeLabel = new Label(I18n.get("dialog.booking.date_and_time") + ":");
+        GridPane.setValignment(dateTimeLabel, javafx.geometry.VPos.TOP);
+        dateTimeLabel.setPadding(new Insets(6, 0, 0, 0));
+        grid.add(dateTimeLabel, 0, 5);
+        grid.add(BookingFormLayout.dateTimeBlock(schedule, null), 1, 5);
         grid.add(new Label(I18n.get("dialog.draft.customer_instructions") + ":"), 0, 6);
         grid.add(instructions, 1, 6);
         grid.add(new Label(I18n.get("dialog.draft.other_comments") + ":"), 0, 7);
@@ -119,7 +163,7 @@ final class EditDraftDialog {
                 WorkOrder saved;
                 if (first) {
                     saved = saveDraft(garage, workOrder.getId(), vehicle, entry.getKey().intValue(), serviceIds,
-                            datePicker, description, instructions, otherComments);
+                            schedule, description, instructions, otherComments);
                     first = false;
                 } else {
                     WorkOrder created = garage.createDraft(vehicle.getId(), description.getText());
@@ -127,7 +171,7 @@ final class EditDraftDialog {
                         saved = null;
                     } else {
                         saved = saveDraft(garage, created.getId(), vehicle, entry.getKey().intValue(), serviceIds,
-                                datePicker, description, instructions, otherComments);
+                                schedule, description, instructions, otherComments);
                     }
                 }
 
@@ -224,17 +268,6 @@ final class EditDraftDialog {
         return description;
     }
 
-    private static DatePicker createDatePicker(WorkOrder workOrder) {
-
-        DatePicker datePicker = new DatePicker();
-        datePicker.setMaxWidth(Double.MAX_VALUE);
-
-        if (workOrder.getPlannedDate() != null && !workOrder.getPlannedDate().isEmpty()) {
-            datePicker.setValue(LocalDate.parse(workOrder.getPlannedDate()));
-        }
-        return datePicker;
-    }
-
     private static TextArea createInstructionsField(WorkOrder workOrder) {
 
         TextArea instructions = new TextArea();
@@ -307,10 +340,21 @@ final class EditDraftDialog {
 
     /** Saves a draft with one mechanic's services. The same field values for every order. */
     private static WorkOrder saveDraft(GarageSystem garage, int workOrderId, Vehicle vehicle, int mechanicId,
-            List<Integer> serviceIds, DatePicker datePicker, TextArea description, TextArea instructions,
+            List<Integer> serviceIds, BookingScheduleField schedule, TextArea description, TextArea instructions,
             TextArea otherComments) {
+        LocalDate date = schedule.getDatePicker().getValue();
+        LocalTime time = schedule.getStartTimeBox().getValue();
         return garage.updateDraft(workOrderId, vehicle.getId(), description.getText(), mechanicId, serviceIds,
-                datePicker.getValue() == null ? null : datePicker.getValue().toString(),
+                date == null ? null : date.toString(),
+                time == null ? null : time.toString(),
                 instructions.getText(), otherComments.getText());
+    }
+
+    /** The date the draft is planned for, or null so the calendar picks the first bookable day. */
+    private static LocalDate plannedDateOf(WorkOrder workOrder) {
+        if (workOrder.getPlannedDate() == null || workOrder.getPlannedDate().isEmpty()) {
+            return null;
+        }
+        return LocalDate.parse(workOrder.getPlannedDate());
     }
 }

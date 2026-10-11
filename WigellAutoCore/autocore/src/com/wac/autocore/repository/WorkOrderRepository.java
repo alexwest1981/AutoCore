@@ -16,7 +16,7 @@ import java.util.Map;
 public class WorkOrderRepository {
 
     private static final String COLUMNS = "id, booking_id, mechanic_id, status, type, vehicle_id, description, "
-            + "original_work_order_id, planned_date, customer_instructions, other_comments";
+            + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments";
 
     public void save(WorkOrder workOrder) throws SQLException {
         if (workOrder.getId() == 0 || findById(workOrder.getId()) == null) {
@@ -54,8 +54,8 @@ public class WorkOrderRepository {
 
     private void insert(WorkOrder workOrder) throws SQLException {
         String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, "
-                + "original_work_order_id, planned_date, customer_instructions, other_comments) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         int id = Queries.insert(sql, statement -> {
             statement.setInt(1, workOrder.getBookingId());
@@ -66,8 +66,9 @@ public class WorkOrderRepository {
             statement.setString(6, workOrder.getDescription());
             statement.setInt(7, workOrder.getOriginalWorkOrderId());
             statement.setString(8, workOrder.getPlannedDate());
-            statement.setString(9, workOrder.getCustomerInstructions());
-            statement.setString(10, workOrder.getOtherComments());
+            statement.setString(9, workOrder.getPlannedTime());
+            statement.setString(10, workOrder.getCustomerInstructions());
+            statement.setString(11, workOrder.getOtherComments());
         });
 
         if (id > 0) {
@@ -77,8 +78,8 @@ public class WorkOrderRepository {
 
     private void update(WorkOrder workOrder) throws SQLException {
         String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, "
-                + "description = ?, original_work_order_id = ?, planned_date = ?, customer_instructions = ?, "
-                + "other_comments = ? WHERE id = ?";
+                + "description = ?, original_work_order_id = ?, planned_date = ?, planned_time = ?, "
+                + "customer_instructions = ?, other_comments = ? WHERE id = ?";
 
         Queries.write(sql, statement -> {
             statement.setInt(1, workOrder.getBookingId());
@@ -89,9 +90,10 @@ public class WorkOrderRepository {
             statement.setString(6, workOrder.getDescription());
             statement.setInt(7, workOrder.getOriginalWorkOrderId());
             statement.setString(8, workOrder.getPlannedDate());
-            statement.setString(9, workOrder.getCustomerInstructions());
-            statement.setString(10, workOrder.getOtherComments());
-            statement.setInt(11, workOrder.getId());
+            statement.setString(9, workOrder.getPlannedTime());
+            statement.setString(10, workOrder.getCustomerInstructions());
+            statement.setString(11, workOrder.getOtherComments());
+            statement.setInt(12, workOrder.getId());
         });
     }
 
@@ -190,6 +192,7 @@ public class WorkOrderRepository {
 
         workOrder.setOriginalWorkOrderId(resultSet.getInt("original_work_order_id"));
         workOrder.setPlannedDate(resultSet.getString("planned_date"));
+        workOrder.setPlannedTime(resultSet.getString("planned_time"));
         workOrder.setCustomerInstructions(resultSet.getString("customer_instructions"));
         workOrder.setOtherComments(resultSet.getString("other_comments"));
 

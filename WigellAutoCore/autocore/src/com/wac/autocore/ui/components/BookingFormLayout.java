@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
@@ -26,7 +27,7 @@ import java.time.LocalTime;
  * Vehicle -> Service package -> Services -> Mechanic -> Date & Time -> Description -> Status.
  * In drop-in mode Date & Time is swapped for the time the service works out.
  */
-class BookingFormLayout {
+public class BookingFormLayout {
 
     private final GridPane grid;
     private final boolean dropIn;
@@ -41,7 +42,7 @@ class BookingFormLayout {
                 MultiSelectComboBox<ServiceItem> serviceMulti,
                 MultiSelectComboBox<Mechanic> mechanicMulti, Label mechanicFilterHint,
                 BookingScheduleField scheduleField,
-                DatePicker datePicker, ComboBox<LocalTime> startTimeBox, Label durationLabel,
+                DatePicker datePicker, ComboBox<LocalTime> startTimeBox,
                 TextField descField, ComboBox<String> statusBox, Label dropInTimeLabel,
                 BookingServicesField servicesField,
                 boolean isServicesLocked) {
@@ -100,10 +101,6 @@ class BookingFormLayout {
             dateTimeLbl.setPadding(new Insets(6, 0, 0, 0));
             grid.add(dateTimeLbl, 0, rowIdx);
 
-            VBox calCol = new VBox(10, scheduleField.getDateHeader(), scheduleField.getCalendarHint(), scheduleField.getCalendarNode());
-            calCol.setAlignment(Pos.TOP_LEFT);
-            calCol.getStyleClass().add("booking-card");
-
             // What the booking holds, grouped by package, with time and price per service.
             Label contentsTitle = new Label(I18n.get("dialog.booking.packages_and_services"));
             contentsTitle.getStyleClass().add("booking-card-title");
@@ -114,39 +111,10 @@ class BookingFormLayout {
             VBox.setVgrow(servicesField.getScroll(), Priority.ALWAYS);
             contentsCol.getStyleClass().add("booking-card");
 
-            // Half each, so the two cards end up the same width whatever the calendar asks for.
-            GridPane cards = new GridPane();
-            cards.setHgap(16);
-            ColumnConstraints calendarHalf = new ColumnConstraints();
-            calendarHalf.setPercentWidth(50);
-            ColumnConstraints contentsHalf = new ColumnConstraints();
-            contentsHalf.setPercentWidth(50);
-            cards.getColumnConstraints().addAll(calendarHalf, contentsHalf);
-            // The row is as tall as the calendar, and the contents card is stretched to match it,
-            // so the two cards end level.
-            GridPane.setFillHeight(calCol, false);
-            GridPane.setValignment(calCol, VPos.TOP);
-            cards.add(calCol, 0, 0);
-            cards.add(contentsCol, 1, 0);
-
-            // The start time runs underneath both cards and takes the full width.
-            Label timeTitle = new Label(I18n.get("dialog.booking.time_select") + ":");
-            timeTitle.getStyleClass().add("booking-card-title");
-            Label timeHint = new Label(I18n.get("dialog.booking.only_free_times"));
-            timeHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
-            timeHint.setWrapText(true);
-            startTimeBox.setMaxWidth(Double.MAX_VALUE);
-            VBox timeCol = new VBox(8, timeTitle, startTimeBox, timeHint, durationLabel);
-            timeCol.setAlignment(Pos.CENTER_LEFT);
-            timeCol.getStyleClass().add("booking-card");
-
-            VBox dateTimeCol = new VBox(12, cards, timeCol);
-            dateTimeCol.setAlignment(Pos.TOP_LEFT);
-
-            // The date picker itself is not put into the layout: the calendar above is built from
-            // a skin of its own, and putting the control into the scene anyway makes JavaFX create
-            // a second skin — then DatePickerSkin throws "duplicate children added" and the form dies on click.
-            GridPane.setHgrow(dateTimeCol, Priority.ALWAYS);
+            // The date picker itself is not put into the layout: the calendar is built from a skin of
+            // its own, and putting the control into the scene makes JavaFX create a second skin, then
+            // DatePickerSkin throws "duplicate children added" and the form dies on click.
+            VBox dateTimeCol = dateTimeBlock(scheduleField, contentsCol);
             grid.add(dateTimeCol, 1, rowIdx++);
         } else {
             // The customer should see when the car starts and when it is done before the booking is approved.
@@ -175,5 +143,53 @@ class BookingFormLayout {
             GridPane.setHgrow(statusBox, Priority.ALWAYS);
             grid.add(statusBox, 1, rowIdx++);
         }
+    }
+
+    /**
+     * The date and time block: the calendar, whatever goes beside it, and the start time. With no
+     * second card the start time takes that place, so the row keeps its two columns.
+     */
+    public static VBox dateTimeBlock(BookingScheduleField scheduleField, Node secondCard) {
+        VBox calendarCol = new VBox(10, scheduleField.getDateHeader(), scheduleField.getCalendarHint(),
+                scheduleField.getCalendarNode());
+        calendarCol.setAlignment(Pos.TOP_LEFT);
+        calendarCol.getStyleClass().add("booking-card");
+
+        Label timeTitle = new Label(I18n.get("dialog.booking.time_select") + ":");
+        timeTitle.getStyleClass().add("booking-card-title");
+        Label timeHint = new Label(I18n.get("dialog.booking.only_free_times"));
+        timeHint.setStyle("-fx-font-size: 11px; -fx-text-fill: -wac-muted;");
+        timeHint.setWrapText(true);
+        scheduleField.getStartTimeBox().setMaxWidth(Double.MAX_VALUE);
+        VBox timeCol = new VBox(8, timeTitle, scheduleField.getStartTimeBox(), timeHint,
+                scheduleField.getDurationLabel());
+        timeCol.setAlignment(Pos.CENTER_LEFT);
+        timeCol.getStyleClass().add("booking-card");
+
+        // Half each, so the columns end up the same width whatever the calendar asks for.
+        GridPane halves = new GridPane();
+        halves.setHgap(16);
+        ColumnConstraints leftHalf = new ColumnConstraints();
+        leftHalf.setPercentWidth(50);
+        ColumnConstraints rightHalf = new ColumnConstraints();
+        rightHalf.setPercentWidth(50);
+        halves.getColumnConstraints().addAll(leftHalf, rightHalf);
+        GridPane.setFillHeight(calendarCol, false);
+        GridPane.setValignment(calendarCol, VPos.TOP);
+        halves.add(calendarCol, 0, 0);
+
+        VBox body;
+        if (secondCard == null) {
+            GridPane.setFillHeight(timeCol, false);
+            GridPane.setValignment(timeCol, VPos.TOP);
+            halves.add(timeCol, 1, 0);
+            body = new VBox(halves);
+        } else {
+            halves.add(secondCard, 1, 0);
+            body = new VBox(12, halves, timeCol);
+        }
+        body.setAlignment(Pos.TOP_LEFT);
+        GridPane.setHgrow(body, Priority.ALWAYS);
+        return body;
     }
 }

@@ -227,7 +227,8 @@ public class WorkOrderService {
     }
 
     public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
-            List<Integer> serviceItemIds, String plannedDate, String customerInstructions, String otherComments) {
+            List<Integer> serviceItemIds, String plannedDate, String plannedTime, String customerInstructions,
+            String otherComments) {
 
         WorkOrder workOrder = findById(workOrderId);
 
@@ -240,6 +241,7 @@ public class WorkOrderService {
         workOrder.setMechanicId(mechanicId);
         workOrder.setServiceItemIds(serviceItemIds);
         workOrder.setPlannedDate(plannedDate);
+        workOrder.setPlannedTime(plannedTime);
         workOrder.setCustomerInstructions(customerInstructions);
         workOrder.setOtherComments(otherComments);
 

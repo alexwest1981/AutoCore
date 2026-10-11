@@ -83,6 +83,7 @@ public class Db {
                 + "description TEXT, "
                 + "original_work_order_id INTEGER, "
                 + "planned_date TEXT, "
+                + "planned_time TEXT, "
                 + "customer_instructions TEXT, "
                 + "other_comments TEXT)",
 
@@ -179,6 +180,7 @@ public class Db {
 
             // The planned date on a draft, which has no booking yet to borrow a date from.
             addColumn(statement, "ALTER TABLE work_orders ADD COLUMN planned_date TEXT");
+            addColumn(statement, "ALTER TABLE work_orders ADD COLUMN planned_time TEXT");
 
             // The customer's instructions, filled in when the customer has something to say about the job.
             addColumn(statement, "ALTER TABLE work_orders ADD COLUMN customer_instructions TEXT");
