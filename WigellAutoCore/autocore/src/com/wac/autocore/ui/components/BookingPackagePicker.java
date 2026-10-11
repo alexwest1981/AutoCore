@@ -2,6 +2,7 @@ package com.wac.autocore.ui.components;
 
 import javafx.collections.ListChangeListener;
 
+import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
 import com.wac.autocore.seed.SeedText;
@@ -24,7 +25,7 @@ class BookingPackagePicker {
     private final MultiSelectComboBox<ServicePackage> multi;
     private Runnable onChanged;
 
-    BookingPackagePicker(GarageSystem garage, boolean locked) {
+    BookingPackagePicker(GarageSystem garage, Booking existingBooking, boolean locked) {
 
         this.items = garage.getServicePackages();
 
@@ -34,6 +35,7 @@ class BookingPackagePicker {
 
         multi.setItems(items);
         multi.setKeyProvider(pkg -> pkg.getId());
+        loadExistingPackages(existingBooking);
 
         multi.getSelectedItems().addListener((ListChangeListener<ServicePackage>) c -> {
 
@@ -44,6 +46,26 @@ class BookingPackagePicker {
 
         if (locked || items.isEmpty()) {
             multi.setDisable(true);
+        }
+    }
+
+    /** A booking that was made from packages gets them picked again, so an edit shows the same
+     *  grouping it had when it was created. */
+    private void loadExistingPackages(Booking existingBooking) {
+        if (existingBooking == null) {
+            return;
+        }
+        for (ServiceItem item : existingBooking.getServiceItems()) {
+            String name = existingBooking.getServicePackageName(item.getId());
+            if (name == null) {
+                continue;
+            }
+            for (ServicePackage pkg : items) {
+                if (name.equals(SeedText.resolve(pkg.getName())) || name.equals(pkg.getName())) {
+                    multi.addSelectedItem(pkg);
+                    break;
+                }
+            }
         }
     }
 
