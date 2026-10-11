@@ -125,7 +125,7 @@ public class BookingFormPane extends GridPane {
         this.vehicleBox = new BookingVehicleField(garage, existingBooking).getBox();
         this.servicesField = new BookingServicesField(this, isServicesLocked);
         this.serviceMulti = new BookingServicePicker(garage, existingBooking, selectedServices, isServicesLocked).getMulti();
-        this.packagePicker = new BookingPackagePicker(garage, isServicesLocked);
+        this.packagePicker = new BookingPackagePicker(garage, existingBooking, isServicesLocked);
         this.packagePicker.setOnChanged(this::packagePicked);
 
         this.mechanics = new BookingMechanicsField(garage, this);
@@ -153,6 +153,8 @@ public class BookingFormPane extends GridPane {
         // First run
         servicesField.render();
         mechanics.update();
+        // The packages are back before the listener is set, so their services are blocked here.
+        packagePicked();
         scheduleField.refreshDate();
 
         // A drop-in is recognized by its description, so it stays and cannot be written over.
