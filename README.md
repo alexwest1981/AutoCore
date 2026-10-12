@@ -6,9 +6,12 @@ Ett verkstadssystem för Wigell Group. Kunder, fordon, bokningar, arbetsordrar, 
 
 - Kunder och fordon, med ägarkoppling.
 - Bokningar med en eller flera tjänster, tidsberäkning och skydd mot överlapp.
+- Servicepaket: färdiga buntar av tjänster att utgå från i en bokning.
 - Mekaniker med specialisering, schema och belastning.
 - Tjänstekatalog med pris och beräknad tid.
-- Arbetsordrar med statusflöde från skapad till klar.
+- Arbetsordrar i tre typer: standard, reklamation och internt arbete.
+- Arbetsordrar som utkast, att fylla på efter hand, och drop-in utan bokning.
+- Arbetsordrar med statusflöde från skapad till klar, och spärrar mot orimliga byten.
 - Fakturor med flera rader, rabatt och moms.
 - Betalning via kort, Swish eller kontant.
 
@@ -20,37 +23,31 @@ Siffrorna i menyn visar vad som väntar på hantering. Bilden är ett exempel.
 
 ## Bygg och kör
 
-Projektet använder Java 8 med JavaFX. Starta appen med `./start.sh`, eller kör
-`Main.java` från IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
-```bash
-git checkout din-gren
-git merge develop
-```
+Projektet använder Java 8 med JavaFX. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
 
 ### Får du "No suitable driver found for jdbc:sqlite"?
 
 Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder att IntelliJ kör en gammal projektmodell: välj **File → Reload All from Disk**, eller stäng och öppna projektet. Går det inte, lägg till `WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar` under **File → Project Structure → Modules → Dependencies**. `./start.sh` behöver inget av det.
 
-Körningen behöver en bildskärm. Saknas den, sätt `GDK_BACKEND=x11` och en `DISPLAY`, annars stannar JavaFX.
+Körningen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv, eftersom JavaFX 8 annars kraschar i GTK.
 
 ## Arkitektur
 
 ```
 WigellAutoCore/autocore/
 ├── lib/            sqlite-jdbc, json
-├── src/
-│   ├── Main.java           JavaFX-appen
-│   ├── ConsoleApp.java     Konsolversionen
-│   └── com/wac/autocore/
-│       ├── data/           Databasen och demodata
-│       ├── model/          Domänmodeller
-│       ├── repository/     Läsning och skrivning mot SQLite
-│       ├── service/        Affärslogik, GarageSystem som fasad
-│       ├── seed/           Ordlista för demodata, svenska och engelska
-│       └── ui/             Gränssnittet: dialoger, vyer, komponenter,
-│                           i18n och teman
-└── resources/
-    └── com/wac/autocore/
+└── src/
+    ├── Main.java           JavaFX-appen
+    ├── ConsoleApp.java     Konsolversionen
+    ├── com/wac/autocore/
+    │   ├── data/           Databasen och demodata
+    │   ├── model/          Domänmodeller
+    │   ├── repository/     Läsning och skrivning mot SQLite
+    │   ├── service/        Affärslogik, GarageSystem som fasad
+    │   ├── seed/           Ordlista för demodata, svenska och engelska
+    │   └── ui/             Gränssnittet: dialoger, vyer, komponenter,
+    │                       i18n och teman
+    └── resources/com/wac/autocore/
         ├── i18n/           sv.json och en.json
         ├── seed/           Demodata per språk
         └── theme/          CSS och temat Emerald
@@ -64,15 +61,33 @@ En bokning registreras som `BOOKED` och skapar ingen arbetsorder. Arbetsordern s
 
 Bokningsdialogen visar lediga och upptagna timmar per mekaniker. Tjänsternas tider summeras, så en bokning som sträcker sig över flera timmar kan inte läggas ovanpå en annan. Avbokar du en bokning frigörs tiderna direkt.
 
+![Schemalägg bokning](WigellAutoCore/docs/autocore-booking-dialog.png)
+
+Paket, lediga tider och beräknad arbetstid i samma dialog.
+
+Ett servicepaket är en färdig bunt av tjänster. Väljer man ett paket i bokningen läggs tjänsterna in som bokningens egna, så att paketet kan ändras senare utan att gamla bokningar påverkas.
+
+En arbetsorder har en typ: standard, reklamation eller internt arbete. En reklamation skapas ur en slutförd order och pekar tillbaka på den, och kunden debiteras normalt inte. En order som ännu inte är klar kan ligga som utkast — fordon och beskrivning räcker — och fyllas på med tjänster, mekaniker och planerat datum efter hand. En drop-in skapas direkt, utan bokning.
+
+![Drop-in](WigellAutoCore/docs/autocore-dropin.png)
+
+Drop-in registreras utan bokning.
+
 Mekanikerns behörighet hänger på en nyckel. Tjänsten anger vilken specialisering den kräver, och en tjänst utan krav kan utföras av alla.
 
 ### Schemat
 
 Översikten har en Kanban-tavla per mekaniker med dag, vecka och månad. Dagen visar nio timmar mellan 07:00 och 16:00, lediga timmar går att boka direkt, och ett klick på en bokad timme fäller ut detaljer om fordon, kund och arbetsorder. Veckovyn färgkodar belastningen i fyra steg.
 
+### Fakturering
+
+Fakturan byggs på de tjänster som markerats som utförda, med priset som gällde när arbetet gjordes. Rabatt och moms räknas per rad, och fakturan går att granska innan den skickas.
+
+![Faktura](WigellAutoCore/docs/autocore-invoice.png)
+
 ### Språk
 
-Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord och valutor följer språket. Kvalitetskontrollen kräver att språkfilerna har exakt samma uppsättning nycklar.
+Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord och valutor följer språket.
 
 ## Team
 
