@@ -10,16 +10,14 @@ Ett verkstadssystem för Wigell Group. Kunder, fordon, bokningar, arbetsordrar, 
 - Mekaniker med specialisering, schema och belastning.
 - Tjänstekatalog med pris och beräknad tid.
 - Arbetsordrar i tre typer: standard, reklamation och internt arbete.
-- Arbetsordrar som utkast, att fylla på efter hand, och drop-in utan bokning.
-- Arbetsordrar med statusflöde från skapad till klar, och spärrar mot orimliga byten.
+- Utkast som fylls på efter hand, och drop-in utan bokning.
+- Statusflöde från skapad till klar, med spärrar mot orimliga byten.
 - Fakturor med flera rader, rabatt och moms.
 - Betalning via kort, Swish eller kontant.
 
 ![AutoCore](WigellAutoCore/docs/autocore-overview.png)
 
-Siffrorna i menyn visar vad som väntar på hantering. Bilden är ett exempel.
-
-![Räknare i menyn](WigellAutoCore/docs/autocore-menu-counters.png)
+Siffrorna i menyn visar vad som väntar på hantering.
 
 ## Bygg och kör
 
@@ -63,15 +61,13 @@ Bokningsdialogen visar lediga och upptagna timmar per mekaniker. Tjänsternas ti
 
 ![Schemalägg bokning](WigellAutoCore/docs/autocore-booking-dialog.png)
 
-Paket, lediga tider och beräknad arbetstid i samma dialog.
+Kalendern stryker de dagar och tider som inte går att boka.
 
-Ett servicepaket är en färdig bunt av tjänster. Väljer man ett paket i bokningen läggs tjänsterna in som bokningens egna, så att paketet kan ändras senare utan att gamla bokningar påverkas.
+Ett servicepaket är en färdig bunt av tjänster. Väljer man ett paket i bokningen hamnar paketets tjänster i bokningen som dess egna, och paketet kan ändras efteråt utan att bokningen rörs.
 
-En arbetsorder har en typ: standard, reklamation eller internt arbete. En reklamation skapas ur en slutförd order och pekar tillbaka på den, och kunden debiteras normalt inte. En order som ännu inte är klar kan ligga som utkast — fordon och beskrivning räcker — och fyllas på med tjänster, mekaniker och planerat datum efter hand. En drop-in skapas direkt, utan bokning.
+En arbetsorder har en typ: standard, reklamation eller internt arbete. Reklamationen utgår från en slutförd order och pekar tillbaka på den, och kunden betalar normalt ingenting. Är ordern inte färdig än kan den ligga som utkast med bara fordon och beskrivning, och fyllas på med tjänster, mekaniker och planerat datum efter hand. Drop-in skapas direkt, utan bokning.
 
 ![Drop-in](WigellAutoCore/docs/autocore-dropin.png)
-
-Drop-in registreras utan bokning.
 
 Mekanikerns behörighet hänger på en nyckel. Tjänsten anger vilken specialisering den kräver, och en tjänst utan krav kan utföras av alla.
 
@@ -81,7 +77,7 @@ Mekanikerns behörighet hänger på en nyckel. Tjänsten anger vilken specialise
 
 ### Fakturering
 
-Fakturan byggs på de tjänster som markerats som utförda, med priset som gällde när arbetet gjordes. Rabatt och moms räknas per rad, och fakturan går att granska innan den skickas.
+Fakturan bygger på de tjänster som markerats som utförda, och tar priset som gällde när arbetet gjordes. Rabatt och moms räknas per rad, och den går att granska innan den skickas.
 
 ![Faktura](WigellAutoCore/docs/autocore-invoice.png)
 
