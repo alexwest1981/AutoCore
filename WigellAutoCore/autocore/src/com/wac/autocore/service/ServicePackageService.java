@@ -11,7 +11,11 @@ import java.util.List;
 
 public class ServicePackageService {
 
-    private final ServicePackageRepository packageRepository = new ServicePackageRepository();
+    private final ServicePackageRepository packageRepository;
+
+    public ServicePackageService(ServicePackageRepository packageRepository) {
+        this.packageRepository = packageRepository;
+    }
 
     public List<ServicePackage> getAll() {
         try {

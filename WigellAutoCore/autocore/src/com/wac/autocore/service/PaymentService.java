@@ -14,8 +14,13 @@ import java.util.List;
 /** Registers payments and marks the invoice paid. */
 public class PaymentService {
 
-    private final PaymentRepository paymentRepository = new PaymentRepository();
-    private final InvoiceRepository invoiceRepository = new InvoiceRepository();
+    private final PaymentRepository paymentRepository;
+    private final InvoiceRepository invoiceRepository;
+
+    public PaymentService(PaymentRepository paymentRepository, InvoiceRepository invoiceRepository) {
+        this.paymentRepository = paymentRepository;
+        this.invoiceRepository = invoiceRepository;
+    }
 
     public List<Payment> getAll() {
         try {

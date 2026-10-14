@@ -24,11 +24,23 @@ import java.util.Map;
 /** The work order's life cycle from created to finished. */
 public class WorkOrderService {
 
-    private final WorkOrderRepository workOrderRepository = new WorkOrderRepository();
-    private final BookingRepository bookingRepository = new BookingRepository();
-    private final MechanicRepository mechanicRepository = new MechanicRepository();
-    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
-    private final VehicleRepository vehicleRepository = new VehicleRepository();
+    private final WorkOrderRepository workOrderRepository;
+    private final BookingRepository bookingRepository;
+    private final MechanicRepository mechanicRepository;
+    private final ServiceItemRepository serviceItemRepository;
+    private final VehicleRepository vehicleRepository;
+
+    public WorkOrderService(WorkOrderRepository workOrderRepository,
+                            BookingRepository bookingRepository,
+                            MechanicRepository mechanicRepository,
+                            ServiceItemRepository serviceItemRepository,
+                            VehicleRepository vehicleRepository) {
+        this.workOrderRepository = workOrderRepository;
+        this.bookingRepository = bookingRepository;
+        this.mechanicRepository = mechanicRepository;
+        this.serviceItemRepository = serviceItemRepository;
+        this.vehicleRepository = vehicleRepository;
+    }
 
     public List<WorkOrder> getAll() {
         try {

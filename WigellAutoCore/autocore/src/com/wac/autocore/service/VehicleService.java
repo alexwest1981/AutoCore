@@ -13,14 +13,11 @@ import java.util.List;
 public class VehicleService {
 
     private final CustomerService customerService;
-    private final VehicleRepository vehicleRepository = new VehicleRepository();
+    private final VehicleRepository vehicleRepository;
 
-    public VehicleService() {
-        this(new CustomerService());
-    }
-
-    public VehicleService(CustomerService customerService) {
+    public VehicleService(CustomerService customerService, VehicleRepository vehicleRepository) {
         this.customerService = customerService;
+        this.vehicleRepository = vehicleRepository;
     }
 
     public List<Vehicle> getAll() {

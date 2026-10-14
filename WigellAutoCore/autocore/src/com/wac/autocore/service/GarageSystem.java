@@ -14,9 +14,14 @@ import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.model.ServicePackage;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
+import com.wac.autocore.repository.InvoiceRepository;
 import com.wac.autocore.repository.MechanicRepository;
+import com.wac.autocore.repository.PaymentRepository;
+import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.repository.ServiceItemRepository;
+import com.wac.autocore.repository.ServicePackageRepository;
 import com.wac.autocore.repository.VehicleRepository;
+import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -29,24 +34,48 @@ import java.util.List;
 public class GarageSystem {
 
     private final com.wac.autocore.ui.ConsolePrinter printer = new com.wac.autocore.ui.ConsolePrinter();
-    private final CustomerService customerService = new CustomerService();
-    private final VehicleService vehicleService = new VehicleService(customerService);
-    private final WorkOrderService workOrderService = new WorkOrderService();
-    private final BookingService bookingService = new BookingService(workOrderService);
-    private final BillingService billingService = new BillingService();
-    private final PaymentService paymentService = new PaymentService();
-    private final ServicePackageService servicePackageService = new ServicePackageService();
-    private final MechanicRules mechanicRules = new MechanicRules();
-    private final RemovalRules removalRules = new RemovalRules(
-            workOrderService, bookingService, billingService, vehicleService);
-    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
-    private final MechanicRepository mechanicRepository = new MechanicRepository();
-    private final CustomerRepository customerRepository = new CustomerRepository();
-    private final VehicleRepository vehicleRepository = new VehicleRepository();
-    private final BookingRepository bookingRepository = new BookingRepository();
+    private final CustomerService customerService;
+    private final VehicleService vehicleService;
+    private final WorkOrderService workOrderService;
+    private final BookingService bookingService;
+    private final BillingService billingService;
+    private final PaymentService paymentService;
+    private final ServicePackageService servicePackageService;
+    private final MechanicRules mechanicRules;
+    private final RemovalRules removalRules;
+    private final ServiceItemRepository serviceItemRepository;
+    private final MechanicRepository mechanicRepository;
+    private final CustomerRepository customerRepository;
+    private final VehicleRepository vehicleRepository;
+    private final BookingRepository bookingRepository;
 
-    public GarageSystem() {
+    /** Asks the factory for the repositories once, then hands them to the services in the order they depend on each other. */
+    public GarageSystem(RepositoryFactory repositories) {
         Db.ensureReady();
+
+        customerRepository = repositories.createCustomerRepository();
+        vehicleRepository = repositories.createVehicleRepository();
+        bookingRepository = repositories.createBookingRepository();
+        serviceItemRepository = repositories.createServiceItemRepository();
+        mechanicRepository = repositories.createMechanicRepository();
+
+        WorkOrderRepository workOrderRepository = repositories.createWorkOrderRepository();
+        InvoiceRepository invoiceRepository = repositories.createInvoiceRepository();
+        PaymentRepository paymentRepository = repositories.createPaymentRepository();
+        ServicePackageRepository servicePackageRepository = repositories.createServicePackageRepository();
+
+        mechanicRules = new MechanicRules(mechanicRepository);
+        customerService = new CustomerService(customerRepository);
+        vehicleService = new VehicleService(customerService, vehicleRepository);
+        workOrderService = new WorkOrderService(workOrderRepository, bookingRepository,
+                mechanicRepository, serviceItemRepository, vehicleRepository);
+        bookingService = new BookingService(workOrderService, mechanicRules,
+                bookingRepository, vehicleRepository, serviceItemRepository);
+        billingService = new BillingService(invoiceRepository, workOrderRepository,
+                bookingRepository, vehicleRepository, customerRepository, serviceItemRepository);
+        paymentService = new PaymentService(paymentRepository, invoiceRepository);
+        servicePackageService = new ServicePackageService(servicePackageRepository);
+        removalRules = new RemovalRules(workOrderService, bookingService, billingService, vehicleService);
     }
 
     public List<Customer> getCustomers() {
