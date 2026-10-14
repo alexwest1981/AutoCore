@@ -61,13 +61,13 @@ public class WorkOrderRepository {
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         int id = Queries.insert(sql, statement -> {
-            statement.setInt(1, workOrder.getBookingId());
-            statement.setInt(2, workOrder.getMechanicId());
+            Queries.setReference(statement, 1, workOrder.getBookingId());
+            Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
             statement.setString(4, workOrder.getType());
-            statement.setInt(5, workOrder.getVehicleId());
+            Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
-            statement.setInt(7, workOrder.getOriginalWorkOrderId());
+            Queries.setReference(statement, 7, workOrder.getOriginalWorkOrderId());
             statement.setString(8, workOrder.getPlannedDate());
             statement.setString(9, workOrder.getPlannedTime());
             statement.setString(10, workOrder.getCustomerInstructions());
@@ -85,13 +85,13 @@ public class WorkOrderRepository {
                 + "customer_instructions = ?, other_comments = ? WHERE id = ?";
 
         Queries.write(sql, statement -> {
-            statement.setInt(1, workOrder.getBookingId());
-            statement.setInt(2, workOrder.getMechanicId());
+            Queries.setReference(statement, 1, workOrder.getBookingId());
+            Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
             statement.setString(4, workOrder.getType());
-            statement.setInt(5, workOrder.getVehicleId());
+            Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
-            statement.setInt(7, workOrder.getOriginalWorkOrderId());
+            Queries.setReference(statement, 7, workOrder.getOriginalWorkOrderId());
             statement.setString(8, workOrder.getPlannedDate());
             statement.setString(9, workOrder.getPlannedTime());
             statement.setString(10, workOrder.getCustomerInstructions());

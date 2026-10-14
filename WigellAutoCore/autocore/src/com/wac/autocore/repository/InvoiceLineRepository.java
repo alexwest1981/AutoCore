@@ -30,7 +30,7 @@ public class InvoiceLineRepository {
                 line.setInvoiceId(invoice.getId());
 
                 statement.setInt(1, line.getInvoiceId());
-                statement.setInt(2, line.getServiceItemId());
+                Queries.setReference(statement, 2, line.getServiceItemId());
                 statement.setString(3, line.getServiceName());
                 statement.setDouble(4, line.getPrice());
                 statement.setDouble(5, line.getDiscount());

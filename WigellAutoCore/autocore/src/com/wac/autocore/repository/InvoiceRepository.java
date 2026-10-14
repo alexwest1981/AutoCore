@@ -59,7 +59,7 @@ public class InvoiceRepository {
         try (Connection connection = Db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            statement.setInt(1, invoice.getWorkOrderId());
+            Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setDouble(3, invoice.getAmount());
             statement.setDouble(4, invoice.getDiscount());
@@ -84,7 +84,7 @@ public class InvoiceRepository {
                 + "total_amount = ?, paid = ? WHERE id = ?";
 
         Queries.write(sql, statement -> {
-            statement.setInt(1, invoice.getWorkOrderId());
+            Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setDouble(3, invoice.getAmount());
             statement.setDouble(4, invoice.getDiscount());
