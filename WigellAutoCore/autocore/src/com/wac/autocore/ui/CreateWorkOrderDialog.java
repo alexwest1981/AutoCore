@@ -205,7 +205,7 @@ final class CreateWorkOrderDialog {
                                     .replace("{1}", String.valueOf(plan.size())));
                 }
 
-                com.wac.autocore.service.MechanicSchedule.getInstance().syncFromDatabase();
+                garage.getMechanicSchedule().syncFromDatabase();
                 if (onSuccess != null) onSuccess.run();
             }
         });

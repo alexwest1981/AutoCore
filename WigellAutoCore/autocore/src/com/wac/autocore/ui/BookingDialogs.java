@@ -5,7 +5,6 @@ import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.components.BookingFormPane;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
@@ -137,7 +136,7 @@ public final class BookingDialogs {
                 if (chosenMech != null) {
                     int hour = startTime != null ? startTime.getHour() : (defaultHour != null ? defaultHour : 8);
                     String custName = EntityLookup.customerName(garage, v.getCustomerId());
-                    MechanicSchedule.getInstance().bookSlot(
+                    garage.getMechanicSchedule().bookSlot(
                             chosenMech.getId(), date, hour, b.getId(), 0,
                             custName, v.getRegistrationNumber(), desc
                     );
@@ -197,7 +196,7 @@ public final class BookingDialogs {
                 String status = form.getStatus();
 
                 // Clear any earlier schedule slot for this booking
-                MechanicSchedule.getInstance().cancelSlotForBooking(booking.getId());
+                garage.getMechanicSchedule().cancelSlotForBooking(booking.getId());
 
                 booking.setVehicleId(v.getId());
                 booking.setDate(date);
@@ -238,7 +237,7 @@ public final class BookingDialogs {
                 if (chosenMech != null && !"CANCELLED".equalsIgnoreCase(status)) {
                     int hour = startTime != null ? startTime.getHour() : 8;
                     String custName = EntityLookup.customerName(garage, v.getCustomerId());
-                    MechanicSchedule.getInstance().bookSlot(
+                    garage.getMechanicSchedule().bookSlot(
                             chosenMech.getId(), date, hour, booking.getId(), 0,
                             custName, v.getRegistrationNumber(), desc
                     );

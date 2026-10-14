@@ -151,7 +151,7 @@ class KanbanDayView {
         navBar.setAlignment(Pos.CENTER_LEFT);
         navBar.setPadding(new Insets(0, 0, 8, 0));
 
-        MechanicSchedule schedule = MechanicSchedule.getInstance();
+        MechanicSchedule schedule = card.garage.getMechanicSchedule();
         List<TimeSlot> slots = schedule.getSlotsForDay(mech.getId(), card.selectedDate);
 
         VBox slotList = new VBox(4);
