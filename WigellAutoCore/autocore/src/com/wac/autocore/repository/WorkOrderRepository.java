@@ -2,6 +2,7 @@ package com.wac.autocore.repository;
 
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
+import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.WorkOrder;
 
 import java.sql.Connection;
@@ -19,13 +20,21 @@ public class WorkOrderRepository {
     private static final String COLUMNS = "id, booking_id, mechanic_id, status, type, vehicle_id, description, "
             + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments";
 
-    public void save(WorkOrder workOrder) {
-        if (workOrder.getId() == 0 || findById(workOrder.getId()) == null) {
-            insert(workOrder);
-        } else {
-            update(workOrder);
-        }
-        saveServiceItems(workOrder);
+    public void save(final WorkOrder workOrder) {
+        final boolean isNew = workOrder.getId() == 0 || findById(workOrder.getId()) == null;
+
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                if (isNew) {
+                    insert(connection, workOrder);
+                } else {
+                    update(connection, workOrder);
+                }
+                saveServiceItems(connection, workOrder);
+                return null;
+            }
+        }.run();
     }
 
     public List<WorkOrder> findAll() {
@@ -37,30 +46,27 @@ public class WorkOrderRepository {
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
-    public void delete(int id) {
+    public void delete(final int id) {
         // The service rows point at this work order and nothing else clears them, so both go in one
-        // connection.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement links = connection.prepareStatement(
-                     "DELETE FROM work_order_service_items WHERE work_order_id = ?");
-             PreparedStatement order = connection.prepareStatement("DELETE FROM work_orders WHERE id = ?")) {
-
-            links.setInt(1, id);
-            links.executeUpdate();
-
-            order.setInt(1, id);
-            order.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
-        }
+        // transaction.
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                Queries.write(connection, "DELETE FROM work_order_service_items WHERE work_order_id = ?",
+                        statement -> statement.setInt(1, id));
+                Queries.write(connection, "DELETE FROM work_orders WHERE id = ?",
+                        statement -> statement.setInt(1, id));
+                return null;
+            }
+        }.run();
     }
 
-    private void insert(WorkOrder workOrder) {
+    private void insert(Connection connection, WorkOrder workOrder) throws SQLException {
         String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, "
                 + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        int id = Queries.insert(sql, statement -> {
+        int id = Queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
@@ -79,12 +85,12 @@ public class WorkOrderRepository {
         }
     }
 
-    private void update(WorkOrder workOrder) {
+    private void update(Connection connection, WorkOrder workOrder) throws SQLException {
         String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, "
                 + "description = ?, original_work_order_id = ?, planned_date = ?, planned_time = ?, "
                 + "customer_instructions = ?, other_comments = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
+        Queries.write(connection, sql, statement -> {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus());
@@ -100,14 +106,12 @@ public class WorkOrderRepository {
         });
     }
 
-    private void saveServiceItems(WorkOrder workOrder) {
+    private void saveServiceItems(Connection connection, WorkOrder workOrder) throws SQLException {
         String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
         String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed, price, "
                 + "package_name) VALUES (?, ?, ?, ?, ?)";
 
-        // One connection for the removal and the inserts, so a work order never sits without its rows.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement delete = connection.prepareStatement(deleteLinks);
+        try (PreparedStatement delete = connection.prepareStatement(deleteLinks);
              PreparedStatement insert = connection.prepareStatement(insertLink)) {
 
             delete.setInt(1, workOrder.getId());
@@ -130,8 +134,6 @@ public class WorkOrderRepository {
                 }
                 insert.executeUpdate();
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 

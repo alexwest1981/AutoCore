@@ -53,14 +53,6 @@ public class BookingServiceItemRepository {
         return names;
     }
 
-    public void save(Booking booking) {
-        try (Connection connection = Db.getConnection()) {
-            save(connection, booking);
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
-        }
-    }
-
     /** Saves the services on an open connection, so everything runs in one transaction. */
     public void save(Connection connection, Booking booking) throws SQLException {
         String deleteLinks = "DELETE FROM booking_service_items WHERE booking_id = ?";
