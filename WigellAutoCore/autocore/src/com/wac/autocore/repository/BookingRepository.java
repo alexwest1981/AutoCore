@@ -1,7 +1,6 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.data.Db;
+import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
 
@@ -26,15 +25,23 @@ public class BookingRepository {
     private final BookingServiceItemRepository bookingServiceItemRepository = new BookingServiceItemRepository();
     private final BookingMechanicRepository bookingMechanicRepository = new BookingMechanicRepository();
 
-    public void save(Booking booking) {
-        if (booking.getId() == 0 || findById(booking.getId()) == null) {
-            insert(booking);
-        } else {
-            update(booking);
-        }
-        bookingServiceItemRepository.save(booking);
-        // The mechanics are stored in the same sweep, so a booking with several specialists keeps them.
-        bookingMechanicRepository.saveForBooking(booking.getId(), booking.getMechanicIds());
+    public void save(final Booking booking) {
+        final boolean isNew = booking.getId() == 0 || findById(booking.getId()) == null;
+
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                if (isNew) {
+                    insert(connection, booking);
+                } else {
+                    update(connection, booking);
+                }
+                bookingServiceItemRepository.save(connection, booking);
+                // The mechanics are stored in the same sweep, so a booking with several specialists keeps them.
+                bookingMechanicRepository.saveForBooking(connection, booking.getId(), booking.getMechanicIds());
+                return null;
+            }
+        }.run();
     }
 
     public List<Booking> findAll() {
@@ -46,27 +53,26 @@ public class BookingRepository {
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
-    public void delete(int id) {
+    public void delete(final int id) {
         // The service rows and the mechanic links point at this booking, and nothing else clears
-        // them, so all three go in one connection.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement("DELETE FROM bookings WHERE id = ?")) {
-
-            bookingServiceItemRepository.deleteByBookingId(connection, id);
-            bookingMechanicRepository.deleteByBookingId(connection, id);
-
-            statement.setInt(1, id);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
-        }
+        // them, so all three go in one transaction.
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                bookingServiceItemRepository.deleteByBookingId(connection, id);
+                bookingMechanicRepository.deleteByBookingId(connection, id);
+                Queries.write(connection, "DELETE FROM bookings WHERE id = ?",
+                        statement -> statement.setInt(1, id));
+                return null;
+            }
+        }.run();
     }
 
-    private void insert(Booking booking) {
+    private void insert(Connection connection, Booking booking) throws SQLException {
         String sql = "INSERT INTO bookings (vehicle_id, date, description, status, start_time, "
                 + "end_time, mechanic_id, service_item_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        int id = Queries.insert(sql, statement -> {
+        int id = Queries.insert(connection, sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
@@ -82,11 +88,11 @@ public class BookingRepository {
         }
     }
 
-    private void update(Booking booking) {
+    private void update(Connection connection, Booking booking) throws SQLException {
         String sql = "UPDATE bookings SET vehicle_id = ?, date = ?, description = ?, status = ?, "
                 + "start_time = ?, end_time = ?, mechanic_id = ?, service_item_id = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
+        Queries.write(connection, sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());

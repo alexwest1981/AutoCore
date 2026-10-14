@@ -1,7 +1,6 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.data.Db;
+import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 
@@ -9,7 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.List;
@@ -20,12 +18,20 @@ public class InvoiceRepository {
 
     private static final InvoiceLineRepository invoiceLineRepository = new InvoiceLineRepository();
 
-    public void save(Invoice invoice) {
-        if (invoice.getId() == 0 || findById(invoice.getId()) == null) {
-            insert(invoice);
-        } else {
-            update(invoice);
-        }
+    public void save(final Invoice invoice) {
+        final boolean isNew = invoice.getId() == 0 || findById(invoice.getId()) == null;
+
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                if (isNew) {
+                    insert(connection, invoice);
+                } else {
+                    update(connection, invoice);
+                }
+                return null;
+            }
+        }.run();
     }
 
     public List<Invoice> findAll() {
@@ -37,53 +43,44 @@ public class InvoiceRepository {
                 statement -> statement.setInt(1, id), InvoiceRepository::build);
     }
 
-    public void delete(int id) {
-        // The lines point at this invoice and nothing else clears them, so both go in one connection.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement("DELETE FROM invoices WHERE id = ?")) {
-
-            invoiceLineRepository.deleteByInvoiceId(connection, id);
-
-            statement.setInt(1, id);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
-        }
+    public void delete(final int id) {
+        // The lines point at this invoice and nothing else clears them, so both go in one transaction.
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                invoiceLineRepository.deleteByInvoiceId(connection, id);
+                Queries.write(connection, "DELETE FROM invoices WHERE id = ?",
+                        statement -> statement.setInt(1, id));
+                return null;
+            }
+        }.run();
     }
 
-    private void insert(Invoice invoice) {
+    private void insert(Connection connection, Invoice invoice) throws SQLException {
         String sql = "INSERT INTO invoices (work_order_id, invoice_date, amount, discount, total_amount, paid) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        // The invoice and its lines go in through one connection, so an invoice never sits without them.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
+        int id = Queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setDouble(3, invoice.getAmount());
             statement.setDouble(4, invoice.getDiscount());
             statement.setDouble(5, invoice.getTotalAmount());
             statement.setBoolean(6, invoice.isPaid());
-            statement.executeUpdate();
+        });
 
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    invoice.setId(generatedKeys.getInt(1));
-                }
-            }
-
-            invoiceLineRepository.saveLines(connection, invoice);
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
+        if (id > 0) {
+            invoice.setId(id);
         }
+
+        invoiceLineRepository.saveLines(connection, invoice);
     }
 
-    private void update(Invoice invoice) {
+    private void update(Connection connection, Invoice invoice) throws SQLException {
         String sql = "UPDATE invoices SET work_order_id = ?, invoice_date = ?, amount = ?, discount = ?, "
                 + "total_amount = ?, paid = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
+        Queries.write(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setDouble(3, invoice.getAmount());
