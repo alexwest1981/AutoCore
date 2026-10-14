@@ -2,6 +2,7 @@ package com.wac.autocore.repository;
 
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.exception.DuplicateRegistrationNumberException;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Vehicle;
 
@@ -16,7 +17,7 @@ public class VehicleRepository {
     private static final String COLUMNS = "id, registration_number, brand, model, year, customer_id";
 
     /** Saves the vehicle. The number is already normalized in the model. */
-    public void save(Vehicle vehicle) throws SQLException {
+    public void save(Vehicle vehicle) {
         String registrationNumber = vehicle.getRegistrationNumber();
         if (registrationNumber == null || registrationNumber.trim().isEmpty()) {
             throw new RuleViolationException("Fordonet saknar registreringsnummer.");
@@ -43,20 +44,20 @@ public class VehicleRepository {
         return taken;
     }
 
-    public List<Vehicle> findAll() throws SQLException {
+    public List<Vehicle> findAll() {
         return Queries.read("SELECT " + COLUMNS + " FROM vehicles", VehicleRepository::build);
     }
 
-    public Vehicle findById(int id) throws SQLException {
+    public Vehicle findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM vehicles WHERE id = ?",
                 statement -> statement.setInt(1, id), VehicleRepository::build);
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(int id) {
         Queries.write("DELETE FROM vehicles WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
-    private void insert(Vehicle vehicle) throws SQLException {
+    private void insert(Vehicle vehicle) {
         String sql = "INSERT INTO vehicles (registration_number, brand, model, year, customer_id) VALUES (?, ?, ?, ?, ?)";
 
         // The check and the write share a connection, so the number cannot be taken in between.
@@ -80,10 +81,12 @@ public class VehicleRepository {
                     vehicle.setId(generatedKeys.getInt(1));
                 }
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 
-    private void update(Vehicle vehicle) throws SQLException {
+    private void update(Vehicle vehicle) {
         String sql = "UPDATE vehicles SET registration_number = ?, brand = ?, model = ?, year = ?, customer_id = ? "
                 + "WHERE id = ?";
 
@@ -102,6 +105,8 @@ public class VehicleRepository {
             statement.setInt(5, vehicle.getCustomerId());
             statement.setInt(6, vehicle.getId());
             statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 

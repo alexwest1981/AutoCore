@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.data.Db;
@@ -23,7 +24,6 @@ import com.wac.autocore.repository.ServicePackageRepository;
 import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
@@ -92,7 +92,7 @@ public class GarageSystem {
     public List<ServiceItem> getServiceItems() {
         try {
             return serviceItemRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read service items: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -279,7 +279,7 @@ public class GarageSystem {
 
     public Booking createBooking(int vehicleId,
                                  LocalDate date,
-                                 String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
+                                 String description, LocalTime startTime, int mechanicId, int serviceItemId) {
         return bookingService.createBooking(vehicleId, date, description,
                 startTime, mechanicId, serviceItemId);
     }
@@ -349,20 +349,20 @@ public class GarageSystem {
         return billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
     }
 
-    public Mechanic createMechanic(String name, String phone, String specialization) throws SQLException {
+    public Mechanic createMechanic(String name, String phone, String specialization) {
         refuseUnlessStorableMechanic(name, phone);
         Mechanic mechanic = new Mechanic(0, name, phone, specialization);
         mechanicRepository.save(mechanic);
         return mechanic;
     }
 
-    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes) throws SQLException {
+    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes) {
         return createServiceItem(name, description, price, estimatedMinutes, "");
     }
 
     /** As above, but with the requirement on specialization. */
     public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes,
-                                         String specialization) throws SQLException {
+                                         String specialization) {
         ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
         serviceItemRepository.save(item);
         return item;
@@ -393,15 +393,15 @@ public class GarageSystem {
         return paymentService.processPayment(invoiceId, paymentType);
     }
 
-    public void updateCustomer(Customer customer) throws SQLException {
+    public void updateCustomer(Customer customer) {
         customerService.updateCustomer(customer);
     }
 
-    public void updateVehicle(Vehicle vehicle) throws SQLException {
+    public void updateVehicle(Vehicle vehicle) {
         vehicleRepository.save(vehicle);
     }
 
-    public void updateMechanic(Mechanic mechanic) throws SQLException {
+    public void updateMechanic(Mechanic mechanic) {
         if (mechanic == null) {
             return;
         }
@@ -409,12 +409,12 @@ public class GarageSystem {
         mechanicRepository.save(mechanic);
     }
 
-    public void updateBooking(Booking booking) throws SQLException {
+    public void updateBooking(Booking booking) {
         bookingRepository.save(booking);
         MechanicSchedule.getInstance().syncFromDatabase();
     }
 
-    public void updateServiceItem(ServiceItem item) throws SQLException {
+    public void updateServiceItem(ServiceItem item) {
         serviceItemRepository.save(item);
     }
 
@@ -422,7 +422,7 @@ public class GarageSystem {
         return removalRules.canDeleteMechanic(mechanicId);
     }
 
-    public void deleteMechanic(int mechanicId) throws SQLException {
+    public void deleteMechanic(int mechanicId) {
         refuseUnless(canDeleteMechanic(mechanicId),
                 "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.");
         mechanicRepository.delete(mechanicId);
@@ -433,7 +433,7 @@ public class GarageSystem {
         return removalRules.canDeleteCustomer(customerId);
     }
 
-    public void deleteCustomer(int customerId) throws SQLException {
+    public void deleteCustomer(int customerId) {
         refuseUnless(canDeleteCustomer(customerId),
                 "Kunden kan inte tas bort: ett av kundens fordon har ett fakturerat jobb.");
         for (Vehicle v : getVehicles()) {
@@ -448,7 +448,7 @@ public class GarageSystem {
         return removalRules.canDeleteVehicle(vehicleId);
     }
 
-    public void deleteVehicle(int vehicleId) throws SQLException {
+    public void deleteVehicle(int vehicleId) {
         refuseUnless(canDeleteVehicle(vehicleId),
                 "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.");
         vehicleRepository.delete(vehicleId);
@@ -458,7 +458,7 @@ public class GarageSystem {
         return removalRules.canCancelOrDeleteBooking(bookingId);
     }
 
-    public void cancelBooking(int bookingId) throws SQLException {
+    public void cancelBooking(int bookingId) {
         Booking b = bookingService.findById(bookingId);
         if (b != null) {
             b.setStatus("CANCELLED");
@@ -475,7 +475,7 @@ public class GarageSystem {
         }
     }
 
-    public void deleteBooking(int bookingId) throws SQLException {
+    public void deleteBooking(int bookingId) {
         refuseUnless(canCancelOrDeleteBooking(bookingId),
                 "Bokningen kan inte tas bort: den har en arbetsorder med faktura.");
         bookingRepository.delete(bookingId);
@@ -487,7 +487,7 @@ public class GarageSystem {
         return removalRules.canDeleteServiceItem(serviceItemId);
     }
 
-    public void deleteServiceItem(int serviceItemId) throws SQLException {
+    public void deleteServiceItem(int serviceItemId) {
         refuseUnless(canDeleteServiceItem(serviceItemId),
                 "Tjänsten kan inte tas bort: den ligger i en bokning eller en arbetsorder.");
         serviceItemRepository.delete(serviceItemId);
@@ -508,11 +508,11 @@ public class GarageSystem {
         return servicePackageService.createPackage(name, description, serviceItems);
     }
 
-    public void updateServicePackage(ServicePackage servicePackage) throws SQLException {
+    public void updateServicePackage(ServicePackage servicePackage) {
         servicePackageService.updatePackage(servicePackage);
     }
 
-    public void deleteServicePackage(int id) throws SQLException {
+    public void deleteServicePackage(int id) {
         servicePackageService.deletePackage(id);
     }
 }

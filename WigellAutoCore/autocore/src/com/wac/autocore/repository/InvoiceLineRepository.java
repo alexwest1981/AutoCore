@@ -15,7 +15,7 @@ public class InvoiceLineRepository {
 
     private static final String COLUMNS = "id, invoice_id, service_item_id, service_name, price, discount, package_name";
 
-    public List<InvoiceLine> findByInvoiceId(int invoiceId) throws SQLException {
+    public List<InvoiceLine> findByInvoiceId(int invoiceId) {
         return Queries.read("SELECT " + COLUMNS + " FROM invoice_lines WHERE invoice_id = ? ORDER BY id",
                 statement -> statement.setInt(1, invoiceId), InvoiceLineRepository::build);
     }

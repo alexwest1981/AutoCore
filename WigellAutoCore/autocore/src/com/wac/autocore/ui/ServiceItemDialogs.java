@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
@@ -12,7 +13,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
-import java.sql.SQLException;
 import com.wac.autocore.seed.SeedText;
 
 /** Dialogs for managing services. */
@@ -104,7 +104,7 @@ public final class ServiceItemDialogs {
                 } else {
                     garage.createServiceItem(name, desc, price, time, requirementKey(specBox));
                 }
-            } catch (SQLException e) {
+            } catch (DataAccessException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
             }
@@ -158,7 +158,7 @@ public final class ServiceItemDialogs {
             if (response == ButtonType.OK) {
                 try {
                     garage.deleteServiceItem(serviceItem.getId());
-                } catch (SQLException e) {
+                } catch (DataAccessException e) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                     return;
                 }

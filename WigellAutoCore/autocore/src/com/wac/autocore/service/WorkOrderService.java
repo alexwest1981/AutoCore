@@ -14,7 +14,6 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.repository.VehicleRepository;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -45,7 +44,7 @@ public class WorkOrderService {
     public List<WorkOrder> getAll() {
         try {
             return workOrderRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read work orders: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -54,7 +53,7 @@ public class WorkOrderService {
     public WorkOrder findById(int id) {
         try {
             return workOrderRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read work order " + id, e);
         }
     }
@@ -149,7 +148,7 @@ public class WorkOrderService {
 
         try {
             workOrderRepository.save(workOrder);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save work order: " + e.getMessage());
             return null;
         }
@@ -205,7 +204,7 @@ public class WorkOrderService {
 
         try {
             workOrderRepository.save(reclamation);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save reclamation: " + e.getMessage());
             return null;
         }
@@ -229,7 +228,7 @@ public class WorkOrderService {
 
         try {
             workOrderRepository.save(workOrder);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save draft work order: " + e.getMessage());
             return null;
         }
@@ -259,7 +258,7 @@ public class WorkOrderService {
 
         try {
             workOrderRepository.save(workOrder);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save draft work order: " + e.getMessage());
             return null;
         }
@@ -515,7 +514,7 @@ public class WorkOrderService {
     private Booking findBooking(int id) {
         try {
             return bookingRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read booking " + id, e);
         }
     }
@@ -523,7 +522,7 @@ public class WorkOrderService {
     private Mechanic findMechanic(int id) {
         try {
             return mechanicRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read mechanic " + id, e);
         }
     }
@@ -531,7 +530,7 @@ public class WorkOrderService {
     private ServiceItem findServiceItem(int id) {
         try {
             return serviceItemRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read service item " + id, e);
         }
     }
@@ -539,7 +538,7 @@ public class WorkOrderService {
     private Vehicle findVehicle(int id) {
         try {
             return vehicleRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read vehicle " + id, e);
         }
     }
@@ -547,7 +546,7 @@ public class WorkOrderService {
     private void saveBooking(Booking booking) {
         try {
             bookingRepository.save(booking);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not update booking " + booking.getId() + ": " + e.getMessage());
         }
     }
@@ -555,7 +554,7 @@ public class WorkOrderService {
     private void saveMechanic(Mechanic mechanic) {
         try {
             mechanicRepository.save(mechanic);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not update mechanic " + mechanic.getId() + ": " + e.getMessage());
         }
     }
@@ -563,7 +562,7 @@ public class WorkOrderService {
     private void saveWorkOrder(WorkOrder workOrder) {
         try {
             workOrderRepository.save(workOrder);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not update work order " + workOrder.getId() + ": " + e.getMessage());
         }
     }

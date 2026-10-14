@@ -10,7 +10,7 @@ public class CustomerRepository {
 
     private static final String COLUMNS = "id, name, phone, email, vip";
 
-    public void save(Customer customer) throws SQLException {
+    public void save(Customer customer) {
         if (customer.getId() == 0 || findById(customer.getId()) == null) {
             insert(customer);
         } else {
@@ -18,20 +18,20 @@ public class CustomerRepository {
         }
     }
 
-    public List<Customer> findAll() throws SQLException {
+    public List<Customer> findAll() {
         return Queries.read("SELECT " + COLUMNS + " FROM customers", CustomerRepository::build);
     }
 
-    public Customer findById(int id) throws SQLException {
+    public Customer findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM customers WHERE id = ?",
                 statement -> statement.setInt(1, id), CustomerRepository::build);
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(int id) {
         Queries.write("DELETE FROM customers WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
-    private void insert(Customer customer) throws SQLException {
+    private void insert(Customer customer) {
         String sql = "INSERT INTO customers (name, phone, email, vip) VALUES (?, ?, ?, ?)";
 
         // Only set the id when the database gave one, as before.
@@ -47,7 +47,7 @@ public class CustomerRepository {
         }
     }
 
-    private void update(Customer customer) throws SQLException {
+    private void update(Customer customer) {
         String sql = "UPDATE customers SET name = ?, phone = ?, email = ?, vip = ? WHERE id = ?";
 
         Queries.write(sql, statement -> {

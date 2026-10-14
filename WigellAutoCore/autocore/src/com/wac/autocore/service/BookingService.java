@@ -12,7 +12,6 @@ import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.VehicleRepository;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ public class BookingService {
     public List<Booking> getAll() {
         try {
             return bookingRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read bookings: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -50,7 +49,7 @@ public class BookingService {
     public Booking findById(int id) {
         try {
             return bookingRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read booking", e);
         }
     }
@@ -65,7 +64,7 @@ public class BookingService {
         Booking booking = new Booking(vehicleId, date, description);
         try {
             bookingRepository.save(booking);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save booking: " + e.getMessage());
             return null;
         }
@@ -110,7 +109,7 @@ public class BookingService {
 
         try {
             bookingRepository.save(booking);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save booking: " + e.getMessage());
             return null;
         }
@@ -186,7 +185,7 @@ public class BookingService {
         return false;
     }
 
-    public Booking createBooking(int vehicleId, LocalDate date, String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
+    public Booking createBooking(int vehicleId, LocalDate date, String description, LocalTime startTime, int mechanicId, int serviceItemId) {
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
             throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
@@ -222,11 +221,11 @@ public class BookingService {
         try {
             Vehicle v = vehicleRepository.findById(id);
             return v;
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read vehicle", e);
         }
     }
-    private boolean isMechanicOccupied(int mechanicId, LocalDate date, LocalTime newStart, LocalTime newEnd) throws SQLException {
+    private boolean isMechanicOccupied(int mechanicId, LocalDate date, LocalTime newStart, LocalTime newEnd) {
 
         if (mechanicId == 0) {
             return false;

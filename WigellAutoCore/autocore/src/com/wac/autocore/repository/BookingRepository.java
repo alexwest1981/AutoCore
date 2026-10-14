@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
@@ -25,7 +26,7 @@ public class BookingRepository {
     private final BookingServiceItemRepository bookingServiceItemRepository = new BookingServiceItemRepository();
     private final BookingMechanicRepository bookingMechanicRepository = new BookingMechanicRepository();
 
-    public void save(Booking booking) throws SQLException {
+    public void save(Booking booking) {
         if (booking.getId() == 0 || findById(booking.getId()) == null) {
             insert(booking);
         } else {
@@ -36,16 +37,16 @@ public class BookingRepository {
         bookingMechanicRepository.saveForBooking(booking.getId(), booking.getMechanicIds());
     }
 
-    public List<Booking> findAll() throws SQLException {
+    public List<Booking> findAll() {
         return Queries.read("SELECT " + COLUMNS + " FROM bookings", resultSet -> build(resultSet));
     }
 
-    public Booking findById(int id) throws SQLException {
+    public Booking findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM bookings WHERE id = ?",
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(int id) {
         // The service rows and the mechanic links point at this booking, and nothing else clears
         // them, so all three go in one connection.
         try (Connection connection = Db.getConnection();
@@ -56,10 +57,12 @@ public class BookingRepository {
 
             statement.setInt(1, id);
             statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 
-    private void insert(Booking booking) throws SQLException {
+    private void insert(Booking booking) {
         String sql = "INSERT INTO bookings (vehicle_id, date, description, status, start_time, "
                 + "end_time, mechanic_id, service_item_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -79,7 +82,7 @@ public class BookingRepository {
         }
     }
 
-    private void update(Booking booking) throws SQLException {
+    private void update(Booking booking) {
         String sql = "UPDATE bookings SET vehicle_id = ?, date = ?, description = ?, status = ?, "
                 + "start_time = ?, end_time = ?, mechanic_id = ?, service_item_id = ? WHERE id = ?";
 

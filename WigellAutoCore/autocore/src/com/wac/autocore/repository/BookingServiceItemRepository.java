@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
@@ -15,7 +16,7 @@ public class BookingServiceItemRepository {
     private static final String SERVICE_COLUMNS =
             "s.id, s.name, s.description, s.price, s.estimated_minutes, s.specialization";
 
-    public List<ServiceItem> findByBookingId(int bookingId) throws SQLException {
+    public List<ServiceItem> findByBookingId(int bookingId) {
         String sql = "SELECT " + SERVICE_COLUMNS + " FROM booking_service_items bsi "
                 + "JOIN service_items s ON bsi.service_item_id = s.id "
                 + "WHERE bsi.booking_id = ? "
@@ -35,7 +36,7 @@ public class BookingServiceItemRepository {
     }
 
     /** The package name per service id. Services picked on their own are left out. */
-    public java.util.Map<Integer, String> findPackageNames(int bookingId) throws SQLException {
+    public java.util.Map<Integer, String> findPackageNames(int bookingId) {
         String sql = "SELECT service_item_id, package_name FROM booking_service_items "
                 + "WHERE booking_id = ? AND package_name IS NOT NULL";
 
@@ -52,9 +53,11 @@ public class BookingServiceItemRepository {
         return names;
     }
 
-    public void save(Booking booking) throws SQLException {
+    public void save(Booking booking) {
         try (Connection connection = Db.getConnection()) {
             save(connection, booking);
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 

@@ -3,7 +3,6 @@ import com.wac.autocore.data.Db;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
@@ -13,7 +12,7 @@ public class ConsoleApp {
     private static final Scanner scanner = new Scanner(System.in);
     private static final GarageSystem garageSystem = new GarageSystem(new SqliteRepositoryFactory());
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
 
         Db.ensureReady();
 

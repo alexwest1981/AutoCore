@@ -1,11 +1,11 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
 import com.wac.autocore.repository.ServicePackageRepository;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class ServicePackageService {
     public List<ServicePackage> getAll() {
         try {
             return packageRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read service packages: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -34,14 +34,14 @@ public class ServicePackageService {
 
         try {
             packageRepository.save(servicePackage);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save service package: " + e.getMessage());
             return null;
         }
         return servicePackage;
     }
 
-    public void updatePackage(ServicePackage servicePackage) throws SQLException {
+    public void updatePackage(ServicePackage servicePackage) {
         if (servicePackage == null) {
             return;
         }
@@ -49,7 +49,7 @@ public class ServicePackageService {
         packageRepository.save(servicePackage);
     }
 
-    public void deletePackage(int id) throws SQLException {
+    public void deletePackage(int id) {
         packageRepository.delete(id);
     }
 

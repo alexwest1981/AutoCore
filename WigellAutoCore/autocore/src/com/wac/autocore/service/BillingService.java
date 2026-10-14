@@ -16,7 +16,6 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +48,7 @@ public class BillingService {
     public List<Invoice> getAll() {
         try {
             return invoiceRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read invoices: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -246,7 +245,7 @@ public class BillingService {
 
         try {
             invoiceRepository.save(invoice);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save invoice: " + e.getMessage());
             return null;
         }
@@ -297,7 +296,7 @@ public class BillingService {
                     }
                 }
             }
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read invoice lines: " + e.getMessage());
         }
         return invoiced;
@@ -348,7 +347,7 @@ public class BillingService {
     private List<WorkOrder> getAllWorkOrders() {
         try {
             return workOrderRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read work orders: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -363,7 +362,7 @@ public class BillingService {
                     return true;
                 }
             }
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not check for existing invoices: " + e.getMessage());
         }
         return false;
@@ -372,7 +371,7 @@ public class BillingService {
     private WorkOrder findWorkOrder(int id) {
         try {
             return workOrderRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read work order " + id, e);
         }
     }
@@ -380,7 +379,7 @@ public class BillingService {
     private Booking findBooking(int id) {
         try {
             return bookingRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read booking " + id, e);
         }
     }
@@ -388,7 +387,7 @@ public class BillingService {
     private Vehicle findVehicle(int id) {
         try {
             return vehicleRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read vehicle " + id, e);
         }
     }
@@ -396,7 +395,7 @@ public class BillingService {
     private Customer findCustomer(int id) {
         try {
             return customerRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read customer " + id, e);
         }
     }
@@ -404,7 +403,7 @@ public class BillingService {
     private ServiceItem findServiceItem(int id) {
         try {
             return serviceItemRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read service item " + id, e);
         }
     }
