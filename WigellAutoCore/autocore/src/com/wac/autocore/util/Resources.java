@@ -58,6 +58,28 @@ public final class Resources {
     }
 
     /**
+     * The file as it stands, empty when it cannot be read.
+     */
+    public static String text(URL url) {
+        if (url == null) {
+            return "";
+        }
+
+        StringBuilder out = new StringBuilder();
+        char[] buffer = new char[4096];
+        try (Reader reader = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)) {
+            int read = reader.read(buffer);
+            while (read != -1) {
+                out.append(buffer, 0, read);
+                read = reader.read(buffer);
+            }
+        } catch (Exception e) {
+            System.err.println("Kunde inte läsa " + url + ": " + e.getMessage());
+        }
+        return out.toString();
+    }
+
+    /**
      * The json file as keys and values, empty when it cannot be read. org.json does the reading,
      * so the file may be written however it wants.
      */
