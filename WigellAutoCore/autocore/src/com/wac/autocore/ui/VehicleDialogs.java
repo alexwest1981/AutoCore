@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
@@ -14,7 +15,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.util.StringConverter;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,7 +122,7 @@ public final class VehicleDialogs {
                 } else {
                     garage.createVehicle(reg, brand, model, year, owner.getId());
                 }
-            } catch (SQLException e) {
+            } catch (DataAccessException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
             }
@@ -148,7 +148,7 @@ public final class VehicleDialogs {
             if (response == ButtonType.OK) {
                 try {
                     garage.deleteVehicle(vehicle.getId());
-                } catch (SQLException e) {
+                } catch (DataAccessException e) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                     return;
                 }

@@ -5,7 +5,6 @@ import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.repository.CustomerRepository;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class CustomerService {
     public List<Customer> getAll() {
         try {
             return customerRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read customers: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -30,7 +29,7 @@ public class CustomerService {
     public Customer findById(int id) {
         try {
             return customerRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read customer " + id, e);
         }
     }
@@ -42,7 +41,7 @@ public class CustomerService {
 
         try {
             customerRepository.save(customer);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save customer: " + e.getMessage());
             return null;
         }
@@ -54,7 +53,7 @@ public class CustomerService {
     }
 
     /** Saves the change through the same rule as the creation. */
-    public void updateCustomer(Customer customer) throws SQLException {
+    public void updateCustomer(Customer customer) {
         if (customer == null) {
             return;
         }

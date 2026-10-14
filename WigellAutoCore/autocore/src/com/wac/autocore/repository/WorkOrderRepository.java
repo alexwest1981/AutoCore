@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.WorkOrder;
 
@@ -18,7 +19,7 @@ public class WorkOrderRepository {
     private static final String COLUMNS = "id, booking_id, mechanic_id, status, type, vehicle_id, description, "
             + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments";
 
-    public void save(WorkOrder workOrder) throws SQLException {
+    public void save(WorkOrder workOrder) {
         if (workOrder.getId() == 0 || findById(workOrder.getId()) == null) {
             insert(workOrder);
         } else {
@@ -27,16 +28,16 @@ public class WorkOrderRepository {
         saveServiceItems(workOrder);
     }
 
-    public List<WorkOrder> findAll() throws SQLException {
+    public List<WorkOrder> findAll() {
         return Queries.read("SELECT " + COLUMNS + " FROM work_orders", resultSet -> build(resultSet));
     }
 
-    public WorkOrder findById(int id) throws SQLException {
+    public WorkOrder findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM work_orders WHERE id = ?",
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(int id) {
         // The service rows point at this work order and nothing else clears them, so both go in one
         // connection.
         try (Connection connection = Db.getConnection();
@@ -49,10 +50,12 @@ public class WorkOrderRepository {
 
             order.setInt(1, id);
             order.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 
-    private void insert(WorkOrder workOrder) throws SQLException {
+    private void insert(WorkOrder workOrder) {
         String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, "
                 + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -76,7 +79,7 @@ public class WorkOrderRepository {
         }
     }
 
-    private void update(WorkOrder workOrder) throws SQLException {
+    private void update(WorkOrder workOrder) {
         String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, "
                 + "description = ?, original_work_order_id = ?, planned_date = ?, planned_time = ?, "
                 + "customer_instructions = ?, other_comments = ? WHERE id = ?";
@@ -97,7 +100,7 @@ public class WorkOrderRepository {
         });
     }
 
-    private void saveServiceItems(WorkOrder workOrder) throws SQLException {
+    private void saveServiceItems(WorkOrder workOrder) {
         String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
         String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed, price, "
                 + "package_name) VALUES (?, ?, ?, ?, ?)";
@@ -127,10 +130,12 @@ public class WorkOrderRepository {
                 }
                 insert.executeUpdate();
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 
-    private void loadServiceItems(WorkOrder workOrder) throws SQLException {
+    private void loadServiceItems(WorkOrder workOrder) {
         String sql = "SELECT service_item_id, completed, price, package_name FROM work_order_service_items "
                 + "WHERE work_order_id = ?";
 
@@ -166,6 +171,8 @@ public class WorkOrderRepository {
                 workOrder.setCompletedServicePrices(prices);
                 workOrder.setServicePackages(packages);
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not read from the database.", e);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
 
 import java.sql.Connection;
@@ -20,7 +21,7 @@ public class BookingMechanicRepository {
     }
 
     /** Replaces the booking's mechanics with the list. An empty list clears the links. */
-    public void saveForBooking(int bookingId, List<Integer> mechanicIds) throws SQLException {
+    public void saveForBooking(int bookingId, List<Integer> mechanicIds) {
         // One connection for the removal and the insert, so the booking never sits without its
         // mechanics if the second half fails.
         try (Connection connection = Db.getConnection()) {
@@ -39,11 +40,13 @@ public class BookingMechanicRepository {
                     insert.executeUpdate();
                 }
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 
     /** The booking's mechanics, in the order they were added. */
-    public List<Integer> findMechanicIds(int bookingId) throws SQLException {
+    public List<Integer> findMechanicIds(int bookingId) {
         return Queries.read("SELECT mechanic_id FROM booking_mechanics WHERE booking_id = ? ORDER BY mechanic_id",
                 statement -> statement.setInt(1, bookingId), resultSet -> Integer.valueOf(resultSet.getInt("mechanic_id")));
     }

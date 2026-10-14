@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
@@ -17,7 +18,7 @@ public class ServicePackageRepository {
     private static final String ITEM_COLUMNS =
             "s.id, s.name, s.description, s.price, s.estimated_minutes, s.specialization";
 
-    public void save(ServicePackage servicePackage) throws SQLException {
+    public void save(ServicePackage servicePackage) {
         if (servicePackage.getId() == 0) {
             insert(servicePackage);
         } else {
@@ -26,7 +27,7 @@ public class ServicePackageRepository {
         saveItems(servicePackage);
     }
 
-    private void insert(ServicePackage servicePackage) throws SQLException {
+    private void insert(ServicePackage servicePackage) {
         int id = Queries.insert("INSERT INTO service_packages (name, description) VALUES (?, ?)", statement -> {
             statement.setString(1, servicePackage.getName());
             statement.setString(2, servicePackage.getDescription());
@@ -37,7 +38,7 @@ public class ServicePackageRepository {
         }
     }
 
-    private void update(ServicePackage servicePackage) throws SQLException {
+    private void update(ServicePackage servicePackage) {
         Queries.write("UPDATE service_packages SET name = ?, description = ? WHERE id = ?", statement -> {
             statement.setString(1, servicePackage.getName());
             statement.setString(2, servicePackage.getDescription());
@@ -45,7 +46,7 @@ public class ServicePackageRepository {
         });
     }
 
-    private void saveItems(ServicePackage servicePackage) throws SQLException {
+    private void saveItems(ServicePackage servicePackage) {
         String deleteLinks = "DELETE FROM service_package_items WHERE package_id = ?";
         String insertLink = "INSERT OR IGNORE INTO service_package_items (package_id, service_item_id) VALUES (?, ?)";
 
@@ -62,10 +63,12 @@ public class ServicePackageRepository {
                 insert.setInt(2, item.getId());
                 insert.executeUpdate();
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 
-    private List<ServiceItem> findItems(int packageId) throws SQLException {
+    private List<ServiceItem> findItems(int packageId) {
         String sql = "SELECT " + ITEM_COLUMNS + " FROM service_package_items spi "
                 + "JOIN service_items s ON spi.service_item_id = s.id "
                 + "WHERE spi.package_id = ? "
@@ -80,7 +83,7 @@ public class ServicePackageRepository {
                 resultSet.getString("specialization")));
     }
 
-    public List<ServicePackage> findAll() throws SQLException {
+    public List<ServicePackage> findAll() {
         List<ServicePackage> packages = Queries.read("SELECT " + COLUMNS + " FROM service_packages ORDER BY name",
                 ServicePackageRepository::build);
 
@@ -90,7 +93,7 @@ public class ServicePackageRepository {
         return packages;
     }
 
-    public ServicePackage findById(int id) throws SQLException {
+    public ServicePackage findById(int id) {
         ServicePackage servicePackage = Queries.readOne("SELECT " + COLUMNS + " FROM service_packages WHERE id = ?",
                 statement -> statement.setInt(1, id), ServicePackageRepository::build);
 
@@ -100,7 +103,7 @@ public class ServicePackageRepository {
         return servicePackage;
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(int id) {
         // The item links point at this package and nothing else clears them, so both go in one connection.
         try (Connection connection = Db.getConnection();
              PreparedStatement deleteItems = connection.prepareStatement(
@@ -113,6 +116,8 @@ public class ServicePackageRepository {
 
             deletePackage.setInt(1, id);
             deletePackage.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 

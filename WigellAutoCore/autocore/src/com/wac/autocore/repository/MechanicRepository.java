@@ -10,7 +10,7 @@ public class MechanicRepository {
 
     private static final String COLUMNS = "id, name, phone, specialization, available";
 
-    public void save(Mechanic mechanic) throws SQLException {
+    public void save(Mechanic mechanic) {
         if (mechanic.getId() == 0 || findById(mechanic.getId()) == null) {
             insert(mechanic);
         } else {
@@ -18,20 +18,20 @@ public class MechanicRepository {
         }
     }
 
-    public List<Mechanic> findAll() throws SQLException {
+    public List<Mechanic> findAll() {
         return Queries.read("SELECT " + COLUMNS + " FROM mechanics", MechanicRepository::build);
     }
 
-    public Mechanic findById(int id) throws SQLException {
+    public Mechanic findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM mechanics WHERE id = ?",
                 statement -> statement.setInt(1, id), MechanicRepository::build);
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(int id) {
         Queries.write("DELETE FROM mechanics WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
-    private void insert(Mechanic mechanic) throws SQLException {
+    private void insert(Mechanic mechanic) {
         String sql = "INSERT INTO mechanics (name, phone, specialization, available) VALUES (?, ?, ?, ?)";
 
         int id = Queries.insert(sql, statement -> {
@@ -46,7 +46,7 @@ public class MechanicRepository {
         }
     }
 
-    private void update(Mechanic mechanic) throws SQLException {
+    private void update(Mechanic mechanic) {
         String sql = "UPDATE mechanics SET name = ?, phone = ?, specialization = ?, available = ? WHERE id = ?";
 
         Queries.write(sql, statement -> {

@@ -1,11 +1,11 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.VehicleRepository;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class VehicleService {
     public List<Vehicle> getAll() {
         try {
             return vehicleRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read vehicles: " + e.getMessage());
             return Collections.emptyList();
         }
@@ -45,7 +45,7 @@ public class VehicleService {
 
         try {
             vehicleRepository.save(vehicle);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not save vehicle: " + e.getMessage());
             return null;
         }

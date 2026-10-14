@@ -1,5 +1,6 @@
 package com.wac.autocore.data;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Mechanic;
@@ -13,7 +14,6 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -177,7 +177,7 @@ public class SeedData {
             workOrderRepository.save(sixthOrder);
             sixthBooking.setStatus("WORK_ORDER_CREATED");
             bookingRepository.save(sixthBooking);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not seed sample data: " + e.getMessage());
         }
     }

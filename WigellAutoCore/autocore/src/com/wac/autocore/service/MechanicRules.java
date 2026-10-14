@@ -1,11 +1,11 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.repository.MechanicRepository;
 import com.wac.autocore.seed.SeedText;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +26,7 @@ public class MechanicRules {
     public List<Mechanic> getAll() {
         try {
             return mechanicRepository.findAll();
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.out.println("Could not read mechanics: " + e.getMessage());
             return Collections.emptyList();
         }

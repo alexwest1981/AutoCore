@@ -13,7 +13,7 @@ public class PaymentRepository {
 
     private static final String COLUMNS = "id, invoice_id, amount, payment_type, payment_date, successful";
 
-    public void save(Payment payment) throws SQLException {
+    public void save(Payment payment) {
         if (payment.getId() == 0 || findById(payment.getId()) == null) {
             insert(payment);
         } else {
@@ -21,20 +21,20 @@ public class PaymentRepository {
         }
     }
 
-    public List<Payment> findAll() throws SQLException {
+    public List<Payment> findAll() {
         return Queries.read("SELECT " + COLUMNS + " FROM payments", PaymentRepository::build);
     }
 
-    public Payment findById(int id) throws SQLException {
+    public Payment findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM payments WHERE id = ?",
                 statement -> statement.setInt(1, id), PaymentRepository::build);
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(int id) {
         Queries.write("DELETE FROM payments WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
-    private void insert(Payment payment) throws SQLException {
+    private void insert(Payment payment) {
         String sql = "INSERT INTO payments (invoice_id, amount, payment_type, payment_date, successful) "
                 + "VALUES (?, ?, ?, ?, ?)";
 
@@ -51,7 +51,7 @@ public class PaymentRepository {
         }
     }
 
-    private void update(Payment payment) throws SQLException {
+    private void update(Payment payment) {
         String sql = "UPDATE payments SET invoice_id = ?, amount = ?, payment_type = ?, payment_date = ?, "
                 + "successful = ? WHERE id = ?";
 
