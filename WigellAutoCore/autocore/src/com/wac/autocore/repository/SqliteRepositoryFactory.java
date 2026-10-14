@@ -58,4 +58,9 @@ public class SqliteRepositoryFactory implements RepositoryFactory {
     public ServicePackageRepository createServicePackageRepository() {
         return new ServicePackageRepository();
     }
+
+    @Override
+    public ScheduleRepository createScheduleRepository() {
+        return new ScheduleRepository();
+    }
 }

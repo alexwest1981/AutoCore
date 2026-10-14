@@ -8,9 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.wac.autocore.model.LoadLevel;
+import com.wac.autocore.model.ScheduleEntry;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.model.DayLoad;
 import com.wac.autocore.model.MonthDayStatus;
+import com.wac.autocore.repository.ScheduleRepository;
 
 /** The mechanics' booked hours. */
 public class MechanicSchedule {
@@ -19,18 +21,14 @@ public class MechanicSchedule {
     public static final int END_HOUR = 16;
     public static final int WORK_HOURS_PER_DAY = END_HOUR - START_HOUR; // 9 hours (7-16)
 
-    // Singleton instance for the shared state in the UI
-    private static final MechanicSchedule INSTANCE = new MechanicSchedule();
-
-    public static MechanicSchedule getInstance() {
-        return INSTANCE;
-    }
+    private final ScheduleRepository scheduleRepository;
 
     // Key: "mechanicId:YYYY-MM-DD:hour"
     private final Map<String, TimeSlot> slots = new HashMap<String, TimeSlot>();
     private boolean seeded = false;
 
-    public MechanicSchedule() {
+    public MechanicSchedule(ScheduleRepository scheduleRepository) {
+        this.scheduleRepository = scheduleRepository;
         initDefaultSeedData();
     }
 
@@ -40,71 +38,53 @@ public class MechanicSchedule {
 
     /** Reads the work orders from the database and maps them onto hour slots. */
     public synchronized void syncFromDatabase() {
-        String sql = "SELECT wo.id AS wo_id, wo.mechanic_id, wo.status AS wo_status, "
-                + "b.id AS booking_id, b.date, b.start_time, b.description, "
-                + "v.registration_number, c.name AS customer_name "
-                + "FROM work_orders wo "
-                + "JOIN bookings b ON wo.booking_id = b.id "
-                + "LEFT JOIN vehicles v ON b.vehicle_id = v.id "
-                + "LEFT JOIN customers c ON v.customer_id = c.id "
-                + "WHERE wo.status IN ('CREATED', 'CONFIRMED', 'IN_PROGRESS')\n";
-
         java.util.Set<Integer> activeWorkOrderIds = new java.util.HashSet<Integer>();
 
-        try (java.sql.Connection conn = com.wac.autocore.data.Db.getConnection();
-             java.sql.PreparedStatement stmt = conn.prepareStatement(sql);
-             java.sql.ResultSet rs = stmt.executeQuery()) {
+        for (ScheduleEntry entry : scheduleRepository.findActive()) {
+            int woId = entry.getWorkOrderId();
+            activeWorkOrderIds.add(Integer.valueOf(woId));
+            int mechId = entry.getMechanicId();
+            int bId = entry.getBookingId();
+            LocalDate date = entry.getDate();
+            String desc = entry.getDescription();
+            String reg = entry.getRegistrationNumber();
+            String cust = entry.getCustomerName();
 
-            while (rs.next()) {
-                int woId = rs.getInt("wo_id");
-                activeWorkOrderIds.add(Integer.valueOf(woId));
-                int mechId = rs.getInt("mechanic_id");
-                int bId = rs.getInt("booking_id");
-                String dateStr = rs.getString("date");
-                if (dateStr == null || dateStr.trim().isEmpty()) continue;
-                LocalDate date = LocalDate.parse(dateStr);
-                String desc = rs.getString("description");
-                String reg = rs.getString("registration_number");
-                String cust = rs.getString("customer_name");
-
-                boolean alreadyBooked = false;
-                for (TimeSlot ts : slots.values()) {
-                    if (ts.getWorkOrderId() == woId) {
-                        alreadyBooked = true;
-                        break;
-                    } else if (ts.getBookingId() == bId && ts.getWorkOrderId() == 0) {
-                        ts.setWorkOrderId(woId);
-                        alreadyBooked = true;
-                        break;
-                    }
+            boolean alreadyBooked = false;
+            for (TimeSlot ts : slots.values()) {
+                if (ts.getWorkOrderId() == woId) {
+                    alreadyBooked = true;
+                    break;
+                } else if (ts.getBookingId() == bId && ts.getWorkOrderId() == 0) {
+                    ts.setWorkOrderId(woId);
+                    alreadyBooked = true;
+                    break;
                 }
+            }
 
-                if (!alreadyBooked) {
-                    // The booking's own time first. A drop-in is booked on the hour the customer
-                    // arrived and should show there, not in the first slot that happens to be free.
-                    if (bookAtStoredTime(mechId, date, rs.getString("start_time"), bId, woId, cust, reg, desc) < 0) {
-                        for (int hour = START_HOUR + 1; hour < END_HOUR; hour++) {
-                            String key = slotKey(mechId, date, hour);
-                            TimeSlot existing = slots.get(key);
-                            if (existing == null || !existing.isBooked()) {
-                                bookSlotInternal(mechId, date, hour, bId, woId, cust, reg, desc);
-                                break;
-                            }
+            if (!alreadyBooked) {
+                // The booking's own time first. A drop-in is booked on the hour the customer
+                // arrived and should show there, not in the first slot that happens to be free.
+                if (bookAtStoredTime(mechId, date, entry.getStartTime(), bId, woId, cust, reg, desc) < 0) {
+                    for (int hour = START_HOUR + 1; hour < END_HOUR; hour++) {
+                        String key = slotKey(mechId, date, hour);
+                        TimeSlot existing = slots.get(key);
+                        if (existing == null || !existing.isBooked()) {
+                            bookSlotInternal(mechId, date, hour, bId, woId, cust, reg, desc);
+                            break;
                         }
                     }
                 }
             }
+        }
 
-            // Slots whose work order is no longer active leave the schedule.
-            java.util.Iterator<java.util.Map.Entry<String, TimeSlot>> staleSlots = slots.entrySet().iterator();
-            while (staleSlots.hasNext()) {
-                TimeSlot slot = staleSlots.next().getValue();
-                if (slot.getWorkOrderId() > 0 && !activeWorkOrderIds.contains(Integer.valueOf(slot.getWorkOrderId()))) {
-                    staleSlots.remove();
-                }
+        // Slots whose work order is no longer active leave the schedule.
+        java.util.Iterator<java.util.Map.Entry<String, TimeSlot>> staleSlots = slots.entrySet().iterator();
+        while (staleSlots.hasNext()) {
+            TimeSlot slot = staleSlots.next().getValue();
+            if (slot.getWorkOrderId() > 0 && !activeWorkOrderIds.contains(Integer.valueOf(slot.getWorkOrderId()))) {
+                staleSlots.remove();
             }
-        } catch (Exception ignored) {
-            // The schedule can be used before the database has become ready.
         }
     }
 

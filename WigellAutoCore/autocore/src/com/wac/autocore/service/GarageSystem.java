@@ -48,6 +48,7 @@ public class GarageSystem {
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
     private final BookingRepository bookingRepository;
+    private final MechanicSchedule mechanicSchedule;
 
     public GarageSystem(RepositoryFactory repositories) {
         Db.ensureReady();
@@ -63,11 +64,13 @@ public class GarageSystem {
         PaymentRepository paymentRepository = repositories.createPaymentRepository();
         ServicePackageRepository servicePackageRepository = repositories.createServicePackageRepository();
 
+        mechanicSchedule = new MechanicSchedule(repositories.createScheduleRepository());
+
         mechanicRules = new MechanicRules(mechanicRepository);
         customerService = new CustomerService(customerRepository);
         vehicleService = new VehicleService(customerService, vehicleRepository);
         workOrderService = new WorkOrderService(workOrderRepository, bookingRepository,
-                mechanicRepository, serviceItemRepository, vehicleRepository);
+                mechanicRepository, serviceItemRepository, vehicleRepository, mechanicSchedule);
         bookingService = new BookingService(workOrderService, mechanicRules,
                 bookingRepository, vehicleRepository, serviceItemRepository);
         billingService = new BillingService(invoiceRepository, workOrderRepository,
@@ -112,6 +115,10 @@ public class GarageSystem {
 
     public List<Payment> getPayments() {
         return paymentService.getAll();
+    }
+
+    public MechanicSchedule getMechanicSchedule() {
+        return mechanicSchedule;
     }
 
     /** The customer with that id, or null when there is none. */
@@ -411,7 +418,7 @@ public class GarageSystem {
 
     public void updateBooking(Booking booking) {
         bookingRepository.save(booking);
-        MechanicSchedule.getInstance().syncFromDatabase();
+        mechanicSchedule.syncFromDatabase();
     }
 
     public void updateServiceItem(ServiceItem item) {
@@ -426,7 +433,7 @@ public class GarageSystem {
         refuseUnless(canDeleteMechanic(mechanicId),
                 "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.");
         mechanicRepository.delete(mechanicId);
-        MechanicSchedule.getInstance().removeSlotsForMechanic(mechanicId);
+        mechanicSchedule.removeSlotsForMechanic(mechanicId);
     }
 
     public boolean canDeleteCustomer(int customerId) {
@@ -463,8 +470,8 @@ public class GarageSystem {
         if (b != null) {
             b.setStatus("CANCELLED");
             bookingRepository.save(b);
-            MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
-            MechanicSchedule.getInstance().syncFromDatabase();
+            mechanicSchedule.cancelSlotForBooking(bookingId);
+            mechanicSchedule.syncFromDatabase();
         }
     }
 
@@ -479,8 +486,8 @@ public class GarageSystem {
         refuseUnless(canCancelOrDeleteBooking(bookingId),
                 "Bokningen kan inte tas bort: den har en arbetsorder med faktura.");
         bookingRepository.delete(bookingId);
-        MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
-        MechanicSchedule.getInstance().syncFromDatabase();
+        mechanicSchedule.cancelSlotForBooking(bookingId);
+        mechanicSchedule.syncFromDatabase();
     }
 
     public boolean canDeleteServiceItem(int serviceItemId) {

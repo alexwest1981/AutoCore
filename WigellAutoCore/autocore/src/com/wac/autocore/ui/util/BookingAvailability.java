@@ -32,7 +32,7 @@ public final class BookingAvailability {
         LocalTime rangeEnd = end.isAfter(start) ? end : start.plusHours(1);
 
         // Checked against the schedule (MechanicSchedule). An hour slot is [hour, hour + 1).
-        MechanicSchedule schedule = MechanicSchedule.getInstance();
+        MechanicSchedule schedule = garage.getMechanicSchedule();
         List<TimeSlot> slots = schedule.getSlotsForDay(mechanic.getId(), date);
 
         for (TimeSlot s : slots) {

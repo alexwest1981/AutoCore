@@ -28,17 +28,20 @@ public class WorkOrderService {
     private final MechanicRepository mechanicRepository;
     private final ServiceItemRepository serviceItemRepository;
     private final VehicleRepository vehicleRepository;
+    private final MechanicSchedule mechanicSchedule;
 
     public WorkOrderService(WorkOrderRepository workOrderRepository,
                             BookingRepository bookingRepository,
                             MechanicRepository mechanicRepository,
                             ServiceItemRepository serviceItemRepository,
-                            VehicleRepository vehicleRepository) {
+                            VehicleRepository vehicleRepository,
+                            MechanicSchedule mechanicSchedule) {
         this.workOrderRepository = workOrderRepository;
         this.bookingRepository = bookingRepository;
         this.mechanicRepository = mechanicRepository;
         this.serviceItemRepository = serviceItemRepository;
         this.vehicleRepository = vehicleRepository;
+        this.mechanicSchedule = mechanicSchedule;
     }
 
     public List<WorkOrder> getAll() {
@@ -453,8 +456,8 @@ public class WorkOrderService {
         if (booking != null) {
             booking.setStatus("CANCELLED");
             saveBooking(booking);
-            MechanicSchedule.getInstance().cancelSlotForBooking(booking.getId());
-            MechanicSchedule.getInstance().syncFromDatabase();
+            mechanicSchedule.cancelSlotForBooking(booking.getId());
+            mechanicSchedule.syncFromDatabase();
         }
 
         workOrder.setStatus("CANCELLED");

@@ -144,7 +144,7 @@ class KanbanWeekView {
         navBar.setAlignment(Pos.CENTER_LEFT);
         navBar.setPadding(new Insets(0, 0, 8, 0));
 
-        MechanicSchedule schedule = MechanicSchedule.getInstance();
+        MechanicSchedule schedule = card.garage.getMechanicSchedule();
         List<DayLoad> weekLoads = schedule.getWeekLoads(mech.getId(), monday);
 
         VBox daysList = new VBox(4);
