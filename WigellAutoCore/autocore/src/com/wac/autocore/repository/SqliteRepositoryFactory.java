@@ -1,7 +1,18 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
+
 /** The one the application uses. */
 public class SqliteRepositoryFactory implements RepositoryFactory {
+
+    /** Repositories for the file the storage is already pointed at. */
+    public SqliteRepositoryFactory() {
+    }
+
+    /** Repositories for a given file. */
+    public SqliteRepositoryFactory(String databasePath) {
+        Db.use(databasePath);
+    }
 
     @Override
     public CustomerRepository createCustomerRepository() {

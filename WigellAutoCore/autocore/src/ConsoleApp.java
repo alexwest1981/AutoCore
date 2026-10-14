@@ -10,11 +10,16 @@ import java.util.Scanner;
 public class ConsoleApp {
 
     private static final Scanner scanner = new Scanner(System.in);
-    private static final GarageSystem garageSystem = new GarageSystem(new SqliteRepositoryFactory());
+
+    // Set in main: the file may be given as an argument, and nothing may touch the
+    // application's own database before that is known.
+    private static GarageSystem garageSystem;
 
     public static void main(String[] args) {
 
+        Db.use(Db.pathFrom(args));
         Db.ensureReady();
+        garageSystem = new GarageSystem(new SqliteRepositoryFactory());
 
         boolean running = true;
 
