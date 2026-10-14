@@ -1,6 +1,7 @@
 package com.wac.autocore.ui;
 
 import com.wac.autocore.data.Settings;
+import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.theme.ThemeManager;
 import com.wac.autocore.ui.i18n.I18n;
@@ -20,7 +21,7 @@ public class AutoCoreApp extends Application {
     /** Key the language choice is stored under in the settings table. */
     public static final String LANGUAGE_KEY = "language";
 
-    private final GarageSystem garage = new GarageSystem();
+    private final GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
 
     @Override
     public void start(Stage primaryStage) {

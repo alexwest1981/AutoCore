@@ -22,14 +22,20 @@ import java.util.List;
 /** Handles bookings and validates their vehicles and times. */
 public class BookingService {
 
-    private final BookingRepository bookingRepository = new BookingRepository();
-    private final VehicleRepository vehicleRepository = new VehicleRepository();
-    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
-    private final MechanicRules mechanicRules = new MechanicRules();
+    private final BookingRepository bookingRepository;
+    private final VehicleRepository vehicleRepository;
+    private final ServiceItemRepository serviceItemRepository;
+    private final MechanicRules mechanicRules;
     private final WorkOrderService workOrderService;
 
-    public BookingService(WorkOrderService workOrderService) {
+    public BookingService(WorkOrderService workOrderService, MechanicRules mechanicRules,
+                          BookingRepository bookingRepository, VehicleRepository vehicleRepository,
+                          ServiceItemRepository serviceItemRepository) {
         this.workOrderService = workOrderService;
+        this.mechanicRules = mechanicRules;
+        this.bookingRepository = bookingRepository;
+        this.vehicleRepository = vehicleRepository;
+        this.serviceItemRepository = serviceItemRepository;
     }
 
     public List<Booking> getAll() {

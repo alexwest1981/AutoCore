@@ -17,7 +17,11 @@ import java.util.Map;
 /** Who may perform which service. The service requires a specialization, the mechanic carries their own. */
 public class MechanicRules {
 
-    private final MechanicRepository mechanicRepository = new MechanicRepository();
+    private final MechanicRepository mechanicRepository;
+
+    public MechanicRules(MechanicRepository mechanicRepository) {
+        this.mechanicRepository = mechanicRepository;
+    }
 
     public List<Mechanic> getAll() {
         try {

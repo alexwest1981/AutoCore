@@ -25,12 +25,26 @@ import java.util.List;
 /** Invoices from completed work orders, with discount. */
 public class BillingService {
 
-    private final InvoiceRepository invoiceRepository = new InvoiceRepository();
-    private final WorkOrderRepository workOrderRepository = new WorkOrderRepository();
-    private final BookingRepository bookingRepository = new BookingRepository();
-    private final VehicleRepository vehicleRepository = new VehicleRepository();
-    private final CustomerRepository customerRepository = new CustomerRepository();
-    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final InvoiceRepository invoiceRepository;
+    private final WorkOrderRepository workOrderRepository;
+    private final BookingRepository bookingRepository;
+    private final VehicleRepository vehicleRepository;
+    private final CustomerRepository customerRepository;
+    private final ServiceItemRepository serviceItemRepository;
+
+    public BillingService(InvoiceRepository invoiceRepository,
+                          WorkOrderRepository workOrderRepository,
+                          BookingRepository bookingRepository,
+                          VehicleRepository vehicleRepository,
+                          CustomerRepository customerRepository,
+                          ServiceItemRepository serviceItemRepository) {
+        this.invoiceRepository = invoiceRepository;
+        this.workOrderRepository = workOrderRepository;
+        this.bookingRepository = bookingRepository;
+        this.vehicleRepository = vehicleRepository;
+        this.customerRepository = customerRepository;
+        this.serviceItemRepository = serviceItemRepository;
+    }
 
     public List<Invoice> getAll() {
         try {

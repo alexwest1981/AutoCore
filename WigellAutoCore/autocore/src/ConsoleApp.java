@@ -1,5 +1,6 @@
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.data.Db;
+import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
 
 import java.sql.SQLException;
@@ -10,7 +11,7 @@ import java.util.Scanner;
 public class ConsoleApp {
 
     private static final Scanner scanner = new Scanner(System.in);
-    private static final GarageSystem garageSystem = new GarageSystem();
+    private static final GarageSystem garageSystem = new GarageSystem(new SqliteRepositoryFactory());
 
     public static void main(String[] args) throws SQLException {
 
