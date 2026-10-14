@@ -1,9 +1,6 @@
 package com.wac.autocore.repository;
 
-/**
- * Creates the classes that talk to the database. Whatever needs one asks here
- * instead of building its own, so the rest of the tree never names a concrete repository.
- */
+/** Creates the classes that talk to the database. */
 public interface RepositoryFactory {
 
     CustomerRepository createCustomerRepository();

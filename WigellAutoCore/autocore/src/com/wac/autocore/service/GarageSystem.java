@@ -49,7 +49,6 @@ public class GarageSystem {
     private final VehicleRepository vehicleRepository;
     private final BookingRepository bookingRepository;
 
-    /** Asks the factory for the repositories once, then hands them to the services in the order they depend on each other. */
     public GarageSystem(RepositoryFactory repositories) {
         Db.ensureReady();
 
