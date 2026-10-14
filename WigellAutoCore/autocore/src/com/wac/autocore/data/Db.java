@@ -9,16 +9,32 @@ import java.sql.Statement;
 
 public class Db {
 
-    private static final String DATABASE_PATH = "data/autocore.db";
+    private static final String DEFAULT_PATH = "data/autocore.db";
+
+    private static String databasePath = DEFAULT_PATH;
 
     private static boolean ready = false;
 
-    public static Connection getConnection() throws SQLException {
-        File dataDirectory = new File("data");
-        if (!dataDirectory.exists()) {
-            dataDirectory.mkdirs();
+    /** The file to use: the first argument, or the application's own. */
+    public static String pathFrom(String[] args) {
+        return args.length > 0 ? args[0] : DEFAULT_PATH;
+    }
+
+    /** Points the storage at another file. Another file means another database to prepare. */
+    public static void use(String databasePath) {
+        if (!databasePath.equals(Db.databasePath)) {
+            Db.databasePath = databasePath;
+            ready = false;
         }
-        return DriverManager.getConnection("jdbc:sqlite:" + DATABASE_PATH);
+    }
+
+    public static Connection getConnection() throws SQLException {
+        File file = new File(databasePath);
+        File directory = file.getParentFile();
+        if (directory != null && !directory.exists()) {
+            directory.mkdirs();
+        }
+        return DriverManager.getConnection("jdbc:sqlite:" + databasePath);
     }
 
     public static void ensureReady() {
@@ -247,7 +263,7 @@ public class Db {
             // Can't be done in SQL, since the space goes in at the right spot in Java.
             // Runs after the connection above, on a connection of its own, so no open cursor locks SQLite.
 
-            System.out.println("Databas redo: " + DATABASE_PATH);
+            System.out.println("Databas redo: " + databasePath);
 
         } catch (SQLException e) {
             // Halfway through means a database that looks whole but is missing columns, and

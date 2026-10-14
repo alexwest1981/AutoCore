@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.data.Settings;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
@@ -99,6 +100,7 @@ public class AutoCoreApp extends Application {
     }
 
     public static void main(String[] args) {
+        Db.use(Db.pathFrom(args));
         launch(args);
     }
 }
