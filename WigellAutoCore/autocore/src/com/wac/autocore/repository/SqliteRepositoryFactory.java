@@ -1,6 +1,6 @@
 package com.wac.autocore.repository;
 
-/** The factory the application uses. Every repository it hands out goes through Db to SQLite. */
+/** The one the application uses. */
 public class SqliteRepositoryFactory implements RepositoryFactory {
 
     @Override
