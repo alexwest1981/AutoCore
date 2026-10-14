@@ -73,8 +73,8 @@ public class BookingRepository {
             statement.setString(4, booking.getStatus());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
-            setMechanicId(statement, 7, booking.getMechanicId());
-            setServiceItemId(statement, 8, booking.getServiceItemId());
+            Queries.setReference(statement, 7, booking.getMechanicId());
+            Queries.setReference(statement, 8, booking.getServiceItemId());
         });
 
         if (id > 0) {
@@ -93,8 +93,8 @@ public class BookingRepository {
             statement.setString(4, booking.getStatus());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
-            setMechanicId(statement, 7, booking.getMechanicId());
-            setServiceItemId(statement, 8, booking.getServiceItemId());
+            Queries.setReference(statement, 7, booking.getMechanicId());
+            Queries.setReference(statement, 8, booking.getServiceItemId());
             statement.setInt(9, booking.getId());
         });
     }
@@ -113,23 +113,6 @@ public class BookingRepository {
             statement.setNull(position, Types.VARCHAR);
         } else {
             statement.setString(position, date.toString());
-        }
-    }
-
-    /** A missing mechanic or service is stored as NULL, not as a zero that points at nothing. */
-    private static void setMechanicId(PreparedStatement statement, int position, int mechanicId) throws SQLException {
-        if (mechanicId == 0) {
-            statement.setNull(position, Types.INTEGER);
-        } else {
-            statement.setInt(position, mechanicId);
-        }
-    }
-
-    private static void setServiceItemId(PreparedStatement statement, int position, int serviceItemId) throws SQLException {
-        if (serviceItemId == 0) {
-            statement.setNull(position, Types.INTEGER);
-        } else {
-            statement.setInt(position, serviceItemId);
         }
     }
 

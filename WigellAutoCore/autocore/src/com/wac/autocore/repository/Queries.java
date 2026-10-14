@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +59,18 @@ final class Queries {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Could not write to the database.", e);
+        }
+    }
+
+    /**
+     * Writes a reference, or NULL when it is zero. A missing reference is not a zero that points at
+     * nothing, and the keys in the schema do not accept one.
+     */
+    static void setReference(PreparedStatement statement, int position, int id) throws SQLException {
+        if (id > 0) {
+            statement.setInt(position, id);
+        } else {
+            statement.setNull(position, Types.INTEGER);
         }
     }
 
