@@ -1,6 +1,7 @@
 package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.*;
+import com.wac.autocore.model.OpeningHours;
 import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.seed.SeedText;
@@ -221,7 +222,7 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
         LocalTime start = getSelectedStartTime();
         if (start != null) {
             int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            if (start.plusMinutes(duration).isAfter(BookingAvailability.CLOSING_TIME)) {
+            if (start.plusMinutes(duration).isAfter(OpeningHours.CLOSES)) {
                 return false;
             }
         }
@@ -256,7 +257,7 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
         // A drop-in has no picked time — it is worked out by the service.
         if (startTime != null && !dropIn) {
             LocalTime endTime = startTime.plusMinutes(minutes);
-            if (endTime.isAfter(BookingAvailability.CLOSING_TIME)) {
+            if (endTime.isAfter(OpeningHours.CLOSES)) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.closing_time_exceeded"));
                 return false;
             }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import com.wac.autocore.model.OpeningHours;
 import javafx.collections.FXCollections;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
@@ -111,7 +112,7 @@ public class BookingScheduleField {
         if (time == null) return false;
         int duration = source.getTotalEstimatedMinutes() > 0 ? source.getTotalEstimatedMinutes() : 60;
         LocalTime end = time.plusMinutes(duration);
-        if (end.isAfter(BookingAvailability.CLOSING_TIME)) {
+        if (end.isAfter(OpeningHours.CLOSES)) {
         return true;
         }
         LocalDate d = datePicker.getValue();
@@ -142,7 +143,7 @@ public class BookingScheduleField {
         int totalMin = source.getTotalEstimatedMinutes();
         if (start != null && totalMin > 0) {
         LocalTime end = start.plusMinutes(totalMin);
-        if (end.isAfter(BookingAvailability.CLOSING_TIME)) {
+        if (end.isAfter(OpeningHours.CLOSES)) {
         durationLabel.setText("⚠️ " + I18n.get("dialog.booking.time_window",
         start.format(TimeSlotCell.TIME_FMT), end.format(TimeSlotCell.TIME_FMT))
         + " (" + totalMin + " min) – " + I18n.get("dialog.booking.closing_time_exceeded"));
@@ -172,10 +173,10 @@ public class BookingScheduleField {
         // current one. Any other day still starts at opening.
         LocalDate pickedDate = datePicker.getValue();
         int firstHour = pickedDate != null && pickedDate.isEqual(LocalDate.now())
-                ? Math.max(7, LocalTime.now().getHour()) : 7;
-        for (int h = firstHour; h <= 16; h++) {
+                ? Math.max(OpeningHours.firstHour(), LocalTime.now().getHour()) : OpeningHours.firstHour();
+        for (int h = firstHour; h <= OpeningHours.closingHour(); h++) {
         LocalTime t = LocalTime.of(h, 0);
-        if (t.plusMinutes(duration).isAfter(BookingAvailability.CLOSING_TIME)) {
+        if (t.plusMinutes(duration).isAfter(OpeningHours.CLOSES)) {
         continue;
         }
         if (Boolean.TRUE.equals(isBusyFunc.apply(t))) {

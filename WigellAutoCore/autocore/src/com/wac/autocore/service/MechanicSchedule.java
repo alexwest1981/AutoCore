@@ -2,6 +2,7 @@ package com.wac.autocore.service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,14 +13,12 @@ import com.wac.autocore.model.ScheduleEntry;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.model.DayLoad;
 import com.wac.autocore.model.MonthDayStatus;
+import com.wac.autocore.model.OpeningHours;
 import com.wac.autocore.repository.ScheduleRepository;
 
 /** The mechanics' booked hours. */
 public class MechanicSchedule {
 
-    public static final int START_HOUR = 7;
-    public static final int END_HOUR = 16;
-    public static final int WORK_HOURS_PER_DAY = END_HOUR - START_HOUR; // 9 hours (7-16)
 
     private final ScheduleRepository scheduleRepository;
 
@@ -66,7 +65,7 @@ public class MechanicSchedule {
                 // The booking's own time first. A drop-in is booked on the hour the customer
                 // arrived and should show there, not in the first slot that happens to be free.
                 if (bookAtStoredTime(mechId, date, entry.getStartTime(), bId, woId, cust, reg, desc) < 0) {
-                    for (int hour = START_HOUR + 1; hour < END_HOUR; hour++) {
+                    for (int hour = OpeningHours.firstHour() + 1; hour < OpeningHours.closingHour(); hour++) {
                         String key = slotKey(mechId, date, hour);
                         TimeSlot existing = slots.get(key);
                         if (existing == null || !existing.isBooked()) {
@@ -173,7 +172,7 @@ public class MechanicSchedule {
         } catch (java.time.format.DateTimeParseException e) {
             return -1;
         }
-        if (hour < START_HOUR || hour >= END_HOUR) {
+        if (hour < OpeningHours.firstHour() || hour >= OpeningHours.closingHour()) {
             return -1;
         }
         TimeSlot existing = slots.get(slotKey(mechanicId, date, hour));
@@ -188,7 +187,7 @@ public class MechanicSchedule {
     public synchronized List<TimeSlot> getSlotsForDay(int mechanicId, LocalDate date) {
         syncFromDatabase();
         List<TimeSlot> result = new ArrayList<TimeSlot>();
-        for (int hour = START_HOUR; hour < END_HOUR; hour++) {
+        for (int hour = OpeningHours.firstHour(); hour < OpeningHours.closingHour(); hour++) {
             String key = slotKey(mechanicId, date, hour);
             TimeSlot slot = slots.get(key);
             if (slot == null) {
@@ -202,7 +201,7 @@ public class MechanicSchedule {
     /** Books one hour for a mechanic. */
     public synchronized boolean bookSlot(int mechanicId, LocalDate date, int hour, int bookingId, int workOrderId,
                                          String customer, String vehicleReg, String desc) {
-        if (hour < START_HOUR || hour >= END_HOUR) {
+        if (hour < OpeningHours.firstHour() || hour >= OpeningHours.closingHour()) {
             return false;
         }
         String key = slotKey(mechanicId, date, hour);
@@ -258,7 +257,7 @@ public class MechanicSchedule {
             level = LoadLevel.FULL;      // 7+h (red)
         }
 
-        return new DayLoad(date, mechanicId, booked, WORK_HOURS_PER_DAY, level, daySlots);
+        return new DayLoad(date, mechanicId, booked, OpeningHours.closingHour() - OpeningHours.firstHour(), level, daySlots);
     }
 
     /** The load per day for a whole week. */
