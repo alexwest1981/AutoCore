@@ -23,7 +23,8 @@ import java.util.Map;
  *
  * The old database is a file from before the migrations were written, and it is read-only on
  * disk. Every run copies it to a temporary file first, so the proof can be run as often as
- * anyone likes and nothing outside /tmp is touched.
+ * anyone likes and nothing outside /tmp is touched. The third run copies nothing, because the
+ * program has to be able to make a database as well as lift an old one.
  *
  * What is compared is every row of every table, with the money written in kronor on both sides,
  * because the unit is what changed: the old database kept kronor, the new one keeps öre. The
@@ -63,6 +64,14 @@ public final class OldDatabaseProof {
         {"work_order_service_items", "package_name", "TEXT"}
     };
 
+    /** The tables the baseline creates, so a database made from nothing can be checked whole. */
+    private static final String[] BASELINE_TABLES = {
+        "customers", "vehicles", "mechanics", "service_items", "bookings", "work_orders",
+        "booking_service_items", "service_packages", "service_package_items",
+        "booking_mechanics", "work_order_service_items", "invoices", "invoice_lines",
+        "payments", "settings"
+    };
+
     private OldDatabaseProof() {}
 
     public static void main(String[] args) throws Exception {
@@ -80,10 +89,12 @@ public final class OldDatabaseProof {
         System.out.println();
         boolean withColumns = run(old, "2. kolumnerna finns, men registret gör det inte", true);
         System.out.println();
+        boolean fromNothing = runFromNothing("3. ingen bas alls, den byggs från grunden");
 
         System.out.println("läses som förut, utan kolumnerna: " + withoutColumns);
         System.out.println("läses som förut, med kolumnerna:  " + withColumns);
-        System.exit(withoutColumns && withColumns ? 0 : 1);
+        System.out.println("byggs från grunden:               " + fromNothing);
+        System.exit(withoutColumns && withColumns && fromNothing ? 0 : 1);
     }
 
     /** One run against a copy of the old database, with or without the columns already there. */
@@ -170,6 +181,65 @@ public final class OldDatabaseProof {
         System.out.println("   foreign_key_check:     " + foreignKeys(working));
         System.out.println("   schema_version:        " + schemaVersions(working));
         return intact;
+    }
+
+    /**
+     * A database that is not there at all. The two fixtures above start from tables that already
+     * exist; this one has nothing to lean on, so the baseline alone has to leave a schema the
+     * rest of the program can use. A fresh checkout has to start as well, not only one that has
+     * run before.
+     */
+    private static boolean runFromNothing(String label) throws Exception {
+        File fresh = File.createTempFile("new-database-", ".db");
+        fresh.deleteOnExit();
+        // The file the copy would have gone into, and then not: here the program makes it itself.
+        fresh.delete();
+
+        System.out.println(label);
+        System.out.println("   filen finns från början: " + fresh.exists());
+
+        System.out.println("   programmet startar och bygger den");
+        new GarageSystem(new SqliteRepositoryFactory(fresh.getAbsolutePath()));
+
+        Map<String, Map<String, Map<String, String>>> after = read(fresh, true);
+        System.out.println("   efter: " + counts(after));
+        System.out.println("   schema_version:     " + schemaVersions(fresh));
+        System.out.println("   foreign_key_check:  " + foreignKeys(fresh));
+
+        List<String> tables = new ArrayList<String>();
+        for (String table : BASELINE_TABLES) {
+            if (!after.containsKey(table)) {
+                tables.add(table);
+            }
+        }
+        // The columns the tolerance step knows about have to stand in the baseline as well.
+        // Otherwise a database made from nothing and one that was patched end up different.
+        List<String> columns = new ArrayList<String>();
+        for (String[] column : FROM_BETWEEN) {
+            if (!hasColumn(fresh, column[0], column[1])) {
+                columns.add(column[0] + "." + column[1]);
+            }
+        }
+        Map<String, Map<String, String>> customers = after.get("customers");
+        boolean seeded = customers != null && !customers.isEmpty();
+
+        System.out.println("   tabeller som saknas: " + (tables.isEmpty() ? "inga" : tables.toString()));
+        System.out.println("   kolumner som saknas: " + (columns.isEmpty() ? "inga" : columns.toString()));
+        System.out.println("   fröet kommer in:     " + seeded);
+        return tables.isEmpty() && columns.isEmpty() && seeded;
+    }
+
+    private static boolean hasColumn(File database, String table, String column) throws Exception {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + database.getAbsolutePath());
+             Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery("PRAGMA table_info(" + table + ")")) {
+            while (rows.next()) {
+                if (column.equals(rows.getString("name"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
