@@ -136,9 +136,9 @@ public class BookingService {
             }
         }
 
-        // The working day lives in MechanicSchedule, the same hours the Kanban draws.
-        int fromHour = Math.max(LocalTime.now().getHour(), MechanicSchedule.START_HOUR);
-        for (int hour = fromHour; hour < MechanicSchedule.END_HOUR; hour++) {
+        // The working day lives in OpeningHours, the same hours the Kanban draws.
+        int fromHour = Math.max(LocalTime.now().getHour(), OpeningHours.firstHour());
+        for (int hour = fromHour; hour < OpeningHours.closingHour(); hour++) {
             if (isHourFree(bookedToday, mechanicIds, hour)) {
                 return LocalTime.of(hour, 0);
             }
@@ -228,5 +228,19 @@ public class BookingService {
                     }
                     return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
                 });
+    }
+    /** The booking's price, worked out from its services. */
+    public int priceOf(Booking booking) {
+        if (booking == null || booking.getServiceItemIds() == null) {
+            return 0;
+        }
+        List<ServiceItem> services = new ArrayList<ServiceItem>();
+        for (int id : booking.getServiceItemIds()) {
+            ServiceItem service = serviceItemRepository.findById(id);
+            if (service != null) {
+                services.add(service);
+            }
+        }
+        return ServiceItem.totalPrice(services);
     }
 }

@@ -122,18 +122,16 @@ final class CreateWorkOrderDialog {
                 Mechanic m = WorkOrderPlan.mechanicById(garage, entry.getKey().intValue());
                 StringBuilder names = new StringBuilder();
                 int minutes = 0;
-                int price = 0;
                 for (ServiceItem s : entry.getValue()) {
                     if (names.length() > 0) {
                         names.append(", ");
                     }
                     names.append(SeedText.resolve(s.getName()));
                     minutes += s.getEstimatedMinutes();
-                    price += s.getPrice();
                 }
                 Label row = new Label((m != null ? m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ")" : "?")
                         + ": " + names
-                        + "  ·  " + minutes + " min  ·  " + UiFormatters.formatMoney(price));
+                        + "  ·  " + minutes + " min  ·  " + UiFormatters.formatMoney(ServiceItem.totalPrice(entry.getValue())));
                 serviceList.getChildren().add(row);
             }
 

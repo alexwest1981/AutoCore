@@ -4,6 +4,7 @@ import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.TimeSlot;
+import com.wac.autocore.model.OpeningHours;
 import com.wac.autocore.service.GarageSystem;
 
 import java.time.DayOfWeek;
@@ -14,9 +15,6 @@ import java.util.List;
 
 /** The available and busy hours for the mechanics. */
 public final class BookingAvailability {
-
-    public static final LocalTime CLOSING_TIME = LocalTime.of(17, 0);
-    public static final int MAX_WORK_MINUTES_PER_DAY = 10 * 60; // 07:00 till 17:00 = 600 minuter
 
     private BookingAvailability() {}
 
@@ -92,10 +90,10 @@ public final class BookingAvailability {
         if (date == null || date.isBefore(LocalDate.now())) {
             return "dialog.booking.date_past";
         }
-        if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+        if (!OpeningHours.isOpenOn(date)) {
             return "dialog.booking.date_weekend";
         }
-        if (durationMinutes > MAX_WORK_MINUTES_PER_DAY) {
+        if (durationMinutes > OpeningHours.minutesPerDay()) {
             return "dialog.booking.duration_too_long";
         }
         return hasAvailableSlotOnDate(garage, mechanic, qualifiedMechanics, date, durationMinutes,
@@ -115,17 +113,18 @@ public final class BookingAvailability {
             return false;
         }
 
-        if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+        if (!OpeningHours.isOpenOn(date)) {
             return false;
         }
 
-        if (durationMinutes > MAX_WORK_MINUTES_PER_DAY) {
+        if (durationMinutes > OpeningHours.minutesPerDay()) {
             return false; // longer than a full working day (10 hours = 600 min)
         }
 
         // On today's date the hours already gone cannot be booked, so the search starts at the
         // current one. Any other day still starts at opening.
-        int firstHour = date.isEqual(LocalDate.now()) ? Math.max(7, LocalTime.now().getHour()) : 7;
+        int firstHour = date.isEqual(LocalDate.now())
+                ? Math.max(OpeningHours.firstHour(), LocalTime.now().getHour()) : OpeningHours.firstHour();
 
         List<Mechanic> candidates = new ArrayList<Mechanic>();
 
@@ -141,11 +140,11 @@ public final class BookingAvailability {
 
         if (candidates.isEmpty()) {
 
-            for (int h = firstHour; h <= 16; h++) {
+            for (int h = firstHour; h <= OpeningHours.closingHour(); h++) {
 
                 LocalTime start = LocalTime.of(h, 0);
 
-                if (!start.plusMinutes(durationMinutes).isAfter(CLOSING_TIME)) {
+                if (!start.plusMinutes(durationMinutes).isAfter(OpeningHours.CLOSES)) {
                     return true;
                 }
             }
@@ -159,12 +158,12 @@ public final class BookingAvailability {
         boolean needsWholeTeam = mechanic != null && mechanic.getId() > 0
                 || qualifiedMechanics != null && !qualifiedMechanics.isEmpty();
 
-        for (int h = firstHour; h <= 16; h++) {
+        for (int h = firstHour; h <= OpeningHours.closingHour(); h++) {
 
             LocalTime start = LocalTime.of(h, 0);
             LocalTime end = start.plusMinutes(durationMinutes);
 
-            if (end.isAfter(CLOSING_TIME)) {
+            if (end.isAfter(OpeningHours.CLOSES)) {
                 break;
             }
 

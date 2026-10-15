@@ -100,11 +100,10 @@ class BookingServicesField {
         }
 
         int totalMin = 0;
-        int totalCost = 0;
         for (ServiceItem item : picked) {
             totalMin += item.getEstimatedMinutes();
-            totalCost += item.getPrice();
         }
+        int totalCost = ServiceItem.totalPrice(picked);
         // Two lines rather than one: the box is narrow, and a separator ends up stranded at the
         // end of the first line as soon as the text wraps.
         summary.setText(I18n.get("dialog.booking.total_time", totalMin) + "\n"

@@ -96,21 +96,6 @@ public final class EntityLookup {
         return min;
     }
 
-    public static int bookingTotalPrice(GarageSystem garage, com.wac.autocore.model.Booking b) {
-        if (b == null) return 0;
-        int cost = b.getTotalEstimatedCost();
-        if (cost > 0) return cost;
-        if (garage != null && b.getServiceItemIds() != null) {
-            for (int sid : b.getServiceItemIds()) {
-                ServiceItem service = garage.findServiceItem(sid);
-                if (service != null) {
-                    cost += service.getPrice();
-                }
-            }
-        }
-        return cost;
-    }
-
     public static String bookingVehicleReg(GarageSystem garage, int bookingId) {
         if (garage == null) return "Booking #" + bookingId;
         Booking b = garage.findBooking(bookingId);

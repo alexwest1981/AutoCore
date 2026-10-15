@@ -162,6 +162,12 @@ public class GarageSystem implements WorkOrderGateway {
     public void saveSetting(String key, String value) {
         Settings.put(key, value);
     }
+
+    /** The booking's price. The views ask here instead of adding it up themselves. */
+    public int bookingPrice(Booking booking) {
+        return bookingService.priceOf(booking);
+    }
+
     /** The customer with that id, or null when there is none. */
     public Customer findCustomer(int id) {
         for (Customer row : getCustomers()) {

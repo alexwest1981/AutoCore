@@ -1,6 +1,7 @@
 package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.*;
+import com.wac.autocore.model.OpeningHours;
 import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.seed.SeedText;
@@ -221,7 +222,7 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
         LocalTime start = getSelectedStartTime();
         if (start != null) {
             int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            if (start.plusMinutes(duration).isAfter(BookingAvailability.CLOSING_TIME)) {
+            if (start.plusMinutes(duration).isAfter(OpeningHours.CLOSES)) {
                 return false;
             }
         }
@@ -252,14 +253,21 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
         LocalTime startTime = getSelectedStartTime();
         int minutes = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
 
-        // Blocked against closing time (17:00): a job that ends after closing cannot be booked.
+        // Blocked against closing time : a job that ends after closing cannot be booked.
         // A drop-in has no picked time — it is worked out by the service.
         if (startTime != null && !dropIn) {
             LocalTime endTime = startTime.plusMinutes(minutes);
-            if (endTime.isAfter(BookingAvailability.CLOSING_TIME)) {
+            if (endTime.isAfter(OpeningHours.CLOSES)) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.closing_time_exceeded"));
                 return false;
             }
+        }
+
+        // Closed on weekends. The calendar strikes them out, but a date can arrive pre-filled
+        // from the Kanban, so the check is made here too.
+        if (date != null && !OpeningHours.isOpenOn(date)) {
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.date_weekend"));
+            return false;
         }
 
         // Qualification check: every picked service needs at least one qualified mechanic in the team
