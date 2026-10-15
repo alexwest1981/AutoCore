@@ -50,7 +50,7 @@ class KanbanWeekView {
         countLabel.setMinWidth(50);
         countLabel.setPrefWidth(50);
         countLabel.setMaxWidth(45);
-        // 9 hour boxes (07:00 to 16:00) where booked hours are marked with the load colour
+        // One box per open hour, booked hours are marked with the load colour
         HBox hourBoxes = new HBox(2);
         hourBoxes.getStyleClass().add("kanban-hour-boxes");
         hourBoxes.setAlignment(Pos.CENTER_LEFT);

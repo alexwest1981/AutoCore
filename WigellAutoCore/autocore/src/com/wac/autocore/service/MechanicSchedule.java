@@ -204,6 +204,9 @@ public class MechanicSchedule {
         if (hour < OpeningHours.firstHour() || hour >= OpeningHours.closingHour()) {
             return false;
         }
+        if (!OpeningHours.isOpenOn(date)) {
+            return false;
+        }
         String key = slotKey(mechanicId, date, hour);
         TimeSlot existing = slots.get(key);
         if (existing != null && existing.isBooked()) {
@@ -284,7 +287,7 @@ public class MechanicSchedule {
         LocalDate cur = startGrid;
         while (!cur.isAfter(endGrid)) {
             boolean inCurrentMonth = cur.getMonth() == yearMonth.getMonth();
-            boolean isWeekend = (cur.getDayOfWeek() == DayOfWeek.SATURDAY || cur.getDayOfWeek() == DayOfWeek.SUNDAY);
+            boolean isWeekend = !OpeningHours.isOpenOn(cur);
 
             int booked = 0;
             LoadLevel level = LoadLevel.FREE;

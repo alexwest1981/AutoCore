@@ -2,6 +2,7 @@ package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.TimeSlot;
+import com.wac.autocore.model.OpeningHours;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
 import javafx.geometry.Insets;
@@ -98,7 +99,11 @@ class KanbanDayView {
                 });
             });
 
-            row.getChildren().addAll(timeBadge, spr, bookBtn);
+            if (OpeningHours.isOpenOn(card.selectedDate)) {
+                row.getChildren().addAll(timeBadge, spr, bookBtn);
+            } else {
+                row.getChildren().add(timeBadge);
+            }
         }
 
         VBox slotContainer = new VBox(4);
