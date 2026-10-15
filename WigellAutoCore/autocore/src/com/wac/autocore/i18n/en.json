@@ -98,6 +98,7 @@
       "subtitle": "Ongoing and completed garage work orders",
       "meta": "{0} work orders",
       "meta.one": "{0} work order",
+      "show_cancelled": "Show cancelled",
       "action_create": "+ Create Work Order",
       "action_start": "▶ Start order",
       "action_cancel": "Cancel order",

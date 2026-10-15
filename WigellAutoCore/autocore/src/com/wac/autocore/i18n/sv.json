@@ -98,6 +98,7 @@
       "subtitle": "Pågående och slutförda verkstadsjobb",
       "meta": "{0} arbetsordrar",
       "meta.one": "{0} arbetsorder",
+      "show_cancelled": "Visa avbrutna",
       "action_create": "+ Ny arbetsorder",
       "action_start": "▶ Starta order",
       "action_cancel": "Avbryt order",

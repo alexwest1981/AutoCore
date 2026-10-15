@@ -27,13 +27,11 @@ public final class Resources {
 
         URL url = Resources.class.getResource(path);
 
+        // Two forms and no more. A third attempt with ClassLoader.getSystemResource would search
+        // the same classpath as the line above, only once more.
         if (url == null) {
             String clean = path.startsWith("/") ? path.substring(1) : path;
             url = Resources.class.getClassLoader().getResource(clean);
-        }
-        if (url == null) {
-            String clean = path.startsWith("/") ? path.substring(1) : path;
-            url = ClassLoader.getSystemResource(clean);
         }
 
         return url;

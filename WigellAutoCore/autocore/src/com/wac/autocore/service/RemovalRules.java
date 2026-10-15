@@ -114,8 +114,11 @@ public class RemovalRules {
     }
 
     public boolean canDeleteServiceItem(int serviceItemId) {
+        // The work order's own rows point at the service whatever the order's status is, and the
+        // key is ON DELETE RESTRICT. So the rule has to answer no in every status, not only the
+        // open ones — otherwise the database answers, and it answers with a technical error.
         for (WorkOrder wo : workOrders()) {
-            if (wo.getStatus() != WorkOrderStatus.COMPLETED && wo.getServiceItemIds() != null) {
+            if (wo.getServiceItemIds() != null) {
                 for (int id : wo.getServiceItemIds()) {
                     if (id == serviceItemId) {
                         return false;

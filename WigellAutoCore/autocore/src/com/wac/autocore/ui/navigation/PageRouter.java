@@ -9,6 +9,7 @@ import com.wac.autocore.ui.views.EntityPages;
 import com.wac.autocore.ui.views.OverviewView;
 import javafx.scene.layout.VBox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Handles page navigation and keeps track of the active table. */
@@ -20,6 +21,7 @@ public class PageRouter {
 
     private FilterableTable<?> activeTable;
     private String currentPageKey;
+    private boolean showCancelledWorkOrders;
 
     public PageRouter(GarageSystem garage, VBox pageBox) {
         this(garage, pageBox, null);
@@ -44,7 +46,57 @@ public class PageRouter {
         this.activeTable = table;
     }
 
+    /** True when the work order list also shows the cancelled ones. */
+    public boolean isShowingCancelledWorkOrders() {
+        return showCancelledWorkOrders;
+    }
+
+    /** Turns the cancelled orders on or off in the list, and redraws the page when it is up. */
+    public void setShowCancelledWorkOrders(boolean show) {
+        if (show == showCancelledWorkOrders) {
+            return;
+        }
+        showCancelledWorkOrders = show;
+        if ("workorders".equals(currentPageKey)) {
+            navigate("workorders");
+        }
+    }
+
+    /**
+     * The rows the work order page is built from. A cancelled order waits for nothing and is not
+     * work in hand, but it is kept rather than removed: the details dialog still offers to start
+     * it again, and that road goes through this list.
+     */
+    public List<WorkOrder> workOrdersForList() {
+        List<WorkOrder> all = garage.getWorkOrders();
+        if (showCancelledWorkOrders) {
+            return all;
+        }
+        List<WorkOrder> open = new ArrayList<WorkOrder>();
+        for (WorkOrder order : all) {
+            if (order.getStatus() != WorkOrderStatus.CANCELLED) {
+                open.add(order);
+            }
+        }
+        return open;
+    }
+
+    /** True when the order is cancelled, that is one of the rows the list keeps out by default. */
+    public boolean isCancelledWorkOrder(int workOrderId) {
+        for (WorkOrder order : garage.getWorkOrders()) {
+            if (order.getId() == workOrderId) {
+                return order.getStatus() == WorkOrderStatus.CANCELLED;
+            }
+        }
+        return false;
+    }
+
     public void navigateToWorkOrder(int workOrderId) {
+        // A row that is not in the list cannot be turned to, so a cancelled order is let in before
+        // the page is built. Otherwise the jump would land on the right page with nothing marked.
+        if (isCancelledWorkOrder(workOrderId)) {
+            showCancelledWorkOrders = true;
+        }
         navigate("workorders");
         if (workOrderId <= 0 || activeTable == null) {
             return;
