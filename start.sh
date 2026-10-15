@@ -152,7 +152,6 @@ JAVA_BIN="$FOUND_JDK/bin/java$EXE"
 JAVAC_BIN="$FOUND_JDK/bin/javac$EXE"
 
 SRC_DIR="WigellAutoCore/autocore/src"
-RES_DIR="WigellAutoCore/autocore/src/resources"
 OUT_DIR="out/production/Systemarkitektur"
 JDBC_JAR="WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar"
 JSON_JAR="WigellAutoCore/autocore/lib/json-20231013.jar"
@@ -164,15 +163,14 @@ shift || true
 
 mkdir -p "$OUT_DIR"
 
-# Copy resources (CSS themes, JSON language files etc.) to out
-if [ -d "$RES_DIR" ]; then
-    cp -R "$RES_DIR/." "$OUT_DIR/" 2>/dev/null || cp -r "$RES_DIR"/* "$OUT_DIR"/ 2>/dev/null || true
-fi
+# Copy the resources (CSS themes, JSON texts, migrations) beside the classes. javac writes classes
+# only, so this is what puts them on the classpath.
+( cd "$SRC_DIR" && find . -type f ! -name '*.java' -exec cp --parents {} "$DIR/$OUT_DIR" \; )
 
 SOURCES_FILE="$OUT_DIR/sources.txt"
 find "$SRC_DIR" -name "*.java" > "$SOURCES_FILE"
 
-"$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR$CP_SEP$RES_DIR" -cp "$LIBS" @"$SOURCES_FILE"
+"$JAVAC_BIN" -d "$OUT_DIR" -sourcepath "$SRC_DIR" -cp "$LIBS" @"$SOURCES_FILE"
 rm -f "$SOURCES_FILE"
 
 # On Linux with Wayland, JavaFX 8 needs XWayland (GDK_BACKEND=x11) to avoid a crash in GTK

@@ -1,6 +1,11 @@
 -- Schemat så som det såg ut innan nycklarna kom på.
 -- Den här filen skapas för en ny bas. En bas som redan har tabellerna får
 -- versionen kvitterad utan att filen körs, för schemat är detsamma.
+--
+-- En bas från en tidigare sprint är inte detsamma. Den har tabellerna men inte alla kolumner,
+-- och CREATE TABLE IF NOT EXISTS lämnar den som den är. De kolumner som saknas läggs till av
+-- Migrations.ADDED_COLUMNS innan filen körs. Läggs en kolumn till nedan hör den dit också, och
+-- L3-provet faller om de två glider isär.
 
 CREATE TABLE IF NOT EXISTS customers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
