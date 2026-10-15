@@ -266,13 +266,7 @@ public class Booking {
     }
 
     public int getTotalEstimatedCost() {
-        int total = 0;
-        for (ServiceItem s : serviceItems) {
-            if (s != null) {
-                total += s.getPrice();
-            }
-        }
-        return total;
+        return ServiceItem.totalPrice(serviceItems);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.wac.autocore.model;
 
+import java.util.List;
+
 public class ServiceItem {
 
     private int id;
@@ -84,5 +86,18 @@ public class ServiceItem {
         return id + " - " + name +
                 " | Price: " + price + " öre" +
                 " | Estimated time: " + estimatedMinutes + " min";
+    }
+    /** The price of the services together. The only place a price is added up. */
+    public static int totalPrice(List<ServiceItem> items) {
+        int total = 0;
+        if (items == null) {
+            return total;
+        }
+        for (ServiceItem item : items) {
+            if (item != null) {
+                total += item.getPrice();
+            }
+        }
+        return total;
     }
 }

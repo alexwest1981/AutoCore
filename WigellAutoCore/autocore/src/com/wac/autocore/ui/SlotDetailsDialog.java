@@ -103,7 +103,7 @@ public final class SlotDetailsDialog {
                 : ((b != null) ? EntityLookup.bookingTotalMinutes(garage, b) : 0);
         int estCost = (hasWorkOrder && wo != null)
                 ? EntityLookup.workOrderTotal(garage, wo)
-                : ((b != null) ? EntityLookup.bookingTotalPrice(garage, b) : 0);
+                : ((b != null) ? garage.bookingPrice(b) : 0);
         if (estMin > 0) {
             grid.add(new Label(I18n.get("dialog.slot.estimated_time")), 0, rowIdx);
             grid.add(new Label(estMin + " min"), 1, rowIdx++);

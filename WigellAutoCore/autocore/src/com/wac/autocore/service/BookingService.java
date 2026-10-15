@@ -229,4 +229,18 @@ public class BookingService {
                     return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
                 });
     }
+    /** The booking's price, worked out from its services. */
+    public int priceOf(Booking booking) {
+        if (booking == null || booking.getServiceItemIds() == null) {
+            return 0;
+        }
+        List<ServiceItem> services = new ArrayList<ServiceItem>();
+        for (int id : booking.getServiceItemIds()) {
+            ServiceItem service = serviceItemRepository.findById(id);
+            if (service != null) {
+                services.add(service);
+            }
+        }
+        return ServiceItem.totalPrice(services);
+    }
 }
