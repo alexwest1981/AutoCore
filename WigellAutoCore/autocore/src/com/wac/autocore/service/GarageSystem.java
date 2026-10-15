@@ -342,7 +342,7 @@ public class GarageSystem {
     }
 
     /** Invoices a work order, with a new charge as its own line. */
-    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, int extraAmount) {
         return billingService.createInvoice(workOrderId, discountCode, extraName, extraAmount);
     }
 
@@ -352,7 +352,7 @@ public class GarageSystem {
     }
 
     /** The same invoice, but with room for a new charge the reclamation brings with it. */
-    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, int extraAmount) {
         return billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
     }
 
@@ -363,12 +363,12 @@ public class GarageSystem {
         return mechanic;
     }
 
-    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes) {
+    public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes) {
         return createServiceItem(name, description, price, estimatedMinutes, "");
     }
 
     /** As above, but with the requirement on specialization. */
-    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes,
+    public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes,
                                          String specialization) {
         ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
         serviceItemRepository.save(item);

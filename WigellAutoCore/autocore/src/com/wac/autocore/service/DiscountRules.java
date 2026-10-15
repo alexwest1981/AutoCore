@@ -2,67 +2,80 @@ package com.wac.autocore.service;
 
 import com.wac.autocore.model.InvoiceLine;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 /** The discount rules for an invoice. */
 public class DiscountRules {
 
     /** The VIP customer's discount as a percentage of the whole amount. */
-    public static final double VIP_PERCENT = 10.0;
+    public static final int VIP_PERCENT = 10;
 
-    /** The discount in kronor for a campaign code: fixed amount, percentage or one of the named ones. */
-    public static double forCode(String discountCode, double amount) {
+    /** A percentage of an amount in öre, rounded to the nearest öre, half upward. */
+    public static int percentOf(int amount, int percent) {
+        return (amount * percent + 50) / 100;
+    }
+
+    /** The discount in öre for a campaign code: fixed amount, percentage or one of the named ones. */
+    public static int forCode(String discountCode, int amount) {
         if (discountCode == null || discountCode.trim().isEmpty()) {
-            return 0.0;
+            return 0;
         }
 
         String code = discountCode.trim();
 
         if (code.equalsIgnoreCase("WELCOME10") || code.equalsIgnoreCase("10off") || code.equalsIgnoreCase("10%")) {
             System.out.println("Discount code " + code + " applied: 10%");
-            return amount * 0.10;
+            return percentOf(amount, 10);
         }
         if (code.equalsIgnoreCase("SERVICE200")) {
             System.out.println("Discount code SERVICE200 applied.");
-            return 200.0;
+            return 20000;
         }
 
         try {
             if (code.endsWith("%")) {
-                double pct = Double.parseDouble(code.substring(0, code.length() - 1).trim());
+                int pct = Integer.parseInt(code.substring(0, code.length() - 1).trim());
                 System.out.println("Discount code " + pct + "% applied.");
-                return amount * (pct / 100.0);
+                return percentOf(amount, pct);
             } else if (code.toLowerCase().endsWith("off")) {
-                double val = Double.parseDouble(code.substring(0, code.length() - 3).trim());
+                int val = Integer.parseInt(code.substring(0, code.length() - 3).trim());
                 System.out.println("Discount code " + code + " applied.");
                 if (val <= 100 && val > 0) {
-                    return amount * (val / 100.0);
+                    return percentOf(amount, val);
                 }
-                return val;
+                return val * 100;
             } else {
-                double val = Double.parseDouble(code);
+                int val = toOre(code);
                 if (val > 0) {
-                    System.out.println("Discount " + val + " SEK applied.");
+                    System.out.println("Discount " + val + " öre applied.");
                     return val;
                 }
             }
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException | ArithmeticException ignored) {
             System.out.println("Unknown discount code. No code discount applied.");
         }
 
-        return 0.0;
+        return 0;
+    }
+
+    /** A typed amount as öre. This is the one place a written amount becomes a number. */
+    private static int toOre(String text) {
+        return new BigDecimal(text).setScale(2, RoundingMode.HALF_UP).movePointRight(2).intValueExact();
     }
 
     /** Spreads the discount in proportion to the line price. The remainder goes on the dearest line. */
-    public static void distributeDiscount(List<InvoiceLine> lines, double amount, double discount) {
+    public static void distributeDiscount(List<InvoiceLine> lines, int amount, int discount) {
         if (lines.isEmpty() || amount <= 0 || discount <= 0) {
             return;
         }
 
-        double distributed = 0.0;
+        int distributed = 0;
         InvoiceLine mostExpensive = lines.get(0);
         for (InvoiceLine line : lines) {
-            double share = roundToOre(discount * line.getPrice() / amount);
+            // The share is whole öre, and the odd öre or two are laid on the dearest line below.
+            int share = (int) ((long) discount * line.getPrice() / amount);
             line.setDiscount(share);
             distributed += share;
             if (line.getPrice() > mostExpensive.getPrice()) {
@@ -70,11 +83,7 @@ public class DiscountRules {
             }
         }
 
-        double rest = discount - distributed;
-        mostExpensive.setDiscount(roundToOre(mostExpensive.getDiscount() + rest));
-    }
-
-    public static double roundToOre(double value) {
-        return Math.round(value * 100.0) / 100.0;
+        int rest = discount - distributed;
+        mostExpensive.setDiscount(mostExpensive.getDiscount() + rest);
     }
 }

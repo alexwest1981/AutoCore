@@ -25,7 +25,8 @@ final class Migrations {
     /** In order. A new change gets the next number and is added last. */
     private static final String[] FILES = {
         "001_baslinjen.sql",
-        "002_nycklar.sql"
+        "002_nycklar.sql",
+        "003_ore.sql"
     };
 
     private Migrations() {}

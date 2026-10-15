@@ -125,7 +125,7 @@ final class CreateWorkOrderDialog {
                 Mechanic m = WorkOrderPlan.mechanicById(garage, entry.getKey().intValue());
                 StringBuilder names = new StringBuilder();
                 int minutes = 0;
-                double price = 0.0;
+                int price = 0;
                 for (ServiceItem s : entry.getValue()) {
                     if (names.length() > 0) {
                         names.append(", ");

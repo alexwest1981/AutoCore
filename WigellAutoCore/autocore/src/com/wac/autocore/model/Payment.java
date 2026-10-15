@@ -6,12 +6,13 @@ public class Payment {
 
     private int id;
     private int invoiceId;
-    private double amount;
+    /** In öre, like every other amount in the program. */
+    private int amount;
     private String paymentType;
     private LocalDateTime paymentDate;
     private boolean successful;
 
-    public Payment(int id, int invoiceId, double amount, String paymentType) {
+    public Payment(int id, int invoiceId, int amount, String paymentType) {
         this.id = id;
         this.invoiceId = invoiceId;
         this.amount = amount;
@@ -36,7 +37,7 @@ public class Payment {
         this.invoiceId = invoiceId;
     }
 
-    public double getAmount() {
+    public int getAmount() {
         return amount;
     }
 
@@ -64,7 +65,7 @@ public class Payment {
     public String toString() {
         return id +
                 " - Invoice ID: " + invoiceId +
-                " | Amount: " + amount + " SEK" +
+                " | Amount: " + amount + " öre" +
                 " | Payment type: " + paymentType +
                 " | Date: " + paymentDate +
                 " | Successful: " + (successful ? "Yes" : "No");

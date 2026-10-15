@@ -67,9 +67,9 @@ public class InvoiceRepository {
         int id = Queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
-            statement.setDouble(3, invoice.getAmount());
-            statement.setDouble(4, invoice.getDiscount());
-            statement.setDouble(5, invoice.getTotalAmount());
+            statement.setInt(3, invoice.getAmount());
+            statement.setInt(4, invoice.getDiscount());
+            statement.setInt(5, invoice.getTotalAmount());
             statement.setBoolean(6, invoice.isPaid());
         });
 
@@ -87,9 +87,9 @@ public class InvoiceRepository {
         Queries.write(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
-            statement.setDouble(3, invoice.getAmount());
-            statement.setDouble(4, invoice.getDiscount());
-            statement.setDouble(5, invoice.getTotalAmount());
+            statement.setInt(3, invoice.getAmount());
+            statement.setInt(4, invoice.getDiscount());
+            statement.setInt(5, invoice.getTotalAmount());
             statement.setBoolean(6, invoice.isPaid());
             statement.setInt(7, invoice.getId());
         });
@@ -122,10 +122,10 @@ public class InvoiceRepository {
                 resultSet.getInt("id"),
                 resultSet.getInt("work_order_id"),
                 invoiceDate,
-                resultSet.getDouble("amount")
+                resultSet.getInt("amount")
         );
 
-        invoice.setDiscount(resultSet.getDouble("discount"));
+        invoice.setDiscount(resultSet.getInt("discount"));
         invoice.setPaid(resultSet.getBoolean("paid"));
 
         for (InvoiceLine line : invoiceLineRepository.findByInvoiceId(invoice.getId())) {

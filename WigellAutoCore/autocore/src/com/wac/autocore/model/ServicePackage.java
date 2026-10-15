@@ -51,8 +51,8 @@ public class ServicePackage {
         serviceItems.add(item);
     }
 
-    public double getTotalPrice() {
-        double total = 0;
+    public int getTotalPrice() {
+        int total = 0;
         for (ServiceItem item : serviceItems) {
             total += item.getPrice();
         }

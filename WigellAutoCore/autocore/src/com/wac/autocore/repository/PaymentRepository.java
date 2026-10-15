@@ -40,7 +40,7 @@ public class PaymentRepository {
 
         int id = Queries.insert(sql, statement -> {
             statement.setInt(1, payment.getInvoiceId());
-            statement.setDouble(2, payment.getAmount());
+            statement.setInt(2, payment.getAmount());
             statement.setString(3, payment.getPaymentType());
             setPaymentDate(statement, 4, payment.getPaymentDate());
             statement.setBoolean(5, payment.isSuccessful());
@@ -57,7 +57,7 @@ public class PaymentRepository {
 
         Queries.write(sql, statement -> {
             statement.setInt(1, payment.getInvoiceId());
-            statement.setDouble(2, payment.getAmount());
+            statement.setInt(2, payment.getAmount());
             statement.setString(3, payment.getPaymentType());
             setPaymentDate(statement, 4, payment.getPaymentDate());
             statement.setBoolean(5, payment.isSuccessful());
@@ -77,7 +77,7 @@ public class PaymentRepository {
         Payment payment = new Payment(
                 resultSet.getInt("id"),
                 resultSet.getInt("invoice_id"),
-                resultSet.getDouble("amount"),
+                resultSet.getInt("amount"),
                 resultSet.getString("payment_type")
         );
 
