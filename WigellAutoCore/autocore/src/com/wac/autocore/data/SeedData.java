@@ -136,14 +136,14 @@ public class SeedData {
             workOrderRepository.save(firstOrder);
 
             // The booking's status should mirror the work order, otherwise the start data looks contradictory.
-            firstBooking.setStatus("IN_PROGRESS");
+            firstBooking.setStatus(BookingStatus.IN_PROGRESS);
             bookingRepository.save(firstBooking);
 
             WorkOrder secondOrder = new WorkOrder(0, secondBooking.getId(), sara.getId());
             secondOrder.setVehicleId(secondBooking.getVehicleId());
             secondOrder.addServiceItem(brakeService.getId());
             workOrderRepository.save(secondOrder);
-            secondBooking.setStatus("WORK_ORDER_CREATED");
+            secondBooking.setStatus(BookingStatus.WORK_ORDER_CREATED);
             bookingRepository.save(secondBooking);
 
             WorkOrder thirdOrder = new WorkOrder(0, fourthBooking.getId(), sara.getId());
@@ -151,7 +151,7 @@ public class SeedData {
             thirdOrder.addServiceItem(brakeService.getId());
             thirdOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
             workOrderRepository.save(thirdOrder);
-            fourthBooking.setStatus("IN_PROGRESS");
+            fourthBooking.setStatus(BookingStatus.IN_PROGRESS);
             bookingRepository.save(fourthBooking);
 
             WorkOrder fourthOrder = new WorkOrder(0, fifthBooking.getId(), mikael.getId());
@@ -159,7 +159,7 @@ public class SeedData {
             fourthOrder.addServiceItem(diagnostics.getId());
             fourthOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
             workOrderRepository.save(fourthOrder);
-            fifthBooking.setStatus("IN_PROGRESS");
+            fifthBooking.setStatus(BookingStatus.IN_PROGRESS);
             bookingRepository.save(fifthBooking);
 
             WorkOrder fifthOrder = new WorkOrder(0, thirdBooking.getId(), sara.getId());
@@ -167,14 +167,14 @@ public class SeedData {
             fifthOrder.addServiceItem(brakeService.getId());
             fifthOrder.addServiceItem(annualService.getId());
             workOrderRepository.save(fifthOrder);
-            thirdBooking.setStatus("WORK_ORDER_CREATED");
+            thirdBooking.setStatus(BookingStatus.WORK_ORDER_CREATED);
             bookingRepository.save(thirdBooking);
 
             WorkOrder sixthOrder = new WorkOrder(0, sixthBooking.getId(), mikael.getId());
             sixthOrder.setVehicleId(sixthBooking.getVehicleId());
             sixthOrder.addServiceItem(diagnostics.getId());
             workOrderRepository.save(sixthOrder);
-            sixthBooking.setStatus("WORK_ORDER_CREATED");
+            sixthBooking.setStatus(BookingStatus.WORK_ORDER_CREATED);
             bookingRepository.save(sixthBooking);
         } catch (DataAccessException e) {
             System.out.println("Could not seed sample data: " + e.getMessage());

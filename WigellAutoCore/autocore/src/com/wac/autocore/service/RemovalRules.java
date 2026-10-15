@@ -60,7 +60,7 @@ public class RemovalRules {
 
     public boolean canDeleteVehicle(int vehicleId) {
         for (Booking b : bookings()) {
-            if (b.getVehicleId() == vehicleId && !"CANCELLED".equalsIgnoreCase(b.getStatus())) {
+            if (b.getVehicleId() == vehicleId && b.getStatus() != BookingStatus.CANCELLED) {
                 return false;
             }
         }

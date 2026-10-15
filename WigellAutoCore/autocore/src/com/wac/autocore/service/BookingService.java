@@ -4,10 +4,7 @@ import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.exception.MechanicUnavailableException;
 import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.model.*;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.VehicleRepository;
@@ -134,7 +131,7 @@ public class BookingService {
         List<Booking> bookedToday = new ArrayList<Booking>();
         for (Booking booking : getAll()) {
             if (date.equals(booking.getDate()) && booking.getStartTime() != null
-                    && !"CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+                    && booking.getStatus() != BookingStatus.CANCELLED) {
                 bookedToday.add(booking);
             }
         }

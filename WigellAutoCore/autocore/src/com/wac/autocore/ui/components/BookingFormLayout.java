@@ -1,6 +1,6 @@
 package com.wac.autocore.ui.components;
 
-import com.wac.autocore.model.ServicePackage;
+import com.wac.autocore.model.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -15,9 +15,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.ui.i18n.I18n;
 
 import java.time.LocalTime;
@@ -43,7 +40,7 @@ public class BookingFormLayout {
                 MultiSelectComboBox<Mechanic> mechanicMulti, Label mechanicFilterHint,
                 BookingScheduleField scheduleField,
                 DatePicker datePicker, ComboBox<LocalTime> startTimeBox,
-                TextField descField, ComboBox<String> statusBox, Label dropInTimeLabel,
+                TextField descField, ComboBox<BookingStatus> statusBox, Label dropInTimeLabel,
                 BookingServicesField servicesField,
                 boolean isServicesLocked) {
         datePicker.setMaxWidth(Double.MAX_VALUE);

@@ -1,10 +1,7 @@
 package com.wac.autocore.ui.components;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.ServicePackage;
-import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.model.*;
+import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.ui.ActionDialogs;
@@ -61,7 +58,7 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
     private final ComboBox<LocalTime> startTimeBox;
     private final Label durationLabel;
     private final TextField descField;
-    private final ComboBox<String> statusBox;
+    private final ComboBox<BookingStatus> statusBox;
 
     /**
      * Drop-in: the time is not picked, it is worked out and shown before the booking is approved.
@@ -469,8 +466,8 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
         return descField.getText().trim();
     }
 
-    public String getStatus() {
-        return statusBox != null ? statusBox.getValue() : "BOOKED";
+    public BookingStatus getStatus() {
+        return statusBox != null ? statusBox.getValue() : BookingStatus.BOOKED;
     }
 
     static <T> void setupComboBoxDisplay(ComboBox<T> box, StringConverter<T> converter) {

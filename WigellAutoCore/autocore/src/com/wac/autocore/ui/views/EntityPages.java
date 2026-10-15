@@ -1,9 +1,6 @@
 package com.wac.autocore.ui.views;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Invoice;
-import com.wac.autocore.model.Payment;
-import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.*;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.components.TableFactory;
@@ -66,7 +63,7 @@ public final class EntityPages {
         deleteBtn.setDisable(true);
 
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
-            cancelBtn.setDisable(sel == null || "CANCELLED".equalsIgnoreCase(sel.getStatus()));
+            cancelBtn.setDisable(sel == null || sel.getStatus() == BookingStatus.CANCELLED);
             editBtn.setDisable(sel == null);
             deleteBtn.setDisable(sel == null);
         });

@@ -1,9 +1,6 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.*;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.UiFormatters;
@@ -34,7 +31,7 @@ final class CreateWorkOrderDialog {
         // booking that is only partly split (some services left) should still be fillable.
         List<Booking> bookings = new ArrayList<Booking>();
         for (Booking b : garage.getBookings()) {
-            if ("BOOKED".equalsIgnoreCase(b.getStatus()) || "CONFIRMED".equalsIgnoreCase(b.getStatus())) {
+            if (b.getStatus() == BookingStatus.BOOKED || b.getStatus() == BookingStatus.CONFIRMED) {
                 if (WorkOrderPlan.hasServicesLeftForAWorkOrder(garage, b)) {
                     bookings.add(b);
                 }

@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.components;
 
+import com.wac.autocore.model.BookingStatus;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
@@ -17,7 +18,7 @@ import com.wac.autocore.ui.util.UiFormatters;
 class BookingStatusField {
 
     private final TextField desc;
-    private final ComboBox<String> status;
+    private final ComboBox<BookingStatus> status;
 
     BookingStatusField(Booking existingBooking) {
         String initialDesc = existingBooking != null && existingBooking.getDescription() != null
@@ -29,30 +30,30 @@ class BookingStatusField {
             this.status = null;
             return;
         }
-        this.status = new ComboBox<String>();
+        this.status = new ComboBox<BookingStatus>();
         if (existingBooking.isWorkStarted()) {
-            status.getItems().addAll("IN_PROGRESS", "COMPLETED");
+            status.getItems().addAll(BookingStatus.IN_PROGRESS, BookingStatus.COMPLETED);
             if (existingBooking.getStatus() != null
                     && !status.getItems().contains(existingBooking.getStatus())) {
                 status.getItems().add(existingBooking.getStatus());
             }
         } else {
-            status.getItems().addAll("BOOKED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED");
+            status.getItems().addAll(BookingStatus.BOOKED, BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS, BookingStatus.COMPLETED, BookingStatus.CANCELLED);
         }
         status.setMaxWidth(Double.MAX_VALUE);
-        BookingFormPane.setupComboBoxDisplay(status, new StringConverter<String>() {
+        BookingFormPane.setupComboBoxDisplay(status, new StringConverter<BookingStatus>() {
             @Override
-            public String toString(String st) {
-                return st != null ? UiFormatters.statusWord(st) : "";
+            public String toString(BookingStatus st) {
+                return st != null ? UiFormatters.statusWord(st.name()) : "";
             }
             @Override
-            public String fromString(String string) { return null; }
+            public BookingStatus fromString(String string) { return null; }
         });
-        status.getSelectionModel().select(existingBooking.getStatus() != null ? existingBooking.getStatus() : "BOOKED");
+        status.getSelectionModel().select(existingBooking.getStatus() != null ? existingBooking.getStatus() : BookingStatus.BOOKED);
     }
 
     TextField getDesc() { return desc; }
 
     /** The status list, or null for a new booking. */
-    ComboBox<String> getStatus() { return status; }
+    ComboBox<BookingStatus> getStatus() { return status; }
 }

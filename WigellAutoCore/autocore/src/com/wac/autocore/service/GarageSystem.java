@@ -518,7 +518,7 @@ public class GarageSystem implements WorkOrderGateway {
     public void cancelBooking(int bookingId) {
         Booking b = bookingService.findById(bookingId);
         if (b != null) {
-            b.setStatus("CANCELLED");
+            b.setStatus(BookingStatus.CANCELLED);
             bookingRepository.save(b);
             mechanicSchedule.cancelSlotForBooking(bookingId);
             mechanicSchedule.syncFromDatabase();

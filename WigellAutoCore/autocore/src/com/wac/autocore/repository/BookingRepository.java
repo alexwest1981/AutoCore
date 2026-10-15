@@ -2,6 +2,7 @@ package com.wac.autocore.repository;
 
 import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.Booking;
+import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.model.ServiceItem;
 
 import java.sql.Connection;
@@ -82,7 +83,7 @@ public class BookingRepository {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
-            statement.setString(4, booking.getStatus());
+            statement.setString(4, booking.getStatus().name());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
             Queries.setReference(statement, 7, booking.getMechanicId());
@@ -102,7 +103,7 @@ public class BookingRepository {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
-            statement.setString(4, booking.getStatus());
+            statement.setString(4, booking.getStatus().name());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
             Queries.setReference(statement, 7, booking.getMechanicId());
@@ -153,7 +154,7 @@ public class BookingRepository {
 
         String status = resultSet.getString("status");
         if (status != null) {
-            booking.setStatus(status);
+            booking.setStatus(BookingStatus.fromText(resultSet.getString("status")));
         }
 
         String startText = resultSet.getString("start_time");
