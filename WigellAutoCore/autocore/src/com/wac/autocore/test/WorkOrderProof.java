@@ -42,6 +42,6 @@ public final class WorkOrderProof {
 
         System.out.println("3. bekräftad: " + (confirmed ? "ja" : "nej"));
 
-        System.out.println("   status efter: " + gateway.findWorkOrder(draft.getId()).getStatus());
+        System.out.println("status efter: " + gateway.findWorkOrder(draft.getId()).getStatus());
     }
 }
