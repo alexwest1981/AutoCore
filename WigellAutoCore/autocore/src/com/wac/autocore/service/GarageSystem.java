@@ -4,15 +4,8 @@ import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.data.Db;
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Customer;
-import com.wac.autocore.model.Invoice;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.Payment;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.model.WorkOrder;
-import com.wac.autocore.model.ServicePackage;
+import com.wac.autocore.data.Settings;
+import com.wac.autocore.model.*;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.repository.InvoiceRepository;
@@ -27,6 +20,7 @@ import com.wac.autocore.service.gateway.WorkOrderGateway;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.Collection;
 import java.util.List;
 
@@ -117,10 +111,50 @@ public class GarageSystem implements WorkOrderGateway {
         return paymentService.getAll();
     }
 
-    public MechanicSchedule getMechanicSchedule() {
-        return mechanicSchedule;
+    /** The Mechanic's hour slot for one day. */
+    public List<TimeSlot> getSlotsForDay(int mechanicId, LocalDate date) {
+        return mechanicSchedule.getSlotsForDay(mechanicId, date);
+    }
+    /** The next day after the given one when the mechanic has a booking, or null. */
+    public LocalDate getNextBookingDate(int mechanicId, LocalDate afterDate) {
+        return mechanicSchedule.getNextBookingDate(mechanicId, afterDate);
     }
 
+    /** How full the mechanic's days are in the week starting on the given Monday. */
+    public List<DayLoad> getWeekLoads(int mechanicId, LocalDate weekStart) {
+        return mechanicSchedule.getWeekLoads(mechanicId, weekStart);
+    }
+
+    /** The status of every day in the month for the mechanic. */
+    public List<MonthDayStatus> getMonthDays(int mechanicId, YearMonth month, boolean mechanicAvailable) {
+        return mechanicSchedule.getMonthDays(mechanicId, month, mechanicAvailable);
+    }
+
+    /** Reserves an hour in the schedule for a booking. */
+    public boolean reserveSlot(int mechanicId, LocalDate date, int hour, int bookingId,
+                               String customer, String vehicleReg, String description) {
+        return mechanicSchedule.bookSlot(mechanicId, date, hour, bookingId, 0, customer, vehicleReg, description);
+    }
+
+    /** Frees the schedule slot a booking held. */
+    public void releaseSlot(int bookingId) {
+        mechanicSchedule.cancelSlotForBooking(bookingId);
+    }
+
+    /** Reads the schedule again after work orders have been created. */
+    public void refreshSchedule() {
+        mechanicSchedule.syncFromDatabase();
+    }
+
+    /** A stored setting, or the fallback when nothing is stored. */
+    public String getSetting(String key, String fallback) {
+        return Settings.get(key, fallback);
+    }
+
+    /** Stores a setting so it survives a restart. */
+    public void saveSetting(String key, String value) {
+        Settings.put(key, value);
+    }
     /** The customer with that id, or null when there is none. */
     public Customer findCustomer(int id) {
         for (Customer row : getCustomers()) {

@@ -136,8 +136,8 @@ public final class BookingDialogs {
                 if (chosenMech != null) {
                     int hour = startTime != null ? startTime.getHour() : (defaultHour != null ? defaultHour : 8);
                     String custName = EntityLookup.customerName(garage, v.getCustomerId());
-                    garage.getMechanicSchedule().bookSlot(
-                            chosenMech.getId(), date, hour, b.getId(), 0,
+                    garage.reserveSlot(
+                            chosenMech.getId(), date, hour, b.getId(),
                             custName, v.getRegistrationNumber(), desc
                     );
                 }
@@ -196,7 +196,7 @@ public final class BookingDialogs {
                 String status = form.getStatus();
 
                 // Clear any earlier schedule slot for this booking
-                garage.getMechanicSchedule().cancelSlotForBooking(booking.getId());
+                garage.releaseSlot(booking.getId());
 
                 booking.setVehicleId(v.getId());
                 booking.setDate(date);
@@ -237,8 +237,8 @@ public final class BookingDialogs {
                 if (chosenMech != null && !"CANCELLED".equalsIgnoreCase(status)) {
                     int hour = startTime != null ? startTime.getHour() : 8;
                     String custName = EntityLookup.customerName(garage, v.getCustomerId());
-                    garage.getMechanicSchedule().bookSlot(
-                            chosenMech.getId(), date, hour, booking.getId(), 0,
+                    garage.reserveSlot(
+                            chosenMech.getId(), date, hour, booking.getId(),
                             custName, v.getRegistrationNumber(), desc
                     );
                 }

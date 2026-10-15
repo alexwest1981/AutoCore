@@ -205,7 +205,7 @@ final class CreateWorkOrderDialog {
                                     .replace("{1}", String.valueOf(plan.size())));
                 }
 
-                garage.getMechanicSchedule().syncFromDatabase();
+                garage.refreshSchedule();
                 if (onSuccess != null) onSuccess.run();
             }
         });

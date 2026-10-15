@@ -1,7 +1,6 @@
 package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.model.MonthDayStatus;
 import com.wac.autocore.ui.i18n.I18n;
 import javafx.geometry.Insets;
@@ -122,8 +121,7 @@ class KanbanMonthView {
             grid.add(head, c, 0);
         }
 
-        MechanicSchedule schedule = card.garage.getMechanicSchedule();
-        List<MonthDayStatus> days = schedule.getMonthDays(mech.getId(), ym, mech.isAvailable());
+        List<MonthDayStatus> days = card.garage.getMonthDays(mech.getId(), ym, mech.isAvailable());
 
         int col = 0;
         int row = 1;

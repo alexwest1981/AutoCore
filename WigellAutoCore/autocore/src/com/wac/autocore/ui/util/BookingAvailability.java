@@ -4,7 +4,6 @@ import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.service.MechanicSchedule;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -32,8 +31,7 @@ public final class BookingAvailability {
         LocalTime rangeEnd = end.isAfter(start) ? end : start.plusHours(1);
 
         // Checked against the schedule (MechanicSchedule). An hour slot is [hour, hour + 1).
-        MechanicSchedule schedule = garage.getMechanicSchedule();
-        List<TimeSlot> slots = schedule.getSlotsForDay(mechanic.getId(), date);
+        List<TimeSlot> slots = garage.getSlotsForDay(mechanic.getId(), date);
 
         for (TimeSlot s : slots) {
 
