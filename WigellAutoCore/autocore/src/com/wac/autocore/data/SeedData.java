@@ -1,12 +1,7 @@
 package com.wac.autocore.data;
 
 import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Customer;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.*;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.repository.MechanicRepository;
@@ -133,7 +128,7 @@ public class SeedData {
             WorkOrder firstOrder = new WorkOrder(0, firstBooking.getId(), johan.getId());
             firstOrder.setVehicleId(firstBooking.getVehicleId());
             firstOrder.addServiceItem(oilChange.getId());
-            firstOrder.setStatus("IN_PROGRESS");
+            firstOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
             workOrderRepository.save(firstOrder);
 
             // The booking's status should mirror the work order, otherwise the start data looks contradictory.
@@ -150,7 +145,7 @@ public class SeedData {
             WorkOrder thirdOrder = new WorkOrder(0, fourthBooking.getId(), sara.getId());
             thirdOrder.setVehicleId(fourthBooking.getVehicleId());
             thirdOrder.addServiceItem(brakeService.getId());
-            thirdOrder.setStatus("IN_PROGRESS");
+            thirdOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
             workOrderRepository.save(thirdOrder);
             fourthBooking.setStatus("IN_PROGRESS");
             bookingRepository.save(fourthBooking);
@@ -158,7 +153,7 @@ public class SeedData {
             WorkOrder fourthOrder = new WorkOrder(0, fifthBooking.getId(), mikael.getId());
             fourthOrder.setVehicleId(fifthBooking.getVehicleId());
             fourthOrder.addServiceItem(diagnostics.getId());
-            fourthOrder.setStatus("IN_PROGRESS");
+            fourthOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
             workOrderRepository.save(fourthOrder);
             fifthBooking.setStatus("IN_PROGRESS");
             bookingRepository.save(fifthBooking);

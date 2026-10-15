@@ -1,9 +1,6 @@
 package com.wac.autocore.service;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Invoice;
-import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.*;
 
 import java.util.List;
 
@@ -43,7 +40,7 @@ public class RemovalRules {
 
     public boolean canDeleteMechanic(int mechanicId) {
         for (WorkOrder wo : workOrders()) {
-            if (wo.getMechanicId() == mechanicId && !"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+            if (wo.getMechanicId() == mechanicId && wo.getStatus() != WorkOrderStatus.COMPLETED) {
                 return false;
             }
         }
@@ -68,7 +65,7 @@ public class RemovalRules {
             }
         }
         for (WorkOrder wo : workOrders()) {
-            if (!"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+            if (wo.getStatus() != WorkOrderStatus.COMPLETED) {
                 for (Booking b : bookings()) {
                     if (b.getId() == wo.getBookingId() && b.getVehicleId() == vehicleId) {
                         return false;
@@ -103,7 +100,7 @@ public class RemovalRules {
     public boolean canCancelOrDeleteBooking(int bookingId) {
         for (WorkOrder wo : workOrders()) {
             if (wo.getBookingId() == bookingId) {
-                if (!"COMPLETED".equalsIgnoreCase(wo.getStatus())) {
+                if (wo.getStatus() != WorkOrderStatus.COMPLETED) {
                     return false;
                 }
                 // A finished order must not leave an invoice pointing at a booking that no longer
@@ -118,7 +115,7 @@ public class RemovalRules {
 
     public boolean canDeleteServiceItem(int serviceItemId) {
         for (WorkOrder wo : workOrders()) {
-            if (!"COMPLETED".equalsIgnoreCase(wo.getStatus()) && wo.getServiceItemIds() != null) {
+            if (wo.getStatus() != WorkOrderStatus.COMPLETED && wo.getServiceItemIds() != null) {
                 for (int id : wo.getServiceItemIds()) {
                     if (id == serviceItemId) {
                         return false;

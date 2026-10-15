@@ -9,6 +9,7 @@ import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.WorkOrderStatus;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.repository.InvoiceRepository;
@@ -66,7 +67,7 @@ public class BillingService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        if (!"COMPLETED".equals(workOrder.getStatus())) {
+        if (workOrder.getStatus() != WorkOrderStatus.COMPLETED) {
             System.out.println("Invoice can only be created for a completed work order.");
             return null;
         }
@@ -118,7 +119,7 @@ public class BillingService {
             if (order.getBookingId() != bookingId) {
                 continue;
             }
-            if (!"COMPLETED".equals(order.getStatus())) {
+            if (order.getStatus() != WorkOrderStatus.COMPLETED) {
                 continue;
             }
             if (performedServices(order, invoiced).isEmpty()) {
@@ -145,7 +146,7 @@ public class BillingService {
         List<Booking> bookings = new ArrayList<Booking>();
 
         for (WorkOrder order : getAllWorkOrders()) {
-            if (!"COMPLETED".equals(order.getStatus())) {
+            if (order.getStatus() != WorkOrderStatus.COMPLETED) {
                 continue;
             }
             if (!allOrdersCompleted(order.getBookingId())) {
@@ -265,7 +266,7 @@ public class BillingService {
     /** Performed services not yet invoiced. If none is marked but the order is finished, all count. */
     private List<Integer> performedServices(WorkOrder workOrder, List<Integer> invoicedServiceIds) {
         List<Integer> performed = workOrder.getCompletedServiceItems();
-        if (performed.isEmpty() && "COMPLETED".equals(workOrder.getStatus())) {
+        if (performed.isEmpty() && workOrder.getStatus() == WorkOrderStatus.COMPLETED) {
             performed = workOrder.getServiceItemIds();
         }
 
@@ -310,7 +311,7 @@ public class BillingService {
                 continue;
             }
             foundAny = true;
-            if (!"COMPLETED".equals(order.getStatus())) {
+            if (order.getStatus() != WorkOrderStatus.COMPLETED) {
                 return false;
             }
         }
