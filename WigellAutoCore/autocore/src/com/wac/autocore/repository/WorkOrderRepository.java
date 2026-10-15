@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -76,8 +78,8 @@ public class WorkOrderRepository {
             Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
             Queries.setReference(statement, 7, workOrder.getOriginalWorkOrderId());
-            statement.setString(8, workOrder.getPlannedDate());
-            statement.setString(9, workOrder.getPlannedTime());
+            statement.setString(8, workOrder.getPlannedDate() == null ? null : workOrder.getPlannedDate().toString());
+            statement.setString(9, workOrder.getPlannedTime() == null ? null : workOrder.getPlannedTime().toString());
             statement.setString(10, workOrder.getCustomerInstructions());
             statement.setString(11, workOrder.getOtherComments());
         });
@@ -100,8 +102,8 @@ public class WorkOrderRepository {
             Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
             Queries.setReference(statement, 7, workOrder.getOriginalWorkOrderId());
-            statement.setString(8, workOrder.getPlannedDate());
-            statement.setString(9, workOrder.getPlannedTime());
+            statement.setString(8, workOrder.getPlannedDate() == null ? null : workOrder.getPlannedDate().toString());
+            statement.setString(9, workOrder.getPlannedTime() == null ? null : workOrder.getPlannedTime().toString());
             statement.setString(10, workOrder.getCustomerInstructions());
             statement.setString(11, workOrder.getOtherComments());
             statement.setInt(12, workOrder.getId());
@@ -200,8 +202,15 @@ public class WorkOrderRepository {
         }
 
         workOrder.setOriginalWorkOrderId(resultSet.getInt("original_work_order_id"));
-        workOrder.setPlannedDate(resultSet.getString("planned_date"));
-        workOrder.setPlannedTime(resultSet.getString("planned_time"));
+
+        String plannedDate = resultSet.getString("planned_date");
+        String plannedTime = resultSet.getString("planned_time");
+        if (plannedDate != null && !plannedDate.trim().isEmpty()) {
+            workOrder.setPlannedDate(LocalDate.parse(plannedDate.trim()));
+        }
+        if (plannedTime != null && !plannedTime.trim().isEmpty()) {
+            workOrder.setPlannedTime(LocalTime.parse(plannedTime.trim()));
+        }
         workOrder.setCustomerInstructions(resultSet.getString("customer_instructions"));
         workOrder.setOtherComments(resultSet.getString("other_comments"));
 

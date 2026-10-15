@@ -10,6 +10,8 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.repository.VehicleRepository;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -232,8 +234,8 @@ public class WorkOrderService {
     }
 
     public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
-            List<Integer> serviceItemIds, String plannedDate, String plannedTime, String customerInstructions,
-            String otherComments) {
+                                 List<Integer> serviceItemIds, LocalDate plannedDate, LocalTime plannedTime, String customerInstructions,
+                                 String otherComments) {
 
         WorkOrder workOrder = findById(workOrderId);
 
