@@ -18,8 +18,6 @@ public final class SeedText {
     public static final String PREFIX = "seed.";
 
     private static final String RESOURCE_PATH = "/com/wac/autocore/seed/";
-    private static final String SOURCE_PATH = "WigellAutoCore/autocore/src/resources/com/wac/autocore/seed/";
-    private static final String BUILD_PATH = "out/production/Systemarkitektur/com/wac/autocore/seed/";
 
     private static String currentLanguage = DEFAULT_LANG;
     private static final Map<String, String> activeDictionary = new HashMap<String, String>();
@@ -85,7 +83,7 @@ public final class SeedText {
     /** Reads the dictionary for a language. */
     public static Map<String, String> loadDictionary(String lang) {
         String path = RESOURCE_PATH + lang + ".json";
-        URL url = Resources.find(path, SOURCE_PATH + lang + ".json", BUILD_PATH + lang + ".json");
+        URL url = Resources.find(path);
         if (url == null) {
             System.err.println("Varning: Kunde inte hitta seed-ordboken " + path);
             return Collections.emptyMap();
