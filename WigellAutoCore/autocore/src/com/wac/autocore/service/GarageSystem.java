@@ -27,7 +27,6 @@ import com.wac.autocore.repository.WorkOrderRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /** The entry point the interface and the text version call. Passes on to the services. */
@@ -96,8 +95,7 @@ public class GarageSystem {
         try {
             return serviceItemRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read service items: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read service items", e);
         }
     }
 

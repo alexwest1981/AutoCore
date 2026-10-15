@@ -18,7 +18,6 @@ import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /** Invoices from completed work orders, with discount. */
@@ -49,8 +48,7 @@ public class BillingService {
         try {
             return invoiceRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read invoices: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read invoices", e);
         }
     }
 
@@ -245,8 +243,7 @@ public class BillingService {
         try {
             invoiceRepository.save(invoice);
         } catch (DataAccessException e) {
-            System.out.println("Could not save invoice: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save invoice", e);
         }
 
         for (InvoiceLine line : invoice.getLines()) {
@@ -296,7 +293,7 @@ public class BillingService {
                 }
             }
         } catch (DataAccessException e) {
-            System.out.println("Could not read invoice lines: " + e.getMessage());
+            throw new DataAccessException("Could not read invoice lines", e);
         }
         return invoiced;
     }
@@ -347,8 +344,7 @@ public class BillingService {
         try {
             return workOrderRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read work orders: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read work orders", e);
         }
     }
 
@@ -362,7 +358,7 @@ public class BillingService {
                 }
             }
         } catch (DataAccessException e) {
-            System.out.println("Could not check for existing invoices: " + e.getMessage());
+            throw new DataAccessException("Could not check for existing invoices", e);
         }
         return false;
     }

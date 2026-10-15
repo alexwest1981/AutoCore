@@ -6,7 +6,6 @@ import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
 import com.wac.autocore.repository.ServicePackageRepository;
 
-import java.util.Collections;
 import java.util.List;
 
 public class ServicePackageService {
@@ -21,8 +20,7 @@ public class ServicePackageService {
         try {
             return packageRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read service packages: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read service packages", e);
         }
     }
 
@@ -35,8 +33,7 @@ public class ServicePackageService {
         try {
             packageRepository.save(servicePackage);
         } catch (DataAccessException e) {
-            System.out.println("Could not save service package: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save service package", e);
         }
         return servicePackage;
     }

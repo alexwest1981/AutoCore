@@ -7,7 +7,6 @@ import com.wac.autocore.model.Payment;
 import com.wac.autocore.repository.InvoiceRepository;
 import com.wac.autocore.repository.PaymentRepository;
 
-import java.util.Collections;
 import java.util.List;
 
 /** Registers payments and marks the invoice paid. */
@@ -25,8 +24,7 @@ public class PaymentService {
         try {
             return paymentRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read payments: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read payments", e);
         }
     }
 
@@ -79,8 +77,7 @@ public class PaymentService {
         try {
             paymentRepository.save(payment);
         } catch (DataAccessException e) {
-            System.out.println("Could not save payment: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save payment", e);
         }
 
         if (successful) {
@@ -89,7 +86,7 @@ public class PaymentService {
             try {
                 invoiceRepository.save(invoice);
             } catch (DataAccessException e) {
-                System.out.println("Could not update invoice " + invoiceId + ": " + e.getMessage());
+                throw new DataAccessException("Could not update invoice " + invoiceId, e);
             }
 
             System.out.println("Payment completed successfully.");
