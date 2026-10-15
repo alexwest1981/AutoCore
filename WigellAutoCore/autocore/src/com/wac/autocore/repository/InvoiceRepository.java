@@ -16,7 +16,11 @@ public class InvoiceRepository {
 
     private static final String COLUMNS = "id, work_order_id, invoice_date, amount, discount, total_amount, paid";
 
-    private static final InvoiceLineRepository invoiceLineRepository = new InvoiceLineRepository();
+    private final InvoiceLineRepository invoiceLineRepository;
+
+    public InvoiceRepository(InvoiceLineRepository invoiceLineRepository) {
+        this.invoiceLineRepository = invoiceLineRepository;
+    }
 
     public void save(final Invoice invoice) {
         final boolean isNew = invoice.getId() == 0 || findById(invoice.getId()) == null;
@@ -35,12 +39,12 @@ public class InvoiceRepository {
     }
 
     public List<Invoice> findAll() {
-        return Queries.read("SELECT " + COLUMNS + " FROM invoices", InvoiceRepository::build);
+        return Queries.read("SELECT " + COLUMNS + " FROM invoices", resultSet -> build(resultSet));
     }
 
     public Invoice findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM invoices WHERE id = ?",
-                statement -> statement.setInt(1, id), InvoiceRepository::build);
+                statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
     public void delete(final int id) {
@@ -99,7 +103,7 @@ public class InvoiceRepository {
         }
     }
 
-    private static Invoice build(ResultSet resultSet) throws SQLException {
+    private Invoice build(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("invoice_date");
 
         LocalDate invoiceDate = null;

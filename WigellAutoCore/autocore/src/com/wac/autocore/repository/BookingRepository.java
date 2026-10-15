@@ -22,8 +22,14 @@ public class BookingRepository {
     private static final String SERVICE_ITEM_COLUMNS =
             "id, name, description, price, estimated_minutes, specialization";
 
-    private final BookingServiceItemRepository bookingServiceItemRepository = new BookingServiceItemRepository();
-    private final BookingMechanicRepository bookingMechanicRepository = new BookingMechanicRepository();
+    private final BookingServiceItemRepository bookingServiceItemRepository;
+    private final BookingMechanicRepository bookingMechanicRepository;
+
+    public BookingRepository(BookingServiceItemRepository bookingServiceItemRepository,
+                             BookingMechanicRepository bookingMechanicRepository) {
+        this.bookingServiceItemRepository = bookingServiceItemRepository;
+        this.bookingMechanicRepository = bookingMechanicRepository;
+    }
 
     public void save(final Booking booking) {
         final boolean isNew = booking.getId() == 0 || findById(booking.getId()) == null;
