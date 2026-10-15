@@ -27,8 +27,7 @@ public class MechanicRules {
         try {
             return mechanicRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read mechanics: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read mechanics", e);
         }
     }
 

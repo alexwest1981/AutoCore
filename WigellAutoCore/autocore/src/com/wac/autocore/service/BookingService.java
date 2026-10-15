@@ -15,7 +15,6 @@ import com.wac.autocore.repository.VehicleRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /** Handles bookings and validates their vehicles and times. */
@@ -41,8 +40,7 @@ public class BookingService {
         try {
             return bookingRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read bookings: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read bookings", e);
         }
     }
 
@@ -65,8 +63,7 @@ public class BookingService {
         try {
             bookingRepository.save(booking);
         } catch (DataAccessException e) {
-            System.out.println("Could not save booking: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save booking", e);
         }
 
         System.out.println("Booking created successfully.");
@@ -110,8 +107,7 @@ public class BookingService {
         try {
             bookingRepository.save(booking);
         } catch (DataAccessException e) {
-            System.out.println("Could not save booking: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save booking", e);
         }
 
         System.out.println(booking);

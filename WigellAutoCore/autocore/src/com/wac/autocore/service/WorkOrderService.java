@@ -15,7 +15,6 @@ import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.repository.VehicleRepository;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +47,7 @@ public class WorkOrderService {
         try {
             return workOrderRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read work orders: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read work orders", e);
         }
     }
 
@@ -152,8 +150,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(workOrder);
         } catch (DataAccessException e) {
-            System.out.println("Could not save work order: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save work order", e);
         }
 
         workOrder.setStatus("CREATED");
@@ -208,8 +205,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(reclamation);
         } catch (DataAccessException e) {
-            System.out.println("Could not save reclamation: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save reclamation", e);
         }
 
         System.out.println("Reclamation created successfully.");
@@ -232,8 +228,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(workOrder);
         } catch (DataAccessException e) {
-            System.out.println("Could not save draft work order: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save draft work order", e);
         }
 
         System.out.println("Draft work order created successfully.");
@@ -262,8 +257,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(workOrder);
         } catch (DataAccessException e) {
-            System.out.println("Could not save draft work order: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save draft work order", e);
         }
 
         return workOrder;
@@ -550,7 +544,7 @@ public class WorkOrderService {
         try {
             bookingRepository.save(booking);
         } catch (DataAccessException e) {
-            System.out.println("Could not update booking " + booking.getId() + ": " + e.getMessage());
+            throw new DataAccessException("Could not update booking " + booking.getId(), e);
         }
     }
 
@@ -558,7 +552,7 @@ public class WorkOrderService {
         try {
             mechanicRepository.save(mechanic);
         } catch (DataAccessException e) {
-            System.out.println("Could not update mechanic " + mechanic.getId() + ": " + e.getMessage());
+            throw new DataAccessException("Could not update mechanic " + mechanic.getId(), e);
         }
     }
 
@@ -566,7 +560,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(workOrder);
         } catch (DataAccessException e) {
-            System.out.println("Could not update work order " + workOrder.getId() + ": " + e.getMessage());
+            throw new DataAccessException("Could not update work order " + workOrder.getId(), e);
         }
     }
 }

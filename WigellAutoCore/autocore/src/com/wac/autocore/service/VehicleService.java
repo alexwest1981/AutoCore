@@ -6,7 +6,6 @@ import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.VehicleRepository;
 
-import java.util.Collections;
 import java.util.List;
 
 /** Vehicles and the link to their owners. */
@@ -24,8 +23,7 @@ public class VehicleService {
         try {
             return vehicleRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read vehicles: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read vehicles", e);
         }
     }
 
@@ -46,8 +44,7 @@ public class VehicleService {
         try {
             vehicleRepository.save(vehicle);
         } catch (DataAccessException e) {
-            System.out.println("Could not save vehicle: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save vehicle", e);
         }
 
         System.out.println("Vehicle created successfully.");
