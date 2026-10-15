@@ -8,11 +8,12 @@ import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.service.Printer;
 
 import java.util.List;
 
 /** All output for the text version. Gathered here so the service layer does not write to the console. */
-public class ConsolePrinter {
+public class ConsolePrinter implements Printer {
 
     public void printCustomers(List<Customer> customers) {
         printHeader("CUSTOMERS");

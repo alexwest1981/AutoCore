@@ -33,7 +33,7 @@ import java.util.List;
 /** The entry point the interface and the text version call. Passes on to the services. */
 public class GarageSystem implements WorkOrderGateway {
 
-    private final com.wac.autocore.ui.ConsolePrinter printer = new com.wac.autocore.ui.ConsolePrinter();
+    private final Printer printer;
     private final CustomerService customerService;
     private final VehicleService vehicleService;
     private final WorkOrderService workOrderService;
@@ -51,6 +51,13 @@ public class GarageSystem implements WorkOrderGateway {
     private final MechanicSchedule mechanicSchedule;
 
     public GarageSystem(RepositoryFactory repositories) {
+        this(repositories, new Printer() { });
+    }
+
+    public GarageSystem(RepositoryFactory repositories, Printer printer) {
+
+        this.printer = printer;
+
         Db.ensureReady();
 
         customerRepository = repositories.createCustomerRepository();

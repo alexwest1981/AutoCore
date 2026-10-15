@@ -2,6 +2,7 @@ import com.wac.autocore.exception.AppException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.ConsolePrinter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -19,7 +20,7 @@ public class ConsoleApp {
 
         Db.use(Db.pathFrom(args));
         Db.ensureReady();
-        garageSystem = new GarageSystem(new SqliteRepositoryFactory());
+        garageSystem = new GarageSystem(new SqliteRepositoryFactory(), new ConsolePrinter());
 
         boolean running = true;
 
