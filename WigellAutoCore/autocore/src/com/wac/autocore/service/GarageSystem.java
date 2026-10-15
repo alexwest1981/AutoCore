@@ -23,6 +23,7 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.ServicePackageRepository;
 import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
+import com.wac.autocore.service.gateway.WorkOrderGateway;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -30,7 +31,7 @@ import java.util.Collection;
 import java.util.List;
 
 /** The entry point the interface and the text version call. Passes on to the services. */
-public class GarageSystem {
+public class GarageSystem implements WorkOrderGateway {
 
     private final com.wac.autocore.ui.ConsolePrinter printer = new com.wac.autocore.ui.ConsolePrinter();
     private final CustomerService customerService;
@@ -103,6 +104,7 @@ public class GarageSystem {
         return mechanicRules.getAll();
     }
 
+    @Override
     public List<WorkOrder> getWorkOrders() {
         return workOrderService.getAll();
     }
@@ -170,6 +172,7 @@ public class GarageSystem {
     }
 
     /** The work order with that id, or null when there is none. */
+    @Override
     public WorkOrder findWorkOrder(int id) {
         for (WorkOrder row : getWorkOrders()) {
             if (row.getId() == id) {
@@ -299,21 +302,25 @@ public class GarageSystem {
     }
 
     /** Creates a work order of a given type: Standard, Reclamation or Internal. */
+    @Override
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds,
                                      String type) {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
     }
 
     /** Creates a reclamation on a previously performed work order. */
+    @Override
     public WorkOrder createReclamation(int originalWorkOrderId, String description) {
         return workOrderService.createReclamation(originalWorkOrderId, description);
     }
 
     // Creates a draft, that is a work order with no booking and no services.
+    @Override
     public WorkOrder createDraft(int vehicleId, String description) {
         return workOrderService.createDraft(vehicleId, description);
     }
 
+    @Override
     public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
             List<Integer> serviceItemIds, String plannedDate, String plannedTime, String customerInstructions,
             String otherComments) {
@@ -373,6 +380,7 @@ public class GarageSystem {
         return item;
     }
 
+    @Override
     public void startWorkOrder(int workOrderId) {
         workOrderService.startWorkOrder(workOrderId);
     }
@@ -382,14 +390,17 @@ public class GarageSystem {
         return workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
     }
 
+    @Override
     public void completeWorkOrder(int workOrderId) {
         workOrderService.completeWorkOrder(workOrderId);
     }
 
+    @Override
     public boolean cancelWorkOrder(int workOrderId) {
         return workOrderService.cancelWorkOrder(workOrderId);
     }
 
+    @Override
     public boolean confirmWorkOrder(int workOrderId) {
         return workOrderService.confirmWorkOrder(workOrderId);
     }
