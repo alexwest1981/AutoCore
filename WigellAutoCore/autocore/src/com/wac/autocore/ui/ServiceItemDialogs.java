@@ -121,11 +121,14 @@ public final class ServiceItemDialogs {
 
     static Integer parseMinutes(String timeStr) {
         if (timeStr == null) return null;
-        String clean = timeStr.replaceAll("[^0-9,.]", "").replace(",", ".").trim();
-        if (clean.isEmpty()) return null;
+        String clean = timeStr.replace('\u00a0', ' ').trim();
+        if (clean.length() > 3 && clean.toLowerCase().endsWith("min")) {
+            clean = clean.substring(0, clean.length() - 3).trim();
+        }
+        if (!clean.matches("\\d+(?:[.,]\\d+)?")) return null;
         try {
-            if (clean.contains(".")) {
-                double val = Double.parseDouble(clean);
+            if (clean.contains(".") || clean.contains(",")) {
+                double val = Double.parseDouble(clean.replace(",", "."));
                 return val > 0 ? (int) Math.round(val) : null;
             }
             int val = Integer.parseInt(clean);
