@@ -123,12 +123,30 @@ final class Migrations {
         return versions;
     }
 
-    /** Adds the columns an older database is missing, so the file's own statements can run. */
+    /**
+     * Adds the columns an older database is missing, so the file's own statements can run. A
+     * table that is not there yet is left alone: the baseline creates it whole, with the columns
+     * already in place.
+     */
     private static void addMissingColumns(Connection connection) throws SQLException {
         for (String[] column : ADDED_COLUMNS) {
+            if (!tableExists(connection, column[0])) {
+                continue;
+            }
             if (!hasColumn(connection, column[0], column[1])) {
                 execute(connection, "ALTER TABLE " + column[0] + " ADD COLUMN " + column[1]
                         + " " + column[2]);
+            }
+        }
+    }
+
+    /** True when the table is in the file. Nothing is created here, only looked for. */
+    private static boolean tableExists(Connection connection, String table) throws SQLException {
+        String sql = "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, table);
+            try (ResultSet rows = statement.executeQuery()) {
+                return rows.next();
             }
         }
     }
