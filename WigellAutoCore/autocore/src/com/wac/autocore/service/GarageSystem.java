@@ -322,7 +322,7 @@ public class GarageSystem implements WorkOrderGateway {
 
     @Override
     public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
-            List<Integer> serviceItemIds, String plannedDate, String plannedTime, String customerInstructions,
+            List<Integer> serviceItemIds, LocalDate plannedDate, LocalTime plannedTime, String customerInstructions,
             String otherComments) {
         return workOrderService.updateDraft(workOrderId, vehicleId, description, mechanicId, serviceItemIds,
                 plannedDate, plannedTime, customerInstructions, otherComments);

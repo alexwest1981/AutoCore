@@ -175,7 +175,7 @@ public final class EntityLookup {
         if (b != null && b.getDate() != null) {
             return String.valueOf(b.getDate());
         }
-        return wo != null && text(wo.getPlannedDate()) ? wo.getPlannedDate() : "-";
+        return wo != null && wo.getPlannedDate() != null ? String.valueOf(wo.getPlannedDate()) : "-";
     }
 
     /** The work order's time, from the booking, or the planned hour on a draft. */
@@ -184,7 +184,7 @@ public final class EntityLookup {
         if (b != null) {
             return bookingTime(b);
         }
-        return wo != null && text(wo.getPlannedTime()) ? wo.getPlannedTime() : "-";
+        return wo != null && wo.getPlannedTime() != null ? String.valueOf(wo.getPlannedTime()) : "-";
     }
 
     private static boolean text(String value) {

@@ -91,8 +91,8 @@ final class EditDraftDialog {
         };
         BookingScheduleField schedule = new BookingScheduleField(garage, source, null, 0, null,
                 plannedDateOf(workOrder));
-        if (workOrder.getPlannedTime() != null && !workOrder.getPlannedTime().isEmpty()) {
-            schedule.getStartTimeBox().setValue(LocalTime.parse(workOrder.getPlannedTime()));
+        if (workOrder.getPlannedTime() != null) {
+            schedule.getStartTimeBox().setValue(workOrder.getPlannedTime());
         }
         // The field draws nothing by itself: the booking form calls this once after it is built too.
         schedule.refresh();
@@ -345,16 +345,12 @@ final class EditDraftDialog {
         LocalDate date = schedule.getDatePicker().getValue();
         LocalTime time = schedule.getStartTimeBox().getValue();
         return garage.updateDraft(workOrderId, vehicle.getId(), description.getText(), mechanicId, serviceIds,
-                date == null ? null : date.toString(),
-                time == null ? null : time.toString(),
+                date, time,
                 instructions.getText(), otherComments.getText());
     }
 
     /** The date the draft is planned for, or null so the calendar picks the first bookable day. */
     private static LocalDate plannedDateOf(WorkOrder workOrder) {
-        if (workOrder.getPlannedDate() == null || workOrder.getPlannedDate().isEmpty()) {
-            return null;
-        }
-        return LocalDate.parse(workOrder.getPlannedDate());
+        return workOrder.getPlannedDate();
     }
 }

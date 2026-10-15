@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class WorkOrder {
 
     /** Standard, reclamation or internal work. The code lives here and nowhere else. */
@@ -26,8 +29,8 @@ public class WorkOrder {
     /** The package each service came from, carried over from the booking. */
     private final Map<Integer, String> servicePackages = new LinkedHashMap<Integer, String>();
     private WorkOrderStatus status;
-    private String plannedDate;
-    private String plannedTime;
+    private LocalDate plannedDate;
+    private LocalTime plannedTime;
     private String customerInstructions;
     private String otherComments;
     private String type;
@@ -119,20 +122,20 @@ public class WorkOrder {
     }
 
     /** The planned date on a draft, as text the same way as the booking's date. */
-    public String getPlannedDate() {
+    public LocalDate getPlannedDate() {
         return plannedDate;
     }
 
-    public void setPlannedDate(String plannedDate) {
+    public void setPlannedDate(LocalDate plannedDate) {
         this.plannedDate = plannedDate;
     }
 
     /** The planned hour on a draft, as text, empty when the plan is a day without a time. */
-    public String getPlannedTime() {
+    public LocalTime getPlannedTime() {
         return plannedTime;
     }
 
-    public void setPlannedTime(String plannedTime) {
+    public void setPlannedTime(LocalTime plannedTime) {
         this.plannedTime = plannedTime;
     }
 
