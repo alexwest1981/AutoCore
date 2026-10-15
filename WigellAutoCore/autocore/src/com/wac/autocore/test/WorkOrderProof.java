@@ -7,6 +7,8 @@ import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.gateway.WorkOrderGateway;
 
 import java.util.Arrays;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * Proves that a work order can be created, changed and confirmed with no window in the way, so
@@ -33,7 +35,7 @@ public final class WorkOrderProof {
         System.out.println("1. utkastet skapat, nummer " + draft.getId() + ", status " + draft.getStatus());
 
         WorkOrder changed = gateway.updateDraft(draft.getId(), vehicleId, "Bromsok och bromsbelägg",
-                mechanicId, Arrays.asList(serviceItemId), "2026-10-15", "15:02",
+                mechanicId, Arrays.asList(serviceItemId),  LocalDate.of(2026,10,15), LocalTime.of(15, 02),
                 "", "");
 
         System.out.println("2. utkastet ändrat, mekaniker " + changed.getMechanicId());
