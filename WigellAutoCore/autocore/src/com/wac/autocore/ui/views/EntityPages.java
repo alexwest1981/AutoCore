@@ -11,6 +11,7 @@ import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
@@ -107,7 +108,10 @@ public final class EntityPages {
     }
 
     public static VBox buildWorkOrdersPage(GarageSystem garage, PageRouter router) {
-        FilterableTable<WorkOrder> table = TableFactory.create(garage.getWorkOrders());
+        // The rows the page shows, and the count in the heading comes from the same list, so the
+        // two never disagree about how much work is in hand.
+        java.util.List<WorkOrder> orders = router.workOrdersForList();
+        FilterableTable<WorkOrder> table = TableFactory.create(orders);
         TableView<WorkOrder> t = table.getTableView();
         t.getColumns().addAll(
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
@@ -150,20 +154,41 @@ public final class EntityPages {
             return row;
         });
 
+        VBox notices = new javafx.scene.layout.VBox(6,
+                UiComponents.viewNotice(
+                        PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
+                        I18n.get("view.notice.workorders.one"),
+                        I18n.get("view.notice.workorders.many")),
+                UiComponents.viewNotice(
+                        PageRouter.countOpenReclamations(garage.getWorkOrders()),
+                        I18n.get("view.notice.reclamations.one"),
+                        I18n.get("view.notice.reclamations.many")));
+
+        // The switch is only worth a row when there is something behind it, or when it is already
+        // on and the last cancelled order was started again while it stood open.
+        if (router.isShowingCancelledWorkOrders() || hasCancelled(garage)) {
+            CheckBox showCancelled = new CheckBox(I18n.get("entity.workorders.show_cancelled"));
+            showCancelled.setSelected(router.isShowingCancelledWorkOrders());
+            showCancelled.setOnAction(e -> router.setShowCancelledWorkOrders(showCancelled.isSelected()));
+            notices.getChildren().add(showCancelled);
+        }
+
         return UiComponents.buildEntityPage(
                 I18n.get("entity.workorders.title"),
-                PageFormatters.meta("entity.workorders.meta", garage.getWorkOrders().size()),
+                PageFormatters.meta("entity.workorders.meta", orders.size()),
                 I18n.get("entity.workorders.subtitle"),
-                new javafx.scene.layout.VBox(6,
-                        UiComponents.viewNotice(
-                                PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
-                                I18n.get("view.notice.workorders.one"),
-                                I18n.get("view.notice.workorders.many")),
-                        UiComponents.viewNotice(
-                                PageRouter.countOpenReclamations(garage.getWorkOrders()),
-                                I18n.get("view.notice.reclamations.one"),
-                                I18n.get("view.notice.reclamations.many"))),
+                notices,
                 table, detailsBtn, addBtn, draftBtn);
+    }
+
+    /** True when there is at least one cancelled work order for the list to keep out. */
+    private static boolean hasCancelled(GarageSystem garage) {
+        for (WorkOrder order : garage.getWorkOrders()) {
+            if (order.getStatus() == WorkOrderStatus.CANCELLED) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static VBox buildServicesPage(GarageSystem garage, PageRouter router) {
