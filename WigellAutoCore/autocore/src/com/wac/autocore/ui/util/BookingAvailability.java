@@ -1,6 +1,7 @@
 package com.wac.autocore.ui.util;
 
 import com.wac.autocore.model.Booking;
+import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
@@ -59,7 +60,7 @@ public final class BookingAvailability {
                     continue;
                 }
 
-                if ("CANCELLED".equalsIgnoreCase(b.getStatus())) {
+                if (b.getStatus() == BookingStatus.CANCELLED) {
                     continue;
                 }
 

@@ -1,9 +1,7 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.model.*;
+import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.components.BookingFormPane;
 import com.wac.autocore.ui.i18n.I18n;
@@ -106,7 +104,7 @@ public final class BookingDialogs {
             // Create a clean booking in the system (NO work order is created or started automatically)
             Booking b = garage.createBooking(v.getId(), date, desc);
             if (b != null) {
-                b.setStatus("BOOKED");
+                b.setStatus(BookingStatus.BOOKED);
                 if (!chosenServices.isEmpty()) {
                     b.setServiceItems(chosenServices);
                 } else if (chosenService != null && !b.addServiceItem(chosenService)) {
@@ -193,7 +191,7 @@ public final class BookingDialogs {
                 Mechanic chosenMech = form.getSelectedMechanic();
                 LocalTime startTime = form.getSelectedStartTime();
                 String desc = form.getDescription();
-                String status = form.getStatus();
+                BookingStatus status = form.getStatus();
 
                 // Clear any earlier schedule slot for this booking
                 garage.releaseSlot(booking.getId());
@@ -215,7 +213,7 @@ public final class BookingDialogs {
                 // The status is set last, because a change back to Booked unlocks the services
                 // again. Once the job has started it cannot go back.
                 if (booking.isWorkStarted() && !statusAllowed(status)
-                        && !status.equalsIgnoreCase(booking.getStatus())) {
+                        && status != booking.getStatus()) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"),
                             I18n.get("dialog.booking.status_locked_work_started"));
                     return;
@@ -234,7 +232,7 @@ public final class BookingDialogs {
                 }
 
                 // Rebook in the schedule if a mechanic is assigned and the booking is not cancelled
-                if (chosenMech != null && !"CANCELLED".equalsIgnoreCase(status)) {
+                if (chosenMech != null && status != BookingStatus.CANCELLED) {
                     int hour = startTime != null ? startTime.getHour() : 8;
                     String custName = EntityLookup.customerName(garage, v.getCustomerId());
                     garage.reserveSlot(
@@ -315,9 +313,9 @@ public final class BookingDialogs {
     }
 
     /** The statuses that may be set once the work has already started. */
-    private static boolean statusAllowed(String status) {
-        return "IN_PROGRESS".equalsIgnoreCase(status)
-                || "COMPLETED".equalsIgnoreCase(status);
+    private static boolean statusAllowed(BookingStatus status) {
+        return status == BookingStatus.IN_PROGRESS
+                || status == BookingStatus.COMPLETED;
     }
 
     /** The ids of the mechanics picked in the form, in the order they were picked. */

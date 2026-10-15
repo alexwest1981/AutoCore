@@ -152,7 +152,7 @@ public class WorkOrderService {
         }
 
         workOrder.setStatus(WorkOrderStatus.CREATED);
-        booking.setStatus("WORK_ORDER_CREATED");
+        booking.setStatus(BookingStatus.WORK_ORDER_CREATED);
         saveBooking(booking);
 
         System.out.println("Work order created successfully.");
@@ -328,7 +328,7 @@ public class WorkOrderService {
         }
 
         if (booking != null) {
-            booking.setStatus("IN_PROGRESS");
+            booking.setStatus(BookingStatus.IN_PROGRESS);
             saveBooking(booking);
         }
 
@@ -389,7 +389,7 @@ public class WorkOrderService {
         }
 
         if (booking != null) {
-            booking.setStatus("COMPLETED");
+            booking.setStatus(BookingStatus.COMPLETED);
             saveBooking(booking);
         }
 
@@ -439,7 +439,7 @@ public class WorkOrderService {
         }
 
         if (booking != null) {
-            booking.setStatus("CANCELLED");
+            booking.setStatus(BookingStatus.CANCELLED);
             saveBooking(booking);
             mechanicSchedule.cancelSlotForBooking(booking.getId());
             mechanicSchedule.syncFromDatabase();

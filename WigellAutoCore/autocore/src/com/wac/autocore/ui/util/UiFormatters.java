@@ -2,6 +2,7 @@ package com.wac.autocore.ui.util;
 
 
 import com.wac.autocore.model.WorkOrderStatus;
+import com.wac.autocore.model.BookingStatus;
 
 
 import java.math.BigDecimal;
@@ -160,6 +161,10 @@ public final class UiFormatters {
 
     /** Same as above, for a work order status. */
     public static String statusWord(WorkOrderStatus status) {
+        return status == null ? "" : statusWord(status.name());
+    }
+    /** Same as above, for a booking status. */
+    public static String statusWord(BookingStatus status) {
         return status == null ? "" : statusWord(status.name());
     }
 

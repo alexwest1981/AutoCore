@@ -1,10 +1,7 @@
 package com.wac.autocore.ui.navigation;
 
 import com.wac.autocore.exception.AppException;
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Invoice;
-import com.wac.autocore.model.WorkOrder;
-import com.wac.autocore.model.WorkOrderStatus;
+import com.wac.autocore.model.*;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
@@ -174,7 +171,7 @@ public class PageRouter {
     public static int countBookingsWithoutWorkOrder(List<Booking> bookings, List<WorkOrder> orders) {
         int count = 0;
         for (Booking booking : bookings) {
-            if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+            if (booking.getStatus() == BookingStatus.CANCELLED) {
                 continue;
             }
             boolean hasOrder = false;
@@ -196,7 +193,7 @@ public class PageRouter {
                                                    List<Invoice> invoices) {
         int count = 0;
         for (Booking booking : bookings) {
-            if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+            if (booking.getStatus() == BookingStatus.CANCELLED) {
                 continue;
             }
             boolean hasOrder = false;
