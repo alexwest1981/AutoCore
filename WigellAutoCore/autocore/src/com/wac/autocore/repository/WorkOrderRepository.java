@@ -4,6 +4,7 @@ import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.WorkOrderStatus;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -66,10 +67,11 @@ public class WorkOrderRepository {
                 + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+
         int id = Queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
-            statement.setString(3, workOrder.getStatus());
+            statement.setString(3, workOrder.getStatus().name());
             statement.setString(4, workOrder.getType());
             Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
@@ -93,7 +95,7 @@ public class WorkOrderRepository {
         Queries.write(connection, sql, statement -> {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
-            statement.setString(3, workOrder.getStatus());
+            statement.setString(3, workOrder.getStatus().name());
             statement.setString(4, workOrder.getType());
             Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
@@ -190,10 +192,8 @@ public class WorkOrderRepository {
 
         workOrder.setVehicleId(resultSet.getInt("vehicle_id"));
         workOrder.setDescription(resultSet.getString("description"));
+        workOrder.setStatus(WorkOrderStatus.fromText(status));
 
-        if (status != null) {
-            workOrder.setStatus(status);
-        }
         // A row with no type (older or half-finished) keeps the model's default instead of empty.
         if (type != null && !type.trim().isEmpty()) {
             workOrder.setType(type);

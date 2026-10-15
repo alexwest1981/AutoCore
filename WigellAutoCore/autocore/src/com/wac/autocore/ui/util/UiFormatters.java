@@ -1,5 +1,9 @@
 package com.wac.autocore.ui.util;
 
+
+import com.wac.autocore.model.WorkOrderStatus;
+
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -151,8 +155,12 @@ public final class UiFormatters {
         if ("CANCELLED".equalsIgnoreCase(status)) {
             return com.wac.autocore.ui.i18n.I18n.get("status.cancelled");
         }
-
         return status;
+    }
+
+    /** Same as above, for a work order status. */
+    public static String statusWord(WorkOrderStatus status) {
+        return status == null ? "" : statusWord(status.name());
     }
 
     /** True if the status means finished. */

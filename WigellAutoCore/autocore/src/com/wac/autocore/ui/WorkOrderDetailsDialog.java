@@ -9,6 +9,7 @@ import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
+import com.wac.autocore.model.WorkOrderStatus;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -192,7 +193,7 @@ final class WorkOrderDetailsDialog {
                 if (done) {
                     statusChip.setText(I18n.get("status.completed"));
                     statusChip.getStyleClass().add("green");
-                } else if ("COMPLETED".equals(workOrder.getStatus())) {
+                } else if (workOrder.getStatus() == WorkOrderStatus.COMPLETED) {
                     // The service was never performed, but the order is closed.
                     statusChip.setText(I18n.get("status.not_performed"));
                     statusChip.getStyleClass().add("grey");
@@ -243,10 +244,10 @@ final class WorkOrderDetailsDialog {
             }
         }
 
-        if ("CREATED".equals(workOrder.getStatus())) {
+        if (workOrder.getStatus() == WorkOrderStatus.CREATED) {
             }
 
-        if ("CREATED".equals(workOrder.getStatus())) {
+        if (workOrder.getStatus() == WorkOrderStatus.CREATED) {
             content.getChildren().add(headerRow(garage, workOrder, dialog));
         }
         content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid,
@@ -271,18 +272,18 @@ final class WorkOrderDetailsDialog {
 
     /** Shows only the actions the status allows. Cancel comes last, set apart to the right. */
     private static HBox actionRow(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
-        String status = workOrder.getStatus();
+        WorkOrderStatus status = workOrder.getStatus();
         boolean multiService = workOrder.getServiceItemIds() != null && workOrder.getServiceItemIds().size() > 1;
         boolean allMarked = workOrder.getCompletedServiceItems() != null
                 && workOrder.getCompletedServiceItems().containsAll(workOrder.getServiceItemIds());
 
         HBox row = new HBox(8);
 
-        if ("CREATED".equals(status)) {
+        if (status == WorkOrderStatus.CREATED) {
             row.getChildren().add(actionButton("confirm", garage, workOrder, dialog));
-        } else if ("CONFIRMED".equals(status)) {
+        } else if (status == WorkOrderStatus.CONFIRMED) {
             row.getChildren().add(actionButton("start", garage, workOrder, dialog));
-        } else if ("IN_PROGRESS".equals(status)) {
+        } else if (status == WorkOrderStatus.IN_PROGRESS) {
             Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
             markBtn.setOnAction(e -> ActionDialogs.showMarkPerformedDialog(garage, workOrder,
                     () -> refreshDialog(garage, workOrder, dialog)));
@@ -290,14 +291,14 @@ final class WorkOrderDetailsDialog {
             if (!multiService || allMarked) {
                 row.getChildren().add(actionButton("complete", garage, workOrder, dialog));
             }
-        } else if ("COMPLETED".equals(status)) {
+        } else if (status == WorkOrderStatus.COMPLETED) {
             // A completed job has exactly one action: to be reclaimed.
             row.getChildren().add(reclamationButton(garage, workOrder, dialog));
-        } else if ("CANCELLED".equals(status)) {
+        } else if (status == WorkOrderStatus.CANCELLED) {
             row.getChildren().add(actionButton("start", garage, workOrder, dialog));
         }
 
-        if ("CREATED".equals(status) || "CONFIRMED".equals(status) || "IN_PROGRESS".equals(status)) {
+        if (status == WorkOrderStatus.CREATED || status == WorkOrderStatus.CONFIRMED || status == WorkOrderStatus.IN_PROGRESS) {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
             row.getChildren().addAll(spacer, actionButton("cancel", garage, workOrder, dialog));

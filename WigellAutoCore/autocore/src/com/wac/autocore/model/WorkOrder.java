@@ -25,7 +25,7 @@ public class WorkOrder {
     private final Map<Integer, Integer> completedServicePrices = new LinkedHashMap<Integer, Integer>();
     /** The package each service came from, carried over from the booking. */
     private final Map<Integer, String> servicePackages = new LinkedHashMap<Integer, String>();
-    private String status;
+    private WorkOrderStatus status;
     private String plannedDate;
     private String plannedTime;
     private String customerInstructions;
@@ -42,7 +42,7 @@ public class WorkOrder {
         this.bookingId = bookingId;
         this.mechanicId = mechanicId;
         this.serviceItemIds = new ArrayList<Integer>();
-        this.status = "CREATED";
+        this.status = WorkOrderStatus.CREATED;
         this.type = STANDARD;
     }
 
@@ -94,11 +94,11 @@ public class WorkOrder {
         this.serviceItemIds = serviceItemIds;
     }
 
-    public String getStatus() {
+    public WorkOrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(WorkOrderStatus status) {
         this.status = status;
     }
 

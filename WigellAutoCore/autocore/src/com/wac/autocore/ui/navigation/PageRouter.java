@@ -4,6 +4,7 @@ import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.WorkOrderStatus;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
@@ -160,8 +161,8 @@ public class PageRouter {
             if (!order.isReclamation()) {
                 continue;
             }
-            String status = order.getStatus();
-            if (status != null && ("COMPLETED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status))) {
+            WorkOrderStatus status = order.getStatus();
+            if (status == WorkOrderStatus.COMPLETED || status == WorkOrderStatus.CANCELLED) {
                 continue;
             }
             count++;
@@ -206,7 +207,7 @@ public class PageRouter {
                     continue;
                 }
                 hasOrder = true;
-                if (order.getStatus() == null || !"COMPLETED".equalsIgnoreCase(order.getStatus())) {
+                if (order.getStatus() != WorkOrderStatus.COMPLETED) {
                     allCompleted = false;
                 }
                 for (Invoice invoice : invoices) {

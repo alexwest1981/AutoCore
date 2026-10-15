@@ -3,11 +3,7 @@ package com.wac.autocore.service;
 import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.WorkOrder;
-import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.model.*;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.MechanicRepository;
 import com.wac.autocore.repository.ServiceItemRepository;
@@ -107,7 +103,7 @@ public class WorkOrderService {
 
         for (WorkOrder existingOrder : getAll()) {
 
-            if ("CANCELLED".equals(existingOrder.getStatus())) {
+            if (existingOrder.getStatus() == WorkOrderStatus.CANCELLED) {
                 continue;
             }
 
@@ -153,7 +149,7 @@ public class WorkOrderService {
             throw new DataAccessException("Could not save work order", e);
         }
 
-        workOrder.setStatus("CREATED");
+        workOrder.setStatus(WorkOrderStatus.CREATED);
         booking.setStatus("WORK_ORDER_CREATED");
         saveBooking(booking);
 
@@ -177,7 +173,7 @@ public class WorkOrderService {
         }
 
         // Only work that has actually been performed can be reclaimed.
-        if (!"COMPLETED".equalsIgnoreCase(original.getStatus())) {
+        if (original.getStatus() != WorkOrderStatus.COMPLETED) {
             System.out.println("Work order " + originalWorkOrderId + " is not completed.");
             return null;
         }
@@ -267,7 +263,7 @@ public class WorkOrderService {
     private boolean isClaimed(int bookingId, int serviceItemId) {
         for (WorkOrder order : getAll()) {
 
-            if ("CANCELLED".equals(order.getStatus())) {
+            if (order.getStatus() == WorkOrderStatus.CANCELLED) {
                 continue;
             }
 
@@ -284,36 +280,29 @@ public class WorkOrderService {
     }
 
     // The only place that decides which status changes are allowed. Anything not listed is refused.
-    private boolean canChangeStatus(String from, String to) {
+    private boolean canChangeStatus(WorkOrderStatus from, WorkOrderStatus to) {
 
-        if ("IN_PROGRESS".equals(from) && "COMPLETED".equals(to)) {
+        if (from == WorkOrderStatus.IN_PROGRESS && to == WorkOrderStatus.COMPLETED) {
             return true;
         }
-
-        if ("CREATED".equals(from) && "CANCELLED".equals(to)) {
+        if (from == WorkOrderStatus.CREATED && to == WorkOrderStatus.CANCELLED) {
             return true;
         }
-
-        if ("IN_PROGRESS".equals(from) && "CANCELLED".equals(to)) {
+        if (from == WorkOrderStatus.IN_PROGRESS && to == WorkOrderStatus.CANCELLED) {
             return true;
         }
-
-        if ("CANCELLED".equals(from) && "IN_PROGRESS".equals(to)) {
+        if (from == WorkOrderStatus.CANCELLED && to == WorkOrderStatus.IN_PROGRESS) {
             return true;
         }
-
-        if ("CREATED".equals(from) && "CONFIRMED".equals(to)) {
+        if (from == WorkOrderStatus.CREATED && to == WorkOrderStatus.CONFIRMED) {
             return true;
         }
-
-        if ("CONFIRMED".equals(from) && "IN_PROGRESS".equals(to)) {
+        if (from == WorkOrderStatus.CONFIRMED && to == WorkOrderStatus.IN_PROGRESS) {
             return true;
         }
-
-        if ("CONFIRMED".equals(from) && "CANCELLED".equals(to)) {
+        if (from == WorkOrderStatus.CONFIRMED && to == WorkOrderStatus.CANCELLED) {
             return true;
         }
-
         return false;
     }
 
@@ -323,7 +312,7 @@ public class WorkOrderService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        if (!canChangeStatus(workOrder.getStatus(), "IN_PROGRESS")) {
+        if (!canChangeStatus(workOrder.getStatus(), WorkOrderStatus.IN_PROGRESS)) {
             throw new RuleViolationException("Work order " + workOrderId + " cannot be started. Its status is "
                     + workOrder.getStatus() + ".");
         }
@@ -354,7 +343,7 @@ public class WorkOrderService {
         }
         workOrder.setCompletedServicePrices(priser);
 
-        workOrder.setStatus("IN_PROGRESS");
+        workOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
         saveWorkOrder(workOrder);
 
         System.out.println("Work order " + workOrderId + " has been started.");
@@ -367,7 +356,7 @@ public class WorkOrderService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        if (!canChangeStatus(workOrder.getStatus(), "COMPLETED")) {
+        if (!canChangeStatus(workOrder.getStatus(), WorkOrderStatus.COMPLETED)) {
             throw new RuleViolationException("Work order " + workOrderId + " cannot be completed. Its status is "
                     + workOrder.getStatus() + ".");
         }
@@ -389,7 +378,7 @@ public class WorkOrderService {
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
         Booking booking = findBooking(workOrder.getBookingId());
 
-        workOrder.setStatus("COMPLETED");
+        workOrder.setStatus(WorkOrderStatus.COMPLETED);
         saveWorkOrder(workOrder);
 
         if (mechanic != null) {
@@ -414,12 +403,12 @@ public class WorkOrderService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        if (!canChangeStatus(workOrder.getStatus(), "CONFIRMED")) {
+        if (!canChangeStatus(workOrder.getStatus(), WorkOrderStatus.CONFIRMED)) {
             throw new RuleViolationException("Work order " + workOrderId + " cannot be confirmed. Its status is "
                     + workOrder.getStatus() + ".");
         }
 
-        workOrder.setStatus("CONFIRMED");
+        workOrder.setStatus(WorkOrderStatus.CONFIRMED);
         saveWorkOrder(workOrder);
 
         System.out.println("Work order " + workOrderId + " has been confirmed.");
@@ -434,7 +423,7 @@ public class WorkOrderService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        if (!canChangeStatus(workOrder.getStatus(), "CANCELLED")) {
+        if (!canChangeStatus(workOrder.getStatus(), WorkOrderStatus.CANCELLED)) {
             throw new RuleViolationException("Work order " + workOrderId + " cannot be cancelled. Its status is "
                     + workOrder.getStatus() + ".");
         }
@@ -454,7 +443,7 @@ public class WorkOrderService {
             mechanicSchedule.syncFromDatabase();
         }
 
-        workOrder.setStatus("CANCELLED");
+        workOrder.setStatus(WorkOrderStatus.CANCELLED);
         saveWorkOrder(workOrder);
 
         System.out.println("Work order " + workOrderId + " has been cancelled.");
@@ -469,7 +458,7 @@ public class WorkOrderService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        if (!"IN_PROGRESS".equals(workOrder.getStatus())) {
+        if (workOrder.getStatus() != WorkOrderStatus.IN_PROGRESS) {
             throw new RuleViolationException("Services on work order " + workOrderId
                     + " cannot be marked as performed. Its status is " + workOrder.getStatus() + ".");
         }
