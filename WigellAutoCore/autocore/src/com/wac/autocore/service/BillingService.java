@@ -19,7 +19,6 @@ import com.wac.autocore.repository.WorkOrderRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /** Invoices from completed work orders, with discount. */
@@ -50,18 +49,17 @@ public class BillingService {
         try {
             return invoiceRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read invoices: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read invoices", e);
         }
     }
 
     /** With no new charge: the console and other calls that have no reclamation. */
     public Invoice createInvoice(int workOrderId, String discountCode) {
-        return createInvoice(workOrderId, discountCode, null, 0.0);
+        return createInvoice(workOrderId, discountCode, null, 0);
     }
 
     /** Invoices a work order, with a new charge as its own line when the reclamation calls for one. */
-    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, int extraAmount) {
         WorkOrder workOrder = findWorkOrder(workOrderId);
         if (workOrder == null) {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
@@ -94,11 +92,11 @@ public class BillingService {
 
     /** Invoices all the work done on a booking on a single invoice. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
-        return createInvoiceForBooking(bookingId, discountCode, null, 0.0);
+        return createInvoiceForBooking(bookingId, discountCode, null, 0);
     }
 
     /** The same invoice, but with room for a new charge the reclamation brings with it. */
-    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, int extraAmount) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             throw new NotFoundException("Booking with ID " + bookingId + " does not exist.");
@@ -170,7 +168,7 @@ public class BillingService {
 
     /** Builds the invoice from the performed services. Lines already invoiced are skipped. */
     private Invoice createInvoiceFrom(List<WorkOrder> orders, int primaryOrderId, String discountCode,
-                                      String extraName, double extraAmount) {
+                                      String extraName, int extraAmount) {
         WorkOrder primary = findWorkOrder(primaryOrderId);
         int bookingId = primary != null ? primary.getBookingId() : 0;
         List<Integer> invoiced = invoicedServiceIds(bookingId);
@@ -182,16 +180,16 @@ public class BillingService {
                 if (serviceItem != null) {
                     // Use the stored price when there is one.
                     // Older work orders have none and get the catalogue price, as before D2.
-                    Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
-                    double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
+                    Integer frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
+                    int linePrice = frozenPrice != null ? frozenPrice.intValue() : serviceItem.getPrice();
                     // Reclamation work shows on the invoice but costs nothing. The price is zeroed and
                     // not the discount, because distributeDiscount overwrites each line's discount as
                     // soon as the invoice has a VIP or code discount.
                     if (workOrder.isReclamation()) {
-                        linePrice = 0.0;
+                        linePrice = 0;
                     }
                     InvoiceLine invoiceLine = new InvoiceLine(0, 0, serviceItem.getId(),
-                            serviceItem.getName(), linePrice, 0.0);
+                            serviceItem.getName(), linePrice, 0);
                     // The package follows the service from the order, so the invoice can group the lines.
                     invoiceLine.setPackageName(workOrder.getServicePackageName(serviceItem.getId()));
                     lines.add(invoiceLine);
@@ -202,7 +200,7 @@ public class BillingService {
         // A new charge belongs to the reclamation and is billed in full. It goes in before the sum
         // and the discount, so that it counts towards both.
         if (extraName != null && !extraName.trim().isEmpty() && extraAmount > 0) {
-            lines.add(new InvoiceLine(0, 0, 0, extraName.trim(), extraAmount, 0.0));
+            lines.add(new InvoiceLine(0, 0, 0, extraName.trim(), extraAmount, 0));
         }
 
         if (lines.isEmpty()) {
@@ -210,19 +208,19 @@ public class BillingService {
             return null;
         }
 
-        double amount = 0.0;
+        int amount = 0;
         for (InvoiceLine line : lines) {
             amount += line.getPrice();
         }
 
-        double discount = 0.0;
+        int discount = 0;
         Booking booking = bookingId > 0 ? findBooking(bookingId) : null;
         if (booking != null) {
             Vehicle vehicle = findVehicle(booking.getVehicleId());
             if (vehicle != null) {
                 Customer customer = findCustomer(vehicle.getCustomerId());
                 if (customer != null && customer.isVip()) {
-                    discount += amount * (DiscountRules.VIP_PERCENT / 100.0);
+                    discount += DiscountRules.percentOf(amount, DiscountRules.VIP_PERCENT);
                     System.out.println("VIP discount applied: 10%");
                 }
             }
@@ -233,7 +231,6 @@ public class BillingService {
         if (discount > amount) {
             discount = amount;
         }
-        discount = DiscountRules.roundToOre(discount);
 
         DiscountRules.distributeDiscount(lines, amount, discount);
 
@@ -247,8 +244,7 @@ public class BillingService {
         try {
             invoiceRepository.save(invoice);
         } catch (DataAccessException e) {
-            System.out.println("Could not save invoice: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save invoice", e);
         }
 
         for (InvoiceLine line : invoice.getLines()) {
@@ -298,7 +294,7 @@ public class BillingService {
                 }
             }
         } catch (DataAccessException e) {
-            System.out.println("Could not read invoice lines: " + e.getMessage());
+            throw new DataAccessException("Could not read invoice lines", e);
         }
         return invoiced;
     }
@@ -349,8 +345,7 @@ public class BillingService {
         try {
             return workOrderRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read work orders: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read work orders", e);
         }
     }
 
@@ -364,7 +359,7 @@ public class BillingService {
                 }
             }
         } catch (DataAccessException e) {
-            System.out.println("Could not check for existing invoices: " + e.getMessage());
+            throw new DataAccessException("Could not check for existing invoices", e);
         }
         return false;
     }

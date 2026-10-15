@@ -36,11 +36,11 @@ public final class ThemeManager {
         "/com/wac/autocore/theme/multiselect.css",
     };
 
-    /** The stylesheet from the classpath, or straight from the source tree during development. */
+    /** The stylesheet from the classpath. */
     private static URL resolveResource(String path) {
         if (path == null) return null;
         String slashPath = path.startsWith("/") ? path : "/" + path;
-        return Resources.find(path, "WigellAutoCore/autocore/src/resources" + slashPath);
+        return Resources.find(slashPath);
     }
 
     public static void apply(Scene scene, String slug) {

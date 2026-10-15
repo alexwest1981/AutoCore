@@ -26,7 +26,7 @@ public class SqliteRepositoryFactory implements RepositoryFactory {
 
     @Override
     public BookingRepository createBookingRepository() {
-        return new BookingRepository();
+        return new BookingRepository(new BookingServiceItemRepository(), new BookingMechanicRepository());
     }
 
     @Override
@@ -46,7 +46,7 @@ public class SqliteRepositoryFactory implements RepositoryFactory {
 
     @Override
     public InvoiceRepository createInvoiceRepository() {
-        return new InvoiceRepository();
+        return new InvoiceRepository(new InvoiceLineRepository());
     }
 
     @Override
@@ -57,5 +57,10 @@ public class SqliteRepositoryFactory implements RepositoryFactory {
     @Override
     public ServicePackageRepository createServicePackageRepository() {
         return new ServicePackageRepository();
+    }
+
+    @Override
+    public ScheduleRepository createScheduleRepository() {
+        return new ScheduleRepository();
     }
 }

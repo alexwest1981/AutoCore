@@ -122,7 +122,7 @@ class KanbanMonthView {
             grid.add(head, c, 0);
         }
 
-        MechanicSchedule schedule = MechanicSchedule.getInstance();
+        MechanicSchedule schedule = card.garage.getMechanicSchedule();
         List<MonthDayStatus> days = schedule.getMonthDays(mech.getId(), ym, mech.isAvailable());
 
         int col = 0;

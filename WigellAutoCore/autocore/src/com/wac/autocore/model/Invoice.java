@@ -9,18 +9,18 @@ public class Invoice {
     private int id;
     private int workOrderId;
     private LocalDate invoiceDate;
-    private double amount;
-    private double discount;
-    private double totalAmount;
+    private int amount;
+    private int discount;
+    private int totalAmount;
     private boolean paid;
     private List<InvoiceLine> lines = new ArrayList<InvoiceLine>();
 
-    public Invoice(int id, int workOrderId, LocalDate invoiceDate, double amount) {
+    public Invoice(int id, int workOrderId, LocalDate invoiceDate, int amount) {
         this.id = id;
         this.workOrderId = workOrderId;
         this.invoiceDate = invoiceDate;
         this.amount = amount;
-        this.discount = 0.0;
+        this.discount = 0;
         this.totalAmount = amount;
         this.paid = false;
     }
@@ -45,20 +45,20 @@ public class Invoice {
         return invoiceDate;
     }
 
-    public double getAmount() {
+    public int getAmount() {
         return amount;
     }
 
-    public double getDiscount() {
+    public int getDiscount() {
         return discount;
     }
 
-    public void setDiscount(double discount) {
+    public void setDiscount(int discount) {
         this.discount = discount;
         calculateTotalAmount();
     }
 
-    public double getTotalAmount() {
+    public int getTotalAmount() {
         return totalAmount;
     }
 
@@ -71,20 +71,21 @@ public class Invoice {
     }
 
     private void calculateTotalAmount() {
-        this.totalAmount = Math.round((amount - discount) * 100.0) / 100.0;
+        // Two amounts in öre, so the difference is exact and there is nothing to round.
+        this.totalAmount = amount - discount;
     }
 
     /** The VAT is added on the invoice only, not in the tables. */
-    public static final double VAT_RATE = 0.25;
+    public static final int VAT_PERCENT = 25;
 
-    /** The VAT on what is to be paid, rounded to the nearest öre. */
-    public double getVatAmount() {
-        return Math.round(this.totalAmount * VAT_RATE * 100.0) / 100.0;
+    /** The VAT on what is to be paid, rounded to the nearest öre, half upward. */
+    public int getVatAmount() {
+        return (totalAmount * VAT_PERCENT + 50) / 100;
     }
 
     /** The amount due including VAT. The sum is exactly the two rows together. */
-    public double getTotalIncludingVat() {
-        return Math.round((this.totalAmount + getVatAmount()) * 100.0) / 100.0;
+    public int getTotalIncludingVat() {
+        return totalAmount + getVatAmount();
     }
 
     public List<InvoiceLine> getLines() {
@@ -100,9 +101,9 @@ public class Invoice {
         return id +
                 " - Work order ID: " + workOrderId +
                 " | Date: " + invoiceDate +
-                " | Amount: " + amount + " SEK" +
-                " | Discount: " + discount + " SEK" +
-                " | Total: " + totalAmount + " SEK" +
+                " | Amount: " + amount + " öre" +
+                " | Discount: " + discount + " öre" +
+                " | Total: " + totalAmount + " öre" +
                 " | Paid: " + (paid ? "Yes" : "No");
     }
 }

@@ -27,7 +27,6 @@ import com.wac.autocore.repository.WorkOrderRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /** The entry point the interface and the text version call. Passes on to the services. */
@@ -48,6 +47,7 @@ public class GarageSystem {
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
     private final BookingRepository bookingRepository;
+    private final MechanicSchedule mechanicSchedule;
 
     public GarageSystem(RepositoryFactory repositories) {
         Db.ensureReady();
@@ -63,11 +63,13 @@ public class GarageSystem {
         PaymentRepository paymentRepository = repositories.createPaymentRepository();
         ServicePackageRepository servicePackageRepository = repositories.createServicePackageRepository();
 
+        mechanicSchedule = new MechanicSchedule(repositories.createScheduleRepository());
+
         mechanicRules = new MechanicRules(mechanicRepository);
         customerService = new CustomerService(customerRepository);
         vehicleService = new VehicleService(customerService, vehicleRepository);
         workOrderService = new WorkOrderService(workOrderRepository, bookingRepository,
-                mechanicRepository, serviceItemRepository, vehicleRepository);
+                mechanicRepository, serviceItemRepository, vehicleRepository, mechanicSchedule);
         bookingService = new BookingService(workOrderService, mechanicRules,
                 bookingRepository, vehicleRepository, serviceItemRepository);
         billingService = new BillingService(invoiceRepository, workOrderRepository,
@@ -93,8 +95,7 @@ public class GarageSystem {
         try {
             return serviceItemRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read service items: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read service items", e);
         }
     }
 
@@ -112,6 +113,10 @@ public class GarageSystem {
 
     public List<Payment> getPayments() {
         return paymentService.getAll();
+    }
+
+    public MechanicSchedule getMechanicSchedule() {
+        return mechanicSchedule;
     }
 
     /** The customer with that id, or null when there is none. */
@@ -335,7 +340,7 @@ public class GarageSystem {
     }
 
     /** Invoices a work order, with a new charge as its own line. */
-    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, int extraAmount) {
         return billingService.createInvoice(workOrderId, discountCode, extraName, extraAmount);
     }
 
@@ -345,7 +350,7 @@ public class GarageSystem {
     }
 
     /** The same invoice, but with room for a new charge the reclamation brings with it. */
-    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, int extraAmount) {
         return billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
     }
 
@@ -356,12 +361,12 @@ public class GarageSystem {
         return mechanic;
     }
 
-    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes) {
+    public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes) {
         return createServiceItem(name, description, price, estimatedMinutes, "");
     }
 
     /** As above, but with the requirement on specialization. */
-    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes,
+    public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes,
                                          String specialization) {
         ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
         serviceItemRepository.save(item);
@@ -411,7 +416,7 @@ public class GarageSystem {
 
     public void updateBooking(Booking booking) {
         bookingRepository.save(booking);
-        MechanicSchedule.getInstance().syncFromDatabase();
+        mechanicSchedule.syncFromDatabase();
     }
 
     public void updateServiceItem(ServiceItem item) {
@@ -426,7 +431,7 @@ public class GarageSystem {
         refuseUnless(canDeleteMechanic(mechanicId),
                 "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.");
         mechanicRepository.delete(mechanicId);
-        MechanicSchedule.getInstance().removeSlotsForMechanic(mechanicId);
+        mechanicSchedule.removeSlotsForMechanic(mechanicId);
     }
 
     public boolean canDeleteCustomer(int customerId) {
@@ -463,8 +468,8 @@ public class GarageSystem {
         if (b != null) {
             b.setStatus("CANCELLED");
             bookingRepository.save(b);
-            MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
-            MechanicSchedule.getInstance().syncFromDatabase();
+            mechanicSchedule.cancelSlotForBooking(bookingId);
+            mechanicSchedule.syncFromDatabase();
         }
     }
 
@@ -479,8 +484,8 @@ public class GarageSystem {
         refuseUnless(canCancelOrDeleteBooking(bookingId),
                 "Bokningen kan inte tas bort: den har en arbetsorder med faktura.");
         bookingRepository.delete(bookingId);
-        MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
-        MechanicSchedule.getInstance().syncFromDatabase();
+        mechanicSchedule.cancelSlotForBooking(bookingId);
+        mechanicSchedule.syncFromDatabase();
     }
 
     public boolean canDeleteServiceItem(int serviceItemId) {

@@ -20,4 +20,6 @@ public interface RepositoryFactory {
     PaymentRepository createPaymentRepository();
 
     ServicePackageRepository createServicePackageRepository();
+
+    ScheduleRepository createScheduleRepository();
 }

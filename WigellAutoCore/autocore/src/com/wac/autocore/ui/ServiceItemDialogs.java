@@ -4,6 +4,7 @@ import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.UiFormatters;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -86,7 +87,7 @@ public final class ServiceItemDialogs {
                 return;
             }
 
-            Double price = parsePrice(priceStr);
+            Integer price = parsePrice(priceStr);
             Integer time = parseMinutes(timeStr);
             if (price == null || time == null) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_number"));
@@ -113,25 +114,21 @@ public final class ServiceItemDialogs {
         });
     }
 
-    static Double parsePrice(String priceStr) {
-        if (priceStr == null) return null;
-        String clean = priceStr.replaceAll("[^0-9,.]", "").replace(",", ".").trim();
-        if (clean.isEmpty()) return null;
-        try {
-            double val = Double.parseDouble(clean);
-            return val > 0 ? val : null;
-        } catch (NumberFormatException e) {
-            return null;
-        }
+    static Integer parsePrice(String priceStr) {
+        Integer ore = UiFormatters.parseOre(priceStr);
+        return ore != null && ore.intValue() > 0 ? ore : null;
     }
 
     static Integer parseMinutes(String timeStr) {
         if (timeStr == null) return null;
-        String clean = timeStr.replaceAll("[^0-9,.]", "").replace(",", ".").trim();
-        if (clean.isEmpty()) return null;
+        String clean = timeStr.replace('\u00a0', ' ').trim();
+        if (clean.length() > 3 && clean.toLowerCase().endsWith("min")) {
+            clean = clean.substring(0, clean.length() - 3).trim();
+        }
+        if (!clean.matches("\\d+(?:[.,]\\d+)?")) return null;
         try {
-            if (clean.contains(".")) {
-                double val = Double.parseDouble(clean);
+            if (clean.contains(".") || clean.contains(",")) {
+                double val = Double.parseDouble(clean.replace(",", "."));
                 return val > 0 ? (int) Math.round(val) : null;
             }
             int val = Integer.parseInt(clean);

@@ -47,7 +47,7 @@ public final class EntityPages {
                     return min > 0 ? min + " min" : "-";
                 }),
                 TableFactory.sizeCol(I18n.get("table.col.estimated_cost"), TableFactory.W_MONEY, c -> {
-                    double cost = EntityLookup.bookingTotalPrice(garage, c);
+                    int cost = EntityLookup.bookingTotalPrice(garage, c);
                     return cost > 0 ? UiFormatters.formatMoney(cost) : "-";
                 }),
                 TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> PageFormatters.bookingMechanicNames(garage, c)),

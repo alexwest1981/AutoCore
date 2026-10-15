@@ -1,6 +1,5 @@
 package com.wac.autocore.util;
 
-import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -13,48 +12,31 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 /**
- * Reads a text file as keys and values. The caller says where the file can be, because the
- * project looks different in the editor and in a finished build.
+ * Reads the files that follow the program: themes, texts and the sample data. They are on the
+ * classpath, so it does not matter where the program is started from.
  */
 public final class Resources {
 
     private Resources() {}
 
-    /** The first candidate that can be read, or null. A leading slash means classpath. */
-    public static URL find(String... candidates) {
-        if (candidates == null) {
+    /** The resource on the classpath, or null. A leading slash means from the root. */
+    public static URL find(String path) {
+        if (path == null || path.isEmpty()) {
             return null;
         }
-        for (String path : candidates) {
-            if (path == null || path.isEmpty()) {
-                continue;
-            }
 
-            URL url = Resources.class.getResource(path);
+        URL url = Resources.class.getResource(path);
 
-            if (url == null) {
-                String clean = path.startsWith("/") ? path.substring(1) : path;
-                url = Resources.class.getClassLoader().getResource(clean);
-            }
-            if (url == null) {
-                String clean = path.startsWith("/") ? path.substring(1) : path;
-                url = ClassLoader.getSystemResource(clean);
-            }
-            if (url == null) {
-                File file = new File(path);
-                if (file.exists()) {
-                    try {
-                        url = file.toURI().toURL();
-                    } catch (Exception ignored) {
-                    }
-                }
-            }
-
-            if (url != null) {
-                return url;
-            }
+        if (url == null) {
+            String clean = path.startsWith("/") ? path.substring(1) : path;
+            url = Resources.class.getClassLoader().getResource(clean);
         }
-        return null;
+        if (url == null) {
+            String clean = path.startsWith("/") ? path.substring(1) : path;
+            url = ClassLoader.getSystemResource(clean);
+        }
+
+        return url;
     }
 
     /**

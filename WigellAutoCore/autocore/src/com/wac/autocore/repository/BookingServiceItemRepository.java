@@ -27,7 +27,7 @@ public class BookingServiceItemRepository {
                     resultSet.getInt("id"),
                     resultSet.getString("name"),
                     resultSet.getString("description"),
-                    resultSet.getDouble("price"),
+                    resultSet.getInt("price"),
                     resultSet.getInt("estimated_minutes"));
             // The requirement has to come along, otherwise every service looks requirement-free.
             item.setSpecialization(resultSet.getString("specialization"));
@@ -51,14 +51,6 @@ public class BookingServiceItemRepository {
             names.put(row.getKey(), row.getValue());
         }
         return names;
-    }
-
-    public void save(Booking booking) {
-        try (Connection connection = Db.getConnection()) {
-            save(connection, booking);
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
-        }
     }
 
     /** Saves the services on an open connection, so everything runs in one transaction. */

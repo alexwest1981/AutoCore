@@ -265,8 +265,8 @@ public class Booking {
         return total;
     }
 
-    public double getTotalEstimatedCost() {
-        double total = 0.0;
+    public int getTotalEstimatedCost() {
+        int total = 0;
         for (ServiceItem s : serviceItems) {
             if (s != null) {
                 total += s.getPrice();

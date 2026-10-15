@@ -5,7 +5,6 @@ import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.repository.CustomerRepository;
 
-import java.util.Collections;
 import java.util.List;
 
 /** Customers: reading, lookup and validation. */
@@ -21,8 +20,7 @@ public class CustomerService {
         try {
             return customerRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read customers: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read customers", e);
         }
     }
 
@@ -42,8 +40,7 @@ public class CustomerService {
         try {
             customerRepository.save(customer);
         } catch (DataAccessException e) {
-            System.out.println("Could not save customer: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save customer", e);
         }
 
         System.out.println("Customer created successfully.");

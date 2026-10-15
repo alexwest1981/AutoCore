@@ -1,8 +1,5 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.data.Db;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -20,28 +17,23 @@ public class BookingMechanicRepository {
         }
     }
 
-    /** Replaces the booking's mechanics with the list. An empty list clears the links. */
-    public void saveForBooking(int bookingId, List<Integer> mechanicIds) {
-        // One connection for the removal and the insert, so the booking never sits without its
-        // mechanics if the second half fails.
-        try (Connection connection = Db.getConnection()) {
-            deleteByBookingId(connection, bookingId);
-            if (mechanicIds == null || mechanicIds.isEmpty()) {
-                return;
-            }
-            try (PreparedStatement insert = connection.prepareStatement(
-                    "INSERT OR IGNORE INTO booking_mechanics (booking_id, mechanic_id) VALUES (?, ?)")) {
-                for (Integer mechanicId : mechanicIds) {
-                    if (mechanicId == null || mechanicId.intValue() <= 0) {
-                        continue;
-                    }
-                    insert.setInt(1, bookingId);
-                    insert.setInt(2, mechanicId.intValue());
-                    insert.executeUpdate();
+    /** Replaces the booking's mechanics with the list, on the connection the booking is written on. */
+    public void saveForBooking(Connection connection, int bookingId, List<Integer> mechanicIds)
+            throws SQLException {
+        deleteByBookingId(connection, bookingId);
+        if (mechanicIds == null || mechanicIds.isEmpty()) {
+            return;
+        }
+        try (PreparedStatement insert = connection.prepareStatement(
+                "INSERT OR IGNORE INTO booking_mechanics (booking_id, mechanic_id) VALUES (?, ?)")) {
+            for (Integer mechanicId : mechanicIds) {
+                if (mechanicId == null || mechanicId.intValue() <= 0) {
+                    continue;
                 }
+                insert.setInt(1, bookingId);
+                insert.setInt(2, mechanicId.intValue());
+                insert.executeUpdate();
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
         }
     }
 

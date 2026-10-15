@@ -39,7 +39,7 @@ final class MarkPerformedDialog {
         List<CheckBox> boxes = new ArrayList<CheckBox>();
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
             String name = "Service #" + serviceItemId;
-            double price = 0.0;
+            int price = 0;
             ServiceItem s = garage.findServiceItem(serviceItemId.intValue());
             if (s != null) {
                 name = SeedText.resolve(s.getName());
@@ -48,9 +48,9 @@ final class MarkPerformedDialog {
             CheckBox box = new CheckBox(name + " (" + UiFormatters.formatMoney(price) + ")");
 
             boolean alreadyDone = workOrder.getCompletedServiceItems().contains(serviceItemId);
-            Double frozen = workOrder.getCompletedServicePrice(serviceItemId.intValue());
+            Integer frozen = workOrder.getCompletedServicePrice(serviceItemId.intValue());
             if (alreadyDone && frozen != null) {
-                box.setText(name + " (" + UiFormatters.formatMoney(frozen.doubleValue()) + ")");
+                box.setText(name + " (" + UiFormatters.formatMoney(frozen.intValue()) + ")");
             }
 
             box.setUserData(serviceItemId);

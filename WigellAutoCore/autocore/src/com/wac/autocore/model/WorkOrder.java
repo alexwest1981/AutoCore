@@ -22,7 +22,7 @@ public class WorkOrder {
     private int mechanicId;
     private List<Integer> serviceItemIds;
     private final List<Integer> completedServiceItems = new ArrayList<Integer>();
-    private final Map<Integer, Double> completedServicePrices = new LinkedHashMap<Integer, Double>();
+    private final Map<Integer, Integer> completedServicePrices = new LinkedHashMap<Integer, Integer>();
     /** The package each service came from, carried over from the booking. */
     private final Map<Integer, String> servicePackages = new LinkedHashMap<Integer, String>();
     private WorkOrderStatus status;
@@ -172,16 +172,16 @@ public class WorkOrder {
         }
     }
 
-    /** Returns the price that applied when the service was performed. */
-    public Double getCompletedServicePrice(int serviceItemId) {
+    /** Returns the price in öre that applied when the service was performed. */
+    public Integer getCompletedServicePrice(int serviceItemId) {
         return completedServicePrices.get(Integer.valueOf(serviceItemId));
     }
 
-    public Map<Integer, Double> getCompletedServicePrices() {
+    public Map<Integer, Integer> getCompletedServicePrices() {
         return completedServicePrices;
     }
 
-    public void setCompletedServicePrices(Map<Integer, Double> prices) {
+    public void setCompletedServicePrices(Map<Integer, Integer> prices) {
         completedServicePrices.clear();
         if (prices != null) {
             completedServicePrices.putAll(prices);
@@ -219,10 +219,10 @@ public class WorkOrder {
         }
     }
 
-    /** Marks the service as performed and stores the price that applied then. */
-    public void markServiceAsCompleted(int serviceItemId, double frozenPrice) {
+    /** Marks the service as performed and stores the price in öre that applied then. */
+    public void markServiceAsCompleted(int serviceItemId, int frozenPrice) {
         markServiceAsCompleted(serviceItemId);
-        completedServicePrices.put(Integer.valueOf(serviceItemId), Double.valueOf(frozenPrice));
+        completedServicePrices.put(Integer.valueOf(serviceItemId), Integer.valueOf(frozenPrice));
     }
 
     @Override

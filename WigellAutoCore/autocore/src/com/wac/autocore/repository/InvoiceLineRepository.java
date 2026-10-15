@@ -30,10 +30,10 @@ public class InvoiceLineRepository {
                 line.setInvoiceId(invoice.getId());
 
                 statement.setInt(1, line.getInvoiceId());
-                statement.setInt(2, line.getServiceItemId());
+                Queries.setReference(statement, 2, line.getServiceItemId());
                 statement.setString(3, line.getServiceName());
-                statement.setDouble(4, line.getPrice());
-                statement.setDouble(5, line.getDiscount());
+                statement.setInt(4, line.getPrice());
+                statement.setInt(5, line.getDiscount());
                 statement.setString(6, line.getPackageName().isEmpty() ? null : line.getPackageName());
                 statement.executeUpdate();
 
@@ -61,8 +61,8 @@ public class InvoiceLineRepository {
                 resultSet.getInt("invoice_id"),
                 resultSet.getInt("service_item_id"),
                 resultSet.getString("service_name"),
-                resultSet.getDouble("price"),
-                resultSet.getDouble("discount"));
+                resultSet.getInt("price"),
+                resultSet.getInt("discount"));
 
         line.setPackageName(resultSet.getString("package_name"));
 

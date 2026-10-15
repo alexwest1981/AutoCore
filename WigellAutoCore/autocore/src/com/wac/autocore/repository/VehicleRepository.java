@@ -73,7 +73,7 @@ public class VehicleRepository {
             statement.setString(2, vehicle.getBrand());
             statement.setString(3, vehicle.getModel());
             statement.setInt(4, vehicle.getYear());
-            statement.setInt(5, vehicle.getCustomerId());
+            Queries.setReference(statement, 5, vehicle.getCustomerId());
             statement.executeUpdate();
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
@@ -102,7 +102,7 @@ public class VehicleRepository {
             statement.setString(2, vehicle.getBrand());
             statement.setString(3, vehicle.getModel());
             statement.setInt(4, vehicle.getYear());
-            statement.setInt(5, vehicle.getCustomerId());
+            Queries.setReference(statement, 5, vehicle.getCustomerId());
             statement.setInt(6, vehicle.getId());
             statement.executeUpdate();
         } catch (SQLException e) {

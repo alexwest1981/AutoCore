@@ -11,7 +11,6 @@ import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.repository.VehicleRepository;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,25 +23,27 @@ public class WorkOrderService {
     private final MechanicRepository mechanicRepository;
     private final ServiceItemRepository serviceItemRepository;
     private final VehicleRepository vehicleRepository;
+    private final MechanicSchedule mechanicSchedule;
 
     public WorkOrderService(WorkOrderRepository workOrderRepository,
                             BookingRepository bookingRepository,
                             MechanicRepository mechanicRepository,
                             ServiceItemRepository serviceItemRepository,
-                            VehicleRepository vehicleRepository) {
+                            VehicleRepository vehicleRepository,
+                            MechanicSchedule mechanicSchedule) {
         this.workOrderRepository = workOrderRepository;
         this.bookingRepository = bookingRepository;
         this.mechanicRepository = mechanicRepository;
         this.serviceItemRepository = serviceItemRepository;
         this.vehicleRepository = vehicleRepository;
+        this.mechanicSchedule = mechanicSchedule;
     }
 
     public List<WorkOrder> getAll() {
         try {
             return workOrderRepository.findAll();
         } catch (DataAccessException e) {
-            System.out.println("Could not read work orders: " + e.getMessage());
-            return Collections.emptyList();
+            throw new DataAccessException("Could not read work orders", e);
         }
     }
 
@@ -145,8 +146,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(workOrder);
         } catch (DataAccessException e) {
-            System.out.println("Could not save work order: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save work order", e);
         }
 
         workOrder.setStatus(WorkOrderStatus.CREATED);
@@ -201,8 +201,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(reclamation);
         } catch (DataAccessException e) {
-            System.out.println("Could not save reclamation: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save reclamation", e);
         }
 
         System.out.println("Reclamation created successfully.");
@@ -225,8 +224,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(workOrder);
         } catch (DataAccessException e) {
-            System.out.println("Could not save draft work order: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save draft work order", e);
         }
 
         System.out.println("Draft work order created successfully.");
@@ -255,8 +253,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(workOrder);
         } catch (DataAccessException e) {
-            System.out.println("Could not save draft work order: " + e.getMessage());
-            return null;
+            throw new DataAccessException("Could not save draft work order", e);
         }
 
         return workOrder;
@@ -335,12 +332,12 @@ public class WorkOrderService {
 
         // The price is frozen when the work starts, not when it is finished. A price change
         // while the job is running must not reach this order.
-        Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
+        Map<Integer, Integer> priser = new LinkedHashMap<Integer, Integer>(workOrder.getCompletedServicePrices());
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
             if (!priser.containsKey(serviceItemId)) {
                 ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
                 if (serviceItem != null) {
-                    priser.put(serviceItemId, Double.valueOf(serviceItem.getPrice()));
+                    priser.put(serviceItemId, Integer.valueOf(serviceItem.getPrice()));
                 }
             }
         }
@@ -367,12 +364,12 @@ public class WorkOrderService {
         // The price is frozen even when the order is finished without anyone having marked the
         // jobs. The price goes on the line without marking the service as performed, because the
         // invoice should still only be built on the jobs that were actually marked.
-        Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
+        Map<Integer, Integer> priser = new LinkedHashMap<Integer, Integer>(workOrder.getCompletedServicePrices());
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
             if (!priser.containsKey(serviceItemId)) {
                 ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
                 if (serviceItem != null) {
-                    priser.put(serviceItemId, Double.valueOf(serviceItem.getPrice()));
+                    priser.put(serviceItemId, Integer.valueOf(serviceItem.getPrice()));
                 }
             }
         }
@@ -442,8 +439,8 @@ public class WorkOrderService {
         if (booking != null) {
             booking.setStatus("CANCELLED");
             saveBooking(booking);
-            MechanicSchedule.getInstance().cancelSlotForBooking(booking.getId());
-            MechanicSchedule.getInstance().syncFromDatabase();
+            mechanicSchedule.cancelSlotForBooking(booking.getId());
+            mechanicSchedule.syncFromDatabase();
         }
 
         workOrder.setStatus(WorkOrderStatus.CANCELLED);
@@ -476,8 +473,8 @@ public class WorkOrderService {
                 throw new NotFoundException("Service item with ID " + serviceItemId + " does not exist.");
             }
             // The price is frozen once. If the service is already marked it keeps its old price.
-            Double alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
-            double frozenPrice = alreadyFrozen != null ? alreadyFrozen.doubleValue() : serviceItem.getPrice();
+            Integer alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
+            int frozenPrice = alreadyFrozen != null ? alreadyFrozen.intValue() : serviceItem.getPrice();
             workOrder.markServiceAsCompleted(serviceItemId, frozenPrice);
         }
 
@@ -536,7 +533,7 @@ public class WorkOrderService {
         try {
             bookingRepository.save(booking);
         } catch (DataAccessException e) {
-            System.out.println("Could not update booking " + booking.getId() + ": " + e.getMessage());
+            throw new DataAccessException("Could not update booking " + booking.getId(), e);
         }
     }
 
@@ -544,7 +541,7 @@ public class WorkOrderService {
         try {
             mechanicRepository.save(mechanic);
         } catch (DataAccessException e) {
-            System.out.println("Could not update mechanic " + mechanic.getId() + ": " + e.getMessage());
+            throw new DataAccessException("Could not update mechanic " + mechanic.getId(), e);
         }
     }
 
@@ -552,7 +549,7 @@ public class WorkOrderService {
         try {
             workOrderRepository.save(workOrder);
         } catch (DataAccessException e) {
-            System.out.println("Could not update work order " + workOrder.getId() + ": " + e.getMessage());
+            throw new DataAccessException("Could not update work order " + workOrder.getId(), e);
         }
     }
 }

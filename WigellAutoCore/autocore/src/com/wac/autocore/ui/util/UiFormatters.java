@@ -1,19 +1,27 @@
 package com.wac.autocore.ui.util;
 
+
 import com.wac.autocore.model.WorkOrderStatus;
 
+
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /** Helper methods for formatting data in the interface. */
 public final class UiFormatters {
 
     private static final DecimalFormat MONEY_FORMAT =
-            new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.US));
+            new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(new Locale("sv", "SE")));
+
+    /** An amount the way a person writes it: 1234,50 without spaces, or 1 234,50 in threes. */
+    private static final Pattern AMOUNT = Pattern.compile(
+            "\\d{1,3}(?: \\d{3})+(?:[.,]\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?");
 
     /** Date and time without seconds, so a table row is not dominated by milliseconds. */
     private static final DateTimeFormatter DATE_TIME_FORMAT =
@@ -21,9 +29,29 @@ public final class UiFormatters {
 
     private UiFormatters() {}
 
-    /** Amount with a thousands separator, like 1 500 kr. */
-    public static String formatMoney(double amount) {
-        return MONEY_FORMAT.format(amount) + " kr";
+    /** Amount in öre as kronor in Swedish style, like 1 295,00 kr. */
+    public static String formatMoney(int ore) {
+        return MONEY_FORMAT.format(BigDecimal.valueOf(ore).movePointLeft(2)) + " kr";
+    }
+
+    /** A typed amount as öre, or null when the text is not an amount. The way in from a field. */
+    public static Integer parseOre(String text) {
+        if (text == null) {
+            return null;
+        }
+        String clean = text.replace('\u00a0', ' ').trim();
+        if (clean.toLowerCase(Locale.ROOT).endsWith("kr")) {
+            clean = clean.substring(0, clean.length() - 2).trim();
+        }
+        if (!AMOUNT.matcher(clean).matches()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(new BigDecimal(clean.replace(" ", "").replace(",", "."))
+                    .setScale(2, java.math.RoundingMode.HALF_UP).movePointRight(2).intValueExact());
+        } catch (ArithmeticException tooBig) {
+            return null;
+        }
     }
 
     /** Cuts the text to max characters and adds a full stop if it was shortened. */

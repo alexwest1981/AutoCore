@@ -5,18 +5,19 @@ public class ServiceItem {
     private int id;
     private String name;
     private String description;
-    private double price;
+    /** The price in öre, like every other amount in the program. */
+    private int price;
     private int estimatedMinutes;
     /** The key of the specialization the service requires. Empty means anyone can do it. */
     private String specialization;
 
     public ServiceItem(int id, String name, String description,
-                       double price, int estimatedMinutes) {
+                       int price, int estimatedMinutes) {
         this(id, name, description, price, estimatedMinutes, "");
     }
 
     public ServiceItem(int id, String name, String description,
-                       double price, int estimatedMinutes, String specialization) {
+                       int price, int estimatedMinutes, String specialization) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -49,11 +50,11 @@ public class ServiceItem {
         this.description = description;
     }
 
-    public double getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 
@@ -81,7 +82,7 @@ public class ServiceItem {
     @Override
     public String toString() {
         return id + " - " + name +
-                " | Price: " + price + " SEK" +
+                " | Price: " + price + " öre" +
                 " | Estimated time: " + estimatedMinutes + " min";
     }
 }

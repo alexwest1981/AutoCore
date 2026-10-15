@@ -8,12 +8,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Opens the connection, runs the statement and closes everything again, so each repository keeps
  * only its SQL and its row mapping. A failed statement leaves here as DataAccessException.
+ *
+ * Each method has a twin that takes the connection from the caller instead, so several statements
+ * can be part of one transaction. The twin leaves the frame to whoever called it.
  */
 final class Queries {
 
@@ -36,28 +40,52 @@ final class Queries {
 
     /** Runs an INSERT, UPDATE or DELETE. */
     static void write(String sql, Binder binder) {
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            if (binder != null) {
-                binder.bind(statement);
-            }
-            statement.executeUpdate();
+        try (Connection connection = Db.getConnection()) {
+            write(connection, sql, binder);
         } catch (SQLException e) {
             throw new DataAccessException("Could not write to the database.", e);
         }
     }
 
+    /** Runs the statement on a connection the caller owns, so it can be part of a transaction. */
+    static void write(Connection connection, String sql, Binder binder) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            if (binder != null) {
+                binder.bind(statement);
+            }
+            statement.executeUpdate();
+        }
+    }
+
     /** Runs an INSERT and returns the id the database gave the row, or 0 when it gave none. */
     static int insert(String sql, Binder binder) {
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = Db.getConnection()) {
+            return insert(connection, sql, binder);
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not write to the database.", e);
+        }
+    }
+
+    /** Runs the insert on a connection the caller owns, and returns the id it gave the row. */
+    static int insert(Connection connection, String sql, Binder binder) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             binder.bind(statement);
             statement.executeUpdate();
             try (ResultSet keys = statement.getGeneratedKeys()) {
                 return keys.next() ? keys.getInt(1) : 0;
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not write to the database.", e);
+        }
+    }
+
+    /**
+     * Writes a reference, or NULL when it is zero. A missing reference is not a zero that points at
+     * nothing, and the keys in the schema do not accept one.
+     */
+    static void setReference(PreparedStatement statement, int position, int id) throws SQLException {
+        if (id > 0) {
+            statement.setInt(position, id);
+        } else {
+            statement.setNull(position, Types.INTEGER);
         }
     }
 
@@ -68,9 +96,18 @@ final class Queries {
 
     /** The rows the query gives, with the placeholders bound first. */
     static <T> List<T> read(String sql, Binder binder, RowMapper<T> mapper) {
+        try (Connection connection = Db.getConnection()) {
+            return read(connection, sql, binder, mapper);
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not read from the database.", e);
+        }
+    }
+
+    /** Reads on a connection the caller owns, so a step sees what the same transaction wrote. */
+    static <T> List<T> read(Connection connection, String sql, Binder binder, RowMapper<T> mapper)
+            throws SQLException {
         List<T> rows = new ArrayList<T>();
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             if (binder != null) {
                 binder.bind(statement);
             }
@@ -79,8 +116,6 @@ final class Queries {
                     rows.add(mapper.map(resultSet));
                 }
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Could not read from the database.", e);
         }
         return rows;
     }

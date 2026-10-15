@@ -146,7 +146,7 @@ final class WorkOrderDetailsDialog {
         linesGrid.add(hStatus, 3, 0);
 
         int row = 1;
-        double sum = 0.0;
+        int sum = 0;
         int totalMin = 0;
         int completedCount = 0;
         int totalCount = (workOrder.getServiceItemIds() != null) ? workOrder.getServiceItemIds().size() : 0;
@@ -154,7 +154,7 @@ final class WorkOrderDetailsDialog {
         if (workOrder.getServiceItemIds() != null) {
             for (Integer sid : workOrder.getServiceItemIds()) {
                 String name = null;
-                Double price = null;
+                Integer price = null;
                 int estMinutes = 0;
 
                 ServiceItem service = garage.findServiceItem(sid.intValue());
@@ -164,7 +164,7 @@ final class WorkOrderDetailsDialog {
                     price = service.getPrice();
                 }
 
-                Double frozenPrice = workOrder.getCompletedServicePrice(sid.intValue());
+                Integer frozenPrice = workOrder.getCompletedServicePrice(sid.intValue());
                 if (frozenPrice != null) {
                     price = frozenPrice;
                 } else if (inv != null && inv.getLines() != null) {
@@ -178,7 +178,7 @@ final class WorkOrderDetailsDialog {
                 }
 
                 if (name == null) name = "Service #" + sid;
-                if (price == null) price = 0.0;
+                if (price == null) price = 0;
                 sum += price;
                 totalMin += estMinutes;
 
