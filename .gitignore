@@ -33,6 +33,9 @@ sources.txt
 # lives on the NVMe and data is a link to it.
 /data
 *.db
+# The one exception: a database from before the migrations, kept read-only as the fixture for
+# the L3 proof. Nothing opens it for writing; every run copies it to /tmp first.
+!WigellAutoCore/autocore/test/data/autocore-original.db
 
 # Archives & Temporary files
 *.zip

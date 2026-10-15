@@ -29,6 +29,25 @@ final class Migrations {
         "003_ore.sql"
     };
 
+    /**
+     * The columns the baseline expects and a database from an earlier sprint does not have. The
+     * baseline's CREATE TABLE IF NOT EXISTS leaves a table it finds alone, so those columns are
+     * added here, and only the ones that are missing. The same columns stand in
+     * 001_baslinjen.sql — a column added there belongs here too, and the L3 proof fails if the two
+     * drift apart.
+     */
+    private static final String[][] ADDED_COLUMNS = {
+        {"work_orders", "type", "TEXT"},
+        {"work_orders", "original_work_order_id", "INTEGER"},
+        {"work_orders", "planned_date", "TEXT"},
+        {"work_orders", "planned_time", "TEXT"},
+        {"work_orders", "customer_instructions", "TEXT"},
+        {"work_orders", "other_comments", "TEXT"},
+        {"booking_service_items", "package_name", "TEXT"},
+        {"invoice_lines", "package_name", "TEXT"},
+        {"work_order_service_items", "package_name", "TEXT"}
+    };
+
     private Migrations() {}
 
     static void apply() {
@@ -36,6 +55,11 @@ final class Migrations {
             createRegister(connection);
 
             List<Integer> done = applied(connection);
+
+            // Only when a file is going to run: a database that has them all is left alone.
+            if (done.size() < FILES.length) {
+                addMissingColumns(connection);
+            }
 
             for (int i = 0; i < FILES.length; i++) {
                 int version = i + 1;
@@ -97,6 +121,29 @@ final class Migrations {
             }
         }
         return versions;
+    }
+
+    /** Adds the columns an older database is missing, so the file's own statements can run. */
+    private static void addMissingColumns(Connection connection) throws SQLException {
+        for (String[] column : ADDED_COLUMNS) {
+            if (!hasColumn(connection, column[0], column[1])) {
+                execute(connection, "ALTER TABLE " + column[0] + " ADD COLUMN " + column[1]
+                        + " " + column[2]);
+            }
+        }
+    }
+
+    private static boolean hasColumn(Connection connection, String table, String column)
+            throws SQLException {
+        try (Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery("PRAGMA table_info(" + table + ")")) {
+            while (rows.next()) {
+                if (column.equals(rows.getString("name"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static void record(Connection connection, int version, String name) throws SQLException {
