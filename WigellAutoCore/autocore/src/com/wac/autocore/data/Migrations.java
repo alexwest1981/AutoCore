@@ -21,10 +21,6 @@ import java.util.List;
 final class Migrations {
 
     private static final String RESOURCE_PATH = "/com/wac/autocore/db/migrations/";
-    private static final String SOURCE_PATH =
-            "WigellAutoCore/autocore/src/resources/com/wac/autocore/db/migrations/";
-    private static final String BUILD_PATH =
-            "out/production/Systemarkitektur/com/wac/autocore/db/migrations/";
 
     /** In order. A new change gets the next number and is added last. */
     private static final String[] FILES = {
@@ -130,7 +126,7 @@ final class Migrations {
     }
 
     private static String read(String file) {
-        URL url = Resources.find(RESOURCE_PATH + file, SOURCE_PATH + file, BUILD_PATH + file);
+        URL url = Resources.find(RESOURCE_PATH + file);
         String sql = Resources.text(url);
         if (sql.isEmpty()) {
             throw new DatabaseInitException("Migreringen " + file + " gick inte att läsa.");

@@ -97,22 +97,12 @@ public final class I18n {
     /** Loads the dictionary for a language. */
     public static Map<String, String> loadDictionary(String lang) {
         String resourcePath = "/com/wac/autocore/i18n/" + lang + ".json";
-        URL url = Resources.find(resourcePath, i18nSourcePath(lang), i18nBuildPath(lang));
+        URL url = Resources.find(resourcePath);
         if (url == null) {
             System.err.println("Varning: Kunde inte hitta språkfil " + resourcePath);
             return Collections.emptyMap();
         }
         return Resources.json(url);
-    }
-
-    /** The file in the source tree, for a run started from the project folder. */
-    private static String i18nSourcePath(String lang) {
-        return "WigellAutoCore/autocore/src/resources/com/wac/autocore/i18n/" + lang + ".json";
-    }
-
-    /** The file IntelliJ writes to when the project is built there. */
-    private static String i18nBuildPath(String lang) {
-        return "out/production/Systemarkitektur/com/wac/autocore/i18n/" + lang + ".json";
     }
 
     private static void loadLanguage(String lang) {
