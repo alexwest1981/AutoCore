@@ -6,11 +6,14 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.scene.image.Image;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+
+import java.io.InputStream;
 
 /** Shared building blocks for the interface. */
 public final class UiComponents {
@@ -84,20 +87,19 @@ public final class UiComponents {
         return l;
     }
 
-    /** Reads the logo from the application's resources. */
-    public static javafx.scene.image.Image loadLogoImage() {
-        try {
-            java.io.InputStream in = UiComponents.class.getResourceAsStream("/com/wac/autocore/images/Logo.png");
-            if (in != null) {
-                return new javafx.scene.image.Image(in);
-            }
-            java.io.File fRes = new java.io.File("WigellAutoCore/autocore/src/resources/com/wac/autocore/images/Logo.png");
-            if (fRes.exists()) {
-                return new javafx.scene.image.Image(fRes.toURI().toString());
-            }
-        } catch (Exception ignored) {
+    /** Reads the logo from the classpath. */
+    public static Image loadLogoImage() {
+        InputStream in = UiComponents.class.getResourceAsStream("/com/wac/autocore/images/Logo.png");
+        if (in == null) {
+            System.err.println("Kunde inte hitta /com/wac/autocore/images/Logo.png");
+            return null;
         }
-        return null;
+        try {
+            return new Image(in);
+        } catch (RuntimeException e) {
+            System.err.println("Kunde inte läsa logotypen: " + e.getMessage());
+            return null;
+        }
     }
 
     public static VBox buildEntityPage(String title, String sub, String eyebrow,
