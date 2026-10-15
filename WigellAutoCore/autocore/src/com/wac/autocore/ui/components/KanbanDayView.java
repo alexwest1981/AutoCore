@@ -1,7 +1,6 @@
 package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
@@ -151,8 +150,7 @@ class KanbanDayView {
         navBar.setAlignment(Pos.CENTER_LEFT);
         navBar.setPadding(new Insets(0, 0, 8, 0));
 
-        MechanicSchedule schedule = card.garage.getMechanicSchedule();
-        List<TimeSlot> slots = schedule.getSlotsForDay(mech.getId(), card.selectedDate);
+        List<TimeSlot> slots = card.garage.getSlotsForDay(mech.getId(), card.selectedDate);
 
         VBox slotList = new VBox(4);
         int bookedCount = 0;
@@ -164,7 +162,7 @@ class KanbanDayView {
         }
 
         if (bookedCount == 0) {
-            LocalDate nextDate = schedule.getNextBookingDate(mech.getId(), card.selectedDate);
+            LocalDate nextDate = card.garage.getNextBookingDate(mech.getId(), card.selectedDate);
             if (nextDate != null) {
                 String nextDayStr = nextDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, locale);
                 nextDayStr = nextDayStr.substring(0, 1).toUpperCase(locale) + nextDayStr.substring(1);

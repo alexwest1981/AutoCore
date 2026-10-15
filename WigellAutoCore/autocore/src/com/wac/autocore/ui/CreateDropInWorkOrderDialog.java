@@ -80,7 +80,7 @@ final class CreateDropInWorkOrderDialog {
                                     .replace("{1}", String.valueOf(plan.size())));
                 }
 
-                garage.getMechanicSchedule().syncFromDatabase();
+                garage.refreshSchedule();
                 if (onSuccess != null) onSuccess.run();
             }
         });

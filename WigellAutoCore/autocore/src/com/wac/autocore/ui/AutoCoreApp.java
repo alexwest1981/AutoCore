@@ -1,7 +1,6 @@
 package com.wac.autocore.ui;
 
 import com.wac.autocore.data.Db;
-import com.wac.autocore.data.Settings;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.theme.ThemeManager;
@@ -90,13 +89,13 @@ public class AutoCoreApp extends Application {
     }
 
     /** Reads the last chosen language from the settings. */
-    public static void restoreLanguage() {
-        I18n.setLanguage(Settings.get(LANGUAGE_KEY, I18n.DEFAULT_LANG));
+    public void restoreLanguage() {
+        I18n.setLanguage(garage.getSetting(LANGUAGE_KEY, I18n.DEFAULT_LANG));
     }
 
     /** Saves language switches so the choice survives a restart. */
-    public static void persistLanguageChanges() {
-        I18n.addListener(lang -> Settings.put(LANGUAGE_KEY, lang));
+    public void persistLanguageChanges() {
+        I18n.addListener(lang -> garage.saveSetting(LANGUAGE_KEY, lang));
     }
 
     public static void main(String[] args) {
