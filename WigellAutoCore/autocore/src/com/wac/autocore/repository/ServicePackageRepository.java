@@ -83,7 +83,7 @@ public class ServicePackageRepository {
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
                 resultSet.getString("description"),
-                resultSet.getDouble("price"),
+                resultSet.getInt("price"),
                 resultSet.getInt("estimated_minutes"),
                 resultSet.getString("specialization")));
     }

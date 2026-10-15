@@ -81,8 +81,8 @@ public class ConsolePrinter {
                 System.out.println("   Services to perform (" + order.getServiceItemIds().size() + "):");
                 for (Integer sid : order.getServiceItemIds()) {
                     boolean done = order.getCompletedServiceItems() != null && order.getCompletedServiceItems().contains(sid);
-                    Double price = order.getCompletedServicePrice(sid.intValue());
-                    String priceStr = price != null ? " (" + price + " kr)" : "";
+                    Integer price = order.getCompletedServicePrice(sid.intValue());
+                    String priceStr = price != null ? " (" + com.wac.autocore.ui.util.UiFormatters.formatMoney(price.intValue()) + ")" : "";
                     String st = done ? "[Completed]" : "[To perform]";
                     System.out.println("     • Service #" + sid + priceStr + " " + st);
                 }

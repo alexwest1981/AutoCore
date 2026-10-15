@@ -38,7 +38,7 @@ public class ServiceItemRepository {
         int id = Queries.insert(sql, statement -> {
             statement.setString(1, serviceItem.getName());
             statement.setString(2, serviceItem.getDescription());
-            statement.setDouble(3, serviceItem.getPrice());
+            statement.setInt(3, serviceItem.getPrice());
             statement.setInt(4, serviceItem.getEstimatedMinutes());
             statement.setString(5, serviceItem.getSpecialization());
         });
@@ -55,7 +55,7 @@ public class ServiceItemRepository {
         Queries.write(sql, statement -> {
             statement.setString(1, serviceItem.getName());
             statement.setString(2, serviceItem.getDescription());
-            statement.setDouble(3, serviceItem.getPrice());
+            statement.setInt(3, serviceItem.getPrice());
             statement.setInt(4, serviceItem.getEstimatedMinutes());
             statement.setString(5, serviceItem.getSpecialization());
             statement.setInt(6, serviceItem.getId());
@@ -67,7 +67,7 @@ public class ServiceItemRepository {
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
                 resultSet.getString("description"),
-                resultSet.getDouble("price"),
+                resultSet.getInt("price"),
                 resultSet.getInt("estimated_minutes"),
                 resultSet.getString("specialization")
         );

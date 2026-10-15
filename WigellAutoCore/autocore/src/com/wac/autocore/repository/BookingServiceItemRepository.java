@@ -27,7 +27,7 @@ public class BookingServiceItemRepository {
                     resultSet.getInt("id"),
                     resultSet.getString("name"),
                     resultSet.getString("description"),
-                    resultSet.getDouble("price"),
+                    resultSet.getInt("price"),
                     resultSet.getInt("estimated_minutes"));
             // The requirement has to come along, otherwise every service looks requirement-free.
             item.setSpecialization(resultSet.getString("specialization"));

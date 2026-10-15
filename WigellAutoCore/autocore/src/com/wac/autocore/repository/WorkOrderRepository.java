@@ -125,12 +125,12 @@ public class WorkOrderRepository {
                 String packageName = workOrder.getServicePackageName(serviceItemId);
                 insert.setString(5, packageName.isEmpty() ? null : packageName);
 
-                // Store the price that applied when the job was performed.
-                Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
+                // Store the price in öre that applied when the job was performed.
+                Integer frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
                 if (frozenPrice == null) {
-                    insert.setNull(4, Types.REAL);
+                    insert.setNull(4, Types.INTEGER);
                 } else {
-                    insert.setDouble(4, frozenPrice.doubleValue());
+                    insert.setInt(4, frozenPrice.intValue());
                 }
                 insert.executeUpdate();
             }
@@ -150,7 +150,7 @@ public class WorkOrderRepository {
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<Integer> services = new ArrayList<Integer>();
                 List<Integer> completed = new ArrayList<Integer>();
-                Map<Integer, Double> prices = new LinkedHashMap<Integer, Double>();
+                Map<Integer, Integer> prices = new LinkedHashMap<Integer, Integer>();
                 Map<Integer, String> packages = new LinkedHashMap<Integer, String>();
                 while (resultSet.next()) {
                     int sid = resultSet.getInt("service_item_id");
@@ -159,9 +159,9 @@ public class WorkOrderRepository {
                     if (comp == 1) {
                         completed.add(sid);
                     }
-                    double price = resultSet.getDouble("price");
+                    Integer price = Integer.valueOf(resultSet.getInt("price"));
                     if (!resultSet.wasNull()) {
-                        prices.put(Integer.valueOf(sid), Double.valueOf(price));
+                        prices.put(Integer.valueOf(sid), price);
                     }
                     String packageName = resultSet.getString("package_name");
                     if (packageName != null) {

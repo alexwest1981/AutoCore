@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.util;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
@@ -11,7 +12,7 @@ import java.util.Locale;
 public final class UiFormatters {
 
     private static final DecimalFormat MONEY_FORMAT =
-            new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.US));
+            new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(new Locale("sv", "SE")));
 
     /** Date and time without seconds, so a table row is not dominated by milliseconds. */
     private static final DateTimeFormatter DATE_TIME_FORMAT =
@@ -19,9 +20,28 @@ public final class UiFormatters {
 
     private UiFormatters() {}
 
-    /** Amount with a thousands separator, like 1 500 kr. */
-    public static String formatMoney(double amount) {
-        return MONEY_FORMAT.format(amount) + " kr";
+    /** Amount in öre as kronor in Swedish style, like 1 295,00 kr. */
+    public static String formatMoney(int ore) {
+        return MONEY_FORMAT.format(BigDecimal.valueOf(ore).movePointLeft(2)) + " kr";
+    }
+
+    /** A typed amount as öre, or null when the text is not a number. The way in from a field. */
+    public static Integer parseOre(String text) {
+        if (text == null) {
+            return null;
+        }
+        String clean = text.replaceAll("[^0-9,.]", "").replace(",", ".").trim();
+        if (clean.isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(new BigDecimal(clean).setScale(2, java.math.RoundingMode.HALF_UP)
+                    .movePointRight(2).intValueExact());
+        } catch (NumberFormatException e) {
+            return null;
+        } catch (ArithmeticException e) {
+            return null;
+        }
     }
 
     /** Cuts the text to max characters and adds a full stop if it was shortened. */

@@ -166,8 +166,8 @@ public final class TableFactory {
     /** Model year, four digits. "2012" needs 47. */
     public static final double W_YEAR = 55;
 
-    /** Amount in kronor. "24,995 kr" needs 95. */
-    public static final double W_MONEY = 95;
+    /** Amount in kronor with öre. "1,295.00 kr" needs 110. */
+    public static final double W_MONEY = 110;
 
     /** Minutes. "270 min" is 52, but the heading "Beräknad tid" is 73, so the need is 90. */
     public static final double W_MINUTES = 90;

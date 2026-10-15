@@ -100,7 +100,7 @@ class BookingServicesField {
         }
 
         int totalMin = 0;
-        double totalCost = 0.0;
+        int totalCost = 0;
         for (ServiceItem item : picked) {
             totalMin += item.getEstimatedMinutes();
             totalCost += item.getPrice();

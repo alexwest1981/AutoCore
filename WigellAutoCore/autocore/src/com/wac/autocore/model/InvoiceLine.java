@@ -6,13 +6,14 @@ public class InvoiceLine {
     private int invoiceId;
     private int serviceItemId;
     private String serviceName;
-    private double price;
-    private double discount;
+    /** The price in öre, like every other amount in the program. */
+    private int price;
+    private int discount;
     /** The package the service came from, or empty when it was booked on its own. */
     private String packageName = "";
 
     public InvoiceLine(int id, int invoiceId, int serviceItemId,
-                       String serviceName, double price, double discount) {
+                       String serviceName, int price, int discount) {
         this.id = id;
         this.invoiceId = invoiceId;
         this.serviceItemId = serviceItemId;
@@ -45,15 +46,15 @@ public class InvoiceLine {
         return serviceName;
     }
 
-    public double getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public double getDiscount() {
+    public int getDiscount() {
         return discount;
     }
 
-    public void setDiscount(double discount) {
+    public void setDiscount(int discount) {
         this.discount = discount;
     }
 
@@ -65,16 +66,16 @@ public class InvoiceLine {
         this.packageName = packageName == null ? "" : packageName;
     }
 
-    public double getFinalPrice() {
-        double finalPrice = price - discount;
+    public int getFinalPrice() {
+        int finalPrice = price - discount;
         return finalPrice < 0 ? 0 : finalPrice;
     }
 
     @Override
     public String toString() {
         return serviceName +
-                " | Price: " + price + " SEK" +
-                " | Discount: " + discount + " SEK" +
-                " | Final: " + getFinalPrice() + " SEK";
+                " | Price: " + price + " öre" +
+                " | Discount: " + discount + " öre" +
+                " | Final: " + getFinalPrice() + " öre";
     }
 }

@@ -349,12 +349,12 @@ public class WorkOrderService {
 
         // The price is frozen when the work starts, not when it is finished. A price change
         // while the job is running must not reach this order.
-        Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
+        Map<Integer, Integer> priser = new LinkedHashMap<Integer, Integer>(workOrder.getCompletedServicePrices());
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
             if (!priser.containsKey(serviceItemId)) {
                 ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
                 if (serviceItem != null) {
-                    priser.put(serviceItemId, Double.valueOf(serviceItem.getPrice()));
+                    priser.put(serviceItemId, Integer.valueOf(serviceItem.getPrice()));
                 }
             }
         }
@@ -381,12 +381,12 @@ public class WorkOrderService {
         // The price is frozen even when the order is finished without anyone having marked the
         // jobs. The price goes on the line without marking the service as performed, because the
         // invoice should still only be built on the jobs that were actually marked.
-        Map<Integer, Double> priser = new LinkedHashMap<Integer, Double>(workOrder.getCompletedServicePrices());
+        Map<Integer, Integer> priser = new LinkedHashMap<Integer, Integer>(workOrder.getCompletedServicePrices());
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
             if (!priser.containsKey(serviceItemId)) {
                 ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
                 if (serviceItem != null) {
-                    priser.put(serviceItemId, Double.valueOf(serviceItem.getPrice()));
+                    priser.put(serviceItemId, Integer.valueOf(serviceItem.getPrice()));
                 }
             }
         }
@@ -490,8 +490,8 @@ public class WorkOrderService {
                 throw new NotFoundException("Service item with ID " + serviceItemId + " does not exist.");
             }
             // The price is frozen once. If the service is already marked it keeps its old price.
-            Double alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
-            double frozenPrice = alreadyFrozen != null ? alreadyFrozen.doubleValue() : serviceItem.getPrice();
+            Integer alreadyFrozen = workOrder.getCompletedServicePrice(serviceItemId);
+            int frozenPrice = alreadyFrozen != null ? alreadyFrozen.intValue() : serviceItem.getPrice();
             workOrder.markServiceAsCompleted(serviceItemId, frozenPrice);
         }
 
