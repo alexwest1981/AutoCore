@@ -66,22 +66,18 @@ public class BillingService {
         }
 
         if (workOrder.getStatus() != WorkOrderStatus.COMPLETED) {
-            System.out.println("Invoice can only be created for a completed work order.");
             return null;
         }
 
         // The whole booking counts here too: a single work order cannot be invoiced while its
         // sibling orders on the same booking are still open.
         if (!allOrdersCompleted(workOrder.getBookingId())) {
-            System.out.println("Booking with ID " + workOrder.getBookingId()
-                    + " still has work orders that are not completed.");
             return null;
         }
 
         // A job should only be invoiced once. The interface stops the same booking being picked
         // twice, but the call can come from below — and then there were two invoices for one job.
         if (hasInvoiceFor(workOrderId)) {
-            System.out.println("Invoice already exists for work order " + workOrderId + ".");
             return null;
         }
 
@@ -104,8 +100,6 @@ public class BillingService {
 
         // One invoice covers all the work on the booking, so if something is left to do it waits.
         if (!allOrdersCompleted(bookingId)) {
-            System.out.println("Booking with ID " + bookingId
-                    + " still has work orders that are not completed.");
             return null;
         }
 
@@ -130,8 +124,6 @@ public class BillingService {
         }
 
         if (orders.isEmpty()) {
-            System.out.println("Booking with ID " + bookingId
-                    + " has no performed work left to invoice.");
             return null;
         }
 
@@ -204,7 +196,6 @@ public class BillingService {
         }
 
         if (lines.isEmpty()) {
-            System.out.println("Invoice cannot be created: No performed services found.");
             return null;
         }
 
@@ -221,7 +212,6 @@ public class BillingService {
                 Customer customer = findCustomer(vehicle.getCustomerId());
                 if (customer != null && customer.isVip()) {
                     discount += DiscountRules.percentOf(amount, DiscountRules.VIP_PERCENT);
-                    System.out.println("VIP discount applied: 10%");
                 }
             }
         }
@@ -251,10 +241,6 @@ public class BillingService {
             line.setInvoiceId(invoice.getId());
         }
 
-        System.out.println("Invoice created successfully.");
-        System.out.println(invoice);
-        System.out.println("Sending invoice notification to customer...");
-        System.out.println("Notification sent.");
 
         return invoice;
     }

@@ -66,8 +66,6 @@ public class BookingService {
             throw new DataAccessException("Could not save booking", e);
         }
 
-        System.out.println("Booking created successfully.");
-        System.out.println(booking);
 
         return booking;
     }
@@ -96,7 +94,6 @@ public class BookingService {
         // If that one is taken the team gets the next free one, otherwise two customers collide.
         LocalTime startTime = firstFreeHourForTeam(date, mechanicIds);
         if (startTime == null) {
-            System.out.println("The team has no free hour left today.");
             return null;
         }
         booking.setStartTime(startTime);
@@ -110,7 +107,6 @@ public class BookingService {
             throw new DataAccessException("Could not save booking", e);
         }
 
-        System.out.println(booking);
 
         return booking;
     }
@@ -207,8 +203,6 @@ public class BookingService {
 
         bookingRepository.save(booking);
 
-        System.out.println("CREATED");
-        System.out.println(booking);
 
         return booking;
     }

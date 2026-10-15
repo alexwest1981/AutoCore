@@ -162,6 +162,8 @@ public class ConsoleApp {
 
         try {
             garageSystem.createCustomer(name, phone, email);
+
+            System.out.println("Customer created successfully.");
         } catch (AppException rejected) {
             System.out.println("Customer was not saved: " + rejected.getMessage());
         }
@@ -194,6 +196,8 @@ public class ConsoleApp {
                 year,
                 customerId
         );
+
+        System.out.println("Vehicle created successfully.");
     }
 
     private static void createBooking() {
@@ -284,6 +288,8 @@ public class ConsoleApp {
                 workOrderId,
                 discountCode
         );
+
+        System.out.println("Invoice created successfully.");
     }
 
     private static void processPayment() {
@@ -308,6 +314,8 @@ public class ConsoleApp {
                 invoiceId,
                 paymentType
         );
+
+        System.out.println("Payment completed successfully.");
     }
 
     private static int readInt(String message) {

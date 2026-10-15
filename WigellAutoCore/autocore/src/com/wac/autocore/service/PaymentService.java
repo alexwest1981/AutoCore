@@ -35,14 +35,12 @@ public class PaymentService {
         }
 
         if (invoice.isPaid()) {
-            System.out.println("Invoice has already been paid.");
             return null;
         }
 
         // An invoice of zero kronor has nothing to pay. Without this a new row was created
         // every time, and none of them succeeded, so the invoice stayed unpaid forever.
         if (invoice.getTotalAmount() <= 0.0) {
-            System.out.println("Invoice has nothing to pay.");
             return null;
         }
 
@@ -50,7 +48,6 @@ public class PaymentService {
         // invoice stayed unpaid. The type is therefore checked before the row is written.
         String type = paymentType == null ? "" : paymentType.trim().toUpperCase();
         if (!"CARD".equals(type) && !"SWISH".equals(type) && !"CASH".equals(type)) {
-            System.out.println("Unknown payment type: " + paymentType + ".");
             return null;
         }
 
@@ -60,15 +57,10 @@ public class PaymentService {
         boolean successful = false;
 
         if ("CARD".equalsIgnoreCase(type)) {
-            System.out.println("Connecting directly to SuperCardPayment...");
-            System.out.println("Card payment approved.");
             successful = true;
         } else if ("SWISH".equalsIgnoreCase(type)) {
-            System.out.println("Calling Swish payment service...");
-            System.out.println("Swish payment approved.");
             successful = true;
         } else if ("CASH".equalsIgnoreCase(type)) {
-            System.out.println("Registering cash payment...");
             successful = true;
         }
 
@@ -89,11 +81,6 @@ public class PaymentService {
                 throw new DataAccessException("Could not update invoice " + invoiceId, e);
             }
 
-            System.out.println("Payment completed successfully.");
-            System.out.println("Sending payment confirmation to customer...");
-            System.out.println("Confirmation sent.");
-        } else {
-            System.out.println("Payment failed.");
         }
 
         return payment;

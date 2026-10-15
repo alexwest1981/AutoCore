@@ -26,22 +26,18 @@ public class DiscountRules {
         String code = discountCode.trim();
 
         if (code.equalsIgnoreCase("WELCOME10") || code.equalsIgnoreCase("10off") || code.equalsIgnoreCase("10%")) {
-            System.out.println("Discount code " + code + " applied: 10%");
             return percentOf(amount, 10);
         }
         if (code.equalsIgnoreCase("SERVICE200")) {
-            System.out.println("Discount code SERVICE200 applied.");
             return 20000;
         }
 
         try {
             if (code.endsWith("%")) {
                 int pct = Integer.parseInt(code.substring(0, code.length() - 1).trim());
-                System.out.println("Discount code " + pct + "% applied.");
                 return percentOf(amount, pct);
             } else if (code.toLowerCase().endsWith("off")) {
                 int val = Integer.parseInt(code.substring(0, code.length() - 3).trim());
-                System.out.println("Discount code " + code + " applied.");
                 if (val <= 100 && val > 0) {
                     return percentOf(amount, val);
                 }
@@ -49,12 +45,10 @@ public class DiscountRules {
             } else {
                 int val = toOre(code);
                 if (val > 0) {
-                    System.out.println("Discount " + val + " öre applied.");
                     return val;
                 }
             }
         } catch (NumberFormatException | ArithmeticException ignored) {
-            System.out.println("Unknown discount code. No code discount applied.");
         }
 
         return 0;

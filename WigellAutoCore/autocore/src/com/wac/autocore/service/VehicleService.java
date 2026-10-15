@@ -47,8 +47,6 @@ public class VehicleService {
             throw new DataAccessException("Could not save vehicle", e);
         }
 
-        System.out.println("Vehicle created successfully.");
-        System.out.println(vehicle);
 
         return vehicle;
     }
