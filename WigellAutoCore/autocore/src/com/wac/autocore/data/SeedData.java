@@ -10,7 +10,9 @@ import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.repository.MechanicRepository;
+import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.repository.ServiceItemRepository;
+import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 
@@ -20,12 +22,14 @@ import java.time.LocalTime;
 public class SeedData {
 
     public static void seedIfEmpty() {
-        CustomerRepository customerRepository = new CustomerRepository();
-        VehicleRepository vehicleRepository = new VehicleRepository();
-        ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
-        MechanicRepository mechanicRepository = new MechanicRepository();
-        BookingRepository bookingRepository = new BookingRepository();
-        WorkOrderRepository workOrderRepository = new WorkOrderRepository();
+        RepositoryFactory repositories = new SqliteRepositoryFactory();
+
+        CustomerRepository customerRepository = repositories.createCustomerRepository();
+        VehicleRepository vehicleRepository = repositories.createVehicleRepository();
+        ServiceItemRepository serviceItemRepository = repositories.createServiceItemRepository();
+        MechanicRepository mechanicRepository = repositories.createMechanicRepository();
+        BookingRepository bookingRepository = repositories.createBookingRepository();
+        WorkOrderRepository workOrderRepository = repositories.createWorkOrderRepository();
 
         try {
             if (!customerRepository.findAll().isEmpty()) {
