@@ -73,8 +73,6 @@ public class WorkOrderService {
             }
         }
         if (remaining.isEmpty()) {
-            System.out.println("Booking with ID " + bookingId
-                    + " has no services left for a new work order.");
             return null;
         }
         return createWorkOrder(bookingId, mechanicId, remaining);
@@ -89,7 +87,6 @@ public class WorkOrderService {
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type) {
 
         if (type == null || !WorkOrder.TYPES.contains(type)) {
-            System.out.println("Unknown work order type: " + type);
             return null;
         }
 
@@ -99,7 +96,6 @@ public class WorkOrderService {
         }
 
         if (serviceItemIds == null || serviceItemIds.isEmpty()) {
-            System.out.println("Booking with ID " + bookingId + " has no services to perform.");
             return null;
         }
 
@@ -116,8 +112,6 @@ public class WorkOrderService {
             for (Integer serviceItemId : serviceItemIds) {
 
                 if (existingOrder.getServiceItemIds().contains(serviceItemId)) {
-                    System.out.println("Service " + serviceItemId + " is already on work order "
-                            + existingOrder.getId() + ".");
                     return null;
                 }
             }
@@ -129,7 +123,6 @@ public class WorkOrderService {
         }
 
         if (!mechanic.isAvailable()) {
-            System.out.println("Mechanic " + mechanic.getName() + " is not available.");
             return null;
         }
 
@@ -155,8 +148,6 @@ public class WorkOrderService {
         booking.setStatus("WORK_ORDER_CREATED");
         saveBooking(booking);
 
-        System.out.println("Work order created successfully.");
-        System.out.println(workOrder);
 
         return workOrder;
     }
@@ -176,7 +167,6 @@ public class WorkOrderService {
 
         // Only work that has actually been performed can be reclaimed.
         if (original.getStatus() != WorkOrderStatus.COMPLETED) {
-            System.out.println("Work order " + originalWorkOrderId + " is not completed.");
             return null;
         }
 
@@ -186,7 +176,6 @@ public class WorkOrderService {
         }
 
         if (!mechanic.isAvailable()) {
-            System.out.println("Mechanic " + mechanic.getName() + " is not available.");
             return null;
         }
 
@@ -206,8 +195,6 @@ public class WorkOrderService {
             throw new DataAccessException("Could not save reclamation", e);
         }
 
-        System.out.println("Reclamation created successfully.");
-        System.out.println(reclamation);
 
         return reclamation;
     }
@@ -229,7 +216,6 @@ public class WorkOrderService {
             throw new DataAccessException("Could not save draft work order", e);
         }
 
-        System.out.println("Draft work order created successfully.");
         return workOrder;
     }
 
@@ -348,7 +334,6 @@ public class WorkOrderService {
         workOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
         saveWorkOrder(workOrder);
 
-        System.out.println("Work order " + workOrderId + " has been started.");
         return true;
     }
 
@@ -393,7 +378,6 @@ public class WorkOrderService {
             saveBooking(booking);
         }
 
-        System.out.println("Work order " + workOrderId + " has been completed.");
         return true;
     }
 
@@ -413,7 +397,6 @@ public class WorkOrderService {
         workOrder.setStatus(WorkOrderStatus.CONFIRMED);
         saveWorkOrder(workOrder);
 
-        System.out.println("Work order " + workOrderId + " has been confirmed.");
         return true;
     }
 
@@ -448,7 +431,6 @@ public class WorkOrderService {
         workOrder.setStatus(WorkOrderStatus.CANCELLED);
         saveWorkOrder(workOrder);
 
-        System.out.println("Work order " + workOrderId + " has been cancelled.");
 
         return true;
     }
@@ -482,8 +464,6 @@ public class WorkOrderService {
 
         saveWorkOrder(workOrder);
 
-        System.out.println("Services marked as performed on work order " + workOrderId
-                + ", with the price that applied now.");
         return true;
     }
 

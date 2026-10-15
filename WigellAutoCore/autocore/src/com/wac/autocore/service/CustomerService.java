@@ -43,8 +43,6 @@ public class CustomerService {
             throw new DataAccessException("Could not save customer", e);
         }
 
-        System.out.println("Customer created successfully.");
-        System.out.println(customer);
 
         return customer;
     }
