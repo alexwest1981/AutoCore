@@ -7,6 +7,7 @@ import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 
+import com.wac.autocore.util.Texts;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
@@ -155,8 +156,8 @@ public final class MechanicDialogs {
         if (text.equalsIgnoreCase(SeedText.get(key))) {
             return true;
         }
-        for (String lang : new String[] {SeedText.LANG_SV, SeedText.LANG_EN}) {
-            String value = SeedText.loadDictionary(lang).get(key);
+        for (String lang : new String[] {Texts.LANG_SV, Texts.LANG_EN}) {
+            String value = Texts.load(lang).get(key);
             if (value != null && text.equalsIgnoreCase(value)) {
                 return true;
             }
