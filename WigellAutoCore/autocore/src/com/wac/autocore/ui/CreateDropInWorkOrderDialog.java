@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Drop-in: a work order for a customer who arrives without a booked time. The form is the
- *  booking's own, without Date & Time, so the fields and rules match an ordinary booking. */
+ *  booking's own, without Date &amp; Time, so the fields and rules match an ordinary booking. */
 final class CreateDropInWorkOrderDialog {
 
     private CreateDropInWorkOrderDialog() {}

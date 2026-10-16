@@ -82,7 +82,7 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
     }
 
     /**
-     * dropIn: the same form without Date & Time. The booking happens as the customer walks in, so
+     * dropIn: the same form without Date &amp; Time. The booking happens as the customer walks in, so
      * the time is set by the service instead, and the description keeps the drop-in text rather
      * than the service names — otherwise a drop-in cannot be told from an ordinary booking in the list.
      */

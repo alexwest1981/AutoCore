@@ -21,8 +21,8 @@ import java.time.LocalTime;
 
 /**
  * The row layout of the booking form:
- * Vehicle -> Service package -> Services -> Mechanic -> Date & Time -> Description -> Status.
- * In drop-in mode Date & Time is swapped for the time the service works out.
+ * {@code Vehicle -> Service package -> Services -> Mechanic -> Date & Time -> Description -> Status}.
+ * In drop-in mode {@code Date & Time} is swapped for the time the service works out.
  */
 public class BookingFormLayout {
 
