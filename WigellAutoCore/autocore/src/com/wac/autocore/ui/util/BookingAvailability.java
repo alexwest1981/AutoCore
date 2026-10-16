@@ -7,7 +7,6 @@ import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.model.OpeningHours;
 import com.wac.autocore.service.GarageSystem;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;

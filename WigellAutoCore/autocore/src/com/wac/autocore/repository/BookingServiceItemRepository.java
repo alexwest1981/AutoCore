@@ -1,7 +1,5 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
 

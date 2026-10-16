@@ -168,7 +168,7 @@ public class MechanicSchedule {
         }
         int hour;
         try {
-            hour = java.time.LocalTime.parse(startTime.trim()).getHour();
+            hour = LocalTime.parse(startTime.trim()).getHour();
         } catch (java.time.format.DateTimeParseException e) {
             return -1;
         }

@@ -172,10 +172,6 @@ public final class EntityLookup {
         return wo != null && wo.getPlannedTime() != null ? String.valueOf(wo.getPlannedTime()) : "-";
     }
 
-    private static boolean text(String value) {
-        return value != null && !value.trim().isEmpty();
-    }
-
     /** The booking the work order belongs to, or null when there is none. */
     private static Booking bookingForWorkOrder(GarageSystem garage, WorkOrder wo) {
         if (garage == null || wo == null || wo.getBookingId() <= 0) return null;
