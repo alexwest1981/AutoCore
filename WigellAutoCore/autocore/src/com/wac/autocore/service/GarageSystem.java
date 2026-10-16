@@ -461,7 +461,7 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     public void updateVehicle(Vehicle vehicle) {
-        vehicleRepository.save(vehicle);
+        vehicleService.updateVehicle(vehicle);
     }
 
     public void updateMechanic(Mechanic mechanic) {
