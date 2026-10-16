@@ -420,8 +420,7 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     /** As above, but with the requirement on specialization. */
-    public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes,
-                                         String specialization) {
+    public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes, String specialization) {
         ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
         serviceItemRepository.save(item);
         return item;
@@ -465,9 +464,11 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     public void updateMechanic(Mechanic mechanic) {
+
         if (mechanic == null) {
             return;
         }
+
         refuseUnlessStorableMechanic(mechanic.getName(), mechanic.getPhone());
         mechanicRepository.save(mechanic);
     }
@@ -486,8 +487,10 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     public void deleteMechanic(int mechanicId) {
+
         refuseUnless(canDeleteMechanic(mechanicId),
-                "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.");
+                "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.",
+                "dialog.mechanic.delete.has_active_orders");
         mechanicRepository.delete(mechanicId);
         mechanicSchedule.removeSlotsForMechanic(mechanicId);
     }
@@ -497,8 +500,11 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     public void deleteCustomer(int customerId) {
+
         refuseUnless(canDeleteCustomer(customerId),
-                "Kunden kan inte tas bort: ett av kundens fordon har ett fakturerat jobb.");
+                "Kunden kan inte tas bort: ett av kundens fordon har ett fakturerat jobb.",
+                "dialog.customer.delete.has_active_orders");
+
         for (Vehicle v : getVehicles()) {
             if (v.getCustomerId() == customerId) {
                 vehicleRepository.delete(v.getId());
@@ -513,7 +519,8 @@ public class GarageSystem implements WorkOrderGateway {
 
     public void deleteVehicle(int vehicleId) {
         refuseUnless(canDeleteVehicle(vehicleId),
-                "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.");
+                "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.",
+                "dialog.vehicle.delete.has_active_orders");
         vehicleRepository.delete(vehicleId);
     }
 
@@ -532,15 +539,17 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     /** Refuses the removal with an explanation. The rules live in {@link RemovalRules}. */
-    private void refuseUnless(boolean allowed, String reason) {
+    private void refuseUnless(boolean allowed, String reason, String messageKey) {
+
         if (!allowed) {
-            throw new RuleViolationException(reason);
+            throw new RuleViolationException(reason, messageKey);
         }
     }
 
     public void deleteBooking(int bookingId) {
         refuseUnless(canCancelOrDeleteBooking(bookingId),
-                "Bokningen kan inte tas bort: den har en arbetsorder med faktura.");
+                "Bokningen kan inte tas bort: den har en arbetsorder med faktura.",
+                "dialog.booking.delete.has_active_orders");
         bookingRepository.delete(bookingId);
         mechanicSchedule.cancelSlotForBooking(bookingId);
         mechanicSchedule.syncFromDatabase();
@@ -552,7 +561,8 @@ public class GarageSystem implements WorkOrderGateway {
 
     public void deleteServiceItem(int serviceItemId) {
         refuseUnless(canDeleteServiceItem(serviceItemId),
-                "Tjänsten kan inte tas bort: den ligger i en bokning eller en arbetsorder.");
+                "Tjänsten kan inte tas bort: den ligger i en bokning eller en arbetsorder.",
+                "dialog.service.delete.has_active_orders");
         serviceItemRepository.delete(serviceItemId);
     }
 
