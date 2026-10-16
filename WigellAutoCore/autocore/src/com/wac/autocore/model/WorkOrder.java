@@ -228,6 +228,11 @@ public class WorkOrder {
         completedServicePrices.put(Integer.valueOf(serviceItemId), Integer.valueOf(frozenPrice));
     }
 
+    /** True when the order may move to the given status. The view asks here, the same table the service uses. */
+    public boolean canChangeTo(WorkOrderStatus next) {
+        return status.canChangeTo(next);
+    }
+
     /** Moves the work order to the next status, or refuses and says why. */
     public void changeStatusTo(WorkOrderStatus next) {
         if (!status.canChangeTo(next)) {
