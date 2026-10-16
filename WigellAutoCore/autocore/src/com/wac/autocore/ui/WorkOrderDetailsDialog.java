@@ -279,26 +279,33 @@ final class WorkOrderDetailsDialog {
 
         HBox row = new HBox(8);
 
-        if (status == WorkOrderStatus.CREATED) {
+        // Each button asks the order whether the change is allowed, the same table the service checks.
+        if (workOrder.canChangeTo(WorkOrderStatus.CONFIRMED)) {
             row.getChildren().add(actionButton("confirm", garage, workOrder, dialog));
-        } else if (status == WorkOrderStatus.CONFIRMED) {
+        }
+
+        if (workOrder.canChangeTo(WorkOrderStatus.IN_PROGRESS)) {
             row.getChildren().add(actionButton("start", garage, workOrder, dialog));
-        } else if (status == WorkOrderStatus.IN_PROGRESS) {
+        }
+
+        // Marking services is work inside the status, not a change of status.
+        if (status == WorkOrderStatus.IN_PROGRESS) {
             Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
             markBtn.setOnAction(e -> ActionDialogs.showMarkPerformedDialog(garage, workOrder,
                     () -> refreshDialog(garage, workOrder, dialog)));
             row.getChildren().add(markBtn);
-            if (!multiService || allMarked) {
-                row.getChildren().add(actionButton("complete", garage, workOrder, dialog));
-            }
-        } else if (status == WorkOrderStatus.COMPLETED) {
-            // A completed job has exactly one action: to be reclaimed.
-            row.getChildren().add(reclamationButton(garage, workOrder, dialog));
-        } else if (status == WorkOrderStatus.CANCELLED) {
-            row.getChildren().add(actionButton("start", garage, workOrder, dialog));
         }
 
-        if (status == WorkOrderStatus.CREATED || status == WorkOrderStatus.CONFIRMED || status == WorkOrderStatus.IN_PROGRESS) {
+        if (workOrder.canChangeTo(WorkOrderStatus.COMPLETED) && (!multiService || allMarked)) {
+            row.getChildren().add(actionButton("complete", garage, workOrder, dialog));
+        }
+
+        // A reclamation is a new order, not a change of status, so it follows the status directly.
+        if (status == WorkOrderStatus.COMPLETED) {
+            row.getChildren().add(reclamationButton(garage, workOrder, dialog));
+        }
+
+        if (workOrder.canChangeTo(WorkOrderStatus.CANCELLED)) {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
             row.getChildren().addAll(spacer, actionButton("cancel", garage, workOrder, dialog));
