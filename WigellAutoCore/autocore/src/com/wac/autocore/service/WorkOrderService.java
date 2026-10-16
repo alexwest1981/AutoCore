@@ -272,6 +272,9 @@ public class WorkOrderService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
+        // Refused before anything is saved, so a no leaves the mechanic and the booking as they were.
+        workOrder.changeStatusTo(WorkOrderStatus.IN_PROGRESS);
+
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
         Booking booking = findBooking(workOrder.getBookingId());
 
@@ -301,7 +304,6 @@ public class WorkOrderService {
         }
 
         workOrder.setCompletedServicePrices(priser);
-        workOrder.changeStatusTo(WorkOrderStatus.IN_PROGRESS);
         saveWorkOrder(workOrder);
         return true;
     }
@@ -374,6 +376,9 @@ public class WorkOrderService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
+        // Refused before anything is saved, so a no cannot cancel the booking or free its time.
+        workOrder.changeStatusTo(WorkOrderStatus.CANCELLED);
+
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
         Booking booking = findBooking(workOrder.getBookingId());
 
@@ -389,7 +394,6 @@ public class WorkOrderService {
             mechanicSchedule.syncFromDatabase();
         }
 
-        workOrder.changeStatusTo(WorkOrderStatus.CANCELLED);
         saveWorkOrder(workOrder);
         return true;
     }
