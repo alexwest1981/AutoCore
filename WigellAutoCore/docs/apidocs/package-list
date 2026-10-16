@@ -1,0 +1,17 @@
+
+com.wac.autocore.data
+com.wac.autocore.exception
+com.wac.autocore.model
+com.wac.autocore.repository
+com.wac.autocore.seed
+com.wac.autocore.service
+com.wac.autocore.service.gateway
+com.wac.autocore.test
+com.wac.autocore.theme
+com.wac.autocore.ui
+com.wac.autocore.ui.components
+com.wac.autocore.ui.i18n
+com.wac.autocore.ui.navigation
+com.wac.autocore.ui.util
+com.wac.autocore.ui.views
+com.wac.autocore.util
