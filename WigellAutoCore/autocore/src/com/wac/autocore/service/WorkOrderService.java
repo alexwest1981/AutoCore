@@ -152,12 +152,8 @@ public class WorkOrderService {
         return workOrder;
     }
 
-    // A reclamation is a work order of its own that redoes earlier performed work and points it
-    // out with originalWorkOrderId. Same booking, same mechanic, same services — but a new order.
-    //
-    // The guard in createWorkOrder that stops a service from sitting on two orders does not apply
-    // here. The service is to be redone, and the reclamation is not charged to the customer
-    // anyway, so it cannot be invoiced twice.
+    // A new order that redoes performed work, so the original stays as history. The guard against
+    // one service on two orders does not apply here: the work is redone and is never charged.
     public WorkOrder createReclamation(int originalWorkOrderId, String description) {
         WorkOrder original = findById(originalWorkOrderId);
 
@@ -267,42 +263,12 @@ public class WorkOrderService {
         return false;
     }
 
-    // The only place that decides which status changes are allowed. Anything not listed is refused.
-    private boolean canChangeStatus(WorkOrderStatus from, WorkOrderStatus to) {
-
-        if (from == WorkOrderStatus.IN_PROGRESS && to == WorkOrderStatus.COMPLETED) {
-            return true;
-        }
-        if (from == WorkOrderStatus.CREATED && to == WorkOrderStatus.CANCELLED) {
-            return true;
-        }
-        if (from == WorkOrderStatus.IN_PROGRESS && to == WorkOrderStatus.CANCELLED) {
-            return true;
-        }
-        if (from == WorkOrderStatus.CANCELLED && to == WorkOrderStatus.IN_PROGRESS) {
-            return true;
-        }
-        if (from == WorkOrderStatus.CREATED && to == WorkOrderStatus.CONFIRMED) {
-            return true;
-        }
-        if (from == WorkOrderStatus.CONFIRMED && to == WorkOrderStatus.IN_PROGRESS) {
-            return true;
-        }
-        if (from == WorkOrderStatus.CONFIRMED && to == WorkOrderStatus.CANCELLED) {
-            return true;
-        }
-        return false;
-    }
-
     public boolean startWorkOrder(int workOrderId) {
+
         WorkOrder workOrder = findById(workOrderId);
+
         if (workOrder == null) {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
-        }
-
-        if (!canChangeStatus(workOrder.getStatus(), WorkOrderStatus.IN_PROGRESS)) {
-            throw new RuleViolationException("Work order " + workOrderId + " cannot be started. Its status is "
-                    + workOrder.getStatus() + ".");
         }
 
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
@@ -321,51 +287,55 @@ public class WorkOrderService {
         // The price is frozen when the work starts, not when it is finished. A price change
         // while the job is running must not reach this order.
         Map<Integer, Integer> priser = new LinkedHashMap<Integer, Integer>(workOrder.getCompletedServicePrices());
+
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+
             if (!priser.containsKey(serviceItemId)) {
                 ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
+
                 if (serviceItem != null) {
                     priser.put(serviceItemId, Integer.valueOf(serviceItem.getPrice()));
                 }
             }
         }
+
         workOrder.setCompletedServicePrices(priser);
-
-        workOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
+        workOrder.changeStatusTo(WorkOrderStatus.IN_PROGRESS);
         saveWorkOrder(workOrder);
-
         return true;
     }
 
     public boolean completeWorkOrder(int workOrderId) {
+
         WorkOrder workOrder = findById(workOrderId);
+
         if (workOrder == null) {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
-        }
-
-        if (!canChangeStatus(workOrder.getStatus(), WorkOrderStatus.COMPLETED)) {
-            throw new RuleViolationException("Work order " + workOrderId + " cannot be completed. Its status is "
-                    + workOrder.getStatus() + ".");
         }
 
         // The price is frozen even when the order is finished without anyone having marked the
         // jobs. The price goes on the line without marking the service as performed, because the
         // invoice should still only be built on the jobs that were actually marked.
         Map<Integer, Integer> priser = new LinkedHashMap<Integer, Integer>(workOrder.getCompletedServicePrices());
+
         for (Integer serviceItemId : workOrder.getServiceItemIds()) {
+
             if (!priser.containsKey(serviceItemId)) {
+
                 ServiceItem serviceItem = findServiceItem(serviceItemId.intValue());
+
                 if (serviceItem != null) {
                     priser.put(serviceItemId, Integer.valueOf(serviceItem.getPrice()));
                 }
             }
         }
-        workOrder.setCompletedServicePrices(priser);
 
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
         Booking booking = findBooking(workOrder.getBookingId());
 
-        workOrder.setStatus(WorkOrderStatus.COMPLETED);
+        workOrder.setCompletedServicePrices(priser);
+        workOrder.changeStatusTo(WorkOrderStatus.COMPLETED);
+
         saveWorkOrder(workOrder);
 
         if (mechanic != null) {
@@ -377,40 +347,30 @@ public class WorkOrderService {
             booking.setStatus(BookingStatus.COMPLETED);
             saveBooking(booking);
         }
-
         return true;
     }
 
     // A draft becomes confirmed only once the customer has said yes to the price and the time.
     public boolean confirmWorkOrder(int workOrderId) {
+
         WorkOrder workOrder = findById(workOrderId);
 
         if (workOrder == null) {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        if (!canChangeStatus(workOrder.getStatus(), WorkOrderStatus.CONFIRMED)) {
-            throw new RuleViolationException("Work order " + workOrderId + " cannot be confirmed. Its status is "
-                    + workOrder.getStatus() + ".");
-        }
-
-        workOrder.setStatus(WorkOrderStatus.CONFIRMED);
+        workOrder.changeStatusTo(WorkOrderStatus.CONFIRMED);
         saveWorkOrder(workOrder);
-
         return true;
     }
 
     // A cancelled draft should not leave a booked time behind, so the booking is cancelled and the schedule freed.
     public boolean cancelWorkOrder(int workOrderId) {
+
         WorkOrder workOrder = findById(workOrderId);
 
         if (workOrder == null) {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
-        }
-
-        if (!canChangeStatus(workOrder.getStatus(), WorkOrderStatus.CANCELLED)) {
-            throw new RuleViolationException("Work order " + workOrderId + " cannot be cancelled. Its status is "
-                    + workOrder.getStatus() + ".");
         }
 
         Mechanic mechanic = findMechanic(workOrder.getMechanicId());
@@ -428,10 +388,8 @@ public class WorkOrderService {
             mechanicSchedule.syncFromDatabase();
         }
 
-        workOrder.setStatus(WorkOrderStatus.CANCELLED);
+        workOrder.changeStatusTo(WorkOrderStatus.CANCELLED);
         saveWorkOrder(workOrder);
-
-
         return true;
     }
 
