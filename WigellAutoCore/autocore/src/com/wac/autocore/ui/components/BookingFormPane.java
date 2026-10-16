@@ -57,7 +57,6 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
     private MultiSelectComboBox<Mechanic> mechanicMulti;
     private final Label mechanicFilterHint;
     private final ComboBox<LocalTime> startTimeBox;
-    private final Label durationLabel;
     private final TextField descField;
     private final ComboBox<BookingStatus> statusBox;
 
@@ -139,7 +138,6 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
                 existingBooking, initialDate);
         this.datePicker = scheduleField.getDatePicker();
         this.startTimeBox = scheduleField.getStartTimeBox();
-        this.durationLabel = scheduleField.getDurationLabel();
 
         BookingStatusField statusField = new BookingStatusField(existingBooking);
         this.descField = statusField.getDesc();
