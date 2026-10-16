@@ -1,6 +1,7 @@
 package com.wac.autocore.repository;
 
 import com.wac.autocore.data.DatabaseWork;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.model.ServiceItem;
@@ -134,14 +135,13 @@ public class BookingRepository {
 
         LocalDate bookingDate = null;
 
-        // A row written before the format was fixed can hold anything, and one bad row must not
-        // stop the list.
+        // A row written before the format was fixed can hold anything, and one bad row must not stop the list.
         if (dateText != null) {
 
             try {
                 bookingDate = LocalDate.parse(dateText);
             } catch (java.time.format.DateTimeParseException e) {
-                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+                throw new DataAccessException("Could not read the date of booking " + resultSet.getInt("id"), e);
             }
         }
 
@@ -162,8 +162,7 @@ public class BookingRepository {
             try {
                 booking.setStartTime(LocalTime.parse(startText));
             } catch (java.time.format.DateTimeParseException e) {
-                System.out.println("Hoppade över trasig tid i databasen: " + startText);
-                booking.setStartTime(LocalTime.of(8, 0));
+                throw new DataAccessException("Could not read the start time of booking " + booking.getId(), e);
             }
         }
 
@@ -172,7 +171,7 @@ public class BookingRepository {
             try {
                 booking.setEndTime(LocalTime.parse(endText));
             } catch (java.time.format.DateTimeParseException e) {
-                booking.setEndTime(LocalTime.of(9, 0));
+                throw new DataAccessException("Could not read the end time of booking " + booking.getId(), e);
             }
         }
 

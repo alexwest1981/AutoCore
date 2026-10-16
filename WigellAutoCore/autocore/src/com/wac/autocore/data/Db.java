@@ -91,6 +91,7 @@ public class Db {
             }
             write.close();
         } catch (java.sql.SQLException e) {
+            // A repair that fails must not stop the start, and there is no caller to tell yet.
             System.out.println("Kunde inte rätta registreringsnumren: " + e.getMessage());
         }
     }

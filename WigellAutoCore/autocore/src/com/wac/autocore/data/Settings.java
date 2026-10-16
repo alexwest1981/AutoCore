@@ -1,5 +1,6 @@
 package com.wac.autocore.data;
 
+import com.wac.autocore.exception.DataAccessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,7 +26,7 @@ public final class Settings {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Could not read setting '" + key + "': " + e.getMessage());
+            throw new DataAccessException("Could not read setting '" + key + "'", e);
         }
         return fallback;
     }
@@ -39,7 +40,7 @@ public final class Settings {
             statement.setString(2, value);
             statement.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Could not save setting '" + key + "': " + e.getMessage());
+            throw new DataAccessException("Could not save setting '" + key + "'", e);
         }
     }
 }
