@@ -2,6 +2,7 @@ package com.wac.autocore.service;
 
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.NotFoundException;
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.VehicleRepository;
@@ -33,6 +34,8 @@ public class VehicleService {
                                  int year,
                                  int customerId) {
 
+        refuseUnlessStorable(registrationNumber, brand, model, year);
+
         Customer customer = customerService.findById(customerId);
 
         if (customer == null) {
@@ -46,8 +49,29 @@ public class VehicleService {
         } catch (DataAccessException e) {
             throw new DataAccessException("Could not save vehicle", e);
         }
-
-
         return vehicle;
+    }
+
+    public void updateVehicle(Vehicle vehicle) {
+        if (vehicle == null) {
+            return;
+        }
+        refuseUnlessStorable(vehicle.getRegistrationNumber(), vehicle.getBrand(),
+                vehicle.getModel(), vehicle.getYear());
+        try {
+            vehicleRepository.save(vehicle);
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not save vehicle", e);
+        }
+    }
+
+
+    private static void refuseUnlessStorable(String registrationNumber, String brand, String model, int year) {
+
+        String problem = Vehicle.validationProblem(registrationNumber, brand, model, year);
+
+        if (problem != null) {
+            throw new ValidationException(problem);
+        }
     }
 }

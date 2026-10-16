@@ -29,7 +29,6 @@ public final class VehicleDialogs {
 
     public static void showEditVehicleDialog(GarageSystem garage, Vehicle vehicle, Runnable onSuccess) {
         if (vehicle == null) return;
-
         showVehicleForm(garage, vehicle, onSuccess);
     }
 
@@ -157,22 +156,15 @@ public final class VehicleDialogs {
         });
     }
 
-    private static boolean validateVehicleInput(Customer customer, String reg, String brand, String model, String yearStr) {
+    private static boolean validateVehicleInput(Customer customer, String reg, String brand,
+                                                String model, String yearStr) {
         List<String> missing = new ArrayList<String>();
+
         if (customer == null) {
             missing.add(I18n.get("dialog.vehicle.customer_select"));
         }
-        if (reg == null || reg.trim().isEmpty()) {
-            missing.add(I18n.get("dialog.vehicle.reg_nr"));
-        }
-        if (brand == null || brand.trim().isEmpty()) {
-            missing.add(I18n.get("dialog.vehicle.brand"));
-        }
-        if (model == null || model.trim().isEmpty()) {
-            missing.add(I18n.get("dialog.vehicle.model"));
-        }
-        if (yearStr == null || yearStr.trim().isEmpty()) {
-            missing.add(I18n.get("dialog.vehicle.year"));
+        for (String field : Vehicle.missingFields(reg, brand, model)) {
+            missing.add(I18n.get("dialog.vehicle." + field));
         }
 
         if (!missing.isEmpty()) {
@@ -182,14 +174,9 @@ public final class VehicleDialogs {
             return false;
         }
 
-        try {
-            int y = Integer.parseInt(yearStr.trim());
-            if (y < 1900 || y > 2100) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_year"));
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_year"));
+        if (!Vehicle.isReadableYear(yearStr)) {
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                    I18n.get("dialog.validation.invalid_year"));
             return false;
         }
 

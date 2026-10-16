@@ -195,16 +195,20 @@ public class ConsoleApp {
 
         int year = readInt("Year: ");
 
-        Vehicle created = garageSystem.createVehicle(
-                registrationNumber,
-                brand,
-                model,
-                year,
-                customerId
-        );
+        try {
+            Vehicle created = garageSystem.createVehicle(
+                    registrationNumber,
+                    brand,
+                    model,
+                    year,
+                    customerId
+            );
 
-        if (created != null) {
-            System.out.println("Vehicle created successfully.");
+            if (created != null) {
+                System.out.println("Vehicle created successfully.");
+            }
+        } catch (AppException rejected) {
+            System.out.println("Vehicle was not saved: " + rejected.getMessage());
         }
     }
 

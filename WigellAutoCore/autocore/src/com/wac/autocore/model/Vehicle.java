@@ -1,5 +1,7 @@
 package com.wac.autocore.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class Vehicle {
@@ -77,6 +79,54 @@ public class Vehicle {
     public void setCustomerId(int customerId) {
         this.customerId = customerId;
     }
+
+    /** The fields the form must have, in the order it shows them. */
+    public static List<String> missingFields(String registrationNumber, String brand, String model) {
+        List<String> missing = new ArrayList<String>();
+
+        if (registrationNumber == null || registrationNumber.trim().isEmpty()) {
+            missing.add("reg_nr");
+        }
+        if (brand == null || brand.trim().isEmpty()) {
+            missing.add("brand");
+        }
+        if (model == null || model.trim().isEmpty()) {
+            missing.add("model");
+        }
+
+        return missing;
+    }
+
+    /** True when the text is a year the system accepts, that is 1900 to 2100. */
+    public static boolean isReadableYear(String yearText) {
+        if (yearText == null || yearText.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            return isReadableYear(Integer.parseInt(yearText.trim()));
+        } catch (NumberFormatException notANumber) {
+            return false;
+        }
+    }
+
+    /** The same rule when the year is already a number. */
+    public static boolean isReadableYear(int year) {
+        return year >= 1900 && year <= 2100;
+    }
+
+    /** The first rule the vehicle breaks, or null when the row can be saved. */
+    public static String validationProblem(String registrationNumber, String brand, String model, int year) {
+
+        if (!missingFields(registrationNumber, brand, model).isEmpty()) {
+            return ContactRules.PROBLEM_REQUIRED;
+        }
+
+        if (!isReadableYear(year)) {
+            return "invalid_year";
+        }
+        return null;
+    }
+
 
     @Override
     public String toString() {
