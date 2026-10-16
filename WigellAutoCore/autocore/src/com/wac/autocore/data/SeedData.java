@@ -177,7 +177,7 @@ public class SeedData {
             sixthBooking.setStatus(BookingStatus.WORK_ORDER_CREATED);
             bookingRepository.save(sixthBooking);
         } catch (DataAccessException e) {
-            System.out.println("Could not seed sample data: " + e.getMessage());
+            throw new DataAccessException("Could not seed sample data", e);
         }
     }
 

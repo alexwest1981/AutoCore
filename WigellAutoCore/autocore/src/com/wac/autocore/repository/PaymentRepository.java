@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Payment;
 
 import java.sql.PreparedStatement;
@@ -83,14 +84,12 @@ public class PaymentRepository {
 
         String dateText = resultSet.getString("payment_date");
 
-        // A row written before the format was fixed can hold anything, and one bad row must not
-        // stop the list.
         if (dateText != null) {
 
             try {
                 payment.setPaymentDate(LocalDateTime.parse(dateText));
             } catch (java.time.format.DateTimeParseException e) {
-                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+                throw new DataAccessException("Could not read the payment date: " + dateText, e);
             }
         }
 

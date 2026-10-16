@@ -228,6 +228,15 @@ public class WorkOrder {
         completedServicePrices.put(Integer.valueOf(serviceItemId), Integer.valueOf(frozenPrice));
     }
 
+    /** Moves the work order to the next status, or refuses and says why. */
+    public void changeStatusTo(WorkOrderStatus next) {
+        if (!status.canChangeTo(next)) {
+            throw new RuleViolationException("Work order " + id + " cannot change from "
+                    + status + " to " + next + ".");
+        }
+        this.status = next;
+    }
+
     @Override
     public String toString() {
         return id +
