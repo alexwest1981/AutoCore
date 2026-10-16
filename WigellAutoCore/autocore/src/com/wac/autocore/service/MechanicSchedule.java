@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.LoadLevel;
 import com.wac.autocore.model.ScheduleEntry;
 import com.wac.autocore.model.TimeSlot;
@@ -160,7 +161,8 @@ public class MechanicSchedule {
 
     /** Books the booking's own hour when it exists and is free, otherwise -1 so the caller has to
      *  go looking for a free slot. If the hour is taken by someone else, nobody else's job is moved
-     *  out of the way for a drop-in; the job gets a free hour instead. */
+     *  out of the way for a drop-in; the job gets a free hour instead. A stored time that cannot be
+     *  read is a broken row and is reported, not treated as a taken hour. */
     private int bookAtStoredTime(int mechanicId, LocalDate date, String startTime, int bookingId,
                                  int workOrderId, String customer, String vehicleReg, String desc) {
         if (startTime == null || startTime.trim().isEmpty()) {
@@ -170,7 +172,7 @@ public class MechanicSchedule {
         try {
             hour = LocalTime.parse(startTime.trim()).getHour();
         } catch (java.time.format.DateTimeParseException e) {
-            return -1;
+            throw new DataAccessException("Could not read the start time of booking " + bookingId, e);
         }
         if (hour < OpeningHours.firstHour() || hour >= OpeningHours.closingHour()) {
             return -1;

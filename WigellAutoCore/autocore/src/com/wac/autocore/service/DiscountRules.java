@@ -17,7 +17,11 @@ public class DiscountRules {
         return (amount * percent + 50) / 100;
     }
 
-    /** The discount in öre for a campaign code: fixed amount, percentage or one of the named ones. */
+    /**
+     * The discount in öre for a campaign code: fixed amount, percentage or one of the named ones.
+     * A code we do not recognise gives no discount, which is an answer and not an error. A fixed
+     * amount that does not fit in öre is refused instead of wrapping into a negative discount.
+     */
     public static int forCode(String discountCode, int amount) {
         if (discountCode == null || discountCode.trim().isEmpty()) {
             return 0;
@@ -41,14 +45,17 @@ public class DiscountRules {
                 if (val <= 100 && val > 0) {
                     return percentOf(amount, val);
                 }
-                return val * 100;
+                return Math.multiplyExact(val, 100);
             } else {
                 int val = toOre(code);
                 if (val > 0) {
                     return val;
                 }
             }
-        } catch (NumberFormatException | ArithmeticException ignored) {
+        } catch (NumberFormatException notANumber) {
+            // Not a campaign code we know. The caller gets the same answer as for an empty code,
+            // and the arithmetic above is left alone, so an amount that does not fit still speaks.
+            return 0;
         }
 
         return 0;

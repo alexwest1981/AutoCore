@@ -1,6 +1,7 @@
 package com.wac.autocore.repository;
 
 import com.wac.autocore.data.DatabaseWork;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 
@@ -114,7 +115,7 @@ public class InvoiceRepository {
             try {
                 invoiceDate = LocalDate.parse(dateText);
             } catch (java.time.format.DateTimeParseException e) {
-                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+                throw new DataAccessException("Could not read the invoice date: " + dateText, e);
             }
         }
 
