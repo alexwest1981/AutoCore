@@ -87,7 +87,7 @@ public class WorkOrderService {
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type) {
 
         if (type == null || !WorkOrder.TYPES.contains(type)) {
-            return null;
+            throw new RuleViolationException("Unknown work order type: " + type, "dialog.workorder.unknown_type");
         }
 
         Booking booking = findBooking(bookingId);
@@ -96,7 +96,7 @@ public class WorkOrderService {
         }
 
         if (serviceItemIds == null || serviceItemIds.isEmpty()) {
-            return null;
+            throw new RuleViolationException("No services were given for work order on booking " + bookingId, "dialog.workorder.no_services");
         }
 
         for (WorkOrder existingOrder : getAll()) {
@@ -112,7 +112,8 @@ public class WorkOrderService {
             for (Integer serviceItemId : serviceItemIds) {
 
                 if (existingOrder.getServiceItemIds().contains(serviceItemId)) {
-                    return null;
+                    throw new RuleViolationException("Service " + serviceItemId + " already sits on work order " +
+                            existingOrder.getId(), "dialog.workorder.service_already_claimed");
                 }
             }
         }
@@ -123,7 +124,7 @@ public class WorkOrderService {
         }
 
         if (!mechanic.isAvailable()) {
-            return null;
+            throw new RuleViolationException("Mechanic " + mechanicId + " is not available.", "dialog.workorder.mechanic_busy");
         }
 
         WorkOrder workOrder = new WorkOrder(0, bookingId, mechanicId);
@@ -163,7 +164,8 @@ public class WorkOrderService {
 
         // Only work that has actually been performed can be reclaimed.
         if (original.getStatus() != WorkOrderStatus.COMPLETED) {
-            return null;
+            throw new RuleViolationException("Work order " + originalWorkOrderId + " is not completed.",
+                    "dialog.workorder.reclamation_not_completed");
         }
 
         Mechanic mechanic = findMechanic(original.getMechanicId());
@@ -172,7 +174,8 @@ public class WorkOrderService {
         }
 
         if (!mechanic.isAvailable()) {
-            return null;
+            throw new RuleViolationException("Mechanic " + original.getMechanicId() + " is not available.",
+                    "dialog.workorder.mechanic_busy");
         }
 
         WorkOrder reclamation = new WorkOrder(0, original.getBookingId(), original.getMechanicId());
@@ -190,8 +193,6 @@ public class WorkOrderService {
         } catch (DataAccessException e) {
             throw new DataAccessException("Could not save reclamation", e);
         }
-
-
         return reclamation;
     }
 

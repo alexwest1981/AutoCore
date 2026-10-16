@@ -432,6 +432,11 @@
       "create_failed": "The reclamation could not be created."
     },
     "workorder": {
+      "unknown_type": "The work order type cannot be used.",
+      "no_services": "No services were given for the work order.",
+      "service_already_claimed": "The service already sits on a work order.",
+      "mechanic_busy": "The mechanic is not available.",
+      "reclamation_not_completed": "Only completed work can be reclaimed.",
       "create": {
         "title": "New Work Order",
         "header": "Open Work Order"

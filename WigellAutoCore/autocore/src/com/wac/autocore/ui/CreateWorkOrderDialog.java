@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.*;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
@@ -178,14 +179,20 @@ final class CreateWorkOrderDialog {
 
                 // One work order per mechanic, each with its own services.
                 int created = 0;
-                for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
-                    List<Integer> ids = new ArrayList<Integer>();
-                    for (ServiceItem s : entry.getValue()) {
-                        ids.add(Integer.valueOf(s.getId()));
+
+                try {
+                    for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
+                        List<Integer> ids = new ArrayList<Integer>();
+                        for (ServiceItem s : entry.getValue()) {
+                            ids.add(Integer.valueOf(s.getId()));
+                        }
+                        if (garage.createWorkOrder(b.getId(), entry.getKey().intValue(), ids, typeBox.getValue()) != null) {
+                            created++;
+                        }
                     }
-                    if (garage.createWorkOrder(b.getId(), entry.getKey().intValue(), ids, typeBox.getValue()) != null) {
-                        created++;
-                    }
+                } catch (RuleViolationException refused) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                    return;
                 }
 
                 if (created == 0) {
