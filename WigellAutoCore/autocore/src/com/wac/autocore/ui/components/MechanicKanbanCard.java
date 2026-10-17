@@ -4,6 +4,7 @@ import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.motion.Motion;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
@@ -125,5 +126,6 @@ public class MechanicKanbanCard {
                 bodyContent.getChildren().add(monthView.build(mech));
                 break;
         }
+        Motion.fadeIn(bodyContent.getChildren().get(bodyContent.getChildren().size() - 1));
     }
 }

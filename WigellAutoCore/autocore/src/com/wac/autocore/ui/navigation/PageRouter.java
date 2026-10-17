@@ -163,6 +163,10 @@ public class PageRouter {
             pageBox.getChildren().add(com.wac.autocore.ui.components.UiComponents.mutedNote(
                     com.wac.autocore.ui.i18n.I18n.get("view.error.read_failed")));
         }
+        if (!pageBox.getChildren().isEmpty()) {
+            com.wac.autocore.ui.motion.Motion.enterPage(
+                    pageBox.getChildren().get(pageBox.getChildren().size() - 1));
+        }
     }
 
     // The drop-in is created in a dialog on top of the current page, and the page is reloaded

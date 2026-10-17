@@ -243,7 +243,22 @@ public final class TableFactory {
         TableColumn<S, String> c = col(title, minWidth, mapper);
         c.setMinWidth(minWidth);
         c.setMaxWidth(maxWidth);
+        c.setCellFactory(column -> new FlashCell<S>());
         return c;
+    }
+
+    /** A text cell that tints itself when its value changes, so an edited row is caught by the
+     *  eye without a toast. First fill is silent: a table loading is not a change. */
+    private static final class FlashCell<S> extends TableCell<S, String> {
+        private String shown;
+
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(empty ? null : item);
+            com.wac.autocore.ui.motion.ValueFlash.onValueChange(this, shown, empty ? null : item);
+            shown = empty ? null : item;
+        }
     }
 
     /** The ID column, same in every table. No breathing room. */

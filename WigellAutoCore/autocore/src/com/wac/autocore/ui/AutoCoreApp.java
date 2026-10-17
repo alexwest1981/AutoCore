@@ -61,8 +61,8 @@ public class AutoCoreApp extends Application {
         stage.setCenter(shell);
 
         Scene scene = new Scene(stage, 1280, 800);
-        // Lock the theme to Emerald
-        ThemeManager.apply(scene, "emerald");
+        ThemeManager.apply(scene, com.wac.autocore.theme.ThemeCatalog.DEFAULT_SLUG);
+        com.wac.autocore.ui.motion.PressDepth.install(scene);
 
         primaryStage.setTitle("Wigell AutoCore");
         primaryStage.setScene(scene);
