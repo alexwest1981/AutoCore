@@ -157,7 +157,7 @@ public final class SlotDetailsDialog {
                         // The booking has no services. Give it one, so the work order has something to do.
                         try {
                             targetBooking.addServiceItem(garage.getServiceItems().get(0));
-                            garage.updateBooking(targetBooking);
+                            garage.saveBooking(targetBooking);
                         } catch (Exception ex) {
                             System.out.println("Could not give the booking a service: " + ex.getMessage());
                         }

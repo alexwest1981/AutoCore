@@ -72,8 +72,13 @@ public final class StatusRoutesProof {
 
         roads.put("bokning", fromBooking(garage, vehicleId, mechanic, service, day, LocalTime.of(10, 0)));
 
-        // A drop-in takes the current hour today, so after closing time there is none to take.
-        Booking dropIn = garage.createDropInBooking(vehicleId, Arrays.asList(service), Arrays.asList(mechanic));
+        // A drop-in takes the current hour today: none after closing, and none at all on a weekend.
+        Booking dropIn = null;
+        try {
+            dropIn = garage.createDropInBooking(vehicleId, Arrays.asList(service), Arrays.asList(mechanic));
+        } catch (RuleViolationException closedToday) {
+            // Same answer as no free hour: this road is not tried in this run.
+        }
         if (dropIn != null) {
             roads.put("drop-in", garage.createWorkOrder(dropIn.getId(), mechanic.getId(),
                     Arrays.asList(service.getId())));

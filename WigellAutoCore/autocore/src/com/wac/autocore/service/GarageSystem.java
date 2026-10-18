@@ -470,9 +470,11 @@ public class GarageSystem implements WorkOrderGateway {
         mechanicRepository.save(mechanic);
     }
 
-    public void updateBooking(Booking booking) {
-        bookingRepository.save(booking);
+    /** New or changed, the booking goes through the same rules before it is stored. */
+    public Booking saveBooking(Booking booking) {
+        Booking saved = bookingService.saveBooking(booking);
         mechanicSchedule.syncFromDatabase();
+        return saved;
     }
 
     public void updateServiceItem(ServiceItem item) {

@@ -291,7 +291,7 @@ class KanbanSlotDrawer {
     private void giveFirstService(Booking booking) {
         try {
             booking.addServiceItem(card.garage.getServiceItems().get(0));
-            card.garage.updateBooking(booking);
+            card.garage.saveBooking(booking);
         } catch (Exception ex) {
             System.out.println("Could not give the booking a service: " + ex.getMessage());
         }
