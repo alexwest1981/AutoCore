@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.ServiceItem;
@@ -333,7 +334,12 @@ final class WorkOrderDetailsDialog {
         Button button = UiComponents.secondaryButton(I18n.get("entity.workorders.action_" + key));
         button.setOnAction(e -> {
             if ("confirm".equals(key)) {
-                garage.confirmWorkOrder(workOrder.getId());
+                try {
+                    garage.confirmWorkOrder(workOrder.getId());
+                } catch (RuleViolationException refused) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                    return;
+                }
                 refreshDialog(garage, workOrder, dialog);
             } else if ("start".equals(key)) {
                 garage.startWorkOrder(workOrder.getId());

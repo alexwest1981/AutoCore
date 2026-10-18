@@ -360,7 +360,7 @@ public class WorkOrderService {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        workOrder.changeStatusTo(WorkOrderStatus.CONFIRMED);
+        workOrder.confirm();
         saveWorkOrder(workOrder);
         return true;
     }
