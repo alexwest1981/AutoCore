@@ -2,6 +2,7 @@ package com.wac.autocore.test;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
+import com.wac.autocore.model.DraftChanges;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.WorkOrder;
@@ -83,8 +84,15 @@ public final class StatusRoutesProof {
         roads.put("reklamation", garage.createReclamation(original.getId(), "Reklamation i provet"));
 
         WorkOrder draft = garage.createDraft(vehicleId, "Utkast i provet");
-        garage.updateDraft(draft.getId(), vehicleId, "Utkast i provet", mechanic.getId(),
-                Arrays.asList(service.getId()), day, LocalTime.of(13, 0), "", "");
+        garage.updateDraft(DraftChanges.forWorkOrder(draft.getId())
+                .vehicle(vehicleId)
+                .description("Utkast i provet")
+                .mechanic(mechanic.getId())
+                .services(Arrays.asList(service.getId()))
+                .plannedAt(day, LocalTime.of(13, 0))
+                .customerInstructions("")
+                .otherComments("")
+                .build());
         roads.put("utkast", draft);
 
 

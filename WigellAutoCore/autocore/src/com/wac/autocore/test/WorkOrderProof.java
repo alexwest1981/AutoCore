@@ -1,6 +1,7 @@
 package com.wac.autocore.test;
 
 import com.wac.autocore.data.Db;
+import com.wac.autocore.model.DraftChanges;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
@@ -34,9 +35,15 @@ public final class WorkOrderProof {
 
         System.out.println("1. utkastet skapat, nummer " + draft.getId() + ", status " + draft.getStatus());
 
-        WorkOrder changed = gateway.updateDraft(draft.getId(), vehicleId, "Bromsok och bromsbelägg",
-                mechanicId, Arrays.asList(serviceItemId),  LocalDate.of(2026,10,15), LocalTime.of(15, 02),
-                "", "");
+        WorkOrder changed = gateway.updateDraft(DraftChanges.forWorkOrder(draft.getId())
+                .vehicle(vehicleId)
+                .description("Bromsok och bromsbelägg")
+                .mechanic(mechanicId)
+                .services(Arrays.asList(serviceItemId))
+                .plannedAt(LocalDate.of(2026, 10, 18), LocalTime.of(15, 2))
+                .customerInstructions("")
+                .otherComments("")
+                .build());
 
         System.out.println("2. utkastet ändrat, mekaniker " + changed.getMechanicId());
 

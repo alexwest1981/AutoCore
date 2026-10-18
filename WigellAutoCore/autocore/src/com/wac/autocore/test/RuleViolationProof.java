@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.model.DraftChanges;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Mechanic;
@@ -30,9 +31,15 @@ public class RuleViolationProof {
 
         // An open work order on the mechanic is what the rule refuses to delete.
         WorkOrder draft = garage.createDraft(vehicleId, "Bromsok och bromsbelägg");
-        garage.updateDraft(draft.getId(), vehicleId, "Bromsok och bromsbelägg", mechanicId,
-                Arrays.asList(serviceItemId), LocalDate.of(2026, 10, 16),
-                LocalTime.of(9, 0), "", "");
+        garage.updateDraft(DraftChanges.forWorkOrder(draft.getId())
+                .vehicle(vehicleId)
+                .description("Bromsok och bromsbelägg")
+                .mechanic(mechanicId)
+                .services(Arrays.asList(serviceItemId))
+                .plannedAt(LocalDate.of(2026, 10, 16), LocalTime.of(9, 0))
+                .customerInstructions("")
+                .otherComments("")
+                .build());
 
         String name = "";
 

@@ -216,24 +216,22 @@ public class WorkOrderService {
         return workOrder;
     }
 
-    public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
-                                 List<Integer> serviceItemIds, LocalDate plannedDate, LocalTime plannedTime, String customerInstructions,
-                                 String otherComments) {
+    public WorkOrder updateDraft(DraftChanges changes) {
 
-        WorkOrder workOrder = findById(workOrderId);
+        WorkOrder workOrder = findById(changes.getWorkOrderId());
 
         if (workOrder == null) {
-            throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
+            throw new NotFoundException("Work order with ID " + changes.getWorkOrderId() + " does not exist.");
         }
 
-        workOrder.setVehicleId(vehicleId);
-        workOrder.setDescription(description);
-        workOrder.setMechanicId(mechanicId);
-        workOrder.setServiceItemIds(serviceItemIds);
-        workOrder.setPlannedDate(plannedDate);
-        workOrder.setPlannedTime(plannedTime);
-        workOrder.setCustomerInstructions(customerInstructions);
-        workOrder.setOtherComments(otherComments);
+        workOrder.setVehicleId(changes.getVehicleId());
+        workOrder.setDescription(changes.getDescription());
+        workOrder.setMechanicId(changes.getMechanicId());
+        workOrder.setServiceItemIds(changes.getServiceItemIds());
+        workOrder.setPlannedDate(changes.getPlannedDate());
+        workOrder.setPlannedTime(changes.getPlannedTime());
+        workOrder.setCustomerInstructions(changes.getCustomerInstructions());
+        workOrder.setOtherComments(changes.getOtherComments());
 
         try {
             workOrderRepository.save(workOrder);
