@@ -1,7 +1,6 @@
 package com.wac.autocore.service;
 
 import com.wac.autocore.exception.RuleViolationException;
-import com.wac.autocore.exception.MechanicUnavailableException;
 import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.*;
@@ -83,6 +82,13 @@ public class BookingService {
         List<Integer> mechanicIds = mechanicIdsOf(team);
 
         LocalDate date = LocalDate.now();
+
+        // The shop is closed on weekends, and a drop-in happens today, whatever day that is.
+        if (!OpeningHours.isOpenOn(date)) {
+            throw new RuleViolationException("Drop-in on a closed day: " + date,
+                    "dialog.booking.date_weekend");
+        }
+
         Booking booking = new Booking(vehicleId, date, "seed.booking.drop_in.description");
         booking.setServiceItems(services);
         booking.setMechanicIds(mechanicIds);
@@ -174,26 +180,59 @@ public class BookingService {
         return false;
     }
 
-    public Booking createBooking(int vehicleId, LocalDate date, String description, LocalTime startTime, int mechanicId, int serviceItemId) {
+    public Booking createBooking(int vehicleId,
+                                 LocalDate date,
+                                 String description,
+                                 LocalTime startTime,
+                                 int mechanicId,
+                                 int serviceItemId) {
+
         Vehicle vehicle = findVehicle(vehicleId);
+
         if (vehicle == null) {
             throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
+        }
+
+        // The shop is closed on weekends, whatever the calendar allowed through.
+        if (!OpeningHours.isOpenOn(date)) {
+            throw new RuleViolationException("Booking on a closed day: " + date,
+                    "dialog.booking.date_weekend");
         }
 
         ServiceItem serviceItem = serviceItemRepository.findAll().stream()
                 .filter(item -> item.getId() == serviceItemId)
                 .findFirst()
                 .orElse(null);
+
         if (serviceItem == null) {
             throw new NotFoundException("Service item with ID " + serviceItemId + " does not exist.");
+        }
+
+        // Who may do the service is the same rule the plan uses, so it is asked, not repeated.
+        boolean qualified = false;
+        for (Mechanic m : mechanicRules.qualifiedFor(serviceItem)) {
+            if (m.getId() == mechanicId) {
+                qualified = true;
+                break;
+            }
+        }
+        if (!qualified) {
+            throw new RuleViolationException("Mechanic " + mechanicId + " cannot do service " + serviceItemId,
+                    "dialog.booking.no_mechanic_for_spec");
         }
 
         int estimatedMinutes = workOrderService.getTotalEstimatedMinutes(serviceItemId);
 
         LocalTime endTime = (estimatedMinutes > 0) ? startTime.plusMinutes(estimatedMinutes) : startTime.plusMinutes(60);
 
+        if (endTime.isAfter(OpeningHours.CLOSES)) {
+            throw new RuleViolationException("Booking ends after closing time: " + endTime,
+                    "dialog.booking.closing_time_exceeded");
+        }
+
         if (isMechanicOccupied(mechanicId, date, startTime, endTime)) {
-            throw new MechanicUnavailableException("Mekanikern är redan bokad under denna tid (" + startTime + " - " + endTime + ")!");
+            throw new RuleViolationException("Mechanic " + mechanicId + " is booked from "
+                    + startTime + " to " + endTime, "dialog.booking.slot_busy_error");
         }
 
         Booking booking = new Booking(vehicleId, date, description, startTime, endTime, mechanicId, serviceItemId);

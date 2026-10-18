@@ -217,13 +217,6 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
             // and then the row in the form says why OK is locked.
             return hasServices && dropInStart.get() != null;
         }
-        LocalTime start = getSelectedStartTime();
-        if (start != null) {
-            int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            if (start.plusMinutes(duration).isAfter(OpeningHours.CLOSES)) {
-                return false;
-            }
-        }
         return excludeBookingId != 0 || hasServices;
     }
 
@@ -239,65 +232,13 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
     }
 
     public boolean validate(GarageSystem garage, int excludeBookingId) {
+
         // A new booking must hold at least one service. In edit mode the requirement does not
         // apply, because a booking that already exists may keep its services.
         if (!requiredFieldsFilled(excludeBookingId)) {
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
             return false;
         }
-
-        LocalDate date = getSelectedDate();
-        Mechanic chosenMech = getSelectedMechanic();
-        LocalTime startTime = getSelectedStartTime();
-        int minutes = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-
-        // Blocked against closing time : a job that ends after closing cannot be booked.
-        // A drop-in has no picked time — it is worked out by the service.
-        if (startTime != null && !dropIn) {
-            LocalTime endTime = startTime.plusMinutes(minutes);
-            if (endTime.isAfter(OpeningHours.CLOSES)) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.closing_time_exceeded"));
-                return false;
-            }
-        }
-
-        // Closed on weekends. The calendar strikes them out, but a date can arrive pre-filled
-        // from the Kanban, so the check is made here too.
-        if (date != null && !OpeningHours.isOpenOn(date)) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.date_weekend"));
-            return false;
-        }
-
-        // Qualification check: every picked service needs at least one qualified mechanic in the team
-        List<Mechanic> team = getSelectedMechanics();
-        for (ServiceItem s : getSelectedServices()) {
-            boolean hasQualified = false;
-            for (Mechanic m : team) {
-                if (garage.isMechanicQualified(m, s)) {
-                    hasQualified = true;
-                    break;
-                }
-            }
-            if (!hasQualified && chosenMech != null && garage.isMechanicQualified(chosenMech, s)) {
-                hasQualified = true;
-            }
-            if (!hasQualified) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                        I18n.get("dialog.booking.no_mechanic_for_spec"));
-                return false;
-            }
-        }
-
-        // The whole booking's range is checked against the busy times of the required mechanics.
-        // Drop-in is exempt: its time was already picked from the team's free hours.
-        if (startTime != null && !dropIn) {
-            if (BookingAvailability.isTeamBooked(garage, team, date, startTime,
-                    startTime.plusMinutes(minutes), excludeBookingId)) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.slot_busy_error"));
-                return false;
-            }
-        }
-
         return true;
     }
 

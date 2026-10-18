@@ -1,6 +1,7 @@
 package com.wac.autocore.ui;
 
 import com.wac.autocore.exception.DataAccessException;
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
@@ -104,7 +105,9 @@ public final class VehicleDialogs {
             String model = modelField.getText().trim();
             String yearStr = yearField.getText().trim();
 
-            if (!validateVehicleInput(owner, reg, brand, model, yearStr)) {
+            if (!Vehicle.isReadableYear(yearStr)) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                        I18n.get("dialog.validation.invalid_year"));
                 return;
             }
 
@@ -121,6 +124,9 @@ public final class VehicleDialogs {
                 } else {
                     garage.createVehicle(reg, brand, model, year, owner.getId());
                 }
+            } catch (RuleViolationException refused) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                return;
             } catch (DataAccessException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
@@ -154,32 +160,5 @@ public final class VehicleDialogs {
                 if (onSuccess != null) onSuccess.run();
             }
         });
-    }
-
-    private static boolean validateVehicleInput(Customer customer, String reg, String brand,
-                                                String model, String yearStr) {
-        List<String> missing = new ArrayList<String>();
-
-        if (customer == null) {
-            missing.add(I18n.get("dialog.vehicle.customer_select"));
-        }
-        for (String field : Vehicle.missingFields(reg, brand, model)) {
-            missing.add(I18n.get("dialog.vehicle." + field));
-        }
-
-        if (!missing.isEmpty()) {
-            String missingList = String.join(", ", missing);
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                    I18n.get("dialog.validation.missing_fields", missingList));
-            return false;
-        }
-
-        if (!Vehicle.isReadableYear(yearStr)) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                    I18n.get("dialog.validation.invalid_year"));
-            return false;
-        }
-
-        return true;
     }
 }
