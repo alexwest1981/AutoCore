@@ -11,6 +11,7 @@ public class ValidationException extends AppException {
     }
 
     /** The full i18n key, for example dialog.validation.phone_ten_digits. */
+    @Override
     public String getMessageKey() {
         return "dialog.validation." + keySuffix;
     }

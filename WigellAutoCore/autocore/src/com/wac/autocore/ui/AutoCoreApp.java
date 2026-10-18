@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
@@ -76,16 +77,25 @@ public class AutoCoreApp extends Application {
      */
     public static void installErrorBoundary() {
         Thread.setDefaultUncaughtExceptionHandler((thread, failure) -> {
-            failure.printStackTrace();
+            // A refusal with a sentence is the program working; only real faults need the trace.
+            if (!(failure instanceof AppException) || ((AppException) failure).getMessageKey() == null) {
+                failure.printStackTrace();
+            }
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), errorMessageFor(failure));
         });
     }
 
-    /** What the user reads: one sentence about the action, then the technical line. */
+    /** The one place that turns an error into a text, so the same error reads the same everywhere. */
     public static String errorMessageFor(Throwable failure) {
-        String reason = failure instanceof com.wac.autocore.exception.AppException
-                ? failure.getMessage() : failure.toString();
-        return I18n.get("view.error.action_failed") + "\n\n" + reason;
+        if (failure instanceof AppException) {
+            String key = ((AppException) failure).getMessageKey();
+            if (key != null) {
+                // A refusal the service has already worded: the sentence alone is the answer.
+                return I18n.get(key);
+            }
+            return I18n.get("view.error.action_failed") + "\n\n" + failure.getMessage();
+        }
+        return I18n.get("view.error.action_failed") + "\n\n" + failure.toString();
     }
 
     /** Reads the last chosen language from the settings. */
