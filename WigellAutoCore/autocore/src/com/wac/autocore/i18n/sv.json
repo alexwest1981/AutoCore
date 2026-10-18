@@ -437,6 +437,9 @@
       "service_already_claimed": "Tjänsten ligger redan på en arbetsorder.",
       "mechanic_busy": "Mekanikern är inte ledig.",
       "reclamation_not_completed": "Bara ett slutfört arbete går att reklamera.",
+      "confirm_no_mechanic": "Arbetsordern saknar mekaniker.",
+      "confirm_no_services": "Arbetsordern saknar tjänster.",
+      "confirm_no_date": "Arbetsordern saknar datum.",
       "create": {
         "title": "Ny arbetsorder",
         "header": "Öppna arbetsorder"

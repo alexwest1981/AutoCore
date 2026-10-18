@@ -437,6 +437,9 @@
       "service_already_claimed": "The service already sits on a work order.",
       "mechanic_busy": "The mechanic is not available.",
       "reclamation_not_completed": "Only completed work can be reclaimed.",
+      "confirm_no_mechanic": "The work order has no mechanic.",
+      "confirm_no_services": "The work order has no services.",
+      "confirm_no_date": "The work order has no date.",
       "create": {
         "title": "New Work Order",
         "header": "Open Work Order"

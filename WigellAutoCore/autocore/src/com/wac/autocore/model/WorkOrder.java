@@ -40,6 +40,10 @@ public class WorkOrder {
     private int vehicleId;
     private String description;
 
+    public static final String PROBLEM_NO_MECHANIC = "no_mechanic";
+    public static final String PROBLEM_NO_SERVICES = "no_services";
+    public static final String PROBLEM_NO_DATE = "no_date";
+
     public WorkOrder(int id, int bookingId, int mechanicId) {
         this.id = id;
         this.bookingId = bookingId;
@@ -240,6 +244,38 @@ public class WorkOrder {
                     + status + " to " + next + ".");
         }
         this.status = next;
+    }
+
+    /** What is missing for this draft to become a real work order, or null when nothing is. */
+    public String confirmationProblem() {
+
+        if (mechanicId <= 0) {
+            return PROBLEM_NO_MECHANIC;
+        }
+
+        if (serviceItemIds == null || serviceItemIds.isEmpty()) {
+            return PROBLEM_NO_SERVICES;
+        }
+
+        // An order made from a booking takes its date from the booking, so only a draft needs its own.
+        if (plannedDate == null && bookingId <= 0) {
+            return PROBLEM_NO_DATE;
+        }
+
+        return null;
+    }
+
+    /** Confirms the draft, but only when it carries what a real work order needs. */
+    public void confirm() {
+
+        String problem = confirmationProblem();
+
+        if (problem != null) {
+            throw new RuleViolationException("Work order " + id + " cannot be confirmed: " + problem,
+                    "dialog.workorder.confirm_" + problem);
+        }
+
+        changeStatusTo(WorkOrderStatus.CONFIRMED);
     }
 
     @Override
