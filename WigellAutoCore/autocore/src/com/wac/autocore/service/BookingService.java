@@ -187,60 +187,128 @@ public class BookingService {
                                  int mechanicId,
                                  int serviceItemId) {
 
-        Vehicle vehicle = findVehicle(vehicleId);
-
-        if (vehicle == null) {
-            throw new NotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
-        }
-
-        // The shop is closed on weekends, whatever the calendar allowed through.
-        if (!OpeningHours.isOpenOn(date)) {
-            throw new RuleViolationException("Booking on a closed day: " + date,
-                    "dialog.booking.date_weekend");
-        }
-
-        ServiceItem serviceItem = serviceItemRepository.findAll().stream()
-                .filter(item -> item.getId() == serviceItemId)
-                .findFirst()
-                .orElse(null);
-
-        if (serviceItem == null) {
-            throw new NotFoundException("Service item with ID " + serviceItemId + " does not exist.");
-        }
-
-        // Who may do the service is the same rule the plan uses, so it is asked, not repeated.
-        boolean qualified = false;
-        for (Mechanic m : mechanicRules.qualifiedFor(serviceItem)) {
-            if (m.getId() == mechanicId) {
-                qualified = true;
-                break;
-            }
-        }
-        if (!qualified) {
-            throw new RuleViolationException("Mechanic " + mechanicId + " cannot do service " + serviceItemId,
-                    "dialog.booking.no_mechanic_for_spec");
-        }
-
         int estimatedMinutes = workOrderService.getTotalEstimatedMinutes(serviceItemId);
-
         LocalTime endTime = (estimatedMinutes > 0) ? startTime.plusMinutes(estimatedMinutes) : startTime.plusMinutes(60);
 
-        if (endTime.isAfter(OpeningHours.CLOSES)) {
-            throw new RuleViolationException("Booking ends after closing time: " + endTime,
+        Booking booking = new Booking(vehicleId, date, description, startTime, endTime, mechanicId, serviceItemId);
+        return saveBooking(booking);
+    }
+
+    /** A new booking and a changed one take the same road: the rules first, then the row. */
+    public Booking saveBooking(Booking booking) {
+        if (findVehicle(booking.getVehicleId()) == null) {
+            throw new NotFoundException("Vehicle with ID " + booking.getVehicleId() + " does not exist.");
+        }
+
+        refuseUnlessBookable(booking);
+
+        try {
+            bookingRepository.save(booking);
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not save booking", e);
+        }
+        return booking;
+    }
+
+    // A change is tested as if the old booking were gone: its own row is left out of the busy check.
+    private void refuseUnlessBookable(Booking booking) {
+
+        // A cancelled booking holds no time, so there is nothing to test.
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            return;
+        }
+
+        LocalDate date = booking.getDate();
+        if (date != null && !OpeningHours.isOpenOn(date)) {
+            throw new RuleViolationException("Booking on a closed day: " + date, "dialog.booking.date_weekend");
+        }
+
+        List<Mechanic> team = teamOf(booking);
+        for (ServiceItem service : servicesOf(booking)) {
+            if (!anyQualified(team, service)) {
+                throw new RuleViolationException("No mechanic in the team can do service " + service.getId(),
+                        "dialog.booking.no_mechanic_for_spec");
+            }
+        }
+
+        LocalTime start = booking.getStartTime();
+        if (date == null || start == null) {
+            return;
+        }
+        LocalTime end = endOf(booking);
+
+        if (end.isAfter(OpeningHours.CLOSES)) {
+            throw new RuleViolationException("Booking ends after closing time: " + end,
                     "dialog.booking.closing_time_exceeded");
         }
 
-        if (isMechanicOccupied(mechanicId, date, startTime, endTime)) {
-            throw new RuleViolationException("Mechanic " + mechanicId + " is booked from "
-                    + startTime + " to " + endTime, "dialog.booking.slot_busy_error");
+        if (isTeamBusy(booking, date, start, end)) {
+            throw new RuleViolationException("The team is booked between " + start + " and " + end,
+                    "dialog.booking.slot_busy_error");
         }
+    }
 
-        Booking booking = new Booking(vehicleId, date, description, startTime, endTime, mechanicId, serviceItemId);
+    /** True when another booking holds one of the same mechanics at an overlapping time. */
+    private boolean isTeamBusy(Booking booking, LocalDate date, LocalTime start, LocalTime end) {
+        List<Integer> team = booking.getMechanicIds();
 
-        bookingRepository.save(booking);
+        for (Booking other : getAll()) {
+            // The booking's own row is the old version of itself, not a collision.
+            if (other.getId() == booking.getId()) {
+                continue;
+            }
+            if (other.getStatus() == BookingStatus.CANCELLED) {
+                continue;
+            }
+            if (!date.equals(other.getDate()) || other.getStartTime() == null) {
+                continue;
+            }
+            if (!sharesMechanic(other, team)) {
+                continue;
+            }
+            if (start.isBefore(endOf(other)) && other.getStartTime().isBefore(end)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    /** The end time, or one hour after the start when the row has none that makes sense. */
+    private static LocalTime endOf(Booking booking) {
+        LocalTime start = booking.getStartTime();
+        LocalTime end = booking.getEndTime();
+        return end != null && end.isAfter(start) ? end : start.plusHours(1);
+    }
 
-        return booking;
+    private List<Mechanic> teamOf(Booking booking) {
+        List<Integer> ids = booking.getMechanicIds();
+        List<Mechanic> team = new ArrayList<Mechanic>();
+        for (Mechanic mechanic : mechanicRules.getAll()) {
+            if (ids.contains(Integer.valueOf(mechanic.getId()))) {
+                team.add(mechanic);
+            }
+        }
+        return team;
+    }
+
+    private List<ServiceItem> servicesOf(Booking booking) {
+        List<Integer> ids = booking.getServiceItemIds();
+        List<ServiceItem> services = new ArrayList<ServiceItem>();
+        for (ServiceItem service : serviceItemRepository.findAll()) {
+            if (ids.contains(Integer.valueOf(service.getId()))) {
+                services.add(service);
+            }
+        }
+        return services;
+    }
+
+    private boolean anyQualified(List<Mechanic> team, ServiceItem service) {
+        for (Mechanic mechanic : team) {
+            if (mechanicRules.isMechanicQualified(mechanic, service)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Vehicle findVehicle(int id) {
@@ -251,23 +319,7 @@ public class BookingService {
             throw new DataAccessException("Could not read vehicle", e);
         }
     }
-    private boolean isMechanicOccupied(int mechanicId, LocalDate date, LocalTime newStart, LocalTime newEnd) {
 
-        if (mechanicId == 0) {
-            return false;
-        }
-        return bookingRepository.findAll().stream()
-                .filter(b -> b.getMechanicId() == mechanicId && date.equals(b.getDate()))
-                .anyMatch(b -> {
-                    LocalTime existingStart = b.getStartTime();
-                    LocalTime existingEnd = b.getEndTime();
-
-                    if (existingStart == null || existingEnd == null) {
-                        return false;
-                    }
-                    return newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
-                });
-    }
     /** The booking's price, worked out from its services. */
     public int priceOf(Booking booking) {
         if (booking == null || booking.getServiceItemIds() == null) {

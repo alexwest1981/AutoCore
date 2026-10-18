@@ -117,8 +117,8 @@ public final class BookingDialogs {
             desc = com.wac.autocore.seed.SeedText.resolve(chosenService.getName());
         }
 
-        // Create a clean booking in the system (NO work order is created or started automatically)
-        Booking b = garage.createBooking(v.getId(), date, desc);
+        // Built in memory and stored once, so a refused booking leaves no empty row behind.
+        Booking b = new Booking(v.getId(), date, desc);
         if (b != null) {
             b.setStatus(BookingStatus.BOOKED);
             if (!chosenServices.isEmpty()) {
@@ -208,8 +208,6 @@ public final class BookingDialogs {
                 String desc = form.getDescription();
                 BookingStatus status = form.getStatus();
 
-                // Clear any earlier schedule slot for this booking
-                garage.releaseSlot(booking.getId());
 
                 booking.setVehicleId(v.getId());
                 booking.setDate(date);
@@ -245,6 +243,8 @@ public final class BookingDialogs {
                 if (!saveBookingOrReport(garage, booking)) {
                     return;
                 }
+                // The old time is let go only once the new one is accepted, so a refusal keeps it.
+                garage.releaseSlot(booking.getId());
 
                 // Rebook in the schedule if a mechanic is assigned and the booking is not cancelled
                 if (chosenMech != null && status != BookingStatus.CANCELLED) {
@@ -316,8 +316,13 @@ public final class BookingDialogs {
     /** Saves the booking and shows the error instead of swallowing it. */
     private static boolean saveBookingOrReport(GarageSystem garage, Booking booking) {
         try {
-            garage.updateBooking(booking);
+            garage.saveBooking(booking);
             return true;
+
+        } catch (RuleViolationException refused) {
+            // The service has already found and worded the problem; the dialog only shows it.
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+            return false;
         } catch (Exception e) {
             String reason = e.getMessage();
             ActionDialogs.showError(I18n.get("dialog.confirm.title"),
