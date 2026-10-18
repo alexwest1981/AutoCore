@@ -13,7 +13,7 @@ public class RuleViolationException extends AppException {
         super(message);
         this.messageKey = messageKey;
     }
-
+@Override
     public String getMessageKey() {
         return messageKey;
     }

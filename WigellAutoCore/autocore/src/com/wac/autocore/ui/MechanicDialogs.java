@@ -1,7 +1,6 @@
 package com.wac.autocore.ui;
 
 import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.service.GarageSystem;
@@ -81,12 +80,6 @@ public final class MechanicDialogs {
             String name = nameField.getText().trim();
             String phone = phoneField.getText().trim();
 
-            String problem = Mechanic.validationProblem(name, phone);
-            if (problem != null) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
-                return;
-            }
-
             String specialization = specializationToStore(chosenSpecialization(specBox));
 
             try {
@@ -102,8 +95,10 @@ public final class MechanicDialogs {
             } catch (DataAccessException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
-            } catch (ValidationException rejected) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(rejected.getMessageKey()));
+            }
+            String problem = Mechanic.validationProblem(name, phone);
+            if (problem != null) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
                 return;
             }
 
