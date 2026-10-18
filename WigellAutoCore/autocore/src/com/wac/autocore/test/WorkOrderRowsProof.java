@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.model.DraftChanges;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
@@ -102,9 +103,15 @@ public final class WorkOrderRowsProof {
         WorkOrder draft = gateway.createDraft(vehicleId, DESCRIPTION);
         System.out.println("   utkast " + draft.getId() + ", status " + draft.getStatus());
 
-        gateway.updateDraft(draft.getId(), vehicleId, CHANGED_DESCRIPTION, mechanicId,
-                Arrays.asList(Integer.valueOf(serviceItemId)), PLANNED_DATE, PLANNED_TIME,
-                INSTRUCTIONS, COMMENTS);
+        gateway.updateDraft(DraftChanges.forWorkOrder(draft.getId())
+                .vehicle(vehicleId)
+                .description(CHANGED_DESCRIPTION)
+                .mechanic(mechanicId)
+                .services(Arrays.asList(Integer.valueOf(serviceItemId)))
+                .plannedAt(PLANNED_DATE, PLANNED_TIME)
+                .customerInstructions(INSTRUCTIONS)
+                .otherComments(COMMENTS)
+                .build());
         System.out.println("   ändrat: mekaniker " + mechanicId + ", tjänst " + serviceItemId);
 
         gateway.cancelWorkOrder(draft.getId());
@@ -121,9 +128,15 @@ public final class WorkOrderRowsProof {
         System.out.println("   utkast " + draft.getId() + ", status " + draft.getStatus());
 
         // EditDraftDialog saves the filled-in draft this way.
-        garage.updateDraft(draft.getId(), vehicleId, CHANGED_DESCRIPTION, mechanicId,
-                Arrays.asList(Integer.valueOf(serviceItemId)), PLANNED_DATE, PLANNED_TIME,
-                INSTRUCTIONS, COMMENTS);
+        garage.updateDraft(DraftChanges.forWorkOrder(draft.getId())
+                .vehicle(vehicleId)
+                .description(CHANGED_DESCRIPTION)
+                .mechanic(mechanicId)
+                .services(Arrays.asList(Integer.valueOf(serviceItemId)))
+                .plannedAt(PLANNED_DATE, PLANNED_TIME)
+                .customerInstructions(INSTRUCTIONS)
+                .otherComments(COMMENTS)
+                .build());
         System.out.println("   ändrat: mekaniker " + mechanicId + ", tjänst " + serviceItemId);
 
         // WorkOrderDetailsDialog cancels the selected order this way.
