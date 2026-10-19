@@ -1,6 +1,5 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
 
@@ -15,7 +14,7 @@ public class BookingServiceItemRepository {
     private static final String SERVICE_COLUMNS =
             "s.id, s.name, s.description, s.price, s.estimated_minutes, s.specialization";
 
-    public List<ServiceItem> findByBookingId(int bookingId) throws SQLException {
+    public List<ServiceItem> findByBookingId(int bookingId) {
         String sql = "SELECT " + SERVICE_COLUMNS + " FROM booking_service_items bsi "
                 + "JOIN service_items s ON bsi.service_item_id = s.id "
                 + "WHERE bsi.booking_id = ? "
@@ -26,7 +25,7 @@ public class BookingServiceItemRepository {
                     resultSet.getInt("id"),
                     resultSet.getString("name"),
                     resultSet.getString("description"),
-                    resultSet.getDouble("price"),
+                    resultSet.getInt("price"),
                     resultSet.getInt("estimated_minutes"));
             // The requirement has to come along, otherwise every service looks requirement-free.
             item.setSpecialization(resultSet.getString("specialization"));
@@ -35,7 +34,7 @@ public class BookingServiceItemRepository {
     }
 
     /** The package name per service id. Services picked on their own are left out. */
-    public java.util.Map<Integer, String> findPackageNames(int bookingId) throws SQLException {
+    public java.util.Map<Integer, String> findPackageNames(int bookingId) {
         String sql = "SELECT service_item_id, package_name FROM booking_service_items "
                 + "WHERE booking_id = ? AND package_name IS NOT NULL";
 
@@ -50,12 +49,6 @@ public class BookingServiceItemRepository {
             names.put(row.getKey(), row.getValue());
         }
         return names;
-    }
-
-    public void save(Booking booking) throws SQLException {
-        try (Connection connection = Db.getConnection()) {
-            save(connection, booking);
-        }
     }
 
     /** Saves the services on an open connection, so everything runs in one transaction. */

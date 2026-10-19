@@ -3,6 +3,7 @@ package com.wac.autocore.ui.components;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.motion.SegmentedSwitch;
 import com.wac.autocore.ui.navigation.PageRouter;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -84,7 +85,6 @@ public final class KanbanBoard {
         controlBar.setPadding(new Insets(8, 0, 10, 0));
 
         final String[] activeFilter = new String[]{null};
-        final List<Button> filterButtons = new ArrayList<Button>();
 
         Runnable populateCards = () -> {
             cardsRow.getChildren().clear();
@@ -114,6 +114,8 @@ public final class KanbanBoard {
 
             countLabel.setText(I18n.get("kanban.filter.showing", count, mechanics.size()));
             scroll.setHvalue(0.0);
+            // the cards arrive one after another instead of all at once
+            com.wac.autocore.ui.motion.Motion.stagger(new ArrayList<javafx.scene.Node>(cardsRow.getChildren()), 45);
         };
 
         I18n.addListener(lang -> populateCards.run());
@@ -127,39 +129,23 @@ public final class KanbanBoard {
             }
         }
 
-        // Button: All
-        Button allBtn = new Button(I18n.get("kanban.filter.all") + " (" + mechanics.size() + ")");
-        allBtn.getStyleClass().addAll("kanban-filter-chip", "active");
-        allBtn.setMinWidth(Region.USE_PREF_SIZE);
-        filterButtons.add(allBtn);
-        allBtn.setOnAction(e -> {
-            activeFilter[0] = null;
-            for (Button b : filterButtons) {
-                b.getStyleClass().remove("active");
-            }
-            allBtn.getStyleClass().add("active");
+        // The chips are one segmented control: the same travelling indicator as the card headers
+        final List<String> chipLabels = new ArrayList<String>();
+        final List<String> chipKeys = new ArrayList<String>();
+        chipLabels.add(I18n.get("kanban.filter.all") + " (" + mechanics.size() + ")");
+        chipKeys.add(null);
+        for (Map.Entry<String, Integer> entry : specCounts.entrySet()) {
+            chipLabels.add(MechanicKanbanCard.formatSpecialization(entry.getKey()) + " (" + entry.getValue() + ")");
+            chipKeys.add(entry.getKey());
+        }
+        SegmentedSwitch chips = new SegmentedSwitch("kanban-filter-chip", "chip-pill", 8,
+                chipLabels.toArray(new String[0]));
+        chips.setSpacing(8);
+        chips.setOnSelect(index -> {
+            activeFilter[0] = chipKeys.get(index);
             populateCards.run();
         });
-        filterBox.getChildren().add(allBtn);
-
-        // A button for each specialization
-        for (Map.Entry<String, Integer> entry : specCounts.entrySet()) {
-            final String specKey = entry.getKey();
-            String displaySpec = MechanicKanbanCard.formatSpecialization(specKey) + " (" + entry.getValue() + ")";
-            Button chip = new Button(displaySpec);
-            chip.getStyleClass().add("kanban-filter-chip");
-            chip.setMinWidth(Region.USE_PREF_SIZE);
-            filterButtons.add(chip);
-            chip.setOnAction(e -> {
-                activeFilter[0] = specKey;
-                for (Button b : filterButtons) {
-                    b.getStyleClass().remove("active");
-                }
-                chip.getStyleClass().add("active");
-                populateCards.run();
-            });
-            filterBox.getChildren().add(chip);
-        }
+        filterBox.getChildren().add(chips);
 
         populateCards.run();
 

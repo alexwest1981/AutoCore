@@ -7,10 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.*;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.components.BookingFormLayout;
@@ -91,8 +88,8 @@ final class EditDraftDialog {
         };
         BookingScheduleField schedule = new BookingScheduleField(garage, source, null, 0, null,
                 plannedDateOf(workOrder));
-        if (workOrder.getPlannedTime() != null && !workOrder.getPlannedTime().isEmpty()) {
-            schedule.getStartTimeBox().setValue(LocalTime.parse(workOrder.getPlannedTime()));
+        if (workOrder.getPlannedTime() != null) {
+            schedule.getStartTimeBox().setValue(workOrder.getPlannedTime());
         }
         // The field draws nothing by itself: the booking form calls this once after it is built too.
         schedule.refresh();
@@ -342,19 +339,23 @@ final class EditDraftDialog {
     private static WorkOrder saveDraft(GarageSystem garage, int workOrderId, Vehicle vehicle, int mechanicId,
             List<Integer> serviceIds, BookingScheduleField schedule, TextArea description, TextArea instructions,
             TextArea otherComments) {
+
         LocalDate date = schedule.getDatePicker().getValue();
         LocalTime time = schedule.getStartTimeBox().getValue();
-        return garage.updateDraft(workOrderId, vehicle.getId(), description.getText(), mechanicId, serviceIds,
-                date == null ? null : date.toString(),
-                time == null ? null : time.toString(),
-                instructions.getText(), otherComments.getText());
+
+        return garage.updateDraft(DraftChanges.forWorkOrder(workOrderId)
+                .vehicle(vehicle.getId())
+                .description(description.getText())
+                .mechanic(mechanicId)
+                .services(serviceIds)
+                .plannedAt(date, time)
+                .customerInstructions(instructions.getText())
+                .otherComments(otherComments.getText())
+                .build());
     }
 
     /** The date the draft is planned for, or null so the calendar picks the first bookable day. */
     private static LocalDate plannedDateOf(WorkOrder workOrder) {
-        if (workOrder.getPlannedDate() == null || workOrder.getPlannedDate().isEmpty()) {
-            return null;
-        }
-        return LocalDate.parse(workOrder.getPlannedDate());
+        return workOrder.getPlannedDate();
     }
 }

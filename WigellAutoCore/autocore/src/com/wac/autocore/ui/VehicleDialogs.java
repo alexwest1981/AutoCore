@@ -1,5 +1,7 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.DataAccessException;
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
@@ -14,7 +16,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.util.StringConverter;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,6 @@ public final class VehicleDialogs {
 
     public static void showEditVehicleDialog(GarageSystem garage, Vehicle vehicle, Runnable onSuccess) {
         if (vehicle == null) return;
-
         showVehicleForm(garage, vehicle, onSuccess);
     }
 
@@ -105,7 +105,9 @@ public final class VehicleDialogs {
             String model = modelField.getText().trim();
             String yearStr = yearField.getText().trim();
 
-            if (!validateVehicleInput(owner, reg, brand, model, yearStr)) {
+            if (!Vehicle.isReadableYear(yearStr)) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                        I18n.get("dialog.validation.invalid_year"));
                 return;
             }
 
@@ -122,7 +124,10 @@ public final class VehicleDialogs {
                 } else {
                     garage.createVehicle(reg, brand, model, year, owner.getId());
                 }
-            } catch (SQLException e) {
+            } catch (RuleViolationException refused) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                return;
+            } catch (DataAccessException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
             }
@@ -148,51 +153,12 @@ public final class VehicleDialogs {
             if (response == ButtonType.OK) {
                 try {
                     garage.deleteVehicle(vehicle.getId());
-                } catch (SQLException e) {
+                } catch (DataAccessException e) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                     return;
                 }
                 if (onSuccess != null) onSuccess.run();
             }
         });
-    }
-
-    private static boolean validateVehicleInput(Customer customer, String reg, String brand, String model, String yearStr) {
-        List<String> missing = new ArrayList<String>();
-        if (customer == null) {
-            missing.add(I18n.get("dialog.vehicle.customer_select"));
-        }
-        if (reg == null || reg.trim().isEmpty()) {
-            missing.add(I18n.get("dialog.vehicle.reg_nr"));
-        }
-        if (brand == null || brand.trim().isEmpty()) {
-            missing.add(I18n.get("dialog.vehicle.brand"));
-        }
-        if (model == null || model.trim().isEmpty()) {
-            missing.add(I18n.get("dialog.vehicle.model"));
-        }
-        if (yearStr == null || yearStr.trim().isEmpty()) {
-            missing.add(I18n.get("dialog.vehicle.year"));
-        }
-
-        if (!missing.isEmpty()) {
-            String missingList = String.join(", ", missing);
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                    I18n.get("dialog.validation.missing_fields", missingList));
-            return false;
-        }
-
-        try {
-            int y = Integer.parseInt(yearStr.trim());
-            if (y < 1900 || y > 2100) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_year"));
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.invalid_year"));
-            return false;
-        }
-
-        return true;
     }
 }

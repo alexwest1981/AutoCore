@@ -1,6 +1,7 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.data.Db;
+import com.wac.autocore.data.DatabaseWork;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 
@@ -8,7 +9,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.List;
@@ -17,73 +17,80 @@ public class InvoiceRepository {
 
     private static final String COLUMNS = "id, work_order_id, invoice_date, amount, discount, total_amount, paid";
 
-    private static final InvoiceLineRepository invoiceLineRepository = new InvoiceLineRepository();
+    private final InvoiceLineRepository invoiceLineRepository;
 
-    public void save(Invoice invoice) throws SQLException {
-        if (invoice.getId() == 0 || findById(invoice.getId()) == null) {
-            insert(invoice);
-        } else {
-            update(invoice);
-        }
+    public InvoiceRepository(InvoiceLineRepository invoiceLineRepository) {
+        this.invoiceLineRepository = invoiceLineRepository;
     }
 
-    public List<Invoice> findAll() throws SQLException {
-        return Queries.read("SELECT " + COLUMNS + " FROM invoices", InvoiceRepository::build);
+    public void save(final Invoice invoice) {
+        final boolean isNew = invoice.getId() == 0 || findById(invoice.getId()) == null;
+
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                if (isNew) {
+                    insert(connection, invoice);
+                } else {
+                    update(connection, invoice);
+                }
+                return null;
+            }
+        }.run();
     }
 
-    public Invoice findById(int id) throws SQLException {
+    public List<Invoice> findAll() {
+        return Queries.read("SELECT " + COLUMNS + " FROM invoices", resultSet -> build(resultSet));
+    }
+
+    public Invoice findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM invoices WHERE id = ?",
-                statement -> statement.setInt(1, id), InvoiceRepository::build);
+                statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
-    public void delete(int id) throws SQLException {
-        // The lines point at this invoice and nothing else clears them, so both go in one connection.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement("DELETE FROM invoices WHERE id = ?")) {
-
-            invoiceLineRepository.deleteByInvoiceId(connection, id);
-
-            statement.setInt(1, id);
-            statement.executeUpdate();
-        }
+    public void delete(final int id) {
+        // The lines point at this invoice and nothing else clears them, so both go in one transaction.
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                invoiceLineRepository.deleteByInvoiceId(connection, id);
+                Queries.write(connection, "DELETE FROM invoices WHERE id = ?",
+                        statement -> statement.setInt(1, id));
+                return null;
+            }
+        }.run();
     }
 
-    private void insert(Invoice invoice) throws SQLException {
+    private void insert(Connection connection, Invoice invoice) throws SQLException {
         String sql = "INSERT INTO invoices (work_order_id, invoice_date, amount, discount, total_amount, paid) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        // The invoice and its lines go in through one connection, so an invoice never sits without them.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            statement.setInt(1, invoice.getWorkOrderId());
+        int id = Queries.insert(connection, sql, statement -> {
+            Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
-            statement.setDouble(3, invoice.getAmount());
-            statement.setDouble(4, invoice.getDiscount());
-            statement.setDouble(5, invoice.getTotalAmount());
+            statement.setInt(3, invoice.getAmount());
+            statement.setInt(4, invoice.getDiscount());
+            statement.setInt(5, invoice.getTotalAmount());
             statement.setBoolean(6, invoice.isPaid());
-            statement.executeUpdate();
+        });
 
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    invoice.setId(generatedKeys.getInt(1));
-                }
-            }
-
-            invoiceLineRepository.saveLines(connection, invoice);
+        if (id > 0) {
+            invoice.setId(id);
         }
+
+        invoiceLineRepository.saveLines(connection, invoice);
     }
 
-    private void update(Invoice invoice) throws SQLException {
+    private void update(Connection connection, Invoice invoice) throws SQLException {
         String sql = "UPDATE invoices SET work_order_id = ?, invoice_date = ?, amount = ?, discount = ?, "
                 + "total_amount = ?, paid = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
-            statement.setInt(1, invoice.getWorkOrderId());
+        Queries.write(connection, sql, statement -> {
+            Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
-            statement.setDouble(3, invoice.getAmount());
-            statement.setDouble(4, invoice.getDiscount());
-            statement.setDouble(5, invoice.getTotalAmount());
+            statement.setInt(3, invoice.getAmount());
+            statement.setInt(4, invoice.getDiscount());
+            statement.setInt(5, invoice.getTotalAmount());
             statement.setBoolean(6, invoice.isPaid());
             statement.setInt(7, invoice.getId());
         });
@@ -97,7 +104,7 @@ public class InvoiceRepository {
         }
     }
 
-    private static Invoice build(ResultSet resultSet) throws SQLException {
+    private Invoice build(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("invoice_date");
 
         LocalDate invoiceDate = null;
@@ -108,7 +115,7 @@ public class InvoiceRepository {
             try {
                 invoiceDate = LocalDate.parse(dateText);
             } catch (java.time.format.DateTimeParseException e) {
-                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+                throw new DataAccessException("Could not read the invoice date: " + dateText, e);
             }
         }
 
@@ -116,10 +123,10 @@ public class InvoiceRepository {
                 resultSet.getInt("id"),
                 resultSet.getInt("work_order_id"),
                 invoiceDate,
-                resultSet.getDouble("amount")
+                resultSet.getInt("amount")
         );
 
-        invoice.setDiscount(resultSet.getDouble("discount"));
+        invoice.setDiscount(resultSet.getInt("discount"));
         invoice.setPaid(resultSet.getBoolean("paid"));
 
         for (InvoiceLine line : invoiceLineRepository.findByInvoiceId(invoice.getId())) {

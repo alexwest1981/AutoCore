@@ -130,7 +130,7 @@ public final class BillingDialogs {
                     return;
                 }
                 String code = discountField.getText().trim();
-                Double extraAmount = null;
+                Integer extraAmount = null;
                 if (extraNameField.isVisible() && !extraAmountField.getText().trim().isEmpty()) {
                     // The same reading of amounts as the service dialog uses, so that 250,50 can be
                     // typed in both places.
@@ -143,7 +143,7 @@ public final class BillingDialogs {
                 }
                 Invoice invoice = garage.createInvoiceForBooking(booking.getId(), code,
                         extraNameField.getText().trim(),
-                        extraAmount == null ? 0.0 : extraAmount.doubleValue());
+                        extraAmount == null ? 0 : extraAmount.intValue());
                 if (invoice == null) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.invoice.create_failed"));
                     return;

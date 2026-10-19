@@ -1,31 +1,30 @@
 package com.wac.autocore.data;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Customer;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.exception.DataAccessException;
+import com.wac.autocore.model.*;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.repository.MechanicRepository;
+import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.repository.ServiceItemRepository;
+import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class SeedData {
 
     public static void seedIfEmpty() {
-        CustomerRepository customerRepository = new CustomerRepository();
-        VehicleRepository vehicleRepository = new VehicleRepository();
-        ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
-        MechanicRepository mechanicRepository = new MechanicRepository();
-        BookingRepository bookingRepository = new BookingRepository();
-        WorkOrderRepository workOrderRepository = new WorkOrderRepository();
+        RepositoryFactory repositories = new SqliteRepositoryFactory();
+
+        CustomerRepository customerRepository = repositories.createCustomerRepository();
+        VehicleRepository vehicleRepository = repositories.createVehicleRepository();
+        ServiceItemRepository serviceItemRepository = repositories.createServiceItemRepository();
+        MechanicRepository mechanicRepository = repositories.createMechanicRepository();
+        BookingRepository bookingRepository = repositories.createBookingRepository();
+        WorkOrderRepository workOrderRepository = repositories.createWorkOrderRepository();
 
         try {
             if (!customerRepository.findAll().isEmpty()) {
@@ -70,19 +69,19 @@ public class SeedData {
             vehicleRepository.save(mercedes);
 
             ServiceItem oilChange = new ServiceItem(0, "seed.service.oil_change.name",
-                    "seed.service.oil_change.desc", 1295.0, 45, "");
+                    "seed.service.oil_change.desc", 129500, 45, "");
             serviceItemRepository.save(oilChange);
 
             ServiceItem brakeService = new ServiceItem(0, "seed.service.brake_service.name",
-                    "seed.service.brake_service.desc", 2495.0, 90, "seed.mechanic.brakes.specialization");
+                    "seed.service.brake_service.desc", 249500, 90, "seed.mechanic.brakes.specialization");
             serviceItemRepository.save(brakeService);
 
             ServiceItem diagnostics = new ServiceItem(0, "seed.service.diagnostics.name",
-                    "seed.service.diagnostics.desc", 995.0, 60, "seed.mechanic.diagnostics.specialization");
+                    "seed.service.diagnostics.desc", 99500, 60, "seed.mechanic.diagnostics.specialization");
             serviceItemRepository.save(diagnostics);
 
             ServiceItem annualService = new ServiceItem(0, "seed.service.annual_service.name",
-                    "seed.service.annual_service.desc", 3495.0, 120, "");
+                    "seed.service.annual_service.desc", 349500, 120, "");
             serviceItemRepository.save(annualService);
 
             Mechanic johan = new Mechanic(0, "Johan Karlsson", "070-5551111", "seed.mechanic.general_service.specialization");
@@ -133,34 +132,34 @@ public class SeedData {
             WorkOrder firstOrder = new WorkOrder(0, firstBooking.getId(), johan.getId());
             firstOrder.setVehicleId(firstBooking.getVehicleId());
             firstOrder.addServiceItem(oilChange.getId());
-            firstOrder.setStatus("IN_PROGRESS");
+            firstOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
             workOrderRepository.save(firstOrder);
 
             // The booking's status should mirror the work order, otherwise the start data looks contradictory.
-            firstBooking.setStatus("IN_PROGRESS");
+            firstBooking.setStatus(BookingStatus.IN_PROGRESS);
             bookingRepository.save(firstBooking);
 
             WorkOrder secondOrder = new WorkOrder(0, secondBooking.getId(), sara.getId());
             secondOrder.setVehicleId(secondBooking.getVehicleId());
             secondOrder.addServiceItem(brakeService.getId());
             workOrderRepository.save(secondOrder);
-            secondBooking.setStatus("WORK_ORDER_CREATED");
+            secondBooking.setStatus(BookingStatus.WORK_ORDER_CREATED);
             bookingRepository.save(secondBooking);
 
             WorkOrder thirdOrder = new WorkOrder(0, fourthBooking.getId(), sara.getId());
             thirdOrder.setVehicleId(fourthBooking.getVehicleId());
             thirdOrder.addServiceItem(brakeService.getId());
-            thirdOrder.setStatus("IN_PROGRESS");
+            thirdOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
             workOrderRepository.save(thirdOrder);
-            fourthBooking.setStatus("IN_PROGRESS");
+            fourthBooking.setStatus(BookingStatus.IN_PROGRESS);
             bookingRepository.save(fourthBooking);
 
             WorkOrder fourthOrder = new WorkOrder(0, fifthBooking.getId(), mikael.getId());
             fourthOrder.setVehicleId(fifthBooking.getVehicleId());
             fourthOrder.addServiceItem(diagnostics.getId());
-            fourthOrder.setStatus("IN_PROGRESS");
+            fourthOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
             workOrderRepository.save(fourthOrder);
-            fifthBooking.setStatus("IN_PROGRESS");
+            fifthBooking.setStatus(BookingStatus.IN_PROGRESS);
             bookingRepository.save(fifthBooking);
 
             WorkOrder fifthOrder = new WorkOrder(0, thirdBooking.getId(), sara.getId());
@@ -168,17 +167,17 @@ public class SeedData {
             fifthOrder.addServiceItem(brakeService.getId());
             fifthOrder.addServiceItem(annualService.getId());
             workOrderRepository.save(fifthOrder);
-            thirdBooking.setStatus("WORK_ORDER_CREATED");
+            thirdBooking.setStatus(BookingStatus.WORK_ORDER_CREATED);
             bookingRepository.save(thirdBooking);
 
             WorkOrder sixthOrder = new WorkOrder(0, sixthBooking.getId(), mikael.getId());
             sixthOrder.setVehicleId(sixthBooking.getVehicleId());
             sixthOrder.addServiceItem(diagnostics.getId());
             workOrderRepository.save(sixthOrder);
-            sixthBooking.setStatus("WORK_ORDER_CREATED");
+            sixthBooking.setStatus(BookingStatus.WORK_ORDER_CREATED);
             bookingRepository.save(sixthBooking);
-        } catch (SQLException e) {
-            System.out.println("Could not seed sample data: " + e.getMessage());
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not seed sample data", e);
         }
     }
 

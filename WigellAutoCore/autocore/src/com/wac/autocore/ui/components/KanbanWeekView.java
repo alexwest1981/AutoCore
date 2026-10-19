@@ -1,7 +1,6 @@
 package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.model.DayLoad;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.ui.i18n.I18n;
@@ -51,7 +50,7 @@ class KanbanWeekView {
         countLabel.setMinWidth(50);
         countLabel.setPrefWidth(50);
         countLabel.setMaxWidth(45);
-        // 9 hour boxes (07:00 to 16:00) where booked hours are marked with the load colour
+        // One box per open hour, booked hours are marked with the load colour
         HBox hourBoxes = new HBox(2);
         hourBoxes.getStyleClass().add("kanban-hour-boxes");
         hourBoxes.setAlignment(Pos.CENTER_LEFT);
@@ -144,8 +143,7 @@ class KanbanWeekView {
         navBar.setAlignment(Pos.CENTER_LEFT);
         navBar.setPadding(new Insets(0, 0, 8, 0));
 
-        MechanicSchedule schedule = MechanicSchedule.getInstance();
-        List<DayLoad> weekLoads = schedule.getWeekLoads(mech.getId(), monday);
+        List<DayLoad> weekLoads = card.garage.getWeekLoads(mech.getId(), monday);
 
         VBox daysList = new VBox(4);
         for (DayLoad dl : weekLoads) {

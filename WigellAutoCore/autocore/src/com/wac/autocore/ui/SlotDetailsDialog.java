@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
@@ -101,9 +102,9 @@ public final class SlotDetailsDialog {
         int estMin = (hasWorkOrder && wo != null)
                 ? EntityLookup.workOrderTotalMinutes(garage, wo)
                 : ((b != null) ? EntityLookup.bookingTotalMinutes(garage, b) : 0);
-        double estCost = (hasWorkOrder && wo != null)
+        int estCost = (hasWorkOrder && wo != null)
                 ? EntityLookup.workOrderTotal(garage, wo)
-                : ((b != null) ? EntityLookup.bookingTotalPrice(garage, b) : 0.0);
+                : ((b != null) ? garage.bookingPrice(b) : 0);
         if (estMin > 0) {
             grid.add(new Label(I18n.get("dialog.slot.estimated_time")), 0, rowIdx);
             grid.add(new Label(estMin + " min"), 1, rowIdx++);
@@ -156,7 +157,7 @@ public final class SlotDetailsDialog {
                         // The booking has no services. Give it one, so the work order has something to do.
                         try {
                             targetBooking.addServiceItem(garage.getServiceItems().get(0));
-                            garage.updateBooking(targetBooking);
+                            garage.saveBooking(targetBooking);
                         } catch (Exception ex) {
                             System.out.println("Could not give the booking a service: " + ex.getMessage());
                         }
@@ -166,21 +167,27 @@ public final class SlotDetailsDialog {
                     java.util.LinkedHashMap<Integer, java.util.List<com.wac.autocore.model.ServiceItem>> plan =
                             WorkOrderDialogs.planWorkOrders(garage, targetBooking);
                     WorkOrder createdWo = null;
-                    for (java.util.Map.Entry<Integer, java.util.List<com.wac.autocore.model.ServiceItem>> entry : plan.entrySet()) {
-                        java.util.List<Integer> ids = new java.util.ArrayList<Integer>();
-                        for (com.wac.autocore.model.ServiceItem s : entry.getValue()) {
-                            ids.add(Integer.valueOf(s.getId()));
+
+                    try {
+                        for (java.util.Map.Entry<Integer, java.util.List<com.wac.autocore.model.ServiceItem>> entry : plan.entrySet()) {
+                            java.util.List<Integer> ids = new java.util.ArrayList<Integer>();
+                            for (com.wac.autocore.model.ServiceItem s : entry.getValue()) {
+                                ids.add(Integer.valueOf(s.getId()));
+                            }
+                            WorkOrder newOrder = garage.createWorkOrder(targetBooking.getId(),
+                                    entry.getKey().intValue(), ids);
+                            if (newOrder != null && entry.getKey().intValue() == slot.getMechanicId()) {
+                                createdWo = newOrder;
+                            }
                         }
-                        WorkOrder newOrder = garage.createWorkOrder(targetBooking.getId(),
-                                entry.getKey().intValue(), ids);
-                        if (newOrder != null && entry.getKey().intValue() == slot.getMechanicId()) {
-                            createdWo = newOrder;
+                        if (createdWo == null) {
+                            // The schedule's mechanic got no entry of their own in the plan, for instance
+                            // because the booking has only one service. Then the order is created for them.
+                            createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId());
                         }
-                    }
-                    if (createdWo == null) {
-                        // The schedule's mechanic got no entry of their own in the plan, for instance
-                        // because the booking has only one service. Then the order is created for them.
-                        createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId());
+                    } catch (RuleViolationException refused) {
+                        ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                        return;
                     }
                     if (createdWo != null) {
                         slot.setWorkOrderId(createdWo.getId());

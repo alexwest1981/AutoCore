@@ -1,52 +1,84 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.data.Db;
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Customer;
-import com.wac.autocore.model.Invoice;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.Payment;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
-import com.wac.autocore.model.WorkOrder;
-import com.wac.autocore.model.ServicePackage;
+import com.wac.autocore.data.Settings;
+import com.wac.autocore.model.*;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
+import com.wac.autocore.repository.InvoiceRepository;
 import com.wac.autocore.repository.MechanicRepository;
+import com.wac.autocore.repository.PaymentRepository;
+import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.repository.ServiceItemRepository;
+import com.wac.autocore.repository.ServicePackageRepository;
 import com.wac.autocore.repository.VehicleRepository;
+import com.wac.autocore.repository.WorkOrderRepository;
+import com.wac.autocore.service.gateway.WorkOrderGateway;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /** The entry point the interface and the text version call. Passes on to the services. */
-public class GarageSystem {
+public class GarageSystem implements WorkOrderGateway {
 
-    private final com.wac.autocore.ui.ConsolePrinter printer = new com.wac.autocore.ui.ConsolePrinter();
-    private final CustomerService customerService = new CustomerService();
-    private final VehicleService vehicleService = new VehicleService(customerService);
-    private final WorkOrderService workOrderService = new WorkOrderService();
-    private final BookingService bookingService = new BookingService(workOrderService);
-    private final BillingService billingService = new BillingService();
-    private final PaymentService paymentService = new PaymentService();
-    private final ServicePackageService servicePackageService = new ServicePackageService();
-    private final MechanicRules mechanicRules = new MechanicRules();
-    private final RemovalRules removalRules = new RemovalRules(
-            workOrderService, bookingService, billingService, vehicleService);
-    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
-    private final MechanicRepository mechanicRepository = new MechanicRepository();
-    private final CustomerRepository customerRepository = new CustomerRepository();
-    private final VehicleRepository vehicleRepository = new VehicleRepository();
-    private final BookingRepository bookingRepository = new BookingRepository();
+    private final Printer printer;
+    private final CustomerService customerService;
+    private final VehicleService vehicleService;
+    private final WorkOrderService workOrderService;
+    private final BookingService bookingService;
+    private final BillingService billingService;
+    private final PaymentService paymentService;
+    private final ServicePackageService servicePackageService;
+    private final MechanicRules mechanicRules;
+    private final RemovalRules removalRules;
+    private final ServiceItemRepository serviceItemRepository;
+    private final MechanicRepository mechanicRepository;
+    private final CustomerRepository customerRepository;
+    private final VehicleRepository vehicleRepository;
+    private final BookingRepository bookingRepository;
+    private final MechanicSchedule mechanicSchedule;
 
-    public GarageSystem() {
+    public GarageSystem(RepositoryFactory repositories) {
+        this(repositories, new Printer() { });
+    }
+
+    public GarageSystem(RepositoryFactory repositories, Printer printer) {
+
+        this.printer = printer;
+
         Db.ensureReady();
+
+        customerRepository = repositories.createCustomerRepository();
+        vehicleRepository = repositories.createVehicleRepository();
+        bookingRepository = repositories.createBookingRepository();
+        serviceItemRepository = repositories.createServiceItemRepository();
+        mechanicRepository = repositories.createMechanicRepository();
+
+        WorkOrderRepository workOrderRepository = repositories.createWorkOrderRepository();
+        InvoiceRepository invoiceRepository = repositories.createInvoiceRepository();
+        PaymentRepository paymentRepository = repositories.createPaymentRepository();
+        ServicePackageRepository servicePackageRepository = repositories.createServicePackageRepository();
+
+        mechanicSchedule = new MechanicSchedule(repositories.createScheduleRepository());
+
+        mechanicRules = new MechanicRules(mechanicRepository);
+        customerService = new CustomerService(customerRepository);
+        vehicleService = new VehicleService(customerService, vehicleRepository);
+        workOrderService = new WorkOrderService(workOrderRepository, bookingRepository,
+                mechanicRepository, serviceItemRepository, vehicleRepository, mechanicSchedule);
+        bookingService = new BookingService(workOrderService, mechanicRules,
+                bookingRepository, vehicleRepository, serviceItemRepository);
+        billingService = new BillingService(invoiceRepository, workOrderRepository,
+                bookingRepository, vehicleRepository, customerRepository, serviceItemRepository);
+        paymentService = new PaymentService(paymentRepository, invoiceRepository);
+        servicePackageService = new ServicePackageService(servicePackageRepository);
+        removalRules = new RemovalRules(workOrderService, bookingService, billingService, vehicleService);
     }
 
     public List<Customer> getCustomers() {
@@ -64,9 +96,8 @@ public class GarageSystem {
     public List<ServiceItem> getServiceItems() {
         try {
             return serviceItemRepository.findAll();
-        } catch (SQLException e) {
-            System.out.println("Could not read service items: " + e.getMessage());
-            return Collections.emptyList();
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not read service items", e);
         }
     }
 
@@ -74,6 +105,7 @@ public class GarageSystem {
         return mechanicRules.getAll();
     }
 
+    @Override
     public List<WorkOrder> getWorkOrders() {
         return workOrderService.getAll();
     }
@@ -84,6 +116,56 @@ public class GarageSystem {
 
     public List<Payment> getPayments() {
         return paymentService.getAll();
+    }
+
+    /** The Mechanic's hour slot for one day. */
+    public List<TimeSlot> getSlotsForDay(int mechanicId, LocalDate date) {
+        return mechanicSchedule.getSlotsForDay(mechanicId, date);
+    }
+    /** The next day after the given one when the mechanic has a booking, or null. */
+    public LocalDate getNextBookingDate(int mechanicId, LocalDate afterDate) {
+        return mechanicSchedule.getNextBookingDate(mechanicId, afterDate);
+    }
+
+    /** How full the mechanic's days are in the week starting on the given Monday. */
+    public List<DayLoad> getWeekLoads(int mechanicId, LocalDate weekStart) {
+        return mechanicSchedule.getWeekLoads(mechanicId, weekStart);
+    }
+
+    /** The status of every day in the month for the mechanic. */
+    public List<MonthDayStatus> getMonthDays(int mechanicId, YearMonth month, boolean mechanicAvailable) {
+        return mechanicSchedule.getMonthDays(mechanicId, month, mechanicAvailable);
+    }
+
+    /** Reserves an hour in the schedule for a booking. */
+    public boolean reserveSlot(int mechanicId, LocalDate date, int hour, int bookingId,
+                               String customer, String vehicleReg, String description) {
+        return mechanicSchedule.bookSlot(mechanicId, date, hour, bookingId, 0, customer, vehicleReg, description);
+    }
+
+    /** Frees the schedule slot a booking held. */
+    public void releaseSlot(int bookingId) {
+        mechanicSchedule.cancelSlotForBooking(bookingId);
+    }
+
+    /** Reads the schedule again after work orders have been created. */
+    public void refreshSchedule() {
+        mechanicSchedule.syncFromDatabase();
+    }
+
+    /** A stored setting, or the fallback when nothing is stored. */
+    public String getSetting(String key, String fallback) {
+        return Settings.get(key, fallback);
+    }
+
+    /** Stores a setting so it survives a restart. */
+    public void saveSetting(String key, String value) {
+        Settings.put(key, value);
+    }
+
+    /** The booking's price. The views ask here instead of adding it up themselves. */
+    public int bookingPrice(Booking booking) {
+        return bookingService.priceOf(booking);
     }
 
     /** The customer with that id, or null when there is none. */
@@ -137,6 +219,7 @@ public class GarageSystem {
     }
 
     /** The work order with that id, or null when there is none. */
+    @Override
     public WorkOrder findWorkOrder(int id) {
         for (WorkOrder row : getWorkOrders()) {
             if (row.getId() == id) {
@@ -251,7 +334,7 @@ public class GarageSystem {
 
     public Booking createBooking(int vehicleId,
                                  LocalDate date,
-                                 String description, LocalTime startTime, int mechanicId, int serviceItemId) throws SQLException {
+                                 String description, LocalTime startTime, int mechanicId, int serviceItemId) {
         return bookingService.createBooking(vehicleId, date, description,
                 startTime, mechanicId, serviceItemId);
     }
@@ -266,26 +349,27 @@ public class GarageSystem {
     }
 
     /** Creates a work order of a given type: Standard, Reclamation or Internal. */
+    @Override
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds,
                                      String type) {
         return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
     }
 
     /** Creates a reclamation on a previously performed work order. */
+    @Override
     public WorkOrder createReclamation(int originalWorkOrderId, String description) {
         return workOrderService.createReclamation(originalWorkOrderId, description);
     }
 
     // Creates a draft, that is a work order with no booking and no services.
+    @Override
     public WorkOrder createDraft(int vehicleId, String description) {
         return workOrderService.createDraft(vehicleId, description);
     }
 
-    public WorkOrder updateDraft(int workOrderId, int vehicleId, String description, int mechanicId,
-            List<Integer> serviceItemIds, String plannedDate, String plannedTime, String customerInstructions,
-            String otherComments) {
-        return workOrderService.updateDraft(workOrderId, vehicleId, description, mechanicId, serviceItemIds,
-                plannedDate, plannedTime, customerInstructions, otherComments);
+    @Override
+    public WorkOrder updateDraft(DraftChanges changes) {
+        return workOrderService.updateDraft(changes);
     }
 
     /** Drop-in with no booked time: the booking row is created first, in the same sweep, so that
@@ -307,7 +391,7 @@ public class GarageSystem {
     }
 
     /** Invoices a work order, with a new charge as its own line. */
-    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, int extraAmount) {
         return billingService.createInvoice(workOrderId, discountCode, extraName, extraAmount);
     }
 
@@ -317,29 +401,29 @@ public class GarageSystem {
     }
 
     /** The same invoice, but with room for a new charge the reclamation brings with it. */
-    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, int extraAmount) {
         return billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
     }
 
-    public Mechanic createMechanic(String name, String phone, String specialization) throws SQLException {
+    public Mechanic createMechanic(String name, String phone, String specialization) {
         refuseUnlessStorableMechanic(name, phone);
         Mechanic mechanic = new Mechanic(0, name, phone, specialization);
         mechanicRepository.save(mechanic);
         return mechanic;
     }
 
-    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes) throws SQLException {
+    public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes) {
         return createServiceItem(name, description, price, estimatedMinutes, "");
     }
 
     /** As above, but with the requirement on specialization. */
-    public ServiceItem createServiceItem(String name, String description, double price, int estimatedMinutes,
-                                         String specialization) throws SQLException {
+    public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes, String specialization) {
         ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
         serviceItemRepository.save(item);
         return item;
     }
 
+    @Override
     public void startWorkOrder(int workOrderId) {
         workOrderService.startWorkOrder(workOrderId);
     }
@@ -349,14 +433,17 @@ public class GarageSystem {
         return workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
     }
 
+    @Override
     public void completeWorkOrder(int workOrderId) {
         workOrderService.completeWorkOrder(workOrderId);
     }
 
+    @Override
     public boolean cancelWorkOrder(int workOrderId) {
         return workOrderService.cancelWorkOrder(workOrderId);
     }
 
+    @Override
     public boolean confirmWorkOrder(int workOrderId) {
         return workOrderService.confirmWorkOrder(workOrderId);
     }
@@ -365,28 +452,32 @@ public class GarageSystem {
         return paymentService.processPayment(invoiceId, paymentType);
     }
 
-    public void updateCustomer(Customer customer) throws SQLException {
+    public void updateCustomer(Customer customer) {
         customerService.updateCustomer(customer);
     }
 
-    public void updateVehicle(Vehicle vehicle) throws SQLException {
-        vehicleRepository.save(vehicle);
+    public void updateVehicle(Vehicle vehicle) {
+        vehicleService.updateVehicle(vehicle);
     }
 
-    public void updateMechanic(Mechanic mechanic) throws SQLException {
+    public void updateMechanic(Mechanic mechanic) {
+
         if (mechanic == null) {
             return;
         }
+
         refuseUnlessStorableMechanic(mechanic.getName(), mechanic.getPhone());
         mechanicRepository.save(mechanic);
     }
 
-    public void updateBooking(Booking booking) throws SQLException {
-        bookingRepository.save(booking);
-        MechanicSchedule.getInstance().syncFromDatabase();
+    /** New or changed, the booking goes through the same rules before it is stored. */
+    public Booking saveBooking(Booking booking) {
+        Booking saved = bookingService.saveBooking(booking);
+        mechanicSchedule.syncFromDatabase();
+        return saved;
     }
 
-    public void updateServiceItem(ServiceItem item) throws SQLException {
+    public void updateServiceItem(ServiceItem item) {
         serviceItemRepository.save(item);
     }
 
@@ -394,20 +485,25 @@ public class GarageSystem {
         return removalRules.canDeleteMechanic(mechanicId);
     }
 
-    public void deleteMechanic(int mechanicId) throws SQLException {
+    public void deleteMechanic(int mechanicId) {
+
         refuseUnless(canDeleteMechanic(mechanicId),
-                "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.");
+                "Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.",
+                "dialog.mechanic.delete.has_active_orders");
         mechanicRepository.delete(mechanicId);
-        MechanicSchedule.getInstance().removeSlotsForMechanic(mechanicId);
+        mechanicSchedule.removeSlotsForMechanic(mechanicId);
     }
 
     public boolean canDeleteCustomer(int customerId) {
         return removalRules.canDeleteCustomer(customerId);
     }
 
-    public void deleteCustomer(int customerId) throws SQLException {
+    public void deleteCustomer(int customerId) {
+
         refuseUnless(canDeleteCustomer(customerId),
-                "Kunden kan inte tas bort: ett av kundens fordon har ett fakturerat jobb.");
+                "Kunden kan inte tas bort: ett av kundens fordon har ett fakturerat jobb.",
+                "dialog.customer.delete.has_active_orders");
+
         for (Vehicle v : getVehicles()) {
             if (v.getCustomerId() == customerId) {
                 vehicleRepository.delete(v.getId());
@@ -420,9 +516,10 @@ public class GarageSystem {
         return removalRules.canDeleteVehicle(vehicleId);
     }
 
-    public void deleteVehicle(int vehicleId) throws SQLException {
+    public void deleteVehicle(int vehicleId) {
         refuseUnless(canDeleteVehicle(vehicleId),
-                "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.");
+                "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.",
+                "dialog.vehicle.delete.has_active_orders");
         vehicleRepository.delete(vehicleId);
     }
 
@@ -430,38 +527,41 @@ public class GarageSystem {
         return removalRules.canCancelOrDeleteBooking(bookingId);
     }
 
-    public void cancelBooking(int bookingId) throws SQLException {
+    public void cancelBooking(int bookingId) {
         Booking b = bookingService.findById(bookingId);
         if (b != null) {
-            b.setStatus("CANCELLED");
+            b.setStatus(BookingStatus.CANCELLED);
             bookingRepository.save(b);
-            MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
-            MechanicSchedule.getInstance().syncFromDatabase();
+            mechanicSchedule.cancelSlotForBooking(bookingId);
+            mechanicSchedule.syncFromDatabase();
         }
     }
 
     /** Refuses the removal with an explanation. The rules live in {@link RemovalRules}. */
-    private void refuseUnless(boolean allowed, String reason) {
+    private void refuseUnless(boolean allowed, String reason, String messageKey) {
+
         if (!allowed) {
-            throw new RuleViolationException(reason);
+            throw new RuleViolationException(reason, messageKey);
         }
     }
 
-    public void deleteBooking(int bookingId) throws SQLException {
+    public void deleteBooking(int bookingId) {
         refuseUnless(canCancelOrDeleteBooking(bookingId),
-                "Bokningen kan inte tas bort: den har en arbetsorder med faktura.");
+                "Bokningen kan inte tas bort: den har en arbetsorder med faktura.",
+                "dialog.booking.delete.has_active_orders");
         bookingRepository.delete(bookingId);
-        MechanicSchedule.getInstance().cancelSlotForBooking(bookingId);
-        MechanicSchedule.getInstance().syncFromDatabase();
+        mechanicSchedule.cancelSlotForBooking(bookingId);
+        mechanicSchedule.syncFromDatabase();
     }
 
     public boolean canDeleteServiceItem(int serviceItemId) {
         return removalRules.canDeleteServiceItem(serviceItemId);
     }
 
-    public void deleteServiceItem(int serviceItemId) throws SQLException {
+    public void deleteServiceItem(int serviceItemId) {
         refuseUnless(canDeleteServiceItem(serviceItemId),
-                "Tjänsten kan inte tas bort: den ligger i en bokning eller en arbetsorder.");
+                "Tjänsten kan inte tas bort: den ligger i en bokning eller en arbetsorder.",
+                "dialog.service.delete.has_active_orders");
         serviceItemRepository.delete(serviceItemId);
     }
 
@@ -480,11 +580,11 @@ public class GarageSystem {
         return servicePackageService.createPackage(name, description, serviceItems);
     }
 
-    public void updateServicePackage(ServicePackage servicePackage) throws SQLException {
+    public void updateServicePackage(ServicePackage servicePackage) {
         servicePackageService.updatePackage(servicePackage);
     }
 
-    public void deleteServicePackage(int id) throws SQLException {
+    public void deleteServicePackage(int id) {
         servicePackageService.deletePackage(id);
     }
 }

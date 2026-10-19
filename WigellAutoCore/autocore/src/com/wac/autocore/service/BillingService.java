@@ -9,6 +9,7 @@ import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.WorkOrderStatus;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.repository.InvoiceRepository;
@@ -16,60 +17,67 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /** Invoices from completed work orders, with discount. */
 public class BillingService {
 
-    private final InvoiceRepository invoiceRepository = new InvoiceRepository();
-    private final WorkOrderRepository workOrderRepository = new WorkOrderRepository();
-    private final BookingRepository bookingRepository = new BookingRepository();
-    private final VehicleRepository vehicleRepository = new VehicleRepository();
-    private final CustomerRepository customerRepository = new CustomerRepository();
-    private final ServiceItemRepository serviceItemRepository = new ServiceItemRepository();
+    private final InvoiceRepository invoiceRepository;
+    private final WorkOrderRepository workOrderRepository;
+    private final BookingRepository bookingRepository;
+    private final VehicleRepository vehicleRepository;
+    private final CustomerRepository customerRepository;
+    private final ServiceItemRepository serviceItemRepository;
+
+    public BillingService(InvoiceRepository invoiceRepository,
+                          WorkOrderRepository workOrderRepository,
+                          BookingRepository bookingRepository,
+                          VehicleRepository vehicleRepository,
+                          CustomerRepository customerRepository,
+                          ServiceItemRepository serviceItemRepository) {
+        this.invoiceRepository = invoiceRepository;
+        this.workOrderRepository = workOrderRepository;
+        this.bookingRepository = bookingRepository;
+        this.vehicleRepository = vehicleRepository;
+        this.customerRepository = customerRepository;
+        this.serviceItemRepository = serviceItemRepository;
+    }
 
     public List<Invoice> getAll() {
         try {
             return invoiceRepository.findAll();
-        } catch (SQLException e) {
-            System.out.println("Could not read invoices: " + e.getMessage());
-            return Collections.emptyList();
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not read invoices", e);
         }
     }
 
     /** With no new charge: the console and other calls that have no reclamation. */
     public Invoice createInvoice(int workOrderId, String discountCode) {
-        return createInvoice(workOrderId, discountCode, null, 0.0);
+        return createInvoice(workOrderId, discountCode, null, 0);
     }
 
     /** Invoices a work order, with a new charge as its own line when the reclamation calls for one. */
-    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoice(int workOrderId, String discountCode, String extraName, int extraAmount) {
         WorkOrder workOrder = findWorkOrder(workOrderId);
         if (workOrder == null) {
             throw new NotFoundException("Work order with ID " + workOrderId + " does not exist.");
         }
 
-        if (!"COMPLETED".equals(workOrder.getStatus())) {
-            System.out.println("Invoice can only be created for a completed work order.");
+        if (workOrder.getStatus() != WorkOrderStatus.COMPLETED) {
             return null;
         }
 
         // The whole booking counts here too: a single work order cannot be invoiced while its
         // sibling orders on the same booking are still open.
         if (!allOrdersCompleted(workOrder.getBookingId())) {
-            System.out.println("Booking with ID " + workOrder.getBookingId()
-                    + " still has work orders that are not completed.");
             return null;
         }
 
         // A job should only be invoiced once. The interface stops the same booking being picked
         // twice, but the call can come from below — and then there were two invoices for one job.
         if (hasInvoiceFor(workOrderId)) {
-            System.out.println("Invoice already exists for work order " + workOrderId + ".");
             return null;
         }
 
@@ -80,11 +88,11 @@ public class BillingService {
 
     /** Invoices all the work done on a booking on a single invoice. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
-        return createInvoiceForBooking(bookingId, discountCode, null, 0.0);
+        return createInvoiceForBooking(bookingId, discountCode, null, 0);
     }
 
     /** The same invoice, but with room for a new charge the reclamation brings with it. */
-    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, double extraAmount) {
+    public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, int extraAmount) {
         Booking booking = findBooking(bookingId);
         if (booking == null) {
             throw new NotFoundException("Booking with ID " + bookingId + " does not exist.");
@@ -92,8 +100,6 @@ public class BillingService {
 
         // One invoice covers all the work on the booking, so if something is left to do it waits.
         if (!allOrdersCompleted(bookingId)) {
-            System.out.println("Booking with ID " + bookingId
-                    + " still has work orders that are not completed.");
             return null;
         }
 
@@ -105,7 +111,7 @@ public class BillingService {
             if (order.getBookingId() != bookingId) {
                 continue;
             }
-            if (!"COMPLETED".equals(order.getStatus())) {
+            if (order.getStatus() != WorkOrderStatus.COMPLETED) {
                 continue;
             }
             if (performedServices(order, invoiced).isEmpty()) {
@@ -118,8 +124,6 @@ public class BillingService {
         }
 
         if (orders.isEmpty()) {
-            System.out.println("Booking with ID " + bookingId
-                    + " has no performed work left to invoice.");
             return null;
         }
 
@@ -132,7 +136,7 @@ public class BillingService {
         List<Booking> bookings = new ArrayList<Booking>();
 
         for (WorkOrder order : getAllWorkOrders()) {
-            if (!"COMPLETED".equals(order.getStatus())) {
+            if (order.getStatus() != WorkOrderStatus.COMPLETED) {
                 continue;
             }
             if (!allOrdersCompleted(order.getBookingId())) {
@@ -156,7 +160,7 @@ public class BillingService {
 
     /** Builds the invoice from the performed services. Lines already invoiced are skipped. */
     private Invoice createInvoiceFrom(List<WorkOrder> orders, int primaryOrderId, String discountCode,
-                                      String extraName, double extraAmount) {
+                                      String extraName, int extraAmount) {
         WorkOrder primary = findWorkOrder(primaryOrderId);
         int bookingId = primary != null ? primary.getBookingId() : 0;
         List<Integer> invoiced = invoicedServiceIds(bookingId);
@@ -168,16 +172,16 @@ public class BillingService {
                 if (serviceItem != null) {
                     // Use the stored price when there is one.
                     // Older work orders have none and get the catalogue price, as before D2.
-                    Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
-                    double linePrice = frozenPrice != null ? frozenPrice.doubleValue() : serviceItem.getPrice();
+                    Integer frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
+                    int linePrice = frozenPrice != null ? frozenPrice.intValue() : serviceItem.getPrice();
                     // Reclamation work shows on the invoice but costs nothing. The price is zeroed and
                     // not the discount, because distributeDiscount overwrites each line's discount as
                     // soon as the invoice has a VIP or code discount.
                     if (workOrder.isReclamation()) {
-                        linePrice = 0.0;
+                        linePrice = 0;
                     }
                     InvoiceLine invoiceLine = new InvoiceLine(0, 0, serviceItem.getId(),
-                            serviceItem.getName(), linePrice, 0.0);
+                            serviceItem.getName(), linePrice, 0);
                     // The package follows the service from the order, so the invoice can group the lines.
                     invoiceLine.setPackageName(workOrder.getServicePackageName(serviceItem.getId()));
                     lines.add(invoiceLine);
@@ -188,28 +192,26 @@ public class BillingService {
         // A new charge belongs to the reclamation and is billed in full. It goes in before the sum
         // and the discount, so that it counts towards both.
         if (extraName != null && !extraName.trim().isEmpty() && extraAmount > 0) {
-            lines.add(new InvoiceLine(0, 0, 0, extraName.trim(), extraAmount, 0.0));
+            lines.add(new InvoiceLine(0, 0, 0, extraName.trim(), extraAmount, 0));
         }
 
         if (lines.isEmpty()) {
-            System.out.println("Invoice cannot be created: No performed services found.");
             return null;
         }
 
-        double amount = 0.0;
+        int amount = 0;
         for (InvoiceLine line : lines) {
             amount += line.getPrice();
         }
 
-        double discount = 0.0;
+        int discount = 0;
         Booking booking = bookingId > 0 ? findBooking(bookingId) : null;
         if (booking != null) {
             Vehicle vehicle = findVehicle(booking.getVehicleId());
             if (vehicle != null) {
                 Customer customer = findCustomer(vehicle.getCustomerId());
                 if (customer != null && customer.isVip()) {
-                    discount += amount * (DiscountRules.VIP_PERCENT / 100.0);
-                    System.out.println("VIP discount applied: 10%");
+                    discount += DiscountRules.percentOf(amount, DiscountRules.VIP_PERCENT);
                 }
             }
         }
@@ -219,7 +221,6 @@ public class BillingService {
         if (discount > amount) {
             discount = amount;
         }
-        discount = DiscountRules.roundToOre(discount);
 
         DiscountRules.distributeDiscount(lines, amount, discount);
 
@@ -232,19 +233,14 @@ public class BillingService {
 
         try {
             invoiceRepository.save(invoice);
-        } catch (SQLException e) {
-            System.out.println("Could not save invoice: " + e.getMessage());
-            return null;
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not save invoice", e);
         }
 
         for (InvoiceLine line : invoice.getLines()) {
             line.setInvoiceId(invoice.getId());
         }
 
-        System.out.println("Invoice created successfully.");
-        System.out.println(invoice);
-        System.out.println("Sending invoice notification to customer...");
-        System.out.println("Notification sent.");
 
         return invoice;
     }
@@ -252,7 +248,7 @@ public class BillingService {
     /** Performed services not yet invoiced. If none is marked but the order is finished, all count. */
     private List<Integer> performedServices(WorkOrder workOrder, List<Integer> invoicedServiceIds) {
         List<Integer> performed = workOrder.getCompletedServiceItems();
-        if (performed.isEmpty() && "COMPLETED".equals(workOrder.getStatus())) {
+        if (performed.isEmpty() && workOrder.getStatus() == WorkOrderStatus.COMPLETED) {
             performed = workOrder.getServiceItemIds();
         }
 
@@ -283,8 +279,8 @@ public class BillingService {
                     }
                 }
             }
-        } catch (SQLException e) {
-            System.out.println("Could not read invoice lines: " + e.getMessage());
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not read invoice lines", e);
         }
         return invoiced;
     }
@@ -297,7 +293,7 @@ public class BillingService {
                 continue;
             }
             foundAny = true;
-            if (!"COMPLETED".equals(order.getStatus())) {
+            if (order.getStatus() != WorkOrderStatus.COMPLETED) {
                 return false;
             }
         }
@@ -334,9 +330,8 @@ public class BillingService {
     private List<WorkOrder> getAllWorkOrders() {
         try {
             return workOrderRepository.findAll();
-        } catch (SQLException e) {
-            System.out.println("Could not read work orders: " + e.getMessage());
-            return Collections.emptyList();
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not read work orders", e);
         }
     }
 
@@ -349,8 +344,8 @@ public class BillingService {
                     return true;
                 }
             }
-        } catch (SQLException e) {
-            System.out.println("Could not check for existing invoices: " + e.getMessage());
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not check for existing invoices", e);
         }
         return false;
     }
@@ -358,7 +353,7 @@ public class BillingService {
     private WorkOrder findWorkOrder(int id) {
         try {
             return workOrderRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read work order " + id, e);
         }
     }
@@ -366,7 +361,7 @@ public class BillingService {
     private Booking findBooking(int id) {
         try {
             return bookingRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read booking " + id, e);
         }
     }
@@ -374,7 +369,7 @@ public class BillingService {
     private Vehicle findVehicle(int id) {
         try {
             return vehicleRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read vehicle " + id, e);
         }
     }
@@ -382,7 +377,7 @@ public class BillingService {
     private Customer findCustomer(int id) {
         try {
             return customerRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read customer " + id, e);
         }
     }
@@ -390,7 +385,7 @@ public class BillingService {
     private ServiceItem findServiceItem(int id) {
         try {
             return serviceItemRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read service item " + id, e);
         }
     }

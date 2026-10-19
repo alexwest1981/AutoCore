@@ -1,11 +1,9 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.model.*;
+import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.service.GarageSystem;
-import com.wac.autocore.service.MechanicSchedule;
 import com.wac.autocore.ui.components.BookingFormPane;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.EntityLookup;
@@ -82,69 +80,83 @@ public final class BookingDialogs {
             if (response != ButtonType.OK) {
                 return;
             }
+
             if (!form.validate(garage, 0)) {
                 return;
             }
 
-            Vehicle v = form.getSelectedVehicle();
-            LocalDate date = form.getSelectedDate();
-            List<ServiceItem> chosenServices = form.getSelectedServices();
-            ServiceItem chosenService = form.getSelectedService();
-            Mechanic chosenMech = form.getSelectedMechanic();
-            LocalTime startTime = form.getSelectedStartTime();
-            String desc = form.getDescription();
-            if (desc.isEmpty() && !chosenServices.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                for (ServiceItem s : chosenServices) {
-                    if (sb.length() > 0) sb.append(", ");
-                    sb.append(com.wac.autocore.seed.SeedText.resolve(s.getName()));
+            try {
+                if (saveNewBooking(garage, form, copying, defaultHour)) {
+                    if (onSuccess != null) onSuccess.run();
                 }
-                desc = sb.toString();
-            } else if (desc.isEmpty() && chosenService != null) {
-                desc = com.wac.autocore.seed.SeedText.resolve(chosenService.getName());
+            } catch (RuleViolationException refused) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
             }
 
-            // Create a clean booking in the system (NO work order is created or started automatically)
-            Booking b = garage.createBooking(v.getId(), date, desc);
-            if (b != null) {
-                b.setStatus("BOOKED");
-                if (!chosenServices.isEmpty()) {
-                    b.setServiceItems(chosenServices);
-                } else if (chosenService != null && !b.addServiceItem(chosenService)) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                            I18n.get("dialog.booking.services_locked_work_started"));
-                    return;
-                }
-                b.setServicePackages(form.getServicePackageNames());
-                if (chosenMech != null) {
-                    b.setMechanicId(chosenMech.getId());
-                } else if (copying) {
-                    // A copy starts without a mechanic, so the field is cleared rather than kept.
-                    b.setMechanicId(0);
-                }
-                b.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
-                if (startTime != null) {
-                    b.setStartTime(startTime);
-                    int estMin = garage.busyMinutes(b.getServiceItems(), form.getSelectedMechanics());
-                    b.setEndTime(startTime.plusMinutes(estMin));
-                }
-
-                if (!saveBookingOrReport(garage, b)) {
-                    return;
-                }
-
-                // Reserve a slot in the schedule if a mechanic was picked (workOrderId = 0)
-                if (chosenMech != null) {
-                    int hour = startTime != null ? startTime.getHour() : (defaultHour != null ? defaultHour : 8);
-                    String custName = EntityLookup.customerName(garage, v.getCustomerId());
-                    MechanicSchedule.getInstance().bookSlot(
-                            chosenMech.getId(), date, hour, b.getId(), 0,
-                            custName, v.getRegistrationNumber(), desc
-                    );
-                }
-            }
-            if (onSuccess != null) onSuccess.run();
         });
+    }
+
+    // The rules answer from the service, so this only builds the booking and reports a refusal.
+    private static boolean saveNewBooking(GarageSystem garage, BookingFormPane form, boolean copying,
+                                          Integer defaultHour) {
+        Vehicle v = form.getSelectedVehicle();
+        LocalDate date = form.getSelectedDate();
+        List<ServiceItem> chosenServices = form.getSelectedServices();
+        ServiceItem chosenService = form.getSelectedService();
+        Mechanic chosenMech = form.getSelectedMechanic();
+        LocalTime startTime = form.getSelectedStartTime();
+        String desc = form.getDescription();
+        if (desc.isEmpty() && !chosenServices.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (ServiceItem s : chosenServices) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(com.wac.autocore.seed.SeedText.resolve(s.getName()));
+            }
+            desc = sb.toString();
+        } else if (desc.isEmpty() && chosenService != null) {
+            desc = com.wac.autocore.seed.SeedText.resolve(chosenService.getName());
+        }
+
+        // Built in memory and stored once, so a refused booking leaves no empty row behind.
+        Booking b = new Booking(v.getId(), date, desc);
+        if (b != null) {
+            b.setStatus(BookingStatus.BOOKED);
+            if (!chosenServices.isEmpty()) {
+                b.setServiceItems(chosenServices);
+            } else if (chosenService != null && !b.addServiceItem(chosenService)) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                        I18n.get("dialog.booking.services_locked_work_started"));
+        return false;
+            }
+            b.setServicePackages(form.getServicePackageNames());
+            if (chosenMech != null) {
+                b.setMechanicId(chosenMech.getId());
+            } else if (copying) {
+                // A copy starts without a mechanic, so the field is cleared rather than kept.
+                b.setMechanicId(0);
+            }
+            b.setMechanicIds(mechanicIdsFrom(form.getSelectedMechanics()));
+            if (startTime != null) {
+                b.setStartTime(startTime);
+                int estMin = garage.busyMinutes(b.getServiceItems(), form.getSelectedMechanics());
+                b.setEndTime(startTime.plusMinutes(estMin));
+            }
+
+            if (!saveBookingOrReport(garage, b)) {
+        return false;
+            }
+
+            // Reserve a slot in the schedule if a mechanic was picked (workOrderId = 0)
+            if (chosenMech != null) {
+                int hour = startTime != null ? startTime.getHour() : (defaultHour != null ? defaultHour : 8);
+                String custName = EntityLookup.customerName(garage, v.getCustomerId());
+                garage.reserveSlot(
+                        chosenMech.getId(), date, hour, b.getId(),
+                        custName, v.getRegistrationNumber(), desc
+                );
+            }
+        }
+        return true;
     }
 
     public static void showEditBookingDialog(GarageSystem garage, Booking booking, Runnable onSuccess) {
@@ -194,10 +206,8 @@ public final class BookingDialogs {
                 Mechanic chosenMech = form.getSelectedMechanic();
                 LocalTime startTime = form.getSelectedStartTime();
                 String desc = form.getDescription();
-                String status = form.getStatus();
+                BookingStatus status = form.getStatus();
 
-                // Clear any earlier schedule slot for this booking
-                MechanicSchedule.getInstance().cancelSlotForBooking(booking.getId());
 
                 booking.setVehicleId(v.getId());
                 booking.setDate(date);
@@ -216,7 +226,7 @@ public final class BookingDialogs {
                 // The status is set last, because a change back to Booked unlocks the services
                 // again. Once the job has started it cannot go back.
                 if (booking.isWorkStarted() && !statusAllowed(status)
-                        && !status.equalsIgnoreCase(booking.getStatus())) {
+                        && status != booking.getStatus()) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"),
                             I18n.get("dialog.booking.status_locked_work_started"));
                     return;
@@ -233,13 +243,15 @@ public final class BookingDialogs {
                 if (!saveBookingOrReport(garage, booking)) {
                     return;
                 }
+                // The old time is let go only once the new one is accepted, so a refusal keeps it.
+                garage.releaseSlot(booking.getId());
 
                 // Rebook in the schedule if a mechanic is assigned and the booking is not cancelled
-                if (chosenMech != null && !"CANCELLED".equalsIgnoreCase(status)) {
+                if (chosenMech != null && status != BookingStatus.CANCELLED) {
                     int hour = startTime != null ? startTime.getHour() : 8;
                     String custName = EntityLookup.customerName(garage, v.getCustomerId());
-                    MechanicSchedule.getInstance().bookSlot(
-                            chosenMech.getId(), date, hour, booking.getId(), 0,
+                    garage.reserveSlot(
+                            chosenMech.getId(), date, hour, booking.getId(),
                             custName, v.getRegistrationNumber(), desc
                     );
                 }
@@ -304,8 +316,13 @@ public final class BookingDialogs {
     /** Saves the booking and shows the error instead of swallowing it. */
     private static boolean saveBookingOrReport(GarageSystem garage, Booking booking) {
         try {
-            garage.updateBooking(booking);
+            garage.saveBooking(booking);
             return true;
+
+        } catch (RuleViolationException refused) {
+            // The service has already found and worded the problem; the dialog only shows it.
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+            return false;
         } catch (Exception e) {
             String reason = e.getMessage();
             ActionDialogs.showError(I18n.get("dialog.confirm.title"),
@@ -316,9 +333,9 @@ public final class BookingDialogs {
     }
 
     /** The statuses that may be set once the work has already started. */
-    private static boolean statusAllowed(String status) {
-        return "IN_PROGRESS".equalsIgnoreCase(status)
-                || "COMPLETED".equalsIgnoreCase(status);
+    private static boolean statusAllowed(BookingStatus status) {
+        return status == BookingStatus.IN_PROGRESS
+                || status == BookingStatus.COMPLETED;
     }
 
     /** The ids of the mechanics picked in the form, in the order they were picked. */

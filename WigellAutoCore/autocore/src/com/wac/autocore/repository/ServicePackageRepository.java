@@ -1,6 +1,6 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.data.Db;
+import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
 
@@ -17,41 +17,49 @@ public class ServicePackageRepository {
     private static final String ITEM_COLUMNS =
             "s.id, s.name, s.description, s.price, s.estimated_minutes, s.specialization";
 
-    public void save(ServicePackage servicePackage) throws SQLException {
-        if (servicePackage.getId() == 0) {
-            insert(servicePackage);
-        } else {
-            update(servicePackage);
-        }
-        saveItems(servicePackage);
+    public void save(final ServicePackage servicePackage) {
+        final boolean isNew = servicePackage.getId() == 0;
+
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                if (isNew) {
+                    insert(connection, servicePackage);
+                } else {
+                    update(connection, servicePackage);
+                }
+                saveItems(connection, servicePackage);
+                return null;
+            }
+        }.run();
     }
 
-    private void insert(ServicePackage servicePackage) throws SQLException {
-        int id = Queries.insert("INSERT INTO service_packages (name, description) VALUES (?, ?)", statement -> {
-            statement.setString(1, servicePackage.getName());
-            statement.setString(2, servicePackage.getDescription());
-        });
+    private void insert(Connection connection, ServicePackage servicePackage) throws SQLException {
+        int id = Queries.insert(connection, "INSERT INTO service_packages (name, description) VALUES (?, ?)",
+                statement -> {
+                    statement.setString(1, servicePackage.getName());
+                    statement.setString(2, servicePackage.getDescription());
+                });
 
         if (id > 0) {
             servicePackage.setId(id);
         }
     }
 
-    private void update(ServicePackage servicePackage) throws SQLException {
-        Queries.write("UPDATE service_packages SET name = ?, description = ? WHERE id = ?", statement -> {
-            statement.setString(1, servicePackage.getName());
-            statement.setString(2, servicePackage.getDescription());
-            statement.setInt(3, servicePackage.getId());
-        });
+    private void update(Connection connection, ServicePackage servicePackage) throws SQLException {
+        Queries.write(connection, "UPDATE service_packages SET name = ?, description = ? WHERE id = ?",
+                statement -> {
+                    statement.setString(1, servicePackage.getName());
+                    statement.setString(2, servicePackage.getDescription());
+                    statement.setInt(3, servicePackage.getId());
+                });
     }
 
-    private void saveItems(ServicePackage servicePackage) throws SQLException {
+    private void saveItems(Connection connection, ServicePackage servicePackage) throws SQLException {
         String deleteLinks = "DELETE FROM service_package_items WHERE package_id = ?";
         String insertLink = "INSERT OR IGNORE INTO service_package_items (package_id, service_item_id) VALUES (?, ?)";
 
-        // One connection for the removal and the inserts, so a package never sits without its items.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement delete = connection.prepareStatement(deleteLinks);
+        try (PreparedStatement delete = connection.prepareStatement(deleteLinks);
              PreparedStatement insert = connection.prepareStatement(insertLink)) {
 
             delete.setInt(1, servicePackage.getId());
@@ -65,7 +73,7 @@ public class ServicePackageRepository {
         }
     }
 
-    private List<ServiceItem> findItems(int packageId) throws SQLException {
+    private List<ServiceItem> findItems(int packageId) {
         String sql = "SELECT " + ITEM_COLUMNS + " FROM service_package_items spi "
                 + "JOIN service_items s ON spi.service_item_id = s.id "
                 + "WHERE spi.package_id = ? "
@@ -75,12 +83,12 @@ public class ServicePackageRepository {
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
                 resultSet.getString("description"),
-                resultSet.getDouble("price"),
+                resultSet.getInt("price"),
                 resultSet.getInt("estimated_minutes"),
                 resultSet.getString("specialization")));
     }
 
-    public List<ServicePackage> findAll() throws SQLException {
+    public List<ServicePackage> findAll() {
         List<ServicePackage> packages = Queries.read("SELECT " + COLUMNS + " FROM service_packages ORDER BY name",
                 ServicePackageRepository::build);
 
@@ -90,7 +98,7 @@ public class ServicePackageRepository {
         return packages;
     }
 
-    public ServicePackage findById(int id) throws SQLException {
+    public ServicePackage findById(int id) {
         ServicePackage servicePackage = Queries.readOne("SELECT " + COLUMNS + " FROM service_packages WHERE id = ?",
                 statement -> statement.setInt(1, id), ServicePackageRepository::build);
 
@@ -100,20 +108,19 @@ public class ServicePackageRepository {
         return servicePackage;
     }
 
-    public void delete(int id) throws SQLException {
-        // The item links point at this package and nothing else clears them, so both go in one connection.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement deleteItems = connection.prepareStatement(
-                     "DELETE FROM service_package_items WHERE package_id = ?");
-             PreparedStatement deletePackage = connection.prepareStatement(
-                     "DELETE FROM service_packages WHERE id = ?")) {
-
-            deleteItems.setInt(1, id);
-            deleteItems.executeUpdate();
-
-            deletePackage.setInt(1, id);
-            deletePackage.executeUpdate();
-        }
+    public void delete(final int id) {
+        // The item links point at this package and nothing else clears them, so both go in one
+        // transaction.
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                Queries.write(connection, "DELETE FROM service_package_items WHERE package_id = ?",
+                        statement -> statement.setInt(1, id));
+                Queries.write(connection, "DELETE FROM service_packages WHERE id = ?",
+                        statement -> statement.setInt(1, id));
+                return null;
+            }
+        }.run();
     }
 
     private static ServicePackage build(ResultSet resultSet) throws SQLException {

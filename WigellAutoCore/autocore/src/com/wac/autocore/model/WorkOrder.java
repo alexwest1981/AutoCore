@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class WorkOrder {
 
     /** Standard, reclamation or internal work. The code lives here and nowhere else. */
@@ -22,12 +25,12 @@ public class WorkOrder {
     private int mechanicId;
     private List<Integer> serviceItemIds;
     private final List<Integer> completedServiceItems = new ArrayList<Integer>();
-    private final Map<Integer, Double> completedServicePrices = new LinkedHashMap<Integer, Double>();
+    private final Map<Integer, Integer> completedServicePrices = new LinkedHashMap<Integer, Integer>();
     /** The package each service came from, carried over from the booking. */
     private final Map<Integer, String> servicePackages = new LinkedHashMap<Integer, String>();
-    private String status;
-    private String plannedDate;
-    private String plannedTime;
+    private WorkOrderStatus status;
+    private LocalDate plannedDate;
+    private LocalTime plannedTime;
     private String customerInstructions;
     private String otherComments;
     private String type;
@@ -37,12 +40,16 @@ public class WorkOrder {
     private int vehicleId;
     private String description;
 
+    public static final String PROBLEM_NO_MECHANIC = "no_mechanic";
+    public static final String PROBLEM_NO_SERVICES = "no_services";
+    public static final String PROBLEM_NO_DATE = "no_date";
+
     public WorkOrder(int id, int bookingId, int mechanicId) {
         this.id = id;
         this.bookingId = bookingId;
         this.mechanicId = mechanicId;
         this.serviceItemIds = new ArrayList<Integer>();
-        this.status = "CREATED";
+        this.status = WorkOrderStatus.CREATED;
         this.type = STANDARD;
     }
 
@@ -94,11 +101,11 @@ public class WorkOrder {
         this.serviceItemIds = serviceItemIds;
     }
 
-    public String getStatus() {
+    public WorkOrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(WorkOrderStatus status) {
         this.status = status;
     }
 
@@ -119,20 +126,20 @@ public class WorkOrder {
     }
 
     /** The planned date on a draft, as text the same way as the booking's date. */
-    public String getPlannedDate() {
+    public LocalDate getPlannedDate() {
         return plannedDate;
     }
 
-    public void setPlannedDate(String plannedDate) {
+    public void setPlannedDate(LocalDate plannedDate) {
         this.plannedDate = plannedDate;
     }
 
     /** The planned hour on a draft, as text, empty when the plan is a day without a time. */
-    public String getPlannedTime() {
+    public LocalTime getPlannedTime() {
         return plannedTime;
     }
 
-    public void setPlannedTime(String plannedTime) {
+    public void setPlannedTime(LocalTime plannedTime) {
         this.plannedTime = plannedTime;
     }
 
@@ -172,16 +179,16 @@ public class WorkOrder {
         }
     }
 
-    /** Returns the price that applied when the service was performed. */
-    public Double getCompletedServicePrice(int serviceItemId) {
+    /** Returns the price in öre that applied when the service was performed. */
+    public Integer getCompletedServicePrice(int serviceItemId) {
         return completedServicePrices.get(Integer.valueOf(serviceItemId));
     }
 
-    public Map<Integer, Double> getCompletedServicePrices() {
+    public Map<Integer, Integer> getCompletedServicePrices() {
         return completedServicePrices;
     }
 
-    public void setCompletedServicePrices(Map<Integer, Double> prices) {
+    public void setCompletedServicePrices(Map<Integer, Integer> prices) {
         completedServicePrices.clear();
         if (prices != null) {
             completedServicePrices.putAll(prices);
@@ -219,10 +226,56 @@ public class WorkOrder {
         }
     }
 
-    /** Marks the service as performed and stores the price that applied then. */
-    public void markServiceAsCompleted(int serviceItemId, double frozenPrice) {
+    /** Marks the service as performed and stores the price in öre that applied then. */
+    public void markServiceAsCompleted(int serviceItemId, int frozenPrice) {
         markServiceAsCompleted(serviceItemId);
-        completedServicePrices.put(Integer.valueOf(serviceItemId), Double.valueOf(frozenPrice));
+        completedServicePrices.put(Integer.valueOf(serviceItemId), Integer.valueOf(frozenPrice));
+    }
+
+    /** True when the order may move to the given status. The view asks here, the same table the service uses. */
+    public boolean canChangeTo(WorkOrderStatus next) {
+        return status.canChangeTo(next);
+    }
+
+    /** Moves the work order to the next status, or refuses and says why. */
+    public void changeStatusTo(WorkOrderStatus next) {
+        if (!status.canChangeTo(next)) {
+            throw new RuleViolationException("Work order " + id + " cannot change from "
+                    + status + " to " + next + ".");
+        }
+        this.status = next;
+    }
+
+    /** What is missing for this draft to become a real work order, or null when nothing is. */
+    public String confirmationProblem() {
+
+        if (mechanicId <= 0) {
+            return PROBLEM_NO_MECHANIC;
+        }
+
+        if (serviceItemIds == null || serviceItemIds.isEmpty()) {
+            return PROBLEM_NO_SERVICES;
+        }
+
+        // An order made from a booking takes its date from the booking, so only a draft needs its own.
+        if (plannedDate == null && bookingId <= 0) {
+            return PROBLEM_NO_DATE;
+        }
+
+        return null;
+    }
+
+    /** Confirms the draft, but only when it carries what a real work order needs. */
+    public void confirm() {
+
+        String problem = confirmationProblem();
+
+        if (problem != null) {
+            throw new RuleViolationException("Work order " + id + " cannot be confirmed: " + problem,
+                    "dialog.workorder.confirm_" + problem);
+        }
+
+        changeStatusTo(WorkOrderStatus.CONFIRMED);
     }
 
     @Override

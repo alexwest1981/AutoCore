@@ -13,7 +13,7 @@ public class Booking {
     private int vehicleId;
     private LocalDate date;
     private String description;
-    private String status;
+    private BookingStatus status;
     private LocalTime startTime;
     private LocalTime endTime;
     private int mechanicId;
@@ -28,7 +28,7 @@ public class Booking {
         this.vehicleId = vehicleId;
         this.date = date;
         this.description = description;
-        this.status = "BOOKED";
+        this.status = BookingStatus.BOOKED;
     }
 
     public Booking(int id, int vehicleId, LocalDate date, String description) {
@@ -36,7 +36,7 @@ public class Booking {
         this.vehicleId = vehicleId;
         this.date = date;
         this.description = description;
-        this.status = "BOOKED";
+        this.status = BookingStatus.BOOKED;
     }
 
     public Booking(int vehicleId, LocalDate date, String description,
@@ -44,7 +44,7 @@ public class Booking {
         this.vehicleId = vehicleId;
         this.date = date;
         this.description = description;
-        this.status = "BOOKED";
+        this.status = BookingStatus.BOOKED;
         this.startTime = startTime;
         this.endTime = endTime;
         this.mechanicId = mechanicId;
@@ -85,11 +85,11 @@ public class Booking {
         this.description = description;
     }
 
-    public String getStatus() {
+    public BookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(BookingStatus status) {
         this.status = status;
     }
 
@@ -118,9 +118,9 @@ public class Booking {
     }
 
     public boolean isWorkStarted() {
-        return "IN_PROGRESS".equalsIgnoreCase(status)
-                || "COMPLETED".equalsIgnoreCase(status)
-                || "WORK_ORDER_CREATED".equalsIgnoreCase(status);
+        return status == BookingStatus.IN_PROGRESS
+                || status == BookingStatus.COMPLETED
+                || status == BookingStatus.WORK_ORDER_CREATED;
     }
 
     public boolean canModifyServices() {
@@ -265,14 +265,8 @@ public class Booking {
         return total;
     }
 
-    public double getTotalEstimatedCost() {
-        double total = 0.0;
-        for (ServiceItem s : serviceItems) {
-            if (s != null) {
-                total += s.getPrice();
-            }
-        }
-        return total;
+    public int getTotalEstimatedCost() {
+        return ServiceItem.totalPrice(serviceItems);
     }
 
     @Override

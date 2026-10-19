@@ -1,8 +1,13 @@
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.data.Db;
+import com.wac.autocore.model.Customer;
+import com.wac.autocore.model.Invoice;
+import com.wac.autocore.model.Payment;
+import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.ConsolePrinter;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
@@ -10,11 +15,16 @@ import java.util.Scanner;
 public class ConsoleApp {
 
     private static final Scanner scanner = new Scanner(System.in);
-    private static final GarageSystem garageSystem = new GarageSystem();
 
-    public static void main(String[] args) throws SQLException {
+    // Set in main: the file may be given as an argument, and nothing may touch the
+    // application's own database before that is known.
+    private static GarageSystem garageSystem;
 
+    public static void main(String[] args) {
+
+        Db.use(Db.pathFrom(args));
         Db.ensureReady();
+        garageSystem = new GarageSystem(new SqliteRepositoryFactory(), new ConsolePrinter());
 
         boolean running = true;
 
@@ -155,7 +165,11 @@ public class ConsoleApp {
         String email = scanner.nextLine();
 
         try {
-            garageSystem.createCustomer(name, phone, email);
+            Customer created = garageSystem.createCustomer(name, phone, email);
+
+            if (created != null) {
+                System.out.println("Customer created successfully.");
+            }
         } catch (AppException rejected) {
             System.out.println("Customer was not saved: " + rejected.getMessage());
         }
@@ -181,13 +195,21 @@ public class ConsoleApp {
 
         int year = readInt("Year: ");
 
-        garageSystem.createVehicle(
-                registrationNumber,
-                brand,
-                model,
-                year,
-                customerId
-        );
+        try {
+            Vehicle created = garageSystem.createVehicle(
+                    registrationNumber,
+                    brand,
+                    model,
+                    year,
+                    customerId
+            );
+
+            if (created != null) {
+                System.out.println("Vehicle created successfully.");
+            }
+        } catch (AppException rejected) {
+            System.out.println("Vehicle was not saved: " + rejected.getMessage());
+        }
     }
 
     private static void createBooking() {
@@ -274,10 +296,14 @@ public class ConsoleApp {
         System.out.print("Discount code (leave empty for none): ");
         String discountCode = scanner.nextLine();
 
-        garageSystem.createInvoice(
+        Invoice created = garageSystem.createInvoice(
                 workOrderId,
                 discountCode
         );
+
+        if (created != null) {
+            System.out.println("Invoice created successfully.");
+        }
     }
 
     private static void processPayment() {
@@ -298,10 +324,14 @@ public class ConsoleApp {
         System.out.print("Payment type: ");
         String paymentType = scanner.nextLine();
 
-        garageSystem.processPayment(
+        Payment created = garageSystem.processPayment(
                 invoiceId,
                 paymentType
         );
+
+        if (created != null) {
+            System.out.println("Payment completed successfully.");
+        }
     }
 
     private static int readInt(String message) {

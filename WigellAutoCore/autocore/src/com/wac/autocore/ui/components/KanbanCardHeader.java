@@ -4,6 +4,7 @@ import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.motion.SegmentedSwitch;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
@@ -29,11 +30,26 @@ import com.wac.autocore.seed.SeedText;
  */
 class KanbanCardHeader {
 
+    /** The segmented control is built once per card: a control that is rebuilt cannot animate. */
+    private static final MechanicKanbanCard.KanbanViewMode[] MODES = {
+            MechanicKanbanCard.KanbanViewMode.DAY,
+            MechanicKanbanCard.KanbanViewMode.WEEK,
+            MechanicKanbanCard.KanbanViewMode.MONTH
+    };
+
     private final MechanicKanbanCard card;
     private final VBox box = new VBox(6);
+    private final SegmentedSwitch viewSwitch = new SegmentedSwitch();
 
     KanbanCardHeader(MechanicKanbanCard card) {
         this.card = card;
+        viewSwitch.getStyleClass().add("kanban-toggle-group-compact");
+        viewSwitch.setSpacing(2);
+        viewSwitch.setMinWidth(Region.USE_PREF_SIZE);
+        viewSwitch.setOnSelect(index -> {
+            card.currentMode = MODES[index];
+            card.renderBody();
+        });
     }
 
     VBox getBox() { return box; }
@@ -71,14 +87,9 @@ class KanbanCardHeader {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Segmented view switcher: Day | Week | Month
-        Button dayBtn = createViewButton(I18n.get("kanban.view.day"), MechanicKanbanCard.KanbanViewMode.DAY);
-        Button weekBtn = createViewButton(I18n.get("kanban.view.week"), MechanicKanbanCard.KanbanViewMode.WEEK);
-        Button monthBtn = createViewButton(I18n.get("kanban.view.month"), MechanicKanbanCard.KanbanViewMode.MONTH);
-
-        HBox toggleGroup = new HBox(2, dayBtn, weekBtn, monthBtn);
-        toggleGroup.getStyleClass().add("kanban-toggle-group-compact");
-        toggleGroup.setMinWidth(Region.USE_PREF_SIZE);
+        // Segmented view switcher: Day | Week | Month, with an indicator that travels
+        viewSwitch.setLabels(I18n.get("kanban.view.day"), I18n.get("kanban.view.week"), I18n.get("kanban.view.month"));
+        viewSwitch.select(modeIndex(card.currentMode));
 
         Button optionsBtn = new Button();
         optionsBtn.getStyleClass().addAll("kanban-options-btn", "ghost", "small");
@@ -118,7 +129,7 @@ class KanbanCardHeader {
             }
         });
 
-        HBox topRow = new HBox(6, mechTitle, spacer, toggleGroup, optionsBtn);
+        HBox topRow = new HBox(6, mechTitle, spacer, viewSwitch, optionsBtn);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         // Row 2: specialization and availability badge
@@ -141,20 +152,11 @@ class KanbanCardHeader {
         box.getChildren().addAll(topRow, subRow);
     }
 
-    private Button createViewButton(String label, MechanicKanbanCard.KanbanViewMode mode) {
-        Button btn = new Button(label);
-        btn.getStyleClass().add("kanban-toggle-btn-compact");
-        btn.setMinWidth(Region.USE_PREF_SIZE);
-        btn.setAlignment(Pos.CENTER);
-        if (card.currentMode == mode) {
-            btn.getStyleClass().add("active");
+    private static int modeIndex(MechanicKanbanCard.KanbanViewMode mode) {
+        for (int i = 0; i < MODES.length; i++) {
+            if (MODES[i] == mode) return i;
         }
-        btn.setOnAction(e -> {
-            card.currentMode = mode;
-            card.renderBody();
-            render(); // moves the active class to this button
-        });
-        return btn;
+        return 0;
     }
 
     private static String initials(String name) {

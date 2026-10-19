@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
@@ -15,7 +16,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -88,7 +88,7 @@ public final class ServicePackageDialogs {
                 } else {
                     garage.createServicePackage(name, desc, items);
                 }
-            } catch (SQLException e) {
+            } catch (DataAccessException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
             } catch (ValidationException rejected) {
@@ -159,7 +159,7 @@ public final class ServicePackageDialogs {
             }
             try {
                 garageSystem.deleteServicePackage(selected.getId());
-            } catch (SQLException e) {
+            } catch (DataAccessException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
             }

@@ -5,28 +5,29 @@ import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.repository.CustomerRepository;
 
-import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 
 /** Customers: reading, lookup and validation. */
 public class CustomerService {
 
-    private final CustomerRepository customerRepository = new CustomerRepository();
+    private final CustomerRepository customerRepository;
+
+    public CustomerService(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
     public List<Customer> getAll() {
         try {
             return customerRepository.findAll();
-        } catch (SQLException e) {
-            System.out.println("Could not read customers: " + e.getMessage());
-            return Collections.emptyList();
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not read customers", e);
         }
     }
 
     public Customer findById(int id) {
         try {
             return customerRepository.findById(id);
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             throw new DataAccessException("Could not read customer " + id, e);
         }
     }
@@ -38,19 +39,16 @@ public class CustomerService {
 
         try {
             customerRepository.save(customer);
-        } catch (SQLException e) {
-            System.out.println("Could not save customer: " + e.getMessage());
-            return null;
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not save customer", e);
         }
 
-        System.out.println("Customer created successfully.");
-        System.out.println(customer);
 
         return customer;
     }
 
     /** Saves the change through the same rule as the creation. */
-    public void updateCustomer(Customer customer) throws SQLException {
+    public void updateCustomer(Customer customer) {
         if (customer == null) {
             return;
         }

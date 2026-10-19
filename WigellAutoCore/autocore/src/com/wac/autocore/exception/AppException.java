@@ -10,4 +10,8 @@ public class AppException extends RuntimeException {
     public AppException(String message, Throwable cause) {
         super(message, cause);
     }
+    /** The text key the ui translates, or null when the error has no sentence of its own. */
+    public String getMessageKey() {
+        return null;
+    }
 }

@@ -109,4 +109,78 @@
     -fx-background-color: #6b7280;
 }
 
+/* --- micro-interactions: the look lives here, the behaviour in ui/motion --- */
+.hold-to-confirm {
+    -fx-padding: 6px 13px;
+    -fx-cursor: hand;
+}
+.hold-to-confirm .hold-fill {
+    -fx-fill: -wac-accent;
+    -fx-opacity: 0.20;
+}
+.hold-to-confirm .hold-label {
+    -fx-text-fill: -wac-text;
+    -fx-padding: 0 0 0 2px;
+}
+.hold-to-confirm .hold-hint {
+    -fx-text-fill: -wac-muted;
+    -fx-font-size: 10px;
+    -fx-padding: 0 0 0 10px;
+}
+.hold-to-confirm:focused {
+    -fx-border-color: -wac-ring;
+}
+
+/* the segmented indicator (ui/motion/SegmentedSwitch) and the chip pill */
+.segmented .segmented-pill {
+    -fx-fill: -wac-accent;
+    -fx-stroke: transparent;
+}
+/* chips: a soft accent pill with an accent outline, so the label keeps its contrast while it moves */
+/* no capsules: the chips are rectangles with the same cap as the buttons */
+.segmented Button.kanban-filter-chip {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+.segmented .chip-pill {
+    -fx-fill: -wac-accent-soft;
+    -fx-stroke: -wac-accent;
+    -fx-stroke-width: 1;
+}
+.segmented Button.kanban-filter-chip.is-current {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -wac-text;
+    -fx-font-weight: bold;
+}
+
+/* is-current: the theme styles .active, whose green fill would cover the pill */
+.segmented Button.kanban-toggle-btn-compact.is-current {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-on-accent;
+}
+
+/* the sidebar selection (ui/navigation/SidebarView) */
+.nav-pill {
+    -fx-fill: -wac-accent;
+    -fx-arc-width: 8;
+    -fx-arc-height: 8;
+}
+/* nav-current: the pill carries the accent, so the item itself stays flat */
+.sidebar .nav-item.nav-current,
+.sidebar .nav-item.nav-current:hover {
+    -fx-background-color: transparent;
+    -fx-text-fill: -wac-on-accent;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+}
+.sidebar .nav-item.nav-current .nav-icon {
+    -fx-fill: -wac-on-accent;
+}
+
+/* value flash: a 320 ms tint, removed by ui/motion/ValueFlash */
+.value-flash {
+    -fx-background-color: -wac-accent-soft;
+}
+
 /* The rest of the component layer lives in the other CSS files, one per area. */

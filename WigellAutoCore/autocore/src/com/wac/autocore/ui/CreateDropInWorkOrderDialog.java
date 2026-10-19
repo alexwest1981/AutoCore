@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
@@ -58,14 +59,20 @@ final class CreateDropInWorkOrderDialog {
                 // its own services.
                 Map<Integer, List<ServiceItem>> plan = WorkOrderPlan.planWorkOrders(garage, booking);
                 int created = 0;
-                for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
-                    List<Integer> ids = new ArrayList<Integer>();
-                    for (ServiceItem s : entry.getValue()) {
-                        ids.add(Integer.valueOf(s.getId()));
+
+                try {
+                    for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
+                        List<Integer> ids = new ArrayList<Integer>();
+                        for (ServiceItem s : entry.getValue()) {
+                            ids.add(Integer.valueOf(s.getId()));
+                        }
+                        if (garage.createWorkOrder(booking.getId(), entry.getKey().intValue(), ids) != null) {
+                            created++;
+                        }
                     }
-                    if (garage.createWorkOrder(booking.getId(), entry.getKey().intValue(), ids) != null) {
-                        created++;
-                    }
+                } catch (RuleViolationException refused) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                    return;
                 }
 
                 if (created == 0) {
@@ -80,7 +87,7 @@ final class CreateDropInWorkOrderDialog {
                                     .replace("{1}", String.valueOf(plan.size())));
                 }
 
-                com.wac.autocore.service.MechanicSchedule.getInstance().syncFromDatabase();
+                garage.refreshSchedule();
                 if (onSuccess != null) onSuccess.run();
             }
         });

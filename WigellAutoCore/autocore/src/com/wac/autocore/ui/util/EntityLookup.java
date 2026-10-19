@@ -96,21 +96,6 @@ public final class EntityLookup {
         return min;
     }
 
-    public static double bookingTotalPrice(GarageSystem garage, com.wac.autocore.model.Booking b) {
-        if (b == null) return 0.0;
-        double cost = b.getTotalEstimatedCost();
-        if (cost > 0.0) return cost;
-        if (garage != null && b.getServiceItemIds() != null) {
-            for (int sid : b.getServiceItemIds()) {
-                ServiceItem service = garage.findServiceItem(sid);
-                if (service != null) {
-                    cost += service.getPrice();
-                }
-            }
-        }
-        return cost;
-    }
-
     public static String bookingVehicleReg(GarageSystem garage, int bookingId) {
         if (garage == null) return "Booking #" + bookingId;
         Booking b = garage.findBooking(bookingId);
@@ -175,7 +160,7 @@ public final class EntityLookup {
         if (b != null && b.getDate() != null) {
             return String.valueOf(b.getDate());
         }
-        return wo != null && text(wo.getPlannedDate()) ? wo.getPlannedDate() : "-";
+        return wo != null && wo.getPlannedDate() != null ? String.valueOf(wo.getPlannedDate()) : "-";
     }
 
     /** The work order's time, from the booking, or the planned hour on a draft. */
@@ -184,11 +169,7 @@ public final class EntityLookup {
         if (b != null) {
             return bookingTime(b);
         }
-        return wo != null && text(wo.getPlannedTime()) ? wo.getPlannedTime() : "-";
-    }
-
-    private static boolean text(String value) {
-        return value != null && !value.trim().isEmpty();
+        return wo != null && wo.getPlannedTime() != null ? String.valueOf(wo.getPlannedTime()) : "-";
     }
 
     /** The booking the work order belongs to, or null when there is none. */
@@ -238,15 +219,15 @@ public final class EntityLookup {
         return null;
     }
 
-    public static double workOrderServicePrice(GarageSystem garage, WorkOrder wo, int serviceItemId) {
-        if (garage == null) return 0.0;
+    public static int workOrderServicePrice(GarageSystem garage, WorkOrder wo, int serviceItemId) {
+        if (garage == null) return 0;
         if (wo != null) {
             // The frozen price is the price that applied when the work was done, and it is
             // shown even before the invoice exists. Same order as in the details dialog:
             // frozen price, then the invoice line's price, last the catalogue.
-            Double frozenPrice = wo.getCompletedServicePrice(serviceItemId);
+            Integer frozenPrice = wo.getCompletedServicePrice(serviceItemId);
             if (frozenPrice != null) {
-                return frozenPrice.doubleValue();
+                return frozenPrice.intValue();
             }
             Invoice inv = invoiceForWorkOrder(garage, wo.getId());
             if (inv != null && inv.getLines() != null) {
@@ -258,7 +239,7 @@ public final class EntityLookup {
             }
         }
         ServiceItem service = garage.findServiceItem(serviceItemId);
-        return service == null ? 0.0 : service.getPrice();
+        return service == null ? 0 : service.getPrice();
     }
 
     /** The service names on a work order, without prices. The view is for the mechanics. */
@@ -293,12 +274,12 @@ public final class EntityLookup {
         return sb.toString();
     }
 
-    public static double workOrderTotal(GarageSystem garage, WorkOrder wo) {
-        if (garage == null || wo == null) return 0.0;
-        if (wo.getServiceItemIds() == null) return 0.0;
+    public static int workOrderTotal(GarageSystem garage, WorkOrder wo) {
+        if (garage == null || wo == null) return 0;
+        if (wo.getServiceItemIds() == null) return 0;
         // Summed per service in the same order as workOrderServicePrice, that is
         // frozen price first. Then the sum matches what the invoice will add up to.
-        double total = 0.0;
+        int total = 0;
         for (Integer sid : wo.getServiceItemIds()) {
             total += workOrderServicePrice(garage, wo, sid.intValue());
         }

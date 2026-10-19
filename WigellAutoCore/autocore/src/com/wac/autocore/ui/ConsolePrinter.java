@@ -8,11 +8,12 @@ import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.service.Printer;
 
 import java.util.List;
 
 /** All output for the text version. Gathered here so the service layer does not write to the console. */
-public class ConsolePrinter {
+public class ConsolePrinter implements Printer {
 
     public void printCustomers(List<Customer> customers) {
         printHeader("CUSTOMERS");
@@ -81,8 +82,8 @@ public class ConsolePrinter {
                 System.out.println("   Services to perform (" + order.getServiceItemIds().size() + "):");
                 for (Integer sid : order.getServiceItemIds()) {
                     boolean done = order.getCompletedServiceItems() != null && order.getCompletedServiceItems().contains(sid);
-                    Double price = order.getCompletedServicePrice(sid.intValue());
-                    String priceStr = price != null ? " (" + price + " kr)" : "";
+                    Integer price = order.getCompletedServicePrice(sid.intValue());
+                    String priceStr = price != null ? " (" + com.wac.autocore.ui.util.UiFormatters.formatMoney(price.intValue()) + ")" : "";
                     String st = done ? "[Completed]" : "[To perform]";
                     System.out.println("     • Service #" + sid + priceStr + " " + st);
                 }

@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.components;
 
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
@@ -246,10 +247,20 @@ class KanbanSlotDrawer {
             giveFirstService(target);
         }
 
-        WorkOrder created = createPlanOrders(slot, target);
+        WorkOrder created;
 
-        if (created == null) {
-            created = card.garage.createWorkOrder(target.getId(), slot.getMechanicId());
+        try {
+
+            created = createPlanOrders(slot, target);
+
+            if (created == null) {
+                created = card.garage.createWorkOrder(target.getId(), slot.getMechanicId());
+            }
+
+        } catch (RuleViolationException refused) {
+
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+            return;
         }
 
         if (created != null) {
@@ -280,7 +291,7 @@ class KanbanSlotDrawer {
     private void giveFirstService(Booking booking) {
         try {
             booking.addServiceItem(card.garage.getServiceItems().get(0));
-            card.garage.updateBooking(booking);
+            card.garage.saveBooking(booking);
         } catch (Exception ex) {
             System.out.println("Could not give the booking a service: " + ex.getMessage());
         }

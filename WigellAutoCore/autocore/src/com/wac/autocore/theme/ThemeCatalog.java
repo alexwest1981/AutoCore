@@ -7,7 +7,7 @@ import java.util.List;
 /** The theme catalogue. Rebuilt with themer.py convert. */
 public final class ThemeCatalog {
 
-    public static final String DEFAULT_SLUG = "emerald";
+    public static final String DEFAULT_SLUG = "modern";
 
     public static final class Theme {
         public final String slug;
@@ -20,6 +20,7 @@ public final class ThemeCatalog {
     private static final List<Theme> THEMES = new ArrayList<Theme>();
     static {
         Collections.addAll(THEMES,
+            new Theme("modern", "/com/wac/autocore/theme/themes/modern/modern.css"),
             new Theme("emerald", "/com/wac/autocore/theme/themes/emerald/emerald.css"));
     }
 

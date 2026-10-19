@@ -32,6 +32,11 @@ public class SidebarView {
     private final List<GroupHeader> groupHeaders = new ArrayList<GroupHeader>();
     private final Consumer<String> onNavigate;
 
+    /** The selection travels down the list instead of appearing under the new item. */
+    private final javafx.scene.shape.Rectangle navPill = new javafx.scene.shape.Rectangle();
+    private VBox navRoot;
+    private boolean pillPlaced;
+
     private Label brandSub;
     private Button overviewBtn;
 
@@ -46,12 +51,49 @@ public class SidebarView {
     }
 
     public void setSelectedPage(String key) {
+        Button target = null;
         for (Button b : navButtons) {
             b.getStyleClass().remove("selected");
+            b.getStyleClass().remove("nav-current");
             if (key != null && key.equals(b.getUserData())) {
-                b.getStyleClass().add("selected");
+                // the accent block is the travelling pill, so the item itself stays flat
+                b.getStyleClass().add("nav-current");
+                target = b;
             }
         }
+        movePillTo(target, true);
+    }
+
+    /** Puts the pill on the selected item, travelling there unless motion is reduced. */
+    private void movePillTo(final Button target, final boolean animate) {
+        if (target == null || navRoot == null) {
+            navPill.setVisible(false);
+            return;
+        }
+        javafx.geometry.Bounds inScene = target.localToScene(target.getBoundsInLocal());
+        // layoutBounds, not the scene bounds: a button's bounds include its drop shadow
+        javafx.geometry.Bounds b = navRoot.sceneToLocal(inScene);
+        if (b.getHeight() <= 0) {
+            return;
+        }
+        navPill.setX(b.getMinX());
+        navPill.setWidth(b.getWidth());
+        navPill.setVisible(true);
+        // "placed" is a flag, not "y != 0": the first menu item sits at y = 0, and testing the
+        // position made the very first navigation jump instead of glide
+        boolean travel = animate && pillPlaced && navPill.getHeight() > 0
+                && !com.wac.autocore.ui.motion.Motion.isReduced();
+        if (!travel) {
+            navPill.setY(b.getMinY());
+            navPill.setHeight(b.getHeight());
+            pillPlaced = true;
+            return;
+        }
+        pillPlaced = true;
+        new javafx.animation.Timeline(new javafx.animation.KeyFrame(
+                javafx.util.Duration.millis(200),
+                new javafx.animation.KeyValue(navPill.yProperty(), b.getMinY(), javafx.animation.Interpolator.EASE_BOTH),
+                new javafx.animation.KeyValue(navPill.heightProperty(), b.getHeight(), javafx.animation.Interpolator.EASE_BOTH))).play();
     }
 
     /** The counter on the menu item. Zero hides it. */
@@ -64,8 +106,13 @@ public class SidebarView {
             countLabel.setVisible(false);
             return;
         }
-        countLabel.setText("+" + count);
+        String next = "+" + count;
+        boolean changed = !next.equals(countLabel.getText());
+        countLabel.setText(next);
         countLabel.setVisible(true);
+        if (changed) {
+            com.wac.autocore.ui.motion.Motion.pulse(countLabel);
+        }
     }
 
     public void refreshTexts() {
@@ -155,6 +202,11 @@ public class SidebarView {
 
         VBox nav = new VBox(0);
         nav.setPadding(new Insets(0, 16, 0, 16));
+        navRoot = nav;
+        navPill.getStyleClass().add("nav-pill");
+        navPill.setManaged(false);
+        navPill.setVisible(false);
+        nav.getChildren().add(navPill);
         overviewBtn = addNav(nav, "overview", I18n.get("nav.section.overview"));
 
         VBox groups = new VBox(22);

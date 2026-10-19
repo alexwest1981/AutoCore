@@ -166,8 +166,8 @@ public final class TableFactory {
     /** Model year, four digits. "2012" needs 47. */
     public static final double W_YEAR = 55;
 
-    /** Amount in kronor. "24,995 kr" needs 95. */
-    public static final double W_MONEY = 95;
+    /** Amount in kronor with öre. "1,295.00 kr" needs 110. */
+    public static final double W_MONEY = 110;
 
     /** Minutes. "270 min" is 52, but the heading "Beräknad tid" is 73, so the need is 90. */
     public static final double W_MINUTES = 90;
@@ -243,7 +243,22 @@ public final class TableFactory {
         TableColumn<S, String> c = col(title, minWidth, mapper);
         c.setMinWidth(minWidth);
         c.setMaxWidth(maxWidth);
+        c.setCellFactory(column -> new FlashCell<S>());
         return c;
+    }
+
+    /** A text cell that tints itself when its value changes, so an edited row is caught by the
+     *  eye without a toast. First fill is silent: a table loading is not a change. */
+    private static final class FlashCell<S> extends TableCell<S, String> {
+        private String shown;
+
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(empty ? null : item);
+            com.wac.autocore.ui.motion.ValueFlash.onValueChange(this, shown, empty ? null : item);
+            shown = empty ? null : item;
+        }
     }
 
     /** The ID column, same in every table. No breathing room. */

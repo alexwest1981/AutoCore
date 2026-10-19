@@ -1,11 +1,11 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.repository.MechanicRepository;
 import com.wac.autocore.seed.SeedText;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,14 +17,17 @@ import java.util.Map;
 /** Who may perform which service. The service requires a specialization, the mechanic carries their own. */
 public class MechanicRules {
 
-    private final MechanicRepository mechanicRepository = new MechanicRepository();
+    private final MechanicRepository mechanicRepository;
+
+    public MechanicRules(MechanicRepository mechanicRepository) {
+        this.mechanicRepository = mechanicRepository;
+    }
 
     public List<Mechanic> getAll() {
         try {
             return mechanicRepository.findAll();
-        } catch (SQLException e) {
-            System.out.println("Could not read mechanics: " + e.getMessage());
-            return Collections.emptyList();
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not read mechanics", e);
         }
     }
 

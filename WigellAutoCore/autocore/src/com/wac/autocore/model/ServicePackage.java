@@ -51,12 +51,8 @@ public class ServicePackage {
         serviceItems.add(item);
     }
 
-    public double getTotalPrice() {
-        double total = 0;
-        for (ServiceItem item : serviceItems) {
-            total += item.getPrice();
-        }
-        return total;
+    public int getTotalPrice() {
+        return ServiceItem.totalPrice(serviceItems);
     }
 
     public int getTotalEstimatedMinutes() {

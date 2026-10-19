@@ -1,9 +1,7 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.model.*;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.UiFormatters;
@@ -34,7 +32,7 @@ final class CreateWorkOrderDialog {
         // booking that is only partly split (some services left) should still be fillable.
         List<Booking> bookings = new ArrayList<Booking>();
         for (Booking b : garage.getBookings()) {
-            if ("BOOKED".equalsIgnoreCase(b.getStatus()) || "CONFIRMED".equalsIgnoreCase(b.getStatus())) {
+            if (b.getStatus() == BookingStatus.BOOKED || b.getStatus() == BookingStatus.CONFIRMED) {
                 if (WorkOrderPlan.hasServicesLeftForAWorkOrder(garage, b)) {
                     bookings.add(b);
                 }
@@ -125,18 +123,16 @@ final class CreateWorkOrderDialog {
                 Mechanic m = WorkOrderPlan.mechanicById(garage, entry.getKey().intValue());
                 StringBuilder names = new StringBuilder();
                 int minutes = 0;
-                double price = 0.0;
                 for (ServiceItem s : entry.getValue()) {
                     if (names.length() > 0) {
                         names.append(", ");
                     }
                     names.append(SeedText.resolve(s.getName()));
                     minutes += s.getEstimatedMinutes();
-                    price += s.getPrice();
                 }
                 Label row = new Label((m != null ? m.getName() + " (" + SeedText.resolve(m.getSpecialization()) + ")" : "?")
                         + ": " + names
-                        + "  ·  " + minutes + " min  ·  " + UiFormatters.formatMoney(price));
+                        + "  ·  " + minutes + " min  ·  " + UiFormatters.formatMoney(ServiceItem.totalPrice(entry.getValue())));
                 serviceList.getChildren().add(row);
             }
 
@@ -183,14 +179,20 @@ final class CreateWorkOrderDialog {
 
                 // One work order per mechanic, each with its own services.
                 int created = 0;
-                for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
-                    List<Integer> ids = new ArrayList<Integer>();
-                    for (ServiceItem s : entry.getValue()) {
-                        ids.add(Integer.valueOf(s.getId()));
+
+                try {
+                    for (Map.Entry<Integer, List<ServiceItem>> entry : plan.entrySet()) {
+                        List<Integer> ids = new ArrayList<Integer>();
+                        for (ServiceItem s : entry.getValue()) {
+                            ids.add(Integer.valueOf(s.getId()));
+                        }
+                        if (garage.createWorkOrder(b.getId(), entry.getKey().intValue(), ids, typeBox.getValue()) != null) {
+                            created++;
+                        }
                     }
-                    if (garage.createWorkOrder(b.getId(), entry.getKey().intValue(), ids, typeBox.getValue()) != null) {
-                        created++;
-                    }
+                } catch (RuleViolationException refused) {
+                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                    return;
                 }
 
                 if (created == 0) {
@@ -205,7 +207,7 @@ final class CreateWorkOrderDialog {
                                     .replace("{1}", String.valueOf(plan.size())));
                 }
 
-                com.wac.autocore.service.MechanicSchedule.getInstance().syncFromDatabase();
+                garage.refreshSchedule();
                 if (onSuccess != null) onSuccess.run();
             }
         });

@@ -7,6 +7,7 @@ import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.motion.HoldToConfirmButton;
 import com.wac.autocore.ui.navigation.PageRouter;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableRow;
@@ -35,7 +36,9 @@ final class CustomerPage {
         addButton.setOnAction(e -> ActionDialogs.showCreateCustomerDialog(garage, () -> router.navigate("customers")));
 
         Button editButton = UiComponents.secondaryButton(I18n.get("entity.customers.action_edit"));
-        Button deleteButton = UiComponents.secondaryButton(I18n.get("entity.customers.action_delete"));
+        HoldToConfirmButton deleteButton = new HoldToConfirmButton(I18n.get("entity.customers.action_delete"))
+                .hint(I18n.get("motion.hold"))
+                .confirmText(I18n.get("motion.done"));
         editButton.setDisable(true);
         deleteButton.setDisable(true);
 
@@ -50,7 +53,7 @@ final class CustomerPage {
                 ActionDialogs.showEditCustomerDialog(garage, selected, () -> router.navigate("customers"));
             }
         });
-        deleteButton.setOnAction(e -> {
+        deleteButton.onConfirm(() -> {
             Customer selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 ActionDialogs.showDeleteCustomerConfirmation(garage, selected, () -> router.navigate("customers"));

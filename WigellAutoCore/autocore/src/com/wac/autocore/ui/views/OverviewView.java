@@ -81,7 +81,7 @@ public final class OverviewView {
                 break;
             }
             Label dot = new Label();
-            dot.getStyleClass().addAll("sdot", UiFormatters.dotClass(b.getStatus()));
+            dot.getStyleClass().addAll("sdot", UiFormatters.dotClass(b.getStatus().name()));
             Label vehicle = new Label(EntityLookup.vehicleReg(garage, b.getVehicleId()) + " \u00b7 " + b.getDate());
             vehicle.getStyleClass().add("srow-title");
             Label desc = new Label(UiFormatters.truncate(SeedText.resolve(b.getDescription()), 42));

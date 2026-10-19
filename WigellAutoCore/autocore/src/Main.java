@@ -10,6 +10,7 @@ import javafx.application.Application;
 public class Main {
 
     public static void main(String[] args) {
+        Db.use(Db.pathFrom(args));
         try {
             Db.ensureReady();
         } catch (RuntimeException e) {

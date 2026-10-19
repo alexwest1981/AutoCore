@@ -1,6 +1,8 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.data.Settings;
+import com.wac.autocore.exception.AppException;
+import com.wac.autocore.data.Db;
+import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.theme.ThemeManager;
 import com.wac.autocore.ui.i18n.I18n;
@@ -20,7 +22,7 @@ public class AutoCoreApp extends Application {
     /** Key the language choice is stored under in the settings table. */
     public static final String LANGUAGE_KEY = "language";
 
-    private final GarageSystem garage = new GarageSystem();
+    private final GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
 
     @Override
     public void start(Stage primaryStage) {
@@ -60,8 +62,8 @@ public class AutoCoreApp extends Application {
         stage.setCenter(shell);
 
         Scene scene = new Scene(stage, 1280, 800);
-        // Lock the theme to Emerald
-        ThemeManager.apply(scene, "emerald");
+        ThemeManager.apply(scene, com.wac.autocore.theme.ThemeCatalog.DEFAULT_SLUG);
+        com.wac.autocore.ui.motion.PressDepth.install(scene);
 
         primaryStage.setTitle("Wigell AutoCore");
         primaryStage.setScene(scene);
@@ -75,29 +77,39 @@ public class AutoCoreApp extends Application {
      */
     public static void installErrorBoundary() {
         Thread.setDefaultUncaughtExceptionHandler((thread, failure) -> {
-            failure.printStackTrace();
+            // A refusal with a sentence is the program working; only real faults need the trace.
+            if (!(failure instanceof AppException) || ((AppException) failure).getMessageKey() == null) {
+                failure.printStackTrace();
+            }
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), errorMessageFor(failure));
         });
     }
 
-    /** What the user reads: one sentence about the action, then the technical line. */
+    /** The one place that turns an error into a text, so the same error reads the same everywhere. */
     public static String errorMessageFor(Throwable failure) {
-        String reason = failure instanceof com.wac.autocore.exception.AppException
-                ? failure.getMessage() : failure.toString();
-        return I18n.get("view.error.action_failed") + "\n\n" + reason;
+        if (failure instanceof AppException) {
+            String key = ((AppException) failure).getMessageKey();
+            if (key != null) {
+                // A refusal the service has already worded: the sentence alone is the answer.
+                return I18n.get(key);
+            }
+            return I18n.get("view.error.action_failed") + "\n\n" + failure.getMessage();
+        }
+        return I18n.get("view.error.action_failed") + "\n\n" + failure.toString();
     }
 
     /** Reads the last chosen language from the settings. */
-    public static void restoreLanguage() {
-        I18n.setLanguage(Settings.get(LANGUAGE_KEY, I18n.DEFAULT_LANG));
+    public void restoreLanguage() {
+        I18n.setLanguage(garage.getSetting(LANGUAGE_KEY, I18n.DEFAULT_LANG));
     }
 
     /** Saves language switches so the choice survives a restart. */
-    public static void persistLanguageChanges() {
-        I18n.addListener(lang -> Settings.put(LANGUAGE_KEY, lang));
+    public void persistLanguageChanges() {
+        I18n.addListener(lang -> garage.saveSetting(LANGUAGE_KEY, lang));
     }
 
     public static void main(String[] args) {
+        Db.use(Db.pathFrom(args));
         launch(args);
     }
 }

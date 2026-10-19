@@ -1,10 +1,8 @@
 package com.wac.autocore.ui.components;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.ServicePackage;
-import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.model.*;
+import com.wac.autocore.model.OpeningHours;
+import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.ui.ActionDialogs;
@@ -59,9 +57,8 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
     private MultiSelectComboBox<Mechanic> mechanicMulti;
     private final Label mechanicFilterHint;
     private final ComboBox<LocalTime> startTimeBox;
-    private final Label durationLabel;
     private final TextField descField;
-    private final ComboBox<String> statusBox;
+    private final ComboBox<BookingStatus> statusBox;
 
     /**
      * Drop-in: the time is not picked, it is worked out and shown before the booking is approved.
@@ -141,7 +138,6 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
                 existingBooking, initialDate);
         this.datePicker = scheduleField.getDatePicker();
         this.startTimeBox = scheduleField.getStartTimeBox();
-        this.durationLabel = scheduleField.getDurationLabel();
 
         BookingStatusField statusField = new BookingStatusField(existingBooking);
         this.descField = statusField.getDesc();
@@ -221,13 +217,6 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
             // and then the row in the form says why OK is locked.
             return hasServices && dropInStart.get() != null;
         }
-        LocalTime start = getSelectedStartTime();
-        if (start != null) {
-            int duration = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-            if (start.plusMinutes(duration).isAfter(BookingAvailability.CLOSING_TIME)) {
-                return false;
-            }
-        }
         return excludeBookingId != 0 || hasServices;
     }
 
@@ -243,58 +232,13 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
     }
 
     public boolean validate(GarageSystem garage, int excludeBookingId) {
+
         // A new booking must hold at least one service. In edit mode the requirement does not
         // apply, because a booking that already exists may keep its services.
         if (!requiredFieldsFilled(excludeBookingId)) {
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation.required"));
             return false;
         }
-
-        LocalDate date = getSelectedDate();
-        Mechanic chosenMech = getSelectedMechanic();
-        LocalTime startTime = getSelectedStartTime();
-        int minutes = getTotalEstimatedMinutes() > 0 ? getTotalEstimatedMinutes() : 60;
-
-        // Blocked against closing time (17:00): a job that ends after closing cannot be booked.
-        // A drop-in has no picked time — it is worked out by the service.
-        if (startTime != null && !dropIn) {
-            LocalTime endTime = startTime.plusMinutes(minutes);
-            if (endTime.isAfter(BookingAvailability.CLOSING_TIME)) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.closing_time_exceeded"));
-                return false;
-            }
-        }
-
-        // Qualification check: every picked service needs at least one qualified mechanic in the team
-        List<Mechanic> team = getSelectedMechanics();
-        for (ServiceItem s : getSelectedServices()) {
-            boolean hasQualified = false;
-            for (Mechanic m : team) {
-                if (garage.isMechanicQualified(m, s)) {
-                    hasQualified = true;
-                    break;
-                }
-            }
-            if (!hasQualified && chosenMech != null && garage.isMechanicQualified(chosenMech, s)) {
-                hasQualified = true;
-            }
-            if (!hasQualified) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                        I18n.get("dialog.booking.no_mechanic_for_spec"));
-                return false;
-            }
-        }
-
-        // The whole booking's range is checked against the busy times of the required mechanics.
-        // Drop-in is exempt: its time was already picked from the team's free hours.
-        if (startTime != null && !dropIn) {
-            if (BookingAvailability.isTeamBooked(garage, team, date, startTime,
-                    startTime.plusMinutes(minutes), excludeBookingId)) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.slot_busy_error"));
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -469,8 +413,8 @@ public class BookingFormPane extends GridPane implements ScheduleSource {
         return descField.getText().trim();
     }
 
-    public String getStatus() {
-        return statusBox != null ? statusBox.getValue() : "BOOKED";
+    public BookingStatus getStatus() {
+        return statusBox != null ? statusBox.getValue() : BookingStatus.BOOKED;
     }
 
     static <T> void setupComboBoxDisplay(ComboBox<T> box, StringConverter<T> converter) {

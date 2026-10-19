@@ -98,6 +98,7 @@
       "subtitle": "Ongoing and completed garage work orders",
       "meta": "{0} work orders",
       "meta.one": "{0} work order",
+      "show_cancelled": "Show cancelled",
       "action_create": "+ Create Work Order",
       "action_start": "▶ Start order",
       "action_cancel": "Cancel order",
@@ -431,6 +432,14 @@
       "create_failed": "The reclamation could not be created."
     },
     "workorder": {
+      "unknown_type": "The work order type cannot be used.",
+      "no_services": "No services were given for the work order.",
+      "service_already_claimed": "The service already sits on a work order.",
+      "mechanic_busy": "The mechanic is not available.",
+      "reclamation_not_completed": "Only completed work can be reclaimed.",
+      "confirm_no_mechanic": "The work order has no mechanic.",
+      "confirm_no_services": "The work order has no services.",
+      "confirm_no_date": "The work order has no date.",
       "create": {
         "title": "New Work Order",
         "header": "Open Work Order"
@@ -573,5 +582,36 @@
       "reclamations.one": "Reclamation not yet dealt with",
       "reclamations.many": "Reclamations not yet dealt with"
     }
+  },
+  "seed.booking.brake_calipers_pads.description": "Brake calipers and pads",
+  "seed.booking.drop_in.description": "Drop-in without a booking",
+  "seed.booking.electronic_fault_diagnosis.description": "Electronic fault diagnosis",
+  "seed.booking.front_brake_inspection.description": "Front brake inspection",
+  "seed.booking.full_brake_overhaul.description": "Full brake overhaul",
+  "seed.booking.obd2_fault_codes.description": "OBD2 fault code reading",
+  "seed.booking.oil_change_filter.description": "Oil change & filter replacement",
+  "seed.mechanic.brakes.specialization": "Brakes",
+  "seed.mechanic.climate.specialization": "AC & Climate",
+  "seed.mechanic.diagnostics.specialization": "Diagnostics",
+  "seed.mechanic.engine.specialization": "Engine & Drivetrain",
+  "seed.mechanic.general_service.specialization": "General service",
+  "seed.mechanic.wheels.specialization": "Tyres & Wheels",
+  "seed.schedule.brake_hose_inspection.description": "Brake hose inspection",
+  "seed.schedule.brake_system_bleeding.description": "Brake system bleeding",
+  "seed.schedule.final_brake_inspection.description": "Final brake inspection",
+  "seed.schedule.oil_change_continued.description": "Oil change continued",
+  "seed.schedule.oil_follow_up.description": "Oil follow-up check",
+  "seed.schedule.quick_brake_check.description": "Quick brake check",
+  "seed.service.annual_service.desc": "Standard annual vehicle service",
+  "seed.service.annual_service.name": "Annual service",
+  "seed.service.brake_service.desc": "Inspection and replacement of front brake pads",
+  "seed.service.brake_service.name": "Brake service",
+  "seed.service.diagnostics.desc": "Electronic fault code diagnostics",
+  "seed.service.diagnostics.name": "Diagnostics",
+  "seed.service.oil_change.desc": "Engine oil and oil filter replacement",
+  "seed.service.oil_change.name": "Oil change",
+  "motion": {
+    "hold": "hold",
+    "done": "done"
   }
 }

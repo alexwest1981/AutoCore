@@ -98,6 +98,7 @@
       "subtitle": "Pågående och slutförda verkstadsjobb",
       "meta": "{0} arbetsordrar",
       "meta.one": "{0} arbetsorder",
+      "show_cancelled": "Visa avbrutna",
       "action_create": "+ Ny arbetsorder",
       "action_start": "▶ Starta order",
       "action_cancel": "Avbryt order",
@@ -339,7 +340,7 @@
         "title": "Nytt servicepaket",
         "header": "Skapa servicepaket"
       },
-      "edit":{
+      "edit": {
         "title": "Redigera servicepaket",
         "header": "Ändra paketets namn, beskrivning och tjänster",
         "button": "Redigera paket"
@@ -431,6 +432,14 @@
       "create_failed": "Reklamationen kunde inte skapas."
     },
     "workorder": {
+      "unknown_type": "Arbetsorderns typ går inte att använda.",
+      "no_services": "Ingen tjänst angavs för arbetsordern.",
+      "service_already_claimed": "Tjänsten ligger redan på en arbetsorder.",
+      "mechanic_busy": "Mekanikern är inte ledig.",
+      "reclamation_not_completed": "Bara ett slutfört arbete går att reklamera.",
+      "confirm_no_mechanic": "Arbetsordern saknar mekaniker.",
+      "confirm_no_services": "Arbetsordern saknar tjänster.",
+      "confirm_no_date": "Arbetsordern saknar datum.",
       "create": {
         "title": "Ny arbetsorder",
         "header": "Öppna arbetsorder"
@@ -573,5 +582,36 @@
       "reclamations.one": "Reklamation som inte är åtgärdad",
       "reclamations.many": "Reklamationer som inte är åtgärdade"
     }
+  },
+  "seed.booking.brake_calipers_pads.description": "Bromsok och bromsbelägg",
+  "seed.booking.drop_in.description": "Drop-in utan bokning",
+  "seed.booking.electronic_fault_diagnosis.description": "Elektronisk feldiagnos",
+  "seed.booking.front_brake_inspection.description": "Inspektion av främre bromsar",
+  "seed.booking.full_brake_overhaul.description": "Komplett bromsöversyn",
+  "seed.booking.obd2_fault_codes.description": "Läsning av OBD2-felkoder",
+  "seed.booking.oil_change_filter.description": "Oljebyte och filterbyte",
+  "seed.mechanic.brakes.specialization": "Bromsar",
+  "seed.mechanic.climate.specialization": "AC & Klimat",
+  "seed.mechanic.diagnostics.specialization": "Diagnostik",
+  "seed.mechanic.engine.specialization": "Motor & Drivlina",
+  "seed.mechanic.general_service.specialization": "Allmän service",
+  "seed.mechanic.wheels.specialization": "Däck & Hjul",
+  "seed.schedule.brake_hose_inspection.description": "Kontroll av bromsslangar",
+  "seed.schedule.brake_system_bleeding.description": "Luftning av bromssystemet",
+  "seed.schedule.final_brake_inspection.description": "Slutkontroll av bromsarna",
+  "seed.schedule.oil_change_continued.description": "Oljebyte fortsätter",
+  "seed.schedule.oil_follow_up.description": "Uppföljning av oljebytet",
+  "seed.schedule.quick_brake_check.description": "Snabb bromskontroll",
+  "seed.service.annual_service.desc": "Standardmässig årsservice av fordonet",
+  "seed.service.annual_service.name": "Årsservice",
+  "seed.service.brake_service.desc": "Kontroll och byte av främre bromsbelägg",
+  "seed.service.brake_service.name": "Bromsservice",
+  "seed.service.diagnostics.desc": "Elektronisk felkodsdiagnostik",
+  "seed.service.diagnostics.name": "Diagnostik",
+  "seed.service.oil_change.desc": "Byte av motorolja och oljefilter",
+  "seed.service.oil_change.name": "Oljebyte",
+  "motion": {
+    "hold": "håll",
+    "done": "klart"
   }
 }

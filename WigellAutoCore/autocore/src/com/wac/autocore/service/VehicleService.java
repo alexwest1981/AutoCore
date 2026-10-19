@@ -1,34 +1,30 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.NotFoundException;
+import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.VehicleRepository;
 
-import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 
 /** Vehicles and the link to their owners. */
 public class VehicleService {
 
     private final CustomerService customerService;
-    private final VehicleRepository vehicleRepository = new VehicleRepository();
+    private final VehicleRepository vehicleRepository;
 
-    public VehicleService() {
-        this(new CustomerService());
-    }
-
-    public VehicleService(CustomerService customerService) {
+    public VehicleService(CustomerService customerService, VehicleRepository vehicleRepository) {
         this.customerService = customerService;
+        this.vehicleRepository = vehicleRepository;
     }
 
     public List<Vehicle> getAll() {
         try {
             return vehicleRepository.findAll();
-        } catch (SQLException e) {
-            System.out.println("Could not read vehicles: " + e.getMessage());
-            return Collections.emptyList();
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not read vehicles", e);
         }
     }
 
@@ -37,6 +33,8 @@ public class VehicleService {
                                  String model,
                                  int year,
                                  int customerId) {
+
+        refuseUnlessStorable(registrationNumber, brand, model, year);
 
         Customer customer = customerService.findById(customerId);
 
@@ -48,14 +46,32 @@ public class VehicleService {
 
         try {
             vehicleRepository.save(vehicle);
-        } catch (SQLException e) {
-            System.out.println("Could not save vehicle: " + e.getMessage());
-            return null;
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not save vehicle", e);
         }
-
-        System.out.println("Vehicle created successfully.");
-        System.out.println(vehicle);
-
         return vehicle;
+    }
+
+    public void updateVehicle(Vehicle vehicle) {
+        if (vehicle == null) {
+            return;
+        }
+        refuseUnlessStorable(vehicle.getRegistrationNumber(), vehicle.getBrand(),
+                vehicle.getModel(), vehicle.getYear());
+        try {
+            vehicleRepository.save(vehicle);
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not save vehicle", e);
+        }
+    }
+
+
+    private static void refuseUnlessStorable(String registrationNumber, String brand, String model, int year) {
+
+        String problem = Vehicle.validationProblem(registrationNumber, brand, model, year);
+
+        if (problem != null) {
+            throw new ValidationException(problem);
+        }
     }
 }

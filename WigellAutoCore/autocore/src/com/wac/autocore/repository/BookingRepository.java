@@ -1,7 +1,9 @@
 package com.wac.autocore.repository;
 
-import com.wac.autocore.data.Db;
+import com.wac.autocore.data.DatabaseWork;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
+import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.model.ServiceItem;
 
 import java.sql.Connection;
@@ -22,56 +24,71 @@ public class BookingRepository {
     private static final String SERVICE_ITEM_COLUMNS =
             "id, name, description, price, estimated_minutes, specialization";
 
-    private final BookingServiceItemRepository bookingServiceItemRepository = new BookingServiceItemRepository();
-    private final BookingMechanicRepository bookingMechanicRepository = new BookingMechanicRepository();
+    private final BookingServiceItemRepository bookingServiceItemRepository;
+    private final BookingMechanicRepository bookingMechanicRepository;
 
-    public void save(Booking booking) throws SQLException {
-        if (booking.getId() == 0 || findById(booking.getId()) == null) {
-            insert(booking);
-        } else {
-            update(booking);
-        }
-        bookingServiceItemRepository.save(booking);
-        // The mechanics are stored in the same sweep, so a booking with several specialists keeps them.
-        bookingMechanicRepository.saveForBooking(booking.getId(), booking.getMechanicIds());
+    public BookingRepository(BookingServiceItemRepository bookingServiceItemRepository,
+                             BookingMechanicRepository bookingMechanicRepository) {
+        this.bookingServiceItemRepository = bookingServiceItemRepository;
+        this.bookingMechanicRepository = bookingMechanicRepository;
     }
 
-    public List<Booking> findAll() throws SQLException {
+    public void save(final Booking booking) {
+        final boolean isNew = booking.getId() == 0 || findById(booking.getId()) == null;
+
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                if (isNew) {
+                    insert(connection, booking);
+                } else {
+                    update(connection, booking);
+                }
+                bookingServiceItemRepository.save(connection, booking);
+                // The mechanics are stored in the same sweep, so a booking with several specialists keeps them.
+                bookingMechanicRepository.saveForBooking(connection, booking.getId(), booking.getMechanicIds());
+                return null;
+            }
+        }.run();
+    }
+
+    public List<Booking> findAll() {
         return Queries.read("SELECT " + COLUMNS + " FROM bookings", resultSet -> build(resultSet));
     }
 
-    public Booking findById(int id) throws SQLException {
+    public Booking findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM bookings WHERE id = ?",
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(final int id) {
         // The service rows and the mechanic links point at this booking, and nothing else clears
-        // them, so all three go in one connection.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement statement = connection.prepareStatement("DELETE FROM bookings WHERE id = ?")) {
-
-            bookingServiceItemRepository.deleteByBookingId(connection, id);
-            bookingMechanicRepository.deleteByBookingId(connection, id);
-
-            statement.setInt(1, id);
-            statement.executeUpdate();
-        }
+        // them, so all three go in one transaction.
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                bookingServiceItemRepository.deleteByBookingId(connection, id);
+                bookingMechanicRepository.deleteByBookingId(connection, id);
+                Queries.write(connection, "DELETE FROM bookings WHERE id = ?",
+                        statement -> statement.setInt(1, id));
+                return null;
+            }
+        }.run();
     }
 
-    private void insert(Booking booking) throws SQLException {
+    private void insert(Connection connection, Booking booking) throws SQLException {
         String sql = "INSERT INTO bookings (vehicle_id, date, description, status, start_time, "
                 + "end_time, mechanic_id, service_item_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        int id = Queries.insert(sql, statement -> {
+        int id = Queries.insert(connection, sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
-            statement.setString(4, booking.getStatus());
+            statement.setString(4, booking.getStatus().name());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
-            setMechanicId(statement, 7, booking.getMechanicId());
-            setServiceItemId(statement, 8, booking.getServiceItemId());
+            Queries.setReference(statement, 7, booking.getMechanicId());
+            Queries.setReference(statement, 8, booking.getServiceItemId());
         });
 
         if (id > 0) {
@@ -79,19 +96,19 @@ public class BookingRepository {
         }
     }
 
-    private void update(Booking booking) throws SQLException {
+    private void update(Connection connection, Booking booking) throws SQLException {
         String sql = "UPDATE bookings SET vehicle_id = ?, date = ?, description = ?, status = ?, "
                 + "start_time = ?, end_time = ?, mechanic_id = ?, service_item_id = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
+        Queries.write(connection, sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
-            statement.setString(4, booking.getStatus());
+            statement.setString(4, booking.getStatus().name());
             setTime(statement, 5, booking.getStartTime());
             setTime(statement, 6, booking.getEndTime());
-            setMechanicId(statement, 7, booking.getMechanicId());
-            setServiceItemId(statement, 8, booking.getServiceItemId());
+            Queries.setReference(statement, 7, booking.getMechanicId());
+            Queries.setReference(statement, 8, booking.getServiceItemId());
             statement.setInt(9, booking.getId());
         });
     }
@@ -113,36 +130,18 @@ public class BookingRepository {
         }
     }
 
-    /** A missing mechanic or service is stored as NULL, not as a zero that points at nothing. */
-    private static void setMechanicId(PreparedStatement statement, int position, int mechanicId) throws SQLException {
-        if (mechanicId == 0) {
-            statement.setNull(position, Types.INTEGER);
-        } else {
-            statement.setInt(position, mechanicId);
-        }
-    }
-
-    private static void setServiceItemId(PreparedStatement statement, int position, int serviceItemId) throws SQLException {
-        if (serviceItemId == 0) {
-            statement.setNull(position, Types.INTEGER);
-        } else {
-            statement.setInt(position, serviceItemId);
-        }
-    }
-
     private Booking build(ResultSet resultSet) throws SQLException {
         String dateText = resultSet.getString("date");
 
         LocalDate bookingDate = null;
 
-        // A row written before the format was fixed can hold anything, and one bad row must not
-        // stop the list.
+        // A row written before the format was fixed can hold anything, and one bad row must not stop the list.
         if (dateText != null) {
 
             try {
                 bookingDate = LocalDate.parse(dateText);
             } catch (java.time.format.DateTimeParseException e) {
-                System.out.println("Hoppade över ett trasigt datum i databasen: " + dateText);
+                throw new DataAccessException("Could not read the date of booking " + resultSet.getInt("id"), e);
             }
         }
 
@@ -155,7 +154,7 @@ public class BookingRepository {
 
         String status = resultSet.getString("status");
         if (status != null) {
-            booking.setStatus(status);
+            booking.setStatus(BookingStatus.fromText(resultSet.getString("status")));
         }
 
         String startText = resultSet.getString("start_time");
@@ -163,8 +162,7 @@ public class BookingRepository {
             try {
                 booking.setStartTime(LocalTime.parse(startText));
             } catch (java.time.format.DateTimeParseException e) {
-                System.out.println("Hoppade över trasig tid i databasen: " + startText);
-                booking.setStartTime(LocalTime.of(8, 0));
+                throw new DataAccessException("Could not read the start time of booking " + booking.getId(), e);
             }
         }
 
@@ -173,7 +171,7 @@ public class BookingRepository {
             try {
                 booking.setEndTime(LocalTime.parse(endText));
             } catch (java.time.format.DateTimeParseException e) {
-                booking.setEndTime(LocalTime.of(9, 0));
+                throw new DataAccessException("Could not read the end time of booking " + booking.getId(), e);
             }
         }
 
@@ -232,7 +230,7 @@ public class BookingRepository {
                             resultSet.getInt("id"),
                             resultSet.getString("name"),
                             resultSet.getString("description"),
-                            resultSet.getDouble("price"),
+                            resultSet.getInt("price"),
                             resultSet.getInt("estimated_minutes")
                     );
                     // The requirement has to come along, otherwise the service looks

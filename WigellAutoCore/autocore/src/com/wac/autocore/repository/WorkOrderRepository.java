@@ -1,13 +1,18 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.data.Db;
+import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.WorkOrderStatus;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,55 +23,63 @@ public class WorkOrderRepository {
     private static final String COLUMNS = "id, booking_id, mechanic_id, status, type, vehicle_id, description, "
             + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments";
 
-    public void save(WorkOrder workOrder) throws SQLException {
-        if (workOrder.getId() == 0 || findById(workOrder.getId()) == null) {
-            insert(workOrder);
-        } else {
-            update(workOrder);
-        }
-        saveServiceItems(workOrder);
+    public void save(final WorkOrder workOrder) {
+        final boolean isNew = workOrder.getId() == 0 || findById(workOrder.getId()) == null;
+
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                if (isNew) {
+                    insert(connection, workOrder);
+                } else {
+                    update(connection, workOrder);
+                }
+                saveServiceItems(connection, workOrder);
+                return null;
+            }
+        }.run();
     }
 
-    public List<WorkOrder> findAll() throws SQLException {
+    public List<WorkOrder> findAll() {
         return Queries.read("SELECT " + COLUMNS + " FROM work_orders", resultSet -> build(resultSet));
     }
 
-    public WorkOrder findById(int id) throws SQLException {
+    public WorkOrder findById(int id) {
         return Queries.readOne("SELECT " + COLUMNS + " FROM work_orders WHERE id = ?",
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(final int id) {
         // The service rows point at this work order and nothing else clears them, so both go in one
-        // connection.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement links = connection.prepareStatement(
-                     "DELETE FROM work_order_service_items WHERE work_order_id = ?");
-             PreparedStatement order = connection.prepareStatement("DELETE FROM work_orders WHERE id = ?")) {
-
-            links.setInt(1, id);
-            links.executeUpdate();
-
-            order.setInt(1, id);
-            order.executeUpdate();
-        }
+        // transaction.
+        new DatabaseWork<Void>() {
+            @Override
+            protected Void step(Connection connection) throws SQLException {
+                Queries.write(connection, "DELETE FROM work_order_service_items WHERE work_order_id = ?",
+                        statement -> statement.setInt(1, id));
+                Queries.write(connection, "DELETE FROM work_orders WHERE id = ?",
+                        statement -> statement.setInt(1, id));
+                return null;
+            }
+        }.run();
     }
 
-    private void insert(WorkOrder workOrder) throws SQLException {
+    private void insert(Connection connection, WorkOrder workOrder) throws SQLException {
         String sql = "INSERT INTO work_orders (booking_id, mechanic_id, status, type, vehicle_id, description, "
                 + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        int id = Queries.insert(sql, statement -> {
-            statement.setInt(1, workOrder.getBookingId());
-            statement.setInt(2, workOrder.getMechanicId());
-            statement.setString(3, workOrder.getStatus());
+
+        int id = Queries.insert(connection, sql, statement -> {
+            Queries.setReference(statement, 1, workOrder.getBookingId());
+            Queries.setReference(statement, 2, workOrder.getMechanicId());
+            statement.setString(3, workOrder.getStatus().name());
             statement.setString(4, workOrder.getType());
-            statement.setInt(5, workOrder.getVehicleId());
+            Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
-            statement.setInt(7, workOrder.getOriginalWorkOrderId());
-            statement.setString(8, workOrder.getPlannedDate());
-            statement.setString(9, workOrder.getPlannedTime());
+            Queries.setReference(statement, 7, workOrder.getOriginalWorkOrderId());
+            statement.setString(8, workOrder.getPlannedDate() == null ? null : workOrder.getPlannedDate().toString());
+            statement.setString(9, workOrder.getPlannedTime() == null ? null : workOrder.getPlannedTime().toString());
             statement.setString(10, workOrder.getCustomerInstructions());
             statement.setString(11, workOrder.getOtherComments());
         });
@@ -76,35 +89,33 @@ public class WorkOrderRepository {
         }
     }
 
-    private void update(WorkOrder workOrder) throws SQLException {
+    private void update(Connection connection, WorkOrder workOrder) throws SQLException {
         String sql = "UPDATE work_orders SET booking_id = ?, mechanic_id = ?, status = ?, type = ?, vehicle_id = ?, "
                 + "description = ?, original_work_order_id = ?, planned_date = ?, planned_time = ?, "
                 + "customer_instructions = ?, other_comments = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
-            statement.setInt(1, workOrder.getBookingId());
-            statement.setInt(2, workOrder.getMechanicId());
-            statement.setString(3, workOrder.getStatus());
+        Queries.write(connection, sql, statement -> {
+            Queries.setReference(statement, 1, workOrder.getBookingId());
+            Queries.setReference(statement, 2, workOrder.getMechanicId());
+            statement.setString(3, workOrder.getStatus().name());
             statement.setString(4, workOrder.getType());
-            statement.setInt(5, workOrder.getVehicleId());
+            Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
-            statement.setInt(7, workOrder.getOriginalWorkOrderId());
-            statement.setString(8, workOrder.getPlannedDate());
-            statement.setString(9, workOrder.getPlannedTime());
+            Queries.setReference(statement, 7, workOrder.getOriginalWorkOrderId());
+            statement.setString(8, workOrder.getPlannedDate() == null ? null : workOrder.getPlannedDate().toString());
+            statement.setString(9, workOrder.getPlannedTime() == null ? null : workOrder.getPlannedTime().toString());
             statement.setString(10, workOrder.getCustomerInstructions());
             statement.setString(11, workOrder.getOtherComments());
             statement.setInt(12, workOrder.getId());
         });
     }
 
-    private void saveServiceItems(WorkOrder workOrder) throws SQLException {
+    private void saveServiceItems(Connection connection, WorkOrder workOrder) throws SQLException {
         String deleteLinks = "DELETE FROM work_order_service_items WHERE work_order_id = ?";
         String insertLink = "INSERT INTO work_order_service_items (work_order_id, service_item_id, completed, price, "
                 + "package_name) VALUES (?, ?, ?, ?, ?)";
 
-        // One connection for the removal and the inserts, so a work order never sits without its rows.
-        try (Connection connection = Db.getConnection();
-             PreparedStatement delete = connection.prepareStatement(deleteLinks);
+        try (PreparedStatement delete = connection.prepareStatement(deleteLinks);
              PreparedStatement insert = connection.prepareStatement(insertLink)) {
 
             delete.setInt(1, workOrder.getId());
@@ -118,19 +129,19 @@ public class WorkOrderRepository {
                 String packageName = workOrder.getServicePackageName(serviceItemId);
                 insert.setString(5, packageName.isEmpty() ? null : packageName);
 
-                // Store the price that applied when the job was performed.
-                Double frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
+                // Store the price in öre that applied when the job was performed.
+                Integer frozenPrice = workOrder.getCompletedServicePrice(serviceItemId);
                 if (frozenPrice == null) {
-                    insert.setNull(4, Types.REAL);
+                    insert.setNull(4, Types.INTEGER);
                 } else {
-                    insert.setDouble(4, frozenPrice.doubleValue());
+                    insert.setInt(4, frozenPrice.intValue());
                 }
                 insert.executeUpdate();
             }
         }
     }
 
-    private void loadServiceItems(WorkOrder workOrder) throws SQLException {
+    private void loadServiceItems(WorkOrder workOrder) {
         String sql = "SELECT service_item_id, completed, price, package_name FROM work_order_service_items "
                 + "WHERE work_order_id = ?";
 
@@ -143,7 +154,7 @@ public class WorkOrderRepository {
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<Integer> services = new ArrayList<Integer>();
                 List<Integer> completed = new ArrayList<Integer>();
-                Map<Integer, Double> prices = new LinkedHashMap<Integer, Double>();
+                Map<Integer, Integer> prices = new LinkedHashMap<Integer, Integer>();
                 Map<Integer, String> packages = new LinkedHashMap<Integer, String>();
                 while (resultSet.next()) {
                     int sid = resultSet.getInt("service_item_id");
@@ -152,9 +163,9 @@ public class WorkOrderRepository {
                     if (comp == 1) {
                         completed.add(sid);
                     }
-                    double price = resultSet.getDouble("price");
+                    Integer price = Integer.valueOf(resultSet.getInt("price"));
                     if (!resultSet.wasNull()) {
-                        prices.put(Integer.valueOf(sid), Double.valueOf(price));
+                        prices.put(Integer.valueOf(sid), price);
                     }
                     String packageName = resultSet.getString("package_name");
                     if (packageName != null) {
@@ -166,6 +177,8 @@ public class WorkOrderRepository {
                 workOrder.setCompletedServicePrices(prices);
                 workOrder.setServicePackages(packages);
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Could not read from the database.", e);
         }
     }
 
@@ -181,18 +194,23 @@ public class WorkOrderRepository {
 
         workOrder.setVehicleId(resultSet.getInt("vehicle_id"));
         workOrder.setDescription(resultSet.getString("description"));
+        workOrder.setStatus(WorkOrderStatus.fromText(status));
 
-        if (status != null) {
-            workOrder.setStatus(status);
-        }
         // A row with no type (older or half-finished) keeps the model's default instead of empty.
         if (type != null && !type.trim().isEmpty()) {
             workOrder.setType(type);
         }
 
         workOrder.setOriginalWorkOrderId(resultSet.getInt("original_work_order_id"));
-        workOrder.setPlannedDate(resultSet.getString("planned_date"));
-        workOrder.setPlannedTime(resultSet.getString("planned_time"));
+
+        String plannedDate = resultSet.getString("planned_date");
+        String plannedTime = resultSet.getString("planned_time");
+        if (plannedDate != null && !plannedDate.trim().isEmpty()) {
+            workOrder.setPlannedDate(LocalDate.parse(plannedDate.trim()));
+        }
+        if (plannedTime != null && !plannedTime.trim().isEmpty()) {
+            workOrder.setPlannedTime(LocalTime.parse(plannedTime.trim()));
+        }
         workOrder.setCustomerInstructions(resultSet.getString("customer_instructions"));
         workOrder.setOtherComments(resultSet.getString("other_comments"));
 

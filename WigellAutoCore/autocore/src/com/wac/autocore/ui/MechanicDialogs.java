@@ -1,11 +1,12 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.exception.ValidationException;
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 
+import com.wac.autocore.util.Texts;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
@@ -15,7 +16,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
@@ -80,12 +80,6 @@ public final class MechanicDialogs {
             String name = nameField.getText().trim();
             String phone = phoneField.getText().trim();
 
-            String problem = Mechanic.validationProblem(name, phone);
-            if (problem != null) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
-                return;
-            }
-
             String specialization = specializationToStore(chosenSpecialization(specBox));
 
             try {
@@ -98,11 +92,13 @@ public final class MechanicDialogs {
                 } else {
                     garage.createMechanic(name, phone, specialization);
                 }
-            } catch (SQLException e) {
+            } catch (DataAccessException e) {
                 ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                 return;
-            } catch (ValidationException rejected) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(rejected.getMessageKey()));
+            }
+            String problem = Mechanic.validationProblem(name, phone);
+            if (problem != null) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.validation." + problem));
                 return;
             }
 
@@ -155,8 +151,8 @@ public final class MechanicDialogs {
         if (text.equalsIgnoreCase(SeedText.get(key))) {
             return true;
         }
-        for (String lang : new String[] {SeedText.LANG_SV, SeedText.LANG_EN}) {
-            String value = SeedText.loadDictionary(lang).get(key);
+        for (String lang : new String[] {Texts.LANG_SV, Texts.LANG_EN}) {
+            String value = Texts.load(lang).get(key);
             if (value != null && text.equalsIgnoreCase(value)) {
                 return true;
             }
@@ -202,7 +198,7 @@ public final class MechanicDialogs {
             if (response == ButtonType.OK) {
                 try {
                     garage.deleteMechanic(mechanic.getId());
-                } catch (SQLException e) {
+                } catch (DataAccessException e) {
                     ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
                     return;
                 }
