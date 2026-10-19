@@ -23,6 +23,8 @@ Siffrorna i menyn visar vad som väntar på hantering.
 
 Projektet använder Java 8 med JavaFX. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
 
+Databasen skapas vid första starten i `data/autocore.db` i projektroten, med demodata om filen inte finns sedan tidigare.
+
 ### Får du "No suitable driver found for jdbc:sqlite"?
 
 Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder att IntelliJ kör en gammal projektmodell: välj **File → Reload All from Disk**, eller stäng och öppna projektet. Går det inte, lägg till `WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar` under **File → Project Structure → Modules → Dependencies**. `./start.sh` behöver inget av det.
@@ -39,10 +41,14 @@ WigellAutoCore/autocore/
     ├── ConsoleApp.java     Konsolversionen
     ├── com/wac/autocore/
     │   ├── data/           Databasen och demodata
+    │   ├── exception/      Undantagen, med nyckel för texten
     │   ├── model/          Domänmodeller
     │   ├── repository/     Läsning och skrivning mot SQLite
-    │   ├── service/        Affärslogik, GarageSystem som fasad
+    │   ├── service/        Affärslogik, GarageSystem som fasad,
+    │   │                   Printer för utskrifter,
+    │   │                   gateway/ för arbetsorderns ingång
     │   ├── seed/           Ordlista för demodata, svenska och engelska
+    │   ├── test/           Nio prov som körs utan fönster
     │   └── ui/             Gränssnittet: dialoger, vyer, komponenter,
     │                       i18n och teman
     └── resources/com/wac/autocore/
@@ -51,7 +57,7 @@ WigellAutoCore/autocore/
         └── theme/          CSS och temat Emerald
 ```
 
-Lagren går i en riktning: gränssnittet pratar med `GarageSystem`, som pratar med serviceklasserna, som pratar med repositoryt. Ingen genväg förbi.
+Lagren går i en riktning: gränssnittet pratar med `GarageSystem`, som pratar med serviceklasserna, som pratar med repositoryt. Ingen genväg förbi. Arbetsordern går genom `WorkOrderGateway`, som är ett smalare gränssnitt mot samma tjänster.
 
 ### Bokning och arbetsorder
 
@@ -73,7 +79,7 @@ Mekanikerns behörighet hänger på en nyckel. Tjänsten anger vilken specialise
 
 ### Schemat
 
-Översikten har en Kanban-tavla per mekaniker med dag, vecka och månad. Dagen visar nio timmar mellan 07:00 och 16:00, lediga timmar går att boka direkt, och ett klick på en bokad timme fäller ut detaljer om fordon, kund och arbetsorder. Veckovyn färgkodar belastningen i fyra steg.
+Översikten har en Kanban-tavla per mekaniker med dag, vecka och månad. Dagen visar tio timmar mellan 07:00 och 17:00, lediga timmar går att boka direkt, och ett klick på en bokad timme fäller ut detaljer om fordon, kund och arbetsorder. Veckovyn färgkodar belastningen i fyra steg.
 
 ### Fakturering
 
@@ -84,6 +90,27 @@ Fakturan bygger på de tjänster som markerats som utförda, och tar priset som 
 ### Språk
 
 Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord och valutor följer språket.
+
+## Verifiera
+
+Nio prov i `test/` kör tjänsterna utan fönster. De används för att visa att regler, sparande och felhantering beter sig som de ska. Kommandona förutsätter att `javac` och `java` är JDK 8 med JavaFX, samma som `start.sh` letar upp.
+
+```
+javac -cp "WigellAutoCore/autocore/lib/*" -d out/production/Projektarbete \
+    $(find WigellAutoCore/autocore/src -name '*.java')
+
+CP="out/production/Projektarbete:WigellAutoCore/autocore/lib/*:WigellAutoCore/autocore/src"
+java -cp "$CP" com.wac.autocore.test.WorkOrderProof data/autocore.db 1 1 1
+java -cp "$CP" com.wac.autocore.test.RuleViolationProof data/autocore.db 1 1 1
+java -cp "$CP" com.wac.autocore.test.DraftConfirmationProof data/autocore.db 1 1 1
+java -cp "$CP" com.wac.autocore.test.StatusRoutesProof
+java -cp "$CP" com.wac.autocore.test.WorkOrderRowsProof
+java -cp "$CP" com.wac.autocore.test.BookingChangeProof
+```
+
+Resterande tre, `CancelledOrdersProof`, `OldDatabaseProof` och `ErrorBoundaryProof`, startas på samma sätt. De tre första behöver tre id:n ur databasen: fordon, mekaniker och tjänst.
+
+CI bygger hela projektet på varje pull request. Den kör inte proven, så de körs för hand före en demo.
 
 ## Team
 
