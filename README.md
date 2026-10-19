@@ -48,7 +48,7 @@ WigellAutoCore/autocore/
     │   │                   Printer för utskrifter,
     │   │                   gateway/ för arbetsorderns ingång
     │   ├── seed/           Ordlista för demodata, svenska och engelska
-    │   ├── test/           Nio prov som körs utan fönster
+    │   ├── test/           Elva prov som körs utan fönster
     │   └── ui/             Gränssnittet: dialoger, vyer, komponenter,
     │                       i18n och teman
     └── resources/com/wac/autocore/
@@ -93,7 +93,7 @@ Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord oc
 
 ## Verifiera
 
-Nio prov i `test/` kör tjänsterna utan fönster. De används för att visa att regler, sparande och felhantering beter sig som de ska. Kommandona förutsätter att `javac` och `java` är JDK 8 med JavaFX, samma som `start.sh` letar upp.
+Elva prov i `test/` kör tjänsterna utan fönster. De används för att visa att regler, sparande och felhantering beter sig som de ska. Kommandona förutsätter att `javac` och `java` är JDK 8 med JavaFX, samma som `start.sh` letar upp.
 
 ```
 javac -cp "WigellAutoCore/autocore/lib/*" -d out/production/Projektarbete \
@@ -106,6 +106,8 @@ java -cp "$CP" com.wac.autocore.test.DraftConfirmationProof data/autocore.db 1 1
 java -cp "$CP" com.wac.autocore.test.StatusRoutesProof
 java -cp "$CP" com.wac.autocore.test.WorkOrderRowsProof
 java -cp "$CP" com.wac.autocore.test.BookingChangeProof
+java -cp "$CP" com.wac.autocore.test.FlowProof
+java -cp "$CP" com.wac.autocore.test.NumberRulesProof data/autocore.db 1
 ```
 
 Resterande tre, `CancelledOrdersProof`, `OldDatabaseProof` och `ErrorBoundaryProof`, startas på samma sätt. De tre första behöver tre id:n ur databasen: fordon, mekaniker och tjänst.
