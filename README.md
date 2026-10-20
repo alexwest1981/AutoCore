@@ -34,13 +34,13 @@ JavaFX 25, sqlite-jdbc och json hämtas av Maven, så inget installeras för han
 
 ## Bygg och kör
 
-Java 8-vägen gäller än så länge `./start.sh`, som kör koden utan Maven. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
+`./start.sh` kontrollerar att du har JDK 25 och Maven 3.9, sätter `GDK_BACKEND=x11` på Linux och kör sedan `mvn spring-boot:run` — samma bygge som IntelliJ gör. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ.
 
 ### Får du "No suitable driver found for jdbc:sqlite"?
 
 Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder att IntelliJ kör en gammal projektmodell: välj **File → Reload All from Disk**, eller stäng och öppna projektet. Går det inte, lägg till `WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar` under **File → Project Structure → Modules → Dependencies**. `./start.sh` behöver inget av det.
 
-Körningen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv, eftersom JavaFX 8 annars kraschar i GTK.
+Körningen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv, eftersom JavaFX annars kraschar i GTK.
 
 ## Arkitektur
 
