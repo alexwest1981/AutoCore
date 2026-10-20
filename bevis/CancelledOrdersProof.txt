@@ -1,0 +1,14 @@
+Databas redo: /tmp/cancelled-orders-8925952173343384515.db
+Avbrutna arbetsordrar i listan
+
+arbetsordrar totalt: 7, varav en avbruten (nummer 7, CANCELLED)
+
+listan lämnar den utanför:               true
+den avbrutna känns igen, den öppna inte: true
+kryssrutan tar in den:                   true
+av igen lämnar den utanför:              true
+
+listan:         [1, 2, 3, 4, 5, 6]
+med avbrutna:   [1, 2, 3, 4, 5, 6, 7]
+
+sidan själv behöver ett fönster. Det som prövas är raderna den byggs av.

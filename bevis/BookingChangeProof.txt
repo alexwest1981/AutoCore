@@ -1,0 +1,15 @@
+Databas redo: /tmp/booking-change-7989477263024922105.db
+Ändrad bokning mot ny bokning
+
+ny bokning kl 10:     nekad: dialog.booking.slot_busy_error
+ändrad bokning kl 10: nekad: dialog.booking.slot_busy_error
+ändrad text, samma tid: sparad
+ny bokning på lördag:     nekad: dialog.booking.date_weekend
+ändrad bokning på lördag: nekad: dialog.booking.date_weekend
+ny bokning kl 16:50:     nekad: dialog.booking.closing_time_exceeded
+ändrad bokning kl 16:50: nekad: dialog.booking.closing_time_exceeded
+
+krocken nekas lika:         true
+helgen nekas lika:          true
+stängningstiden nekas lika: true
+egen tid är ingen krock:    true
