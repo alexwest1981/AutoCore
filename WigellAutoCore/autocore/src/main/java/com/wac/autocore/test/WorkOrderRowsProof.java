@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.DraftChanges;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
@@ -59,7 +60,7 @@ public final class WorkOrderRowsProof {
         System.out.println("register: " + working.getAbsolutePath() + " (kopia av " + original + ")");
         System.out.println();
 
-        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(working.getAbsolutePath()));
+        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(new Db(working.getAbsolutePath())));
         int vehicleId = firstVehicle(garage).getId();
         int mechanicId = firstMechanic(garage).getId();
         int serviceItemId = firstServiceItem(garage).getId();

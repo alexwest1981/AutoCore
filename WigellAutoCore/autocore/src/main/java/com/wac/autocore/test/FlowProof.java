@@ -27,10 +27,8 @@ public final class FlowProof {
         File database = File.createTempFile("flow-", ".db");
         database.deleteOnExit();
         database.delete();
-        Db.use(database.getAbsolutePath());
-        Db.ensureReady();
 
-        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
+        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(new Db(database.getAbsolutePath())));
         Mechanic mechanic = garage.getMechanics().get(0);
         ServiceItem service = garage.getServiceItems().get(0);
         LocalDate day = LocalDate.of(2027, 3, 3);

@@ -33,7 +33,7 @@ final class CustomerPage {
         router.setActiveTable(table);
 
         Button addButton = UiComponents.primaryButton(I18n.get("entity.customers.action_create"));
-        addButton.setOnAction(e -> ActionDialogs.showCreateCustomerDialog(garage, () -> router.navigate("customers")));
+        addButton.setOnAction(e -> ActionDialogs.showCreateCustomerDialog(garage, router::requestReload));
 
         Button editButton = UiComponents.secondaryButton(I18n.get("entity.customers.action_edit"));
         HoldToConfirmButton deleteButton = new HoldToConfirmButton(I18n.get("entity.customers.action_delete"))
@@ -50,13 +50,13 @@ final class CustomerPage {
         editButton.setOnAction(e -> {
             Customer selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ActionDialogs.showEditCustomerDialog(garage, selected, () -> router.navigate("customers"));
+                ActionDialogs.showEditCustomerDialog(garage, selected, router::requestReload);
             }
         });
         deleteButton.onConfirm(() -> {
             Customer selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ActionDialogs.showDeleteCustomerConfirmation(garage, selected, () -> router.navigate("customers"));
+                ActionDialogs.showDeleteCustomerConfirmation(garage, selected, router::requestReload);
             }
         });
 
@@ -64,7 +64,7 @@ final class CustomerPage {
             TableRow<Customer> row = new TableRow<Customer>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    ActionDialogs.showEditCustomerDialog(garage, row.getItem(), () -> router.navigate("customers"));
+                    ActionDialogs.showEditCustomerDialog(garage, row.getItem(), router::requestReload);
                 }
             });
             return row;

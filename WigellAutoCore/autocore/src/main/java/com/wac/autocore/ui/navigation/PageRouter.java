@@ -21,6 +21,7 @@ public class PageRouter {
 
     private FilterableTable<?> activeTable;
     private String currentPageKey;
+    private boolean reloadPending;
     private boolean showCancelledWorkOrders;
 
     public PageRouter(GarageSystem garage, VBox pageBox) {
@@ -31,11 +32,12 @@ public class PageRouter {
         this.garage = garage;
         this.pageBox = pageBox;
         this.sidebar = sidebar;
-        com.wac.autocore.ui.i18n.I18n.addListener(lang -> {
-            if (currentPageKey != null) {
-                navigate(currentPageKey);
-            }
-        });
+
+        // Whatever wrote to the database, the page on screen asks again. One place covers every
+        // dialog, every Kanban click and everything the console does behind the window.
+        garage.addChangeListener(this::requestReload);
+
+        com.wac.autocore.ui.i18n.I18n.addListener(lang -> requestReload());
     }
 
     public void setSidebar(SidebarView sidebar) {
@@ -58,7 +60,7 @@ public class PageRouter {
         }
         showCancelledWorkOrders = show;
         if ("workorders".equals(currentPageKey)) {
-            navigate("workorders");
+            requestReload();
         }
     }
 
@@ -94,10 +96,16 @@ public class PageRouter {
     public void navigateToWorkOrder(int workOrderId) {
         // A row that is not in the list cannot be turned to, so a cancelled order is let in before
         // the page is built. Otherwise the jump would land on the right page with nothing marked.
+        boolean wasShowingCancelled = showCancelledWorkOrders;
         if (isCancelledWorkOrder(workOrderId)) {
             showCancelledWorkOrders = true;
         }
-        navigate("workorders");
+        if ("workorders".equals(currentPageKey) && wasShowingCancelled != showCancelledWorkOrders) {
+            // Already on the page, and the list has to grow before the row can be found in it.
+            showCurrentPage();
+        } else {
+            navigate("workorders");
+        }
         if (workOrderId <= 0 || activeTable == null) {
             return;
         }
@@ -129,32 +137,62 @@ public class PageRouter {
             openDropInDialog();
             return;
         }
+        // The page you are on is not a place to go. Its menu item is disabled, and pressing it
+        // again must not throw the page away and build it anew.
+        if (key.equals(currentPageKey)) {
+            return;
+        }
         this.currentPageKey = key;
         if (sidebar != null) {
             sidebar.setSelectedPage(key);
+        }
+        showCurrentPage();
+    }
+
+    /**
+     * Redraws the page on screen once the current turn is over. Several writes in one action, and
+     * the write plus its own callback, still cost one redraw instead of one each.
+     */
+    public void requestReload() {
+        if (reloadPending || currentPageKey == null) {
+            return;
+        }
+        reloadPending = true;
+        javafx.application.Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                reloadPending = false;
+                showCurrentPage();
+            }
+        });
+    }
+
+    /** Builds the page {@link #currentPageKey} names, in the place the old one stood. */
+    private void showCurrentPage() {
+        if (sidebar != null) {
             updateNavCounts();
         }
         activeTable = null;
         pageBox.getChildren().clear();
 
         try {
-            if ("overview".equals(key)) {
-                pageBox.getChildren().add(OverviewView.build(garage, () -> navigate("overview"), this));
-            } else if ("customers".equals(key)) {
+            if ("overview".equals(currentPageKey)) {
+                pageBox.getChildren().add(OverviewView.build(garage, this::requestReload, this));
+            } else if ("customers".equals(currentPageKey)) {
                 pageBox.getChildren().add(EntityPages.buildCustomersPage(garage, this));
-            } else if ("vehicles".equals(key)) {
+            } else if ("vehicles".equals(currentPageKey)) {
                 pageBox.getChildren().add(EntityPages.buildVehiclesPage(garage, this));
-            } else if ("bookings".equals(key)) {
+            } else if ("bookings".equals(currentPageKey)) {
                 pageBox.getChildren().add(EntityPages.buildBookingsPage(garage, this));
-            } else if ("workorders".equals(key)) {
+            } else if ("workorders".equals(currentPageKey)) {
                 pageBox.getChildren().add(EntityPages.buildWorkOrdersPage(garage, this));
-            } else if ("services".equals(key)) {
+            } else if ("services".equals(currentPageKey)) {
                 pageBox.getChildren().add(EntityPages.buildServicesPage(garage, this));
-            } else if ("mechanics".equals(key)) {
+            } else if ("mechanics".equals(currentPageKey)) {
                 pageBox.getChildren().add(EntityPages.buildMechanicsPage(garage, this));
-            } else if ("invoices".equals(key)) {
+            } else if ("invoices".equals(currentPageKey)) {
                 pageBox.getChildren().add(EntityPages.buildInvoicesPage(garage, this));
-            } else if ("payments".equals(key)) {
+            } else if ("payments".equals(currentPageKey)) {
                 pageBox.getChildren().add(EntityPages.buildPaymentsPage(garage, this));
             }
         } catch (AppException unreadable) {
@@ -167,16 +205,15 @@ public class PageRouter {
             com.wac.autocore.ui.motion.Motion.enterPage(
                     pageBox.getChildren().get(pageBox.getChildren().size() - 1));
         }
+        if (sidebar != null) {
+            sidebar.realign();
+        }
     }
 
     // The drop-in is created in a dialog on top of the current page, and the page is reloaded
     // afterwards so the new booking shows right away.
     private void openDropInDialog() {
-        ActionDialogs.showCreateDropInWorkOrderDialog(garage, () -> {
-            if (currentPageKey != null) {
-                navigate(currentPageKey);
-            }
-        });
+        ActionDialogs.showCreateDropInWorkOrderDialog(garage, this::requestReload);
     }
 
     /** The badges in the menu show what is waiting on the page, not everything that is there. */

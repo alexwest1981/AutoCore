@@ -27,10 +27,8 @@ public final class BookingChangeProof {
         // Nothing to copy: the program makes the database itself.
         database.delete();
 
-        Db.use(database.getAbsolutePath());
-        Db.ensureReady();
 
-        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
+        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(new Db(database.getAbsolutePath())));
 
         int vehicleId = garage.getVehicles().get(0).getId();
         Mechanic mechanic = garage.getMechanics().get(0);

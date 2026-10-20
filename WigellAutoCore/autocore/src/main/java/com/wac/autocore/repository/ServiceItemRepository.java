@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.ServiceItem;
 
 import java.sql.ResultSet;
@@ -7,6 +8,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ServiceItemRepository {
+
+    private final Queries queries;
+
+    public ServiceItemRepository(Db db) {
+        this.queries = new Queries(db);
+    }
 
     private static final String COLUMNS = "id, name, description, price, estimated_minutes, specialization";
 
@@ -19,23 +26,23 @@ public class ServiceItemRepository {
     }
 
     public List<ServiceItem> findAll() {
-        return Queries.read("SELECT " + COLUMNS + " FROM service_items", ServiceItemRepository::build);
+        return queries.read("SELECT " + COLUMNS + " FROM service_items", ServiceItemRepository::build);
     }
 
     public ServiceItem findById(int id) {
-        return Queries.readOne("SELECT " + COLUMNS + " FROM service_items WHERE id = ?",
+        return queries.readOne("SELECT " + COLUMNS + " FROM service_items WHERE id = ?",
                 statement -> statement.setInt(1, id), ServiceItemRepository::build);
     }
 
     public void delete(int id) {
-        Queries.write("DELETE FROM service_items WHERE id = ?", statement -> statement.setInt(1, id));
+        queries.write("DELETE FROM service_items WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
     private void insert(ServiceItem serviceItem) {
         String sql = "INSERT INTO service_items (name, description, price, estimated_minutes, specialization) "
                 + "VALUES (?, ?, ?, ?, ?)";
 
-        int id = Queries.insert(sql, statement -> {
+        int id = queries.insert(sql, statement -> {
             statement.setString(1, serviceItem.getName());
             statement.setString(2, serviceItem.getDescription());
             statement.setInt(3, serviceItem.getPrice());
@@ -52,7 +59,7 @@ public class ServiceItemRepository {
         String sql = "UPDATE service_items SET name = ?, description = ?, price = ?, estimated_minutes = ?, "
                 + "specialization = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
+        queries.write(sql, statement -> {
             statement.setString(1, serviceItem.getName());
             statement.setString(2, serviceItem.getDescription());
             statement.setInt(3, serviceItem.getPrice());

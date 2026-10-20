@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.ServicePackage;
@@ -12,6 +13,15 @@ import java.util.List;
 
 public class ServicePackageRepository {
 
+    private final Db db;
+
+    private final Queries queries;
+
+    public ServicePackageRepository(Db db) {
+        this.db = db;
+        this.queries = new Queries(db);
+    }
+
     private static final String COLUMNS = "id, name, description";
 
     private static final String ITEM_COLUMNS =
@@ -20,7 +30,7 @@ public class ServicePackageRepository {
     public void save(final ServicePackage servicePackage) {
         final boolean isNew = servicePackage.getId() == 0;
 
-        new DatabaseWork<Void>() {
+        new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
                 if (isNew) {
@@ -35,7 +45,7 @@ public class ServicePackageRepository {
     }
 
     private void insert(Connection connection, ServicePackage servicePackage) throws SQLException {
-        int id = Queries.insert(connection, "INSERT INTO service_packages (name, description) VALUES (?, ?)",
+        int id = queries.insert(connection, "INSERT INTO service_packages (name, description) VALUES (?, ?)",
                 statement -> {
                     statement.setString(1, servicePackage.getName());
                     statement.setString(2, servicePackage.getDescription());
@@ -47,7 +57,7 @@ public class ServicePackageRepository {
     }
 
     private void update(Connection connection, ServicePackage servicePackage) throws SQLException {
-        Queries.write(connection, "UPDATE service_packages SET name = ?, description = ? WHERE id = ?",
+        queries.write(connection, "UPDATE service_packages SET name = ?, description = ? WHERE id = ?",
                 statement -> {
                     statement.setString(1, servicePackage.getName());
                     statement.setString(2, servicePackage.getDescription());
@@ -79,7 +89,7 @@ public class ServicePackageRepository {
                 + "WHERE spi.package_id = ? "
                 + "ORDER BY s.id ASC";
 
-        return Queries.read(sql, statement -> statement.setInt(1, packageId), resultSet -> new ServiceItem(
+        return queries.read(sql, statement -> statement.setInt(1, packageId), resultSet -> new ServiceItem(
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
                 resultSet.getString("description"),
@@ -89,7 +99,7 @@ public class ServicePackageRepository {
     }
 
     public List<ServicePackage> findAll() {
-        List<ServicePackage> packages = Queries.read("SELECT " + COLUMNS + " FROM service_packages ORDER BY name",
+        List<ServicePackage> packages = queries.read("SELECT " + COLUMNS + " FROM service_packages ORDER BY name",
                 ServicePackageRepository::build);
 
         for (ServicePackage servicePackage : packages) {
@@ -99,7 +109,7 @@ public class ServicePackageRepository {
     }
 
     public ServicePackage findById(int id) {
-        ServicePackage servicePackage = Queries.readOne("SELECT " + COLUMNS + " FROM service_packages WHERE id = ?",
+        ServicePackage servicePackage = queries.readOne("SELECT " + COLUMNS + " FROM service_packages WHERE id = ?",
                 statement -> statement.setInt(1, id), ServicePackageRepository::build);
 
         if (servicePackage != null) {
@@ -111,12 +121,12 @@ public class ServicePackageRepository {
     public void delete(final int id) {
         // The item links point at this package and nothing else clears them, so both go in one
         // transaction.
-        new DatabaseWork<Void>() {
+        new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
-                Queries.write(connection, "DELETE FROM service_package_items WHERE package_id = ?",
+                queries.write(connection, "DELETE FROM service_package_items WHERE package_id = ?",
                         statement -> statement.setInt(1, id));
-                Queries.write(connection, "DELETE FROM service_packages WHERE id = ?",
+                queries.write(connection, "DELETE FROM service_packages WHERE id = ?",
                         statement -> statement.setInt(1, id));
                 return null;
             }

@@ -1,4 +1,5 @@
 import com.wac.autocore.exception.AppException;
+import com.wac.autocore.config.DatabasePath;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
@@ -22,9 +23,8 @@ public class ConsoleApp {
 
     public static void main(String[] args) {
 
-        Db.use(Db.pathFrom(args));
-        Db.ensureReady();
-        garageSystem = new GarageSystem(new SqliteRepositoryFactory(), new ConsolePrinter());
+        Db db = new Db(DatabasePath.resolve(args));
+        garageSystem = new GarageSystem(new SqliteRepositoryFactory(db), new ConsolePrinter());
 
         boolean running = true;
 
