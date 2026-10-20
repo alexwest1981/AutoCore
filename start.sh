@@ -18,6 +18,10 @@ fail() {
     exit 1
 }
 
+warn() {
+    echo "Varning: $1" >&2
+}
+
 if [ $# -gt 0 ]; then
     fail "start.sh startar bara appen. Argumentet '$1' stöds inte; kör appen från IntelliJ eller 'mvn -f $POM spring-boot:run' direkt."
 fi
@@ -44,6 +48,15 @@ case "$(uname -s 2>/dev/null || echo unknown)" in
     Darwin*|CYGWIN*|MINGW*|MSYS*) ;;
     *) export GDK_BACKEND="${GDK_BACKEND:-x11}" ;;
 esac
+
+# JavaFX draws through GTK here, so GDK_SCALE decides the size of every button and
+# every font. A session started before the monitor scale was lowered keeps the old
+# value, and then the whole window is drawn twice its size.
+if [ -n "${GDK_SCALE:-}" ] && [ "$GDK_SCALE" != "1" ]; then
+    warn "GDK_SCALE=$GDK_SCALE ärvs in i JavaFX och ritar gränssnittet $GDK_SCALE gånger
+         så stort. Stämmer det inte med skärmarnas scale är värdet kvar från en äldre
+         session: logga ut och in, eller starta med 'GDK_SCALE=1 ./start.sh'."
+fi
 
 exec mvn -f "$POM" spring-boot:run \
     -Dspring-boot.run.jvmArguments="--enable-native-access=ALL-UNNAMED"
