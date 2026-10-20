@@ -10,6 +10,7 @@
 !/.idea/modules.xml
 *.iml
 !Projektarbete.iml
+!WigellAutoCore/autocore/autocore.iml
 .vscode/
 .agents/
 .project
