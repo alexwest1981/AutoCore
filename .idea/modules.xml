@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Projektarbete.iml" filepath="$PROJECT_DIR$/Projektarbete.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WigellAutoCore/autocore/autocore.iml" filepath="$PROJECT_DIR$/WigellAutoCore/autocore/autocore.iml" />
     </modules>
   </component>
 </project>
