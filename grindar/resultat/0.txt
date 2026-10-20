@@ -1,0 +1,204 @@
+== Grind 0: baslinjen
+kör com.wac.autocore.test.WorkOrderProof
+Databas redo: /home/dsg/.hermes/cache/scratch/autocore-grind-3436952.db
+1. utkastet skapat, nummer 8, status CREATED
+2. utkastet ändrat, mekaniker 1
+3. bekräftad: ja
+status efter: CONFIRMED
+kör com.wac.autocore.test.RuleViolationProof
+Databas redo: /home/dsg/.hermes/cache/scratch/autocore-grind-3436952.db
+nyckel: dialog.mechanic.delete.has_active_orders
+meddelande: Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.
+sv: Kan inte ta bort Johan Karlsson eftersom mekanikern har aktiva eller tilldelade arbetsordrar.
+en: Cannot delete Johan Karlsson because the mechanic has active or assigned work orders.
+kör com.wac.autocore.test.DraftConfirmationProof
+Databas redo: /home/dsg/.hermes/cache/scratch/autocore-grind-3436952.db
+tomt utkast: Arbetsordern saknar mekaniker. (dialog.workorder.confirm_no_mechanic)
+utan tjänster: Arbetsordern saknar tjänster. (dialog.workorder.confirm_no_services)
+utan datum: Arbetsordern saknar datum. (dialog.workorder.confirm_no_date)
+komplett utkast: status CONFIRMED
+kör com.wac.autocore.test.NumberRulesProof
+Databas redo: /home/dsg/.hermes/cache/scratch/autocore-grind-3436952.db
+år 1899: nekas
+år 1900: går igenom
+år 2100: går igenom
+år 2101: nekas
+ett år som inte är en siffra: nekas
+
+tio procent av 999 öre blir 100:  true
+noll procent blir noll:           true
+hundra procent blir hela beloppet: true
+hundra öre fördelade på 700 och 300: 70 + 30 = 100
+
+årtalen följer regeln:                  true
+avrundningen följer regeln:              true
+rabatten fördelas utan att tappa ören:   true
+kör com.wac.autocore.test.WorkOrderRowsProof
+B5 · samma operation ger samma svar utan fönstret
+register: /tmp/work-order-rows-5805683604077798180.db (kopia av /home/dsg/.hermes/cache/scratch/autocore-grind-3436952.db)
+
+Databas redo: /tmp/work-order-rows-5805683604077798180.db
+1. utan fönster, genom WorkOrderGateway
+   utkast 14, status CREATED
+   ändrat: mekaniker 1, tjänst 1
+   avbrutet
+
+2. genom fönstret, samma anrop som dialogerna gör
+   utkast 15, status CREATED
+   ändrat: mekaniker 1, tjänst 1
+   avbrutet
+
+3. raderna, utan id som med flit skiljer sig
+   arbetsorder, utan fönster:      [booking_id=null  mechanic_id=1  status=CANCELLED  type=STANDARD  vehicle_id=1  description=Bromsok, bromsbelagg och vatska  original_work_order_id=null  planned_date=2026-10-16  planned_time=09:30  customer_instructions=Nycklarna ligger i bilen.  other_comments=Kunden ringer innan hamtning.]
+   arbetsorder, genom fönstret:    [booking_id=null  mechanic_id=1  status=CANCELLED  type=STANDARD  vehicle_id=1  description=Bromsok, bromsbelagg och vatska  original_work_order_id=null  planned_date=2026-10-16  planned_time=09:30  customer_instructions=Nycklarna ligger i bilen.  other_comments=Kunden ringer innan hamtning.]
+   tjänster, utan fönster:         [service_item_id=1  completed=0  price=null  package_name=null]
+   tjänster, genom fönstret:       [service_item_id=1  completed=0  price=null  package_name=null]
+
+samma rader för arbetsordern:         true
+samma rader för tjänsterna:           true
+raderna är vad operationen ska lämna: true
+findWorkOrder svarar vad raden säger: true
+kör com.wac.autocore.test.OldDatabaseProof
+L3 · en gammal databas möter de nya reglerna
+gammal: /home/dsg/Documents/Systemutvecklare Java/Agil Systemutveckling - Projektarbete Wigell Auto Core/Projektarbete/WigellAutoCore/autocore/test/data/autocore-original.db (rörs aldrig)
+
+1. kolumnerna saknas, som i en bas från en tidigare sprint
+   före:  booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 service_items=4 service_package_items=0 service_packages=0 settings=0 vehicles=6 work_order_service_items=7 work_orders=6
+   programmet startar mot kopian
+Databas redo: /tmp/old-database-9168836370811148863.db
+   efter: booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 schema_version=3 service_items=4 service_package_items=0 service_packages=0 settings=0 vehicles=6 work_order_service_items=7 work_orders=6
+   service_items.price: [rad 1 = 1295.00 kronor, rad 2 = 2495.00 kronor, rad 3 = 995.00 kronor, rad 4 = 3495.00 kronor]  ->  [rad 1 = 1295.00 kronor (129500 öre), rad 2 = 2495.00 kronor (249500 öre), rad 3 = 995.00 kronor (99500 öre), rad 4 = 3495.00 kronor (349500 öre)]
+   work_order_service_items.price: inga rader  ->  inga rader
+   invoices.amount: inga rader  ->  inga rader
+   invoices.discount: inga rader  ->  inga rader
+   invoices.total_amount: inga rader  ->  inga rader
+   invoice_lines.price: inga rader  ->  inga rader
+   invoice_lines.discount: inga rader  ->  inga rader
+   payments.amount: inga rader  ->  inga rader
+   rader som tappades:    inga
+   värden som ändrades:   inga
+   kolumner som fylldes:  {work_orders.vehicle_id=6}
+   kolumner som tillkom:  [booking_service_items.package_name, work_order_service_items.package_name, work_orders.type, work_orders.original_work_order_id, work_orders.planned_date, work_orders.planned_time, work_orders.customer_instructions, work_orders.other_comments]
+   rader som tillkom:     inga
+   foreign_key_check:     rent
+   schema_version:        [1 001_baslinjen.sql, 2 002_nycklar.sql, 3 003_ore.sql]
+
+2. kolumnerna finns, men registret gör det inte
+   kolumnerna ditlagda i förväg, som en bas från mellanläget
+   före:  booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 service_items=4 service_package_items=0 service_packages=0 settings=0 vehicles=6 work_order_service_items=7 work_orders=6
+   programmet startar mot kopian
+Databas redo: /tmp/old-database-3274428189334652236.db
+   efter: booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 schema_version=3 service_items=4 service_package_items=0 service_packages=0 settings=0 vehicles=6 work_order_service_items=7 work_orders=6
+   service_items.price: [rad 1 = 1295.00 kronor, rad 2 = 2495.00 kronor, rad 3 = 995.00 kronor, rad 4 = 3495.00 kronor]  ->  [rad 1 = 1295.00 kronor (129500 öre), rad 2 = 2495.00 kronor (249500 öre), rad 3 = 995.00 kronor (99500 öre), rad 4 = 3495.00 kronor (349500 öre)]
+   work_order_service_items.price: inga rader  ->  inga rader
+   invoices.amount: inga rader  ->  inga rader
+   invoices.discount: inga rader  ->  inga rader
+   invoices.total_amount: inga rader  ->  inga rader
+   invoice_lines.price: inga rader  ->  inga rader
+   invoice_lines.discount: inga rader  ->  inga rader
+   payments.amount: inga rader  ->  inga rader
+   rader som tappades:    inga
+   värden som ändrades:   inga
+   kolumner som fylldes:  {work_orders.vehicle_id=6}
+   kolumner som tillkom:  inga
+   rader som tillkom:     inga
+   foreign_key_check:     rent
+   schema_version:        [1 001_baslinjen.sql, 2 002_nycklar.sql, 3 003_ore.sql]
+
+3. ingen bas alls, den byggs från grunden
+   filen finns från början: false
+   programmet startar och bygger den
+Databas redo: /tmp/new-database-7909236696684462358.db
+   efter: booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 schema_version=3 service_items=4 service_package_items=0 service_packages=0 settings=0 vehicles=6 work_order_service_items=7 work_orders=6
+   schema_version:     [1 001_baslinjen.sql, 2 002_nycklar.sql, 3 003_ore.sql]
+   foreign_key_check:  rent
+   tabeller som saknas: inga
+   kolumner som saknas: inga
+   fröet kommer in:     true
+läses som förut, utan kolumnerna: true
+läses som förut, med kolumnerna:  true
+byggs från grunden:               true
+kör com.wac.autocore.test.BookingChangeProof
+Databas redo: /tmp/booking-change-36772042319697964.db
+Ändrad bokning mot ny bokning
+
+ny bokning kl 10:     nekad: dialog.booking.slot_busy_error
+ändrad bokning kl 10: nekad: dialog.booking.slot_busy_error
+ändrad text, samma tid: sparad
+ny bokning på lördag:     nekad: dialog.booking.date_weekend
+ändrad bokning på lördag: nekad: dialog.booking.date_weekend
+ny bokning kl 16:50:     nekad: dialog.booking.closing_time_exceeded
+ändrad bokning kl 16:50: nekad: dialog.booking.closing_time_exceeded
+
+krocken nekas lika:         true
+helgen nekas lika:          true
+stängningstiden nekas lika: true
+egen tid är ingen krock:    true
+kör com.wac.autocore.test.CancelledOrdersProof
+Databas redo: /tmp/cancelled-orders-4682231605419102266.db
+Avbrutna arbetsordrar i listan
+
+arbetsordrar totalt: 7, varav en avbruten (nummer 7, CANCELLED)
+
+listan lämnar den utanför:               true
+den avbrutna känns igen, den öppna inte: true
+kryssrutan tar in den:                   true
+av igen lämnar den utanför:              true
+
+listan:         [1, 2, 3, 4, 5, 6]
+med avbrutna:   [1, 2, 3, 4, 5, 6, 7]
+
+sidan själv behöver ett fönster. Det som prövas är raderna den byggs av.
+kör com.wac.autocore.test.FlowProof
+Databas redo: /tmp/flow-6096355880896525338.db
+1. kund skapad, nummer 7
+2. fordon skapat, nummer 7
+3. bokning skapad, nummer 7, status BOOKED
+4. arbetsorder skapad, nummer 7, status CREATED
+5. bekräftad, startad och slutförd: COMPLETED
+6. faktura skapad, nummer 1, totalt 129500
+7. betalning registrerad, nummer 1, belopp 161875
+
+arbetsordern gick hela vägen:     true
+fakturan har ett belopp:          true
+betalningen är större än totalen: true
+kör com.wac.autocore.test.StatusRoutesProof
+Databas redo: /tmp/status-routes-8176038579742903864.db
+Samma statusbyten på de fyra vägarna
+
+bokning: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+drop-in: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+reklamation: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+utkast: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+
+alla vägar svarar lika: true
+
+nej till IN_PROGRESS: bokning WORK_ORDER_CREATED -> WORK_ORDER_CREATED, mekaniker ledig true -> true
+nej till CANCELLED: bokning COMPLETED -> COMPLETED, mekaniker ledig true -> true
+ett nej lämnar inget efter sig: true
+kör com.wac.autocore.test.ErrorBoundaryProof
+A12 · ett ogiltigt kundnummer är inte ett tekniskt fel
+register: /tmp/error-boundary-6255072670920855904.db (byggt av provet)
+
+Databas redo: /tmp/error-boundary-6255072670920855904.db
+1. kundnummer som inte kan vara en kund
+   999999 -> NotFoundException: Customer with ID 999999 does not exist.
+   0 -> NotFoundException: Customer with ID 0 does not exist.
+   -1 -> NotFoundException: Customer with ID -1 does not exist.
+   2147483647 -> NotFoundException: Customer with ID 2147483647 does not exist.
+
+2. samma anrop med ett nummer som finns: 1
+
+3. samma anrop, men registret svarar inte längre
+   DataAccessException: Could not read customer 999999
+
+4. en skrivning som inte går igenom
+   DataAccessException: Could not save customer
+
+regelbrottet är ett eget fel med en text att läsa: true
+ett nummer som finns går igenom kontrollen:        true
+databasen som inte svarar ger ett annat fel:        true
+en skrivning som misslyckas ger ett tydligt fel:   true
+GRÖN: elva prov på Java 8
+Klart: grind 0 till 0 är gröna.
+2026-10-20T12:08:07+02:00
