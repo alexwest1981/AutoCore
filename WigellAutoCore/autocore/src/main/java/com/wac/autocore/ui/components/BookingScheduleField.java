@@ -47,6 +47,8 @@ public class BookingScheduleField {
         this.datePicker = new DatePicker(initialDateVal);
         this.datePicker.setVisible(false);
         this.datePicker.setManaged(false);
+        // The calendar draws the week number column itself; without this it is empty.
+        this.datePicker.setShowWeekNumbers(true);
 
         // The calendar's days. The factory is set once, and the cells read the current services and
         // times each time they are drawn, so refresh() can update them when the selection changes.
