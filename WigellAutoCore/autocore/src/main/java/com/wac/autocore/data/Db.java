@@ -8,26 +8,19 @@ import java.sql.Statement;
 
 public class Db {
 
-    private static final String DEFAULT_PATH = "data/autocore.db";
+    /** The file the application uses when the configuration says nothing. */
+    public static final String DEFAULT_PATH = "data/autocore.db";
 
-    private static String databasePath = DEFAULT_PATH;
+    private final String databasePath;
 
-    private static boolean ready = false;
+    private boolean ready = false;
 
-    /** The file to use: the first argument, or the application's own. */
-    public static String pathFrom(String[] args) {
-        return args.length > 0 ? args[0] : DEFAULT_PATH;
+    /** The file this storage reads and writes. Chosen once, by whoever builds the bean. */
+    public Db(String databasePath) {
+        this.databasePath = databasePath;
     }
 
-    /** Points the storage at another file. Another file means another database to prepare. */
-    public static void use(String databasePath) {
-        if (!databasePath.equals(Db.databasePath)) {
-            Db.databasePath = databasePath;
-            ready = false;
-        }
-    }
-
-    public static Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         File file = new File(databasePath);
         File directory = file.getParentFile();
         if (directory != null && !directory.exists()) {
@@ -43,28 +36,28 @@ public class Db {
         return connection;
     }
 
-    public static void ensureReady() {
+    public void ensureReady() {
         if (ready) {
             return;
         }
         ready = true;
         initTables();
-        SeedData.seedIfEmpty();
+        SeedData.seedIfEmpty(this);
     }
 
     /** Makes sure the database holds the schema the code expects. */
-    public static void initTables() {
-        Migrations.apply();
+    private void initTables() {
+        Migrations.apply(this);
 
         System.out.println("Databas redo: " + databasePath);
 
         // The space in the registration number goes in at the right spot, which SQL cannot do.
         normalizeRegistrationNumbers();
-        SeedData.seedIfEmpty();
+        SeedData.seedIfEmpty(this);
     }
 
     /** Fixes registration numbers saved before the model started normalizing them. */
-    private static void normalizeRegistrationNumbers() {
+    private void normalizeRegistrationNumbers() {
         java.util.List<Integer> ids = new java.util.ArrayList<Integer>();
         java.util.List<String> numbers = new java.util.ArrayList<String>();
 

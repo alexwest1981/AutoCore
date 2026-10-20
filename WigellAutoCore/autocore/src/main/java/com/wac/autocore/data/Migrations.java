@@ -50,8 +50,8 @@ final class Migrations {
 
     private Migrations() {}
 
-    static void apply() {
-        try (Connection connection = Db.getConnection()) {
+    static void apply(Db db) {
+        try (Connection connection = db.getConnection()) {
             createRegister(connection);
 
             List<Integer> done = applied(connection);

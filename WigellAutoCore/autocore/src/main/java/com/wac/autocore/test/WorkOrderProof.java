@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.config.DatabasePath;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.DraftChanges;
 import com.wac.autocore.model.WorkOrder;
@@ -21,15 +22,13 @@ public final class WorkOrderProof {
 
     public static void main(String[] args) {
 
-        Db.use(Db.pathFrom(args));
-        Db.ensureReady();
 
         // The gateway covers the work order only. so the caller brings the three ids.
         int vehicleId = Integer.parseInt(args[1]);
         int mechanicId = Integer.parseInt(args[2]);
         int serviceItemId = Integer.parseInt(args[3]);
 
-        WorkOrderGateway gateway = new GarageSystem(new SqliteRepositoryFactory());
+        WorkOrderGateway gateway = new GarageSystem(new SqliteRepositoryFactory(new Db(DatabasePath.resolve(args))));
 
         WorkOrder draft = gateway.createDraft(vehicleId, "Bromsok och bromsbelägg");
 

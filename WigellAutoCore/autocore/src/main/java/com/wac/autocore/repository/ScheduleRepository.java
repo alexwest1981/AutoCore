@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.ScheduleEntry;
 
 import java.sql.ResultSet;
@@ -9,6 +10,12 @@ import java.util.List;
 
 /** The work orders that still hold booked time, read the way the schedule draws them. */
 public class ScheduleRepository {
+
+    private final Queries queries;
+
+    public ScheduleRepository(Db db) {
+        this.queries = new Queries(db);
+    }
 
     public List<ScheduleEntry> findActive() {
         // A row without a date has no hour to land on, and the row mapper cannot skip it.
@@ -22,7 +29,7 @@ public class ScheduleRepository {
                 + "WHERE wo.status IN ('CREATED', 'CONFIRMED', 'IN_PROGRESS') "
                 + "AND b.date IS NOT NULL AND TRIM(b.date) <> ''";
 
-        return Queries.read(sql, ScheduleRepository::build);
+        return queries.read(sql, ScheduleRepository::build);
     }
 
     private static ScheduleEntry build(ResultSet resultSet) throws SQLException {

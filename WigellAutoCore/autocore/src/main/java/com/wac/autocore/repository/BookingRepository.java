@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Booking;
@@ -18,6 +19,10 @@ import java.util.List;
 
 public class BookingRepository {
 
+    private final Db db;
+
+    private final Queries queries;
+
     private static final String COLUMNS = "id, vehicle_id, date, description, status, start_time, end_time, "
             + "mechanic_id, service_item_id";
 
@@ -27,8 +32,10 @@ public class BookingRepository {
     private final BookingServiceItemRepository bookingServiceItemRepository;
     private final BookingMechanicRepository bookingMechanicRepository;
 
-    public BookingRepository(BookingServiceItemRepository bookingServiceItemRepository,
+    public BookingRepository(Db db, BookingServiceItemRepository bookingServiceItemRepository,
                              BookingMechanicRepository bookingMechanicRepository) {
+        this.db = db;
+        this.queries = new Queries(db);
         this.bookingServiceItemRepository = bookingServiceItemRepository;
         this.bookingMechanicRepository = bookingMechanicRepository;
     }
@@ -36,7 +43,7 @@ public class BookingRepository {
     public void save(final Booking booking) {
         final boolean isNew = booking.getId() == 0 || findById(booking.getId()) == null;
 
-        new DatabaseWork<Void>() {
+        new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
                 if (isNew) {
@@ -53,23 +60,23 @@ public class BookingRepository {
     }
 
     public List<Booking> findAll() {
-        return Queries.read("SELECT " + COLUMNS + " FROM bookings", resultSet -> build(resultSet));
+        return queries.read("SELECT " + COLUMNS + " FROM bookings", resultSet -> build(resultSet));
     }
 
     public Booking findById(int id) {
-        return Queries.readOne("SELECT " + COLUMNS + " FROM bookings WHERE id = ?",
+        return queries.readOne("SELECT " + COLUMNS + " FROM bookings WHERE id = ?",
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
     public void delete(final int id) {
         // The service rows and the mechanic links point at this booking, and nothing else clears
         // them, so all three go in one transaction.
-        new DatabaseWork<Void>() {
+        new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
                 bookingServiceItemRepository.deleteByBookingId(connection, id);
                 bookingMechanicRepository.deleteByBookingId(connection, id);
-                Queries.write(connection, "DELETE FROM bookings WHERE id = ?",
+                queries.write(connection, "DELETE FROM bookings WHERE id = ?",
                         statement -> statement.setInt(1, id));
                 return null;
             }
@@ -80,7 +87,7 @@ public class BookingRepository {
         String sql = "INSERT INTO bookings (vehicle_id, date, description, status, start_time, "
                 + "end_time, mechanic_id, service_item_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        int id = Queries.insert(connection, sql, statement -> {
+        int id = queries.insert(connection, sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
@@ -100,7 +107,7 @@ public class BookingRepository {
         String sql = "UPDATE bookings SET vehicle_id = ?, date = ?, description = ?, status = ?, "
                 + "start_time = ?, end_time = ?, mechanic_id = ?, service_item_id = ? WHERE id = ?";
 
-        Queries.write(connection, sql, statement -> {
+        queries.write(connection, sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
@@ -223,8 +230,8 @@ public class BookingRepository {
         booking.setServicePackages(bookingServiceItemRepository.findPackageNames(booking.getId()));
     }
 
-    private static ServiceItem findServiceItemById(int id) throws SQLException {
-        return Queries.readOne("SELECT " + SERVICE_ITEM_COLUMNS + " FROM service_items WHERE id = ?",
+    private ServiceItem findServiceItemById(int id) throws SQLException {
+        return queries.readOne("SELECT " + SERVICE_ITEM_COLUMNS + " FROM service_items WHERE id = ?",
                 statement -> statement.setInt(1, id), resultSet -> {
                     ServiceItem item = new ServiceItem(
                             resultSet.getInt("id"),

@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.config.DatabasePath;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
@@ -36,7 +37,7 @@ public final class SelfTest {
 
     public static void main(String[] args) throws Exception {
         // The file the program uses when nobody says otherwise, the one that must be left alone.
-        File real = new File(Db.pathFrom(new String[0]));
+        File real = new File(DatabasePath.resolve(new String[0]));
         String before = fingerprint(real);
 
         File database = File.createTempFile("selftest-", ".db");
@@ -46,9 +47,7 @@ public final class SelfTest {
 
         GarageSystem garage;
         try {
-            Db.use(database.getAbsolutePath());
-            Db.ensureReady();
-            garage = new GarageSystem(new SqliteRepositoryFactory());
+            garage = new GarageSystem(new SqliteRepositoryFactory(new Db(database.getAbsolutePath())));
         } catch (Exception cannotStart) {
             // Not an area that failed but a proof that never ran, so it gets an answer of its own.
             System.out.println("Självprovet kunde inte starta: " + cannotStart);

@@ -28,6 +28,8 @@ import java.util.List;
 public class GarageSystem implements WorkOrderGateway {
 
     private final Printer printer;
+
+    private final Db db;
     private final CustomerService customerService;
     private final VehicleService vehicleService;
     private final WorkOrderService workOrderService;
@@ -51,8 +53,9 @@ public class GarageSystem implements WorkOrderGateway {
     public GarageSystem(RepositoryFactory repositories, Printer printer) {
 
         this.printer = printer;
+        this.db = repositories.db();
 
-        Db.ensureReady();
+        db.ensureReady();
 
         customerRepository = repositories.createCustomerRepository();
         vehicleRepository = repositories.createVehicleRepository();
@@ -155,12 +158,12 @@ public class GarageSystem implements WorkOrderGateway {
 
     /** A stored setting, or the fallback when nothing is stored. */
     public String getSetting(String key, String fallback) {
-        return Settings.get(key, fallback);
+        return Settings.get(db, key, fallback);
     }
 
     /** Stores a setting so it survives a restart. */
     public void saveSetting(String key, String value) {
-        Settings.put(key, value);
+        Settings.put(db, key, value);
     }
 
     /** The booking's price. The views ask here instead of adding it up themselves. */

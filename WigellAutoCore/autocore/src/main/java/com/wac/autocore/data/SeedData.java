@@ -16,8 +16,8 @@ import java.time.LocalTime;
 
 public class SeedData {
 
-    public static void seedIfEmpty() {
-        RepositoryFactory repositories = new SqliteRepositoryFactory();
+    public static void seedIfEmpty(Db db) {
+        RepositoryFactory repositories = new SqliteRepositoryFactory(db);
 
         CustomerRepository customerRepository = repositories.createCustomerRepository();
         VehicleRepository vehicleRepository = repositories.createVehicleRepository();
