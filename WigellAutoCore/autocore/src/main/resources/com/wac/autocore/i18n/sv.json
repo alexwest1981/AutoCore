@@ -613,5 +613,13 @@
   "motion": {
     "hold": "håll",
     "done": "klart"
+  },
+  "login": {
+    "title": "Logga in i AutoCore",
+    "username": "Användarnamn",
+    "password": "Lösenord",
+    "sign_in": "Logga in",
+    "error": "Fel användarnamn eller lösenord.",
+    "cancel": "Avbryt"
   }
 }

@@ -613,5 +613,13 @@
   "motion": {
     "hold": "hold",
     "done": "done"
+  },
+  "login": {
+    "title": "Sign in to AutoCore",
+    "username": "Username",
+    "password": "Password",
+    "sign_in": "Sign in",
+    "error": "Wrong username or password.",
+    "cancel": "Cancel"
   }
 }
