@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.config.DatabasePath;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.InvoiceLine;
@@ -19,11 +20,9 @@ public final class NumberRulesProof {
     private NumberRulesProof() {}
 
     public static void main(String[] args) {
-        Db.use(Db.pathFrom(args));
-        Db.ensureReady();
         I18n.setLanguage("sv");
 
-        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
+        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(new Db(DatabasePath.resolve(args))));
         int customerId = Integer.parseInt(args[1]);
         int[][ ] years = {{1899, 0}, {1900, 1}, {2100, 1}, {2101, 0}};
         boolean yearsRight = true;

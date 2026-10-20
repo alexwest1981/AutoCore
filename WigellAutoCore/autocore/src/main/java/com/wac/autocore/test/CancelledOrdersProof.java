@@ -29,10 +29,8 @@ public final class CancelledOrdersProof {
         // Nothing to copy: the program makes the database itself.
         database.delete();
 
-        Db.use(database.getAbsolutePath());
-        Db.ensureReady();
 
-        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
+        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(new Db(database.getAbsolutePath())));
         PageRouter router = new PageRouter(garage, null);
 
         // One order is cancelled the way the button does it, and one is left open beside it.

@@ -44,6 +44,17 @@ Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder a
 
 Körningen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv, eftersom JavaFX annars kraschar i GTK.
 
+### Var databasen ligger
+
+Sökvägen är en inställning och inte kod. Den står som `autocore.db.path` i `src/main/resources/application.properties` och kan skrivas över vid körning:
+
+```
+mvn -f WigellAutoCore/autocore/pom.xml spring-boot:run \
+    -Dspring-boot.run.arguments=--autocore.db.path=/tmp/kopia.db
+```
+
+Spring bygger `Db` med den sökvägen, och varje repository får sin `Db` via `RepositoryFactory` i stället för att läsa en statisk sökväg. Ett prov som körs utan Spring läser samma property med `-Dautocore.db.path=...`, eller tar filen som första argument.
+
 ## Arkitektur
 
 ```
@@ -55,6 +66,7 @@ WigellAutoCore/autocore/
     └── main/java/
         ├── Main.java       JavaFX-appen
         └── com/wac/autocore/
+            ├── config/         Konfigurationen: Db som böna, sökvägen som property
             ├── data/           Databasen och demodata
             ├── db/             Migreringarna, som SQL
             ├── exception/      Undantagen, med nyckel för texten

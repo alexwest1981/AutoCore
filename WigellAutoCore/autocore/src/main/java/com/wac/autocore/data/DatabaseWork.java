@@ -12,11 +12,17 @@ import java.sql.SQLException;
  */
 public abstract class DatabaseWork<T> {
 
+    private final Db db;
+
+    protected DatabaseWork(Db db) {
+        this.db = db;
+    }
+
     /** Does the work on the connection the frame opened. */
     protected abstract T step(Connection connection) throws SQLException;
 
     public final T run() {
-        try (Connection connection = Db.getConnection()) {
+        try (Connection connection = db.getConnection()) {
             connection.setAutoCommit(false);
             try {
                 T result = step(connection);

@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Invoice;
@@ -15,18 +16,24 @@ import java.util.List;
 
 public class InvoiceRepository {
 
+    private final Db db;
+
+    private final Queries queries;
+
     private static final String COLUMNS = "id, work_order_id, invoice_date, amount, discount, total_amount, paid";
 
     private final InvoiceLineRepository invoiceLineRepository;
 
-    public InvoiceRepository(InvoiceLineRepository invoiceLineRepository) {
+    public InvoiceRepository(Db db, InvoiceLineRepository invoiceLineRepository) {
+        this.db = db;
+        this.queries = new Queries(db);
         this.invoiceLineRepository = invoiceLineRepository;
     }
 
     public void save(final Invoice invoice) {
         final boolean isNew = invoice.getId() == 0 || findById(invoice.getId()) == null;
 
-        new DatabaseWork<Void>() {
+        new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
                 if (isNew) {
@@ -40,21 +47,21 @@ public class InvoiceRepository {
     }
 
     public List<Invoice> findAll() {
-        return Queries.read("SELECT " + COLUMNS + " FROM invoices", resultSet -> build(resultSet));
+        return queries.read("SELECT " + COLUMNS + " FROM invoices", resultSet -> build(resultSet));
     }
 
     public Invoice findById(int id) {
-        return Queries.readOne("SELECT " + COLUMNS + " FROM invoices WHERE id = ?",
+        return queries.readOne("SELECT " + COLUMNS + " FROM invoices WHERE id = ?",
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
     public void delete(final int id) {
         // The lines point at this invoice and nothing else clears them, so both go in one transaction.
-        new DatabaseWork<Void>() {
+        new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
                 invoiceLineRepository.deleteByInvoiceId(connection, id);
-                Queries.write(connection, "DELETE FROM invoices WHERE id = ?",
+                queries.write(connection, "DELETE FROM invoices WHERE id = ?",
                         statement -> statement.setInt(1, id));
                 return null;
             }
@@ -65,7 +72,7 @@ public class InvoiceRepository {
         String sql = "INSERT INTO invoices (work_order_id, invoice_date, amount, discount, total_amount, paid) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        int id = Queries.insert(connection, sql, statement -> {
+        int id = queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setInt(3, invoice.getAmount());
@@ -85,7 +92,7 @@ public class InvoiceRepository {
         String sql = "UPDATE invoices SET work_order_id = ?, invoice_date = ?, amount = ?, discount = ?, "
                 + "total_amount = ?, paid = ? WHERE id = ?";
 
-        Queries.write(connection, sql, statement -> {
+        queries.write(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setInt(3, invoice.getAmount());

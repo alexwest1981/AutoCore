@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Payment;
 
@@ -12,6 +13,12 @@ import java.util.List;
 
 public class PaymentRepository {
 
+    private final Queries queries;
+
+    public PaymentRepository(Db db) {
+        this.queries = new Queries(db);
+    }
+
     private static final String COLUMNS = "id, invoice_id, amount, payment_type, payment_date, successful";
 
     public void save(Payment payment) {
@@ -23,23 +30,23 @@ public class PaymentRepository {
     }
 
     public List<Payment> findAll() {
-        return Queries.read("SELECT " + COLUMNS + " FROM payments", PaymentRepository::build);
+        return queries.read("SELECT " + COLUMNS + " FROM payments", PaymentRepository::build);
     }
 
     public Payment findById(int id) {
-        return Queries.readOne("SELECT " + COLUMNS + " FROM payments WHERE id = ?",
+        return queries.readOne("SELECT " + COLUMNS + " FROM payments WHERE id = ?",
                 statement -> statement.setInt(1, id), PaymentRepository::build);
     }
 
     public void delete(int id) {
-        Queries.write("DELETE FROM payments WHERE id = ?", statement -> statement.setInt(1, id));
+        queries.write("DELETE FROM payments WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
     private void insert(Payment payment) {
         String sql = "INSERT INTO payments (invoice_id, amount, payment_type, payment_date, successful) "
                 + "VALUES (?, ?, ?, ?, ?)";
 
-        int id = Queries.insert(sql, statement -> {
+        int id = queries.insert(sql, statement -> {
             statement.setInt(1, payment.getInvoiceId());
             statement.setInt(2, payment.getAmount());
             statement.setString(3, payment.getPaymentType());
@@ -56,7 +63,7 @@ public class PaymentRepository {
         String sql = "UPDATE payments SET invoice_id = ?, amount = ?, payment_type = ?, payment_date = ?, "
                 + "successful = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
+        queries.write(sql, statement -> {
             statement.setInt(1, payment.getInvoiceId());
             statement.setInt(2, payment.getAmount());
             statement.setString(3, payment.getPaymentType());

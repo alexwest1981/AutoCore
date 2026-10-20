@@ -1,6 +1,7 @@
 package com.wac.autocore.test;
 
 import com.wac.autocore.model.DraftChanges;
+import com.wac.autocore.config.DatabasePath;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Mechanic;
@@ -20,10 +21,8 @@ public class RuleViolationProof {
 
     public static void main(String[] args) {
 
-        Db.use(Db.pathFrom(args));
-        Db.ensureReady();
 
-        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
+        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(new Db(DatabasePath.resolve(args))));
 
         int vehicleId = Integer.parseInt(args[1]);
         int mechanicId = Integer.parseInt(args[2]);

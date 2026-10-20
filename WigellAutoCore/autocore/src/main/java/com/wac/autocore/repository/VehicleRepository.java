@@ -14,6 +14,15 @@ import java.util.List;
 
 public class VehicleRepository {
 
+    private final Db db;
+
+    private final Queries queries;
+
+    public VehicleRepository(Db db) {
+        this.db = db;
+        this.queries = new Queries(db);
+    }
+
     private static final String COLUMNS = "id, registration_number, brand, model, year, customer_id";
 
     /** Saves the vehicle. The number is already normalized in the model. */
@@ -45,23 +54,23 @@ public class VehicleRepository {
     }
 
     public List<Vehicle> findAll() {
-        return Queries.read("SELECT " + COLUMNS + " FROM vehicles", VehicleRepository::build);
+        return queries.read("SELECT " + COLUMNS + " FROM vehicles", VehicleRepository::build);
     }
 
     public Vehicle findById(int id) {
-        return Queries.readOne("SELECT " + COLUMNS + " FROM vehicles WHERE id = ?",
+        return queries.readOne("SELECT " + COLUMNS + " FROM vehicles WHERE id = ?",
                 statement -> statement.setInt(1, id), VehicleRepository::build);
     }
 
     public void delete(int id) {
-        Queries.write("DELETE FROM vehicles WHERE id = ?", statement -> statement.setInt(1, id));
+        queries.write("DELETE FROM vehicles WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
     private void insert(Vehicle vehicle) {
         String sql = "INSERT INTO vehicles (registration_number, brand, model, year, customer_id) VALUES (?, ?, ?, ?, ?)";
 
         // The check and the write share a connection, so the number cannot be taken in between.
-        try (Connection connection = Db.getConnection();
+        try (Connection connection = db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             if (registrationNumberTaken(connection, vehicle.getRegistrationNumber(), 0)) {
@@ -90,7 +99,7 @@ public class VehicleRepository {
         String sql = "UPDATE vehicles SET registration_number = ?, brand = ?, model = ?, year = ?, customer_id = ? "
                 + "WHERE id = ?";
 
-        try (Connection connection = Db.getConnection();
+        try (Connection connection = db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             if (registrationNumberTaken(connection, vehicle.getRegistrationNumber(), vehicle.getId())) {

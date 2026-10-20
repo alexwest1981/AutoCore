@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 
@@ -13,10 +14,16 @@ import java.util.List;
 /** The invoice_lines table: the rows a sent invoice is built from. */
 public class InvoiceLineRepository {
 
+    private final Queries queries;
+
+    public InvoiceLineRepository(Db db) {
+        this.queries = new Queries(db);
+    }
+
     private static final String COLUMNS = "id, invoice_id, service_item_id, service_name, price, discount, package_name";
 
     public List<InvoiceLine> findByInvoiceId(int invoiceId) {
-        return Queries.read("SELECT " + COLUMNS + " FROM invoice_lines WHERE invoice_id = ? ORDER BY id",
+        return queries.read("SELECT " + COLUMNS + " FROM invoice_lines WHERE invoice_id = ? ORDER BY id",
                 statement -> statement.setInt(1, invoiceId), InvoiceLineRepository::build);
     }
 
