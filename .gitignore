@@ -1,16 +1,10 @@
 # IDE / Editor files
-# .idea folders are ignored, except in the project root and there only the module file,
-# the project libraries and the module list. Those files point out the database driver,
-# so that the Run button in IntelliJ keeps working after a pull.
-# workspace.xml is left out: it changes constantly and holds machine-local paths.
+# .idea and the module files are never shared: they hold machine-local paths, and the
+# module file names the platform jars one machine happens to have. Every clone imports
+# WigellAutoCore/autocore/pom.xml as a Maven project instead, and IntelliJ picks the
+# right JavaFX classifier for that operating system.
 .idea/
-!/.idea/
-/.idea/*
-!/.idea/libraries/
-!/.idea/modules.xml
 *.iml
-!Projektarbete.iml
-!WigellAutoCore/autocore/autocore.iml
 .vscode/
 .agents/
 .project

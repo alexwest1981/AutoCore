@@ -30,6 +30,8 @@ mvn -f WigellAutoCore/autocore/pom.xml package
 
 JavaFX 25, sqlite-jdbc och json hämtas av Maven, så inget installeras för hand och `lib/` behövs inte längre.
 
+Öppna projektet i IntelliJ genom att högerklicka på `WigellAutoCore/autocore/pom.xml` och välja **Add as Maven Project**. Modulfilerna delas inte via git, eftersom de pekar på den plattform din maskin råkar ha. Maven väljer rätt JavaFX för Linux, Windows och macOS, så samma pull fungerar för alla.
+
 ## Bygg och kör
 
 Java 8-vägen gäller än så länge `./start.sh`, som kör koden utan Maven. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
