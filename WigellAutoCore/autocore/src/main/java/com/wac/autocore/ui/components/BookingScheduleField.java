@@ -46,6 +46,8 @@ public class BookingScheduleField {
         this.datePicker = new DatePicker(initialDateVal);
         this.datePicker.setVisible(false);
         this.datePicker.setManaged(false);
+        // The calendar draws the week number column itself; without this it is empty.
+        this.datePicker.setShowWeekNumbers(true);
 
         // The calendar's days. The factory is set once, and the cells read the current services and
         // times each time they are drawn, so refresh() can update them when the selection changes.
@@ -55,8 +57,8 @@ public class BookingScheduleField {
         return cell;
         });
 
-        com.sun.javafx.scene.control.skin.DatePickerSkin dateSkin =
-        new com.sun.javafx.scene.control.skin.DatePickerSkin(this.datePicker);
+        javafx.scene.control.skin.DatePickerSkin dateSkin =
+        new javafx.scene.control.skin.DatePickerSkin(this.datePicker);
         this.calendarNode = dateSkin.getPopupContent();
         // The theme colours are set in the stylesheet (.booking-calendar): an inline style cannot
         // resolve -wac-card/-wac-line, so they dropped out silently and the calendar went see-through.
