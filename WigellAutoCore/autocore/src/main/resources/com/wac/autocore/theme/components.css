@@ -183,6 +183,17 @@
     -fx-cursor: default;
 }
 
+/* the sign-in window (ui/LoginDialog) */
+.login-brand {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-accent;
+}
+.login-error {
+    -fx-text-fill: -wac-danger;
+    -fx-font-size: 12px;
+}
+
 /* value flash: a 320 ms tint, removed by ui/motion/ValueFlash */
 .value-flash {
     -fx-background-color: -wac-accent-soft;

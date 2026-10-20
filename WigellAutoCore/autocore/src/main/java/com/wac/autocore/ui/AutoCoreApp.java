@@ -4,12 +4,16 @@ import com.wac.autocore.AutoCoreApplication;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.repository.RepositoryFactory;
+import com.wac.autocore.security.Identity;
+import com.wac.autocore.security.IdentityHolder;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.service.LoginService;
 import com.wac.autocore.theme.ThemeManager;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.navigation.SidebarView;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -18,6 +22,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import java.util.Optional;
 
 /** The JavaFX interface for Wigell AutoCore. */
 public class AutoCoreApp extends Application {
@@ -28,6 +34,10 @@ public class AutoCoreApp extends Application {
     private ConfigurableApplicationContext context;
 
     private GarageSystem garage;
+
+    private IdentityHolder identityHolder;
+
+    private LoginService loginService;
 
     /**
      * The context is opened here, on the JavaFX launcher thread, because JavaFX creates this
@@ -52,6 +62,12 @@ public class AutoCoreApp extends Application {
         }
 
         garage = new GarageSystem(context.getBean(RepositoryFactory.class));
+        identityHolder = context.getBean(IdentityHolder.class);
+        loginService = context.getBean(LoginService.class);
+
+        // Before the sign-in window: it is the first thing a person sees, and it should speak the
+        // language they chose last time.
+        restoreLanguage();
     }
 
     @Override
@@ -64,7 +80,12 @@ public class AutoCoreApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         installErrorBoundary();
-        restoreLanguage();
+
+        if (!signIn()) {
+            // Closed or cancelled: nothing more to show. The context goes with the program.
+            Platform.exit();
+            return;
+        }
         persistLanguageChanges();
 
         BorderPane stage = new BorderPane();
@@ -131,6 +152,19 @@ public class AutoCoreApp extends Application {
             return I18n.get("view.error.action_failed") + "\n\n" + failure.getMessage();
         }
         return I18n.get("view.error.action_failed") + "\n\n" + failure.toString();
+    }
+
+    /**
+     * Shows the sign-in window and keeps who signed in. No protected operation happens before
+     * this returns true, and the identity is what the guard reads afterwards.
+     */
+    private boolean signIn() {
+        Optional<Identity> identity = LoginDialog.showAndWait(loginService);
+        if (identity.isEmpty()) {
+            return false;
+        }
+        identityHolder.set(identity.get());
+        return true;
     }
 
     /** Reads the last chosen language from the settings. */
