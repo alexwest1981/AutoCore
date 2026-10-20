@@ -1,7 +1,10 @@
+package com.wac.autocore;
+
 import com.wac.autocore.data.Db;
 import com.wac.autocore.ui.AutoCoreApp;
 
 import javafx.application.Application;
+import org.springframework.boot.SpringApplication;
 
 /**
  * Entry point: prepares the database and opens the interface.
@@ -10,6 +13,7 @@ import javafx.application.Application;
 public class Main {
 
     public static void main(String[] args) {
+        SpringApplication.run(AutoCoreApplication.class, args);
         Db.use(Db.pathFrom(args));
         try {
             Db.ensureReady();
