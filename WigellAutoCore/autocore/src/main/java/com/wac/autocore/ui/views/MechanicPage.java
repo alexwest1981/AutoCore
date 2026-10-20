@@ -33,7 +33,7 @@ final class MechanicPage {
         router.setActiveTable(table);
 
         Button addButton = UiComponents.primaryButton(I18n.get("entity.mechanics.action_create"));
-        addButton.setOnAction(e -> ActionDialogs.showCreateMechanicDialog(garage, () -> router.navigate("mechanics")));
+        addButton.setOnAction(e -> ActionDialogs.showCreateMechanicDialog(garage, router::requestReload));
         Button editButton = UiComponents.secondaryButton(I18n.get("entity.mechanics.action_edit"));
         Button deleteButton = UiComponents.secondaryButton(I18n.get("entity.mechanics.action_delete"));
         editButton.setDisable(true);
@@ -46,20 +46,20 @@ final class MechanicPage {
         editButton.setOnAction(e -> {
             Mechanic selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ActionDialogs.showEditMechanicDialog(garage, selected, () -> router.navigate("mechanics"));
+                ActionDialogs.showEditMechanicDialog(garage, selected, router::requestReload);
             }
         });
         deleteButton.setOnAction(e -> {
             Mechanic selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ActionDialogs.showDeleteMechanicConfirmation(garage, selected, () -> router.navigate("mechanics"));
+                ActionDialogs.showDeleteMechanicConfirmation(garage, selected, router::requestReload);
             }
         });
         view.setRowFactory(tableView -> {
             TableRow<Mechanic> row = new TableRow<Mechanic>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    ActionDialogs.showEditMechanicDialog(garage, row.getItem(), () -> router.navigate("mechanics"));
+                    ActionDialogs.showEditMechanicDialog(garage, row.getItem(), router::requestReload);
                 }
             });
             return row;

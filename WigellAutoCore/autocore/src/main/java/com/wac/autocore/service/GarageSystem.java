@@ -30,6 +30,9 @@ public class GarageSystem implements WorkOrderGateway {
     private final Printer printer;
 
     private final Db db;
+
+    /** Everyone who wants to hear that something was written, typically the open page. */
+    private final List<Runnable> changeListeners = new java.util.concurrent.CopyOnWriteArrayList<Runnable>();
     private final CustomerService customerService;
     private final VehicleService vehicleService;
     private final WorkOrderService workOrderService;
@@ -82,6 +85,21 @@ public class GarageSystem implements WorkOrderGateway {
         paymentService = new PaymentService(paymentRepository, invoiceRepository);
         servicePackageService = new ServicePackageService(servicePackageRepository);
         removalRules = new RemovalRules(workOrderService, bookingService, billingService, vehicleService);
+    }
+
+    /**
+     * Registers interest in changes. The window uses it to redraw the page it shows, so a view is
+     * never left showing what the database held before the last save.
+     */
+    public void addChangeListener(Runnable listener) {
+        changeListeners.add(listener);
+    }
+
+    /** Says that something was written. Called by the writers below, after the write went through. */
+    private void changed() {
+        for (Runnable listener : changeListeners) {
+            listener.run();
+        }
     }
 
     public List<Customer> getCustomers() {
@@ -143,12 +161,17 @@ public class GarageSystem implements WorkOrderGateway {
     /** Reserves an hour in the schedule for a booking. */
     public boolean reserveSlot(int mechanicId, LocalDate date, int hour, int bookingId,
                                String customer, String vehicleReg, String description) {
-        return mechanicSchedule.bookSlot(mechanicId, date, hour, bookingId, 0, customer, vehicleReg, description);
+        boolean booked = mechanicSchedule.bookSlot(mechanicId, date, hour, bookingId, 0, customer, vehicleReg, description);
+        if (booked) {
+            changed();
+        }
+        return booked;
     }
 
     /** Frees the schedule slot a booking held. */
     public void releaseSlot(int bookingId) {
         mechanicSchedule.cancelSlotForBooking(bookingId);
+        changed();
     }
 
     /** Reads the schedule again after work orders have been created. */
@@ -318,7 +341,9 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     public Customer createCustomer(String name, String phone, String email) {
-        return customerService.createCustomer(name, phone, email);
+        Customer customer = customerService.createCustomer(name, phone, email);
+        changed();
+        return customer;
     }
 
     public Vehicle createVehicle(String registrationNumber,
@@ -326,53 +351,71 @@ public class GarageSystem implements WorkOrderGateway {
                                  String model,
                                  int year,
                                  int customerId) {
-        return vehicleService.createVehicle(registrationNumber, brand, model, year, customerId);
+        Vehicle vehicle = vehicleService.createVehicle(registrationNumber, brand, model, year, customerId);
+        changed();
+        return vehicle;
     }
 
     public Booking createBooking(int vehicleId,
                                  LocalDate date,
                                  String description) {
-        return bookingService.createBooking(vehicleId, date, description);
+        Booking booking = bookingService.createBooking(vehicleId, date, description);
+        changed();
+        return booking;
     }
 
     public Booking createBooking(int vehicleId,
                                  LocalDate date,
                                  String description, LocalTime startTime, int mechanicId, int serviceItemId) {
-        return bookingService.createBooking(vehicleId, date, description,
+        Booking booking = bookingService.createBooking(vehicleId, date, description,
                 startTime, mechanicId, serviceItemId);
+        changed();
+        return booking;
     }
 
     public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
-        return workOrderService.createWorkOrder(bookingId, mechanicId);
+        WorkOrder order = workOrderService.createWorkOrder(bookingId, mechanicId);
+        changed();
+        return order;
     }
 
     /** Creates a work order for a selection of the services, so a booking can be split. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds) {
-        return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
+        WorkOrder order = workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds);
+        changed();
+        return order;
     }
 
     /** Creates a work order of a given type: Standard, Reclamation or Internal. */
     @Override
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds,
                                      String type) {
-        return workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
+        WorkOrder order = workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
+        changed();
+        return order;
     }
 
     /** Creates a reclamation on a previously performed work order. */
     @Override
     public WorkOrder createReclamation(int originalWorkOrderId, String description) {
-        return workOrderService.createReclamation(originalWorkOrderId, description);
+        WorkOrder order = workOrderService.createReclamation(originalWorkOrderId, description);
+        changed();
+        return order;
     }
 
     // Creates a draft, that is a work order with no booking and no services.
     @Override
     public WorkOrder createDraft(int vehicleId, String description) {
-        return workOrderService.createDraft(vehicleId, description);
+        WorkOrder draft = workOrderService.createDraft(vehicleId, description);
+        changed();
+        return draft;
     }
 
     @Override
     public WorkOrder updateDraft(DraftChanges changes) {
-        return workOrderService.updateDraft(changes);
+        WorkOrder draft = workOrderService.updateDraft(changes);
+        changed();
+        return draft;
     }
 
     /** Drop-in with no booked time: the booking row is created first, in the same sweep, so that
@@ -380,7 +423,9 @@ public class GarageSystem implements WorkOrderGateway {
      *  mechanics come from the form, which fills them in from the services' requirements. */
     public Booking createDropInBooking(int vehicleId, java.util.List<ServiceItem> services,
                                        java.util.List<Mechanic> mechanics) {
-        return bookingService.createDropInBooking(vehicleId, services, mechanics);
+        Booking booking = bookingService.createDropInBooking(vehicleId, services, mechanics);
+        changed();
+        return booking;
     }
 
     /** The time a drop-in would get right now, or null when the team's hours are out for the day. */
@@ -390,28 +435,37 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     public Invoice createInvoice(int workOrderId, String discountCode) {
-        return billingService.createInvoice(workOrderId, discountCode);
+        Invoice invoice = billingService.createInvoice(workOrderId, discountCode);
+        changed();
+        return invoice;
     }
 
     /** Invoices a work order, with a new charge as its own line. */
     public Invoice createInvoice(int workOrderId, String discountCode, String extraName, int extraAmount) {
-        return billingService.createInvoice(workOrderId, discountCode, extraName, extraAmount);
+        Invoice invoice = billingService.createInvoice(workOrderId, discountCode, extraName, extraAmount);
+        changed();
+        return invoice;
     }
 
     /** Invoices the booking. The work itself sits in {@link BillingService}. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode) {
-        return billingService.createInvoiceForBooking(bookingId, discountCode);
+        Invoice invoice = billingService.createInvoiceForBooking(bookingId, discountCode);
+        changed();
+        return invoice;
     }
 
     /** The same invoice, but with room for a new charge the reclamation brings with it. */
     public Invoice createInvoiceForBooking(int bookingId, String discountCode, String extraName, int extraAmount) {
-        return billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
+        Invoice invoice = billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
+        changed();
+        return invoice;
     }
 
     public Mechanic createMechanic(String name, String phone, String specialization) {
         refuseUnlessStorableMechanic(name, phone);
         Mechanic mechanic = new Mechanic(0, name, phone, specialization);
         mechanicRepository.save(mechanic);
+        changed();
         return mechanic;
     }
 
@@ -423,44 +477,63 @@ public class GarageSystem implements WorkOrderGateway {
     public ServiceItem createServiceItem(String name, String description, int price, int estimatedMinutes, String specialization) {
         ServiceItem item = new ServiceItem(0, name, description, price, estimatedMinutes, specialization);
         serviceItemRepository.save(item);
+        changed();
         return item;
     }
 
     @Override
     public void startWorkOrder(int workOrderId) {
         workOrderService.startWorkOrder(workOrderId);
+        changed();
     }
 
     /** Marks services as performed and stores their current prices. */
     public boolean markServicesAsCompleted(int workOrderId, int[] serviceItemIds) {
-        return workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
+        boolean marked = workOrderService.markServicesAsCompleted(workOrderId, serviceItemIds);
+        if (marked) {
+            changed();
+        }
+        return marked;
     }
 
     @Override
     public void completeWorkOrder(int workOrderId) {
         workOrderService.completeWorkOrder(workOrderId);
+        changed();
     }
 
     @Override
     public boolean cancelWorkOrder(int workOrderId) {
-        return workOrderService.cancelWorkOrder(workOrderId);
+        boolean cancelled = workOrderService.cancelWorkOrder(workOrderId);
+        if (cancelled) {
+            changed();
+        }
+        return cancelled;
     }
 
     @Override
     public boolean confirmWorkOrder(int workOrderId) {
-        return workOrderService.confirmWorkOrder(workOrderId);
+        boolean confirmed = workOrderService.confirmWorkOrder(workOrderId);
+        if (confirmed) {
+            changed();
+        }
+        return confirmed;
     }
 
     public Payment processPayment(int invoiceId, String paymentType) {
-        return paymentService.processPayment(invoiceId, paymentType);
+        Payment payment = paymentService.processPayment(invoiceId, paymentType);
+        changed();
+        return payment;
     }
 
     public void updateCustomer(Customer customer) {
         customerService.updateCustomer(customer);
+        changed();
     }
 
     public void updateVehicle(Vehicle vehicle) {
         vehicleService.updateVehicle(vehicle);
+        changed();
     }
 
     public void updateMechanic(Mechanic mechanic) {
@@ -471,17 +544,20 @@ public class GarageSystem implements WorkOrderGateway {
 
         refuseUnlessStorableMechanic(mechanic.getName(), mechanic.getPhone());
         mechanicRepository.save(mechanic);
+        changed();
     }
 
     /** New or changed, the booking goes through the same rules before it is stored. */
     public Booking saveBooking(Booking booking) {
         Booking saved = bookingService.saveBooking(booking);
         mechanicSchedule.syncFromDatabase();
+        changed();
         return saved;
     }
 
     public void updateServiceItem(ServiceItem item) {
         serviceItemRepository.save(item);
+        changed();
     }
 
     public boolean canDeleteMechanic(int mechanicId) {
@@ -495,6 +571,7 @@ public class GarageSystem implements WorkOrderGateway {
                 "dialog.mechanic.delete.has_active_orders");
         mechanicRepository.delete(mechanicId);
         mechanicSchedule.removeSlotsForMechanic(mechanicId);
+        changed();
     }
 
     public boolean canDeleteCustomer(int customerId) {
@@ -513,6 +590,7 @@ public class GarageSystem implements WorkOrderGateway {
             }
         }
         customerRepository.delete(customerId);
+        changed();
     }
 
     public boolean canDeleteVehicle(int vehicleId) {
@@ -524,6 +602,7 @@ public class GarageSystem implements WorkOrderGateway {
                 "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.",
                 "dialog.vehicle.delete.has_active_orders");
         vehicleRepository.delete(vehicleId);
+        changed();
     }
 
     public boolean canCancelOrDeleteBooking(int bookingId) {
@@ -537,6 +616,7 @@ public class GarageSystem implements WorkOrderGateway {
             bookingRepository.save(b);
             mechanicSchedule.cancelSlotForBooking(bookingId);
             mechanicSchedule.syncFromDatabase();
+            changed();
         }
     }
 
@@ -555,6 +635,7 @@ public class GarageSystem implements WorkOrderGateway {
         bookingRepository.delete(bookingId);
         mechanicSchedule.cancelSlotForBooking(bookingId);
         mechanicSchedule.syncFromDatabase();
+        changed();
     }
 
     public boolean canDeleteServiceItem(int serviceItemId) {
@@ -566,6 +647,7 @@ public class GarageSystem implements WorkOrderGateway {
                 "Tjänsten kan inte tas bort: den ligger i en bokning eller en arbetsorder.",
                 "dialog.service.delete.has_active_orders");
         serviceItemRepository.delete(serviceItemId);
+        changed();
     }
 
     /** The same rule as for the customer, on the path every writer of a mechanic row goes through. */
@@ -580,14 +662,18 @@ public class GarageSystem implements WorkOrderGateway {
     }
 
     public ServicePackage createServicePackage(String name, String description, List<ServiceItem> serviceItems) {
-        return servicePackageService.createPackage(name, description, serviceItems);
+        ServicePackage servicePackage = servicePackageService.createPackage(name, description, serviceItems);
+        changed();
+        return servicePackage;
     }
 
     public void updateServicePackage(ServicePackage servicePackage) {
         servicePackageService.updatePackage(servicePackage);
+        changed();
     }
 
     public void deleteServicePackage(int id) {
         servicePackageService.deletePackage(id);
+        changed();
     }
 }

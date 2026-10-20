@@ -34,7 +34,7 @@ final class VehiclePage {
         router.setActiveTable(table);
 
         Button addButton = UiComponents.primaryButton(I18n.get("entity.vehicles.action_create"));
-        addButton.setOnAction(e -> ActionDialogs.showCreateVehicleDialog(garage, () -> router.navigate("vehicles")));
+        addButton.setOnAction(e -> ActionDialogs.showCreateVehicleDialog(garage, router::requestReload));
 
         Button editButton = UiComponents.secondaryButton(I18n.get("entity.vehicles.action_edit"));
         Button deleteButton = UiComponents.secondaryButton(I18n.get("entity.vehicles.action_delete"));
@@ -49,13 +49,13 @@ final class VehiclePage {
         editButton.setOnAction(e -> {
             Vehicle selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ActionDialogs.showEditVehicleDialog(garage, selected, () -> router.navigate("vehicles"));
+                ActionDialogs.showEditVehicleDialog(garage, selected, router::requestReload);
             }
         });
         deleteButton.setOnAction(e -> {
             Vehicle selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ActionDialogs.showDeleteVehicleConfirmation(garage, selected, () -> router.navigate("vehicles"));
+                ActionDialogs.showDeleteVehicleConfirmation(garage, selected, router::requestReload);
             }
         });
 
@@ -63,7 +63,7 @@ final class VehiclePage {
             TableRow<Vehicle> row = new TableRow<Vehicle>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    ActionDialogs.showEditVehicleDialog(garage, row.getItem(), () -> router.navigate("vehicles"));
+                    ActionDialogs.showEditVehicleDialog(garage, row.getItem(), router::requestReload);
                 }
             });
             return row;
