@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AutoCore — Verkstadssystem för Wigell Group</title>
-<meta name="description" content="AutoCore samlar kunder, fordon, bokningar, arbetsordrar och fakturor i ett tydligt verkstadsflöde.">
+<meta name="description" content="AutoCore håller koll på kunder, fordon, bokningar, arbetsordrar och fakturor i en lokal JavaFX-app med SQLite.">
 <meta name="theme-color" content="#101311">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -73,7 +73,7 @@
     <div class="hero-copy">
       <p class="badge"><span class="badge-dot" aria-hidden="true"></span> Verkstadssystem för Wigell Group</p>
       <h1>Ordning i varje <span class="accent">verkstadsflöde.</span></h1>
-      <p class="hero-lede">AutoCore samlar kunder, fordon, bokningar, arbetsordrar och fakturor i ett lokalt och pålitligt system för moderna verkstäder.</p>
+      <p class="hero-lede">AutoCore håller koll på kunder, fordon, bokningar, arbetsordrar och fakturor. Allt ligger i en lokal SQLite-databas, och gränssnittet är byggt i JavaFX.</p>
       <div class="hero-actions">
         <a class="btn btn-solid" href="#kom-igang">Utforska projektet <svg width="16" height="16" aria-hidden="true"
   class="lucide lucide-chevron-right"
@@ -127,7 +127,7 @@
           <p class="eyebrow">En arbetsyta</p>
           <h2>Byggt runt verkstadens vardag.</h2>
         </div>
-        <p class="section-note">Varje del är kopplad till nästa — från första bokningen till betald faktura.</p>
+        <p class="section-note">Varje del hänger ihop med nästa, från första bokningen till betald faktura.</p>
       </div>
       <div class="cards">
         <article class="card">
@@ -149,7 +149,7 @@
   <path d="M16 3.13a4 4 0 0 1 0 7.75" />
 </svg>
           <h3>Kunder &amp; fordon</h3>
-          <p>Håll ihop ägare, fordon och servicehistorik i ett tydligt kundflöde.</p>
+          <p>Kunder, deras fordon och servicehistoriken i samma vy.</p>
         </article>
         <article class="card">
           <svg width="24" height="24" aria-hidden="true"
@@ -176,7 +176,7 @@
   <path d="M16 18h.01" />
 </svg>
           <h3>Bokning &amp; schema</h3>
-          <p>Planera mekaniker, tjänster och tider utan överlapp eller dubbelbokningar.</p>
+          <p>Mekaniker, tjänster och tider utan överlapp eller dubbelbokningar.</p>
         </article>
         <article class="card">
           <svg width="24" height="24" aria-hidden="true"
@@ -194,7 +194,7 @@
   <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
 </svg>
           <h3>Arbetsordrar</h3>
-          <p>Från drop-in till reklamation — med statusflöden som speglar verkstaden.</p>
+          <p>Drop-in, standard och reklamation, med statusbyten som systemet spärrar.</p>
         </article>
         <article class="card">
           <svg width="24" height="24" aria-hidden="true"
@@ -214,7 +214,7 @@
   <path d="M12 18V6" />
 </svg>
           <h3>Fakturering</h3>
-          <p>Rader, rabatter, moms och betalningar samlat i samma arbetsflöde.</p>
+          <p>Fakturarader med rabatt och moms. Betalning via kort, Swish eller kontant.</p>
         </article>
       </div>
     </div>
@@ -226,8 +226,8 @@
     </div>
     <div>
       <p class="eyebrow">Systemet i korthet</p>
-      <h2>Ett tydligt flöde. Färre genvägar.</h2>
-      <p class="about-lede">AutoCore är byggt med lager som går i en riktning: gränssnittet pratar med <span class="strong">GarageSystem</span>, som pratar med serviceklasserna, som pratar med repositoryt. Resultatet är ett system som är lättare att förstå, testa och vidareutveckla.</p>
+      <h2>Lagren går i en riktning.</h2>
+      <p class="about-lede">Gränssnittet pratar med <span class="strong">GarageSystem</span>, som pratar med serviceklasserna, som pratar med repositoryt. Ingen genväg förbi.</p>
       <ul class="checks">
         <li><svg width="16" height="16" aria-hidden="true"
   class="lucide lucide-check"
@@ -293,8 +293,8 @@
     <div class="wrap cta-row">
       <div>
         <p class="eyebrow">Öppen källkod</p>
-        <h2>Redo att kika under huven?</h2>
-        <p>Läs dokumentationen, se arkitekturen och kör projektet lokalt från GitHub.</p>
+        <h2>Källkoden ligger på GitHub.</h2>
+        <p>README:n visar hur du bygger med JDK 25 och Maven och kör appen lokalt.</p>
       </div>
       <a class="btn btn-dark" href="https://github.com/alexwest1981/AutoCore" target="_blank" rel="noreferrer">Öppna på GitHub <svg width="16" height="16" aria-hidden="true"
   class="lucide lucide-arrow-up-right"
