@@ -55,7 +55,7 @@ public final class EntityPages {
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.bookings.action_create"));
-        addBtn.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, () -> router.navigate("bookings")));
+        addBtn.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, router::requestReload));
 
         Button cancelBtn = UiComponents.secondaryButton(I18n.get("entity.bookings.action_cancel"));
         Button editBtn = UiComponents.secondaryButton(I18n.get("entity.bookings.action_edit"));
@@ -75,21 +75,21 @@ public final class EntityPages {
         editBtn.setOnAction(e -> {
             Booking sel = t.getSelectionModel().getSelectedItem();
             if (sel != null) {
-                ActionDialogs.showEditBookingDialog(garage, sel, () -> router.navigate("bookings"));
+                ActionDialogs.showEditBookingDialog(garage, sel, router::requestReload);
             }
         });
 
         cancelBtn.setOnAction(e -> {
             Booking sel = t.getSelectionModel().getSelectedItem();
             if (sel != null) {
-                ActionDialogs.showCancelBookingConfirmation(garage, sel, () -> router.navigate("bookings"));
+                ActionDialogs.showCancelBookingConfirmation(garage, sel, router::requestReload);
             }
         });
 
         deleteBtn.onConfirm(() -> {
             Booking sel = t.getSelectionModel().getSelectedItem();
             if (sel != null) {
-                ActionDialogs.showDeleteBookingConfirmation(garage, sel, () -> router.navigate("bookings"));
+                ActionDialogs.showDeleteBookingConfirmation(garage, sel, router::requestReload);
             }
         });
 
@@ -97,7 +97,7 @@ public final class EntityPages {
             TableRow<Booking> row = new TableRow<Booking>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    ActionDialogs.showEditBookingDialog(garage, row.getItem(), () -> router.navigate("bookings"));
+                    ActionDialogs.showEditBookingDialog(garage, row.getItem(), router::requestReload);
                 }
             });
             return row;
@@ -130,17 +130,17 @@ public final class EntityPages {
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.workorders.action_create"));
-        addBtn.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, () -> router.navigate("workorders")));
+        addBtn.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, router::requestReload));
 
         Button draftBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_draft"));
-        draftBtn.setOnAction(e -> ActionDialogs.showCreateDraftDialog(garage, () -> router.navigate("workorders")));
+        draftBtn.setOnAction(e -> ActionDialogs.showCreateDraftDialog(garage, router::requestReload));
 
         Button detailsBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_details"));
         detailsBtn.setDisable(true);
         detailsBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
             if (sel != null) {
-                ActionDialogs.showWorkOrderDetailsDialog(garage, sel, () -> router.navigate("workorders"));
+                ActionDialogs.showWorkOrderDetailsDialog(garage, sel, router::requestReload);
             }
         });
 
@@ -151,7 +151,7 @@ public final class EntityPages {
             TableRow<WorkOrder> row = new TableRow<WorkOrder>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem(), () -> router.navigate("workorders"));
+                    ActionDialogs.showWorkOrderDetailsDialog(garage, row.getItem(), router::requestReload);
                 }
             });
             return row;
@@ -218,7 +218,7 @@ public final class EntityPages {
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.invoices.action_create"));
-        addBtn.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, () -> router.navigate("invoices")));
+        addBtn.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, router::requestReload));
 
         Button payBtn = UiComponents.secondaryButton(I18n.get("entity.invoices.action_pay"));
         payBtn.setDisable(true);
@@ -250,7 +250,7 @@ public final class EntityPages {
         payBtn.setOnAction(e -> {
             Invoice sel = t.getSelectionModel().getSelectedItem();
             if (sel != null && !sel.isPaid()) {
-                ActionDialogs.showProcessPaymentDialog(garage, sel, () -> router.navigate("invoices"));
+                ActionDialogs.showProcessPaymentDialog(garage, sel, router::requestReload);
             }
         });
 
@@ -291,7 +291,7 @@ public final class EntityPages {
         router.setActiveTable(table);
 
         Button addBtn = UiComponents.primaryButton(I18n.get("entity.payments.action_create"));
-        addBtn.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, () -> router.navigate("payments")));
+        addBtn.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, router::requestReload));
 
         return UiComponents.buildEntityPage(
                 I18n.get("entity.payments.title"),
