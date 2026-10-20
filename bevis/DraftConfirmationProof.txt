@@ -1,5 +1,0 @@
-Databas redo: /tmp/bas.db
-tomt utkast: Arbetsordern saknar mekaniker. (dialog.workorder.confirm_no_mechanic)
-utan tjänster: Arbetsordern saknar tjänster. (dialog.workorder.confirm_no_services)
-utan datum: Arbetsordern saknar datum. (dialog.workorder.confirm_no_date)
-komplett utkast: status CONFIRMED

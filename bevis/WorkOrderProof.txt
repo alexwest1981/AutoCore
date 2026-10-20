@@ -1,5 +1,0 @@
-Databas redo: /tmp/bas.db
-1. utkastet skapat, nummer 20, status CREATED
-2. utkastet ändrat, mekaniker 1
-3. bekräftad: ja
-status efter: CONFIRMED

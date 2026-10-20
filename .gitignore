@@ -37,6 +37,10 @@ sources.txt
 *.pdf
 RetrospektDagbok.md
 
+# The proof runs belong to the delivery, not to the code. They are recorded on the machine
+# that ran them and kept beside the repository, so a pull never writes over someone else's.
+/bevis/
+
 # Personal test reports and local results
 rapport.md
 rapport*.md
