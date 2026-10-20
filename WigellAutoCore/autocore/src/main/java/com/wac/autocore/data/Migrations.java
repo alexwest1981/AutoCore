@@ -26,7 +26,8 @@ final class Migrations {
     private static final String[] FILES = {
         "001_baslinjen.sql",
         "002_nycklar.sql",
-        "003_ore.sql"
+        "003_ore.sql",
+        "004_users.sql"
     };
 
     /**
