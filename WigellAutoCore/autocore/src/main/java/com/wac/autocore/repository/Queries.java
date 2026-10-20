@@ -21,6 +21,8 @@ import java.util.List;
  */
 final class Queries {
 
+    private final Db db;
+
     /** Puts the values into the statement's placeholders. */
     interface Binder {
         void bind(PreparedStatement statement) throws SQLException;
@@ -31,16 +33,18 @@ final class Queries {
         T map(ResultSet resultSet) throws SQLException;
     }
 
-    private Queries() {}
+    Queries(Db db) {
+        this.db = db;
+    }
 
     /** Runs an INSERT, UPDATE or DELETE that takes no values. */
-    static void write(String sql) {
+    void write(String sql) {
         write(sql, null);
     }
 
     /** Runs an INSERT, UPDATE or DELETE. */
-    static void write(String sql, Binder binder) {
-        try (Connection connection = Db.getConnection()) {
+    void write(String sql, Binder binder) {
+        try (Connection connection = db.getConnection()) {
             write(connection, sql, binder);
         } catch (SQLException e) {
             throw new DataAccessException("Could not write to the database.", e);
@@ -58,8 +62,8 @@ final class Queries {
     }
 
     /** Runs an INSERT and returns the id the database gave the row, or 0 when it gave none. */
-    static int insert(String sql, Binder binder) {
-        try (Connection connection = Db.getConnection()) {
+    int insert(String sql, Binder binder) {
+        try (Connection connection = db.getConnection()) {
             return insert(connection, sql, binder);
         } catch (SQLException e) {
             throw new DataAccessException("Could not write to the database.", e);
@@ -90,13 +94,13 @@ final class Queries {
     }
 
     /** The rows the query gives, in the order the database returns them. */
-    static <T> List<T> read(String sql, RowMapper<T> mapper) {
+    <T> List<T> read(String sql, RowMapper<T> mapper) {
         return read(sql, null, mapper);
     }
 
     /** The rows the query gives, with the placeholders bound first. */
-    static <T> List<T> read(String sql, Binder binder, RowMapper<T> mapper) {
-        try (Connection connection = Db.getConnection()) {
+    <T> List<T> read(String sql, Binder binder, RowMapper<T> mapper) {
+        try (Connection connection = db.getConnection()) {
             return read(connection, sql, binder, mapper);
         } catch (SQLException e) {
             throw new DataAccessException("Could not read from the database.", e);
@@ -121,7 +125,7 @@ final class Queries {
     }
 
     /** The first row the query gives, or null when it gives none. */
-    static <T> T readOne(String sql, Binder binder, RowMapper<T> mapper) {
+    <T> T readOne(String sql, Binder binder, RowMapper<T> mapper) {
         List<T> rows = read(sql, binder, mapper);
         return rows.isEmpty() ? null : rows.get(0);
     }

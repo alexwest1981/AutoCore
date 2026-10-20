@@ -55,13 +55,33 @@ public class SidebarView {
         for (Button b : navButtons) {
             b.getStyleClass().remove("selected");
             b.getStyleClass().remove("nav-current");
-            if (key != null && key.equals(b.getUserData())) {
+
+            boolean here = key != null && key.equals(b.getUserData());
+            // The page you are on is not a place to go: the item is disabled, so a second press
+            // neither navigates nor throws the page away. The pill still marks where you are.
+            b.setDisable(here);
+            b.setCursor(here ? Cursor.DEFAULT : Cursor.HAND);
+
+            if (here) {
                 // the accent block is the travelling pill, so the item itself stays flat
                 b.getStyleClass().add("nav-current");
                 target = b;
             }
         }
         movePillTo(target, true);
+    }
+
+    /**
+     * Puts the pill back on the selected item without travelling. A new language changes the
+     * labels' widths, and the pill is a rectangle that does not follow on its own.
+     */
+    public void realign() {
+        for (Button b : navButtons) {
+            if (b.getStyleClass().contains("nav-current")) {
+                movePillTo(b, false);
+                return;
+            }
+        }
     }
 
     /** Puts the pill on the selected item, travelling there unless motion is reduced. */

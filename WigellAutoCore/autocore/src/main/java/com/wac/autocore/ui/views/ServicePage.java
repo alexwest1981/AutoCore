@@ -34,9 +34,9 @@ final class ServicePage {
         router.setActiveTable(table);
 
         Button addButton = UiComponents.primaryButton(I18n.get("entity.services.action_create"));
-        addButton.setOnAction(e -> ActionDialogs.showCreateServiceItemDialog(garage, () -> router.navigate("services")));
+        addButton.setOnAction(e -> ActionDialogs.showCreateServiceItemDialog(garage, router::requestReload));
         Button createPackageButton = UiComponents.secondaryButton(I18n.get("entity.services.action_create_package"));
-        createPackageButton.setOnAction(e -> ServicePackageDialogs.showCreatePackageDialog(garage, () -> router.navigate("services")));
+        createPackageButton.setOnAction(e -> ServicePackageDialogs.showCreatePackageDialog(garage, router::requestReload));
         Button showPackagesButton = UiComponents.secondaryButton(I18n.get("entity.services.action_show_packages"));
         showPackagesButton.setOnAction(e -> ServicePackageDialogs.showPackagesDialog(garage));
         Button editButton = UiComponents.secondaryButton(I18n.get("entity.services.action_edit"));
@@ -51,20 +51,20 @@ final class ServicePage {
         editButton.setOnAction(e -> {
             ServiceItem selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ActionDialogs.showEditServiceItemDialog(garage, selected, () -> router.navigate("services"));
+                ActionDialogs.showEditServiceItemDialog(garage, selected, router::requestReload);
             }
         });
         deleteButton.setOnAction(e -> {
             ServiceItem selected = view.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ActionDialogs.showDeleteServiceItemConfirmation(garage, selected, () -> router.navigate("services"));
+                ActionDialogs.showDeleteServiceItemConfirmation(garage, selected, router::requestReload);
             }
         });
         view.setRowFactory(tableView -> {
             TableRow<ServiceItem> row = new TableRow<ServiceItem>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    ActionDialogs.showEditServiceItemDialog(garage, row.getItem(), () -> router.navigate("services"));
+                    ActionDialogs.showEditServiceItemDialog(garage, row.getItem(), router::requestReload);
                 }
             });
             return row;

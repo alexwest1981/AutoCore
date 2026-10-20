@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
@@ -42,7 +43,7 @@ public final class ErrorBoundaryProof {
         System.out.println("register: " + working.getAbsolutePath() + " (byggt av provet)");
         System.out.println();
 
-        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(working.getAbsolutePath()));
+        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(new Db(working.getAbsolutePath())));
 
         boolean refused = report(garage);
         System.out.println();

@@ -177,6 +177,11 @@
 .sidebar .nav-item.nav-current .nav-icon {
     -fx-fill: -wac-on-accent;
 }
+/* The current page's item is disabled; it keeps its colours, since the pill already marks it. */
+.sidebar .nav-item:disabled {
+    -fx-opacity: 1;
+    -fx-cursor: default;
+}
 
 /* value flash: a 320 ms tint, removed by ui/motion/ValueFlash */
 .value-flash {

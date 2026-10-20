@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
 
@@ -115,7 +116,7 @@ public final class OldDatabaseProof {
         System.out.println("   före:  " + counts(before));
 
         System.out.println("   programmet startar mot kopian");
-        new GarageSystem(new SqliteRepositoryFactory(working.getAbsolutePath()));
+        new GarageSystem(new SqliteRepositoryFactory(new Db(working.getAbsolutePath())));
 
         Map<String, Map<String, Map<String, String>>> after = read(working, true);
         System.out.println("   efter: " + counts(after));
@@ -199,7 +200,7 @@ public final class OldDatabaseProof {
         System.out.println("   filen finns från början: " + fresh.exists());
 
         System.out.println("   programmet startar och bygger den");
-        new GarageSystem(new SqliteRepositoryFactory(fresh.getAbsolutePath()));
+        new GarageSystem(new SqliteRepositoryFactory(new Db(fresh.getAbsolutePath())));
 
         Map<String, Map<String, Map<String, String>>> after = read(fresh, true);
         System.out.println("   efter: " + counts(after));

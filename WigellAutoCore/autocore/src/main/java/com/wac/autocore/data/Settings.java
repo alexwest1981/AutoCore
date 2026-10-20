@@ -12,9 +12,9 @@ public final class Settings {
     private Settings() {}
 
     /** Returns the stored value for {@code key}, or {@code fallback} when nothing is stored. */
-    public static String get(String key, String fallback) {
+    public static String get(Db db, String key, String fallback) {
         String sql = "SELECT value FROM settings WHERE key = ?";
-        try (Connection connection = Db.getConnection();
+        try (Connection connection = db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, key);
             try (ResultSet rows = statement.executeQuery()) {
@@ -32,9 +32,9 @@ public final class Settings {
     }
 
     /** Stores {@code value} under {@code key}, replacing any previous value. */
-    public static void put(String key, String value) {
+    public static void put(Db db, String key, String value) {
         String sql = "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)";
-        try (Connection connection = Db.getConnection();
+        try (Connection connection = db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, key);
             statement.setString(2, value);
