@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.ServiceItem;
 
@@ -11,6 +12,12 @@ import java.util.List;
 /** The booking_service_items table: the services on a booking. */
 public class BookingServiceItemRepository {
 
+    private final Queries queries;
+
+    public BookingServiceItemRepository(Db db) {
+        this.queries = new Queries(db);
+    }
+
     private static final String SERVICE_COLUMNS =
             "s.id, s.name, s.description, s.price, s.estimated_minutes, s.specialization";
 
@@ -20,7 +27,7 @@ public class BookingServiceItemRepository {
                 + "WHERE bsi.booking_id = ? "
                 + "ORDER BY s.id ASC";
 
-        return Queries.read(sql, statement -> statement.setInt(1, bookingId), resultSet -> {
+        return queries.read(sql, statement -> statement.setInt(1, bookingId), resultSet -> {
             ServiceItem item = new ServiceItem(
                     resultSet.getInt("id"),
                     resultSet.getString("name"),
@@ -38,7 +45,7 @@ public class BookingServiceItemRepository {
         String sql = "SELECT service_item_id, package_name FROM booking_service_items "
                 + "WHERE booking_id = ? AND package_name IS NOT NULL";
 
-        List<java.util.Map.Entry<Integer, String>> rows = Queries.read(sql,
+        List<java.util.Map.Entry<Integer, String>> rows = queries.read(sql,
                 statement -> statement.setInt(1, bookingId),
                 resultSet -> new java.util.AbstractMap.SimpleEntry<Integer, String>(
                         Integer.valueOf(resultSet.getInt("service_item_id")),

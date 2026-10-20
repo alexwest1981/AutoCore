@@ -1,5 +1,6 @@
 package com.wac.autocore.repository;
 
+import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Customer;
 
 import java.sql.ResultSet;
@@ -7,6 +8,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class CustomerRepository {
+
+    private final Queries queries;
+
+    public CustomerRepository(Db db) {
+        this.queries = new Queries(db);
+    }
 
     private static final String COLUMNS = "id, name, phone, email, vip";
 
@@ -19,23 +26,23 @@ public class CustomerRepository {
     }
 
     public List<Customer> findAll() {
-        return Queries.read("SELECT " + COLUMNS + " FROM customers", CustomerRepository::build);
+        return queries.read("SELECT " + COLUMNS + " FROM customers", CustomerRepository::build);
     }
 
     public Customer findById(int id) {
-        return Queries.readOne("SELECT " + COLUMNS + " FROM customers WHERE id = ?",
+        return queries.readOne("SELECT " + COLUMNS + " FROM customers WHERE id = ?",
                 statement -> statement.setInt(1, id), CustomerRepository::build);
     }
 
     public void delete(int id) {
-        Queries.write("DELETE FROM customers WHERE id = ?", statement -> statement.setInt(1, id));
+        queries.write("DELETE FROM customers WHERE id = ?", statement -> statement.setInt(1, id));
     }
 
     private void insert(Customer customer) {
         String sql = "INSERT INTO customers (name, phone, email, vip) VALUES (?, ?, ?, ?)";
 
         // Only set the id when the database gave one, as before.
-        int id = Queries.insert(sql, statement -> {
+        int id = queries.insert(sql, statement -> {
             statement.setString(1, customer.getName());
             statement.setString(2, customer.getPhone());
             statement.setString(3, customer.getEmail());
@@ -50,7 +57,7 @@ public class CustomerRepository {
     private void update(Customer customer) {
         String sql = "UPDATE customers SET name = ?, phone = ?, email = ?, vip = ? WHERE id = ?";
 
-        Queries.write(sql, statement -> {
+        queries.write(sql, statement -> {
             statement.setString(1, customer.getName());
             statement.setString(2, customer.getPhone());
             statement.setString(3, customer.getEmail());

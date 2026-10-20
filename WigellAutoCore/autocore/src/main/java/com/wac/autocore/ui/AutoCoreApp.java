@@ -1,8 +1,9 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.exception.AppException;
+import com.wac.autocore.AutoCoreApplication;
 import com.wac.autocore.data.Db;
-import com.wac.autocore.repository.SqliteRepositoryFactory;
+import com.wac.autocore.exception.AppException;
+import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.theme.ThemeManager;
 import com.wac.autocore.ui.i18n.I18n;
@@ -15,6 +16,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /** The JavaFX interface for Wigell AutoCore. */
 public class AutoCoreApp extends Application {
@@ -22,12 +25,44 @@ public class AutoCoreApp extends Application {
     /** Key the language choice is stored under in the settings table. */
     public static final String LANGUAGE_KEY = "language";
 
-    private final GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
+    private ConfigurableApplicationContext context;
+
+    private GarageSystem garage;
+
+    /**
+     * The context is opened here, on the JavaFX launcher thread, because JavaFX creates this
+     * object itself: a bean it made would never be the one shown. The storage comes from
+     * DatabaseConfig, and the window only ever sees the factory the context built.
+     */
+    @Override
+    public void init() {
+        String[] args = getParameters().getRaw().toArray(new String[0]);
+        context = SpringApplication.run(AutoCoreApplication.class, args);
+
+        Db db = context.getBean(Db.class);
+        try {
+            db.ensureReady();
+        } catch (RuntimeException e) {
+            // Without a finished database the window opens empty and still looks like
+            // it works. Say what is wrong and open nothing, instead of half an app.
+            System.out.println(e.getMessage());
+            System.out.println("Databasen är inte körbar. Åtgärda felet och starta om.");
+            context.close();
+            System.exit(1);
+        }
+
+        garage = new GarageSystem(context.getBean(RepositoryFactory.class));
+    }
+
+    @Override
+    public void stop() {
+        if (context != null) {
+            context.close();
+        }
+    }
 
     @Override
     public void start(Stage primaryStage) {
-        // The database is already ready: Main runs Db.ensureReady() and the garage field above
-        // does the same in its constructor. An initTables() here gave a second "Databas redo".
         installErrorBoundary();
         restoreLanguage();
         persistLanguageChanges();
@@ -109,7 +144,6 @@ public class AutoCoreApp extends Application {
     }
 
     public static void main(String[] args) {
-        Db.use(Db.pathFrom(args));
         launch(args);
     }
 }

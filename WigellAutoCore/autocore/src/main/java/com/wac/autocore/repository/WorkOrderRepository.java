@@ -20,13 +20,22 @@ import java.util.Map;
 
 public class WorkOrderRepository {
 
+    private final Db db;
+
+    private final Queries queries;
+
+    public WorkOrderRepository(Db db) {
+        this.db = db;
+        this.queries = new Queries(db);
+    }
+
     private static final String COLUMNS = "id, booking_id, mechanic_id, status, type, vehicle_id, description, "
             + "original_work_order_id, planned_date, planned_time, customer_instructions, other_comments";
 
     public void save(final WorkOrder workOrder) {
         final boolean isNew = workOrder.getId() == 0 || findById(workOrder.getId()) == null;
 
-        new DatabaseWork<Void>() {
+        new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
                 if (isNew) {
@@ -41,23 +50,23 @@ public class WorkOrderRepository {
     }
 
     public List<WorkOrder> findAll() {
-        return Queries.read("SELECT " + COLUMNS + " FROM work_orders", resultSet -> build(resultSet));
+        return queries.read("SELECT " + COLUMNS + " FROM work_orders", resultSet -> build(resultSet));
     }
 
     public WorkOrder findById(int id) {
-        return Queries.readOne("SELECT " + COLUMNS + " FROM work_orders WHERE id = ?",
+        return queries.readOne("SELECT " + COLUMNS + " FROM work_orders WHERE id = ?",
                 statement -> statement.setInt(1, id), resultSet -> build(resultSet));
     }
 
     public void delete(final int id) {
         // The service rows point at this work order and nothing else clears them, so both go in one
         // transaction.
-        new DatabaseWork<Void>() {
+        new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
-                Queries.write(connection, "DELETE FROM work_order_service_items WHERE work_order_id = ?",
+                queries.write(connection, "DELETE FROM work_order_service_items WHERE work_order_id = ?",
                         statement -> statement.setInt(1, id));
-                Queries.write(connection, "DELETE FROM work_orders WHERE id = ?",
+                queries.write(connection, "DELETE FROM work_orders WHERE id = ?",
                         statement -> statement.setInt(1, id));
                 return null;
             }
@@ -70,7 +79,7 @@ public class WorkOrderRepository {
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
-        int id = Queries.insert(connection, sql, statement -> {
+        int id = queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus().name());
@@ -94,7 +103,7 @@ public class WorkOrderRepository {
                 + "description = ?, original_work_order_id = ?, planned_date = ?, planned_time = ?, "
                 + "customer_instructions = ?, other_comments = ? WHERE id = ?";
 
-        Queries.write(connection, sql, statement -> {
+        queries.write(connection, sql, statement -> {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus().name());
@@ -146,7 +155,7 @@ public class WorkOrderRepository {
                 + "WHERE work_order_id = ?";
 
         // One row carries four values that end up in four lists, so the loop stays here.
-        try (Connection connection = Db.getConnection();
+        try (Connection connection = db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, workOrder.getId());

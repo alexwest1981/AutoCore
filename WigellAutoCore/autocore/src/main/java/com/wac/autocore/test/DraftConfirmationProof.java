@@ -1,5 +1,6 @@
 package com.wac.autocore.test;
 
+import com.wac.autocore.config.DatabasePath;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.DraftChanges;
@@ -20,11 +21,9 @@ public final class DraftConfirmationProof {
 
     public static void main(String[] args) {
 
-        Db.use(Db.pathFrom(args));
-        Db.ensureReady();
         I18n.setLanguage("sv");
 
-        final GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory());
+        final GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(new Db(DatabasePath.resolve(args))));
 
         final int vehicleId = Integer.parseInt(args[1]);
         final int mechanicId = Integer.parseInt(args[2]);
