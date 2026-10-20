@@ -1,0 +1,5 @@
+Databas redo: /tmp/bas.db
+nyckel: dialog.mechanic.delete.has_active_orders
+meddelande: Mekanikern kan inte tas bort: den används av en bokning eller ett pågående arbete.
+sv: Kan inte ta bort Johan Karlsson eftersom mekanikern har aktiva eller tilldelade arbetsordrar.
+en: Cannot delete Johan Karlsson because the mechanic has active or assigned work orders.
