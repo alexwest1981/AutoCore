@@ -1,0 +1,24 @@
+B5 · samma operation ger samma svar utan fönstret
+register: /tmp/work-order-rows-4291451460115069395.db (kopia av /tmp/bas.db)
+
+Databas redo: /tmp/work-order-rows-4291451460115069395.db
+1. utan fönster, genom WorkOrderGateway
+   utkast 26, status CREATED
+   ändrat: mekaniker 1, tjänst 1
+   avbrutet
+
+2. genom fönstret, samma anrop som dialogerna gör
+   utkast 27, status CREATED
+   ändrat: mekaniker 1, tjänst 1
+   avbrutet
+
+3. raderna, utan id som med flit skiljer sig
+   arbetsorder, utan fönster:      [booking_id=null  mechanic_id=1  status=CANCELLED  type=STANDARD  vehicle_id=1  description=Bromsok, bromsbelagg och vatska  original_work_order_id=null  planned_date=2026-10-16  planned_time=09:30  customer_instructions=Nycklarna ligger i bilen.  other_comments=Kunden ringer innan hamtning.]
+   arbetsorder, genom fönstret:    [booking_id=null  mechanic_id=1  status=CANCELLED  type=STANDARD  vehicle_id=1  description=Bromsok, bromsbelagg och vatska  original_work_order_id=null  planned_date=2026-10-16  planned_time=09:30  customer_instructions=Nycklarna ligger i bilen.  other_comments=Kunden ringer innan hamtning.]
+   tjänster, utan fönster:         [service_item_id=1  completed=0  price=null  package_name=null]
+   tjänster, genom fönstret:       [service_item_id=1  completed=0  price=null  package_name=null]
+
+samma rader för arbetsordern:         true
+samma rader för tjänsterna:           true
+raderna är vad operationen ska lämna: true
+findWorkOrder svarar vad raden säger: true

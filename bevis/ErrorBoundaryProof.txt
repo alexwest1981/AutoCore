@@ -1,0 +1,22 @@
+A12 · ett ogiltigt kundnummer är inte ett tekniskt fel
+register: /tmp/error-boundary-7246393760684556102.db (byggt av provet)
+
+Databas redo: /tmp/error-boundary-7246393760684556102.db
+1. kundnummer som inte kan vara en kund
+   999999 -> NotFoundException: Customer with ID 999999 does not exist.
+   0 -> NotFoundException: Customer with ID 0 does not exist.
+   -1 -> NotFoundException: Customer with ID -1 does not exist.
+   2147483647 -> NotFoundException: Customer with ID 2147483647 does not exist.
+
+2. samma anrop med ett nummer som finns: 1
+
+3. samma anrop, men registret svarar inte längre
+   DataAccessException: Could not read customer 999999
+
+4. en skrivning som inte går igenom
+   DataAccessException: Could not save customer
+
+regelbrottet är ett eget fel med en text att läsa: true
+ett nummer som finns går igenom kontrollen:        true
+databasen som inte svarar ger ett annat fel:        true
+en skrivning som misslyckas ger ett tydligt fel:   true
