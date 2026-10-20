@@ -19,9 +19,20 @@ Ett verkstadssystem för Wigell Group. Kunder, fordon, bokningar, arbetsordrar, 
 
 Siffrorna i menyn visar vad som väntar på hantering.
 
+## Innan du bygger
+
+JDK 25 och Maven 3.9 eller senare. Bygget kräver exakt JDK 25: `pom.xml` stannar med ett meddelande om du kör en annan version.
+
+```
+mise use java@25
+mvn -f WigellAutoCore/autocore/pom.xml package
+```
+
+JavaFX 25, sqlite-jdbc och json hämtas av Maven, så inget installeras för hand och `lib/` behövs inte längre.
+
 ## Bygg och kör
 
-Projektet använder Java 8 med JavaFX. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
+Java 8-vägen gäller än så länge `./start.sh`, som kör koden utan Maven. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ. Konsolversionen startar du med `./start.sh ConsoleApp`.
 
 ### Får du "No suitable driver found for jdbc:sqlite"?
 
@@ -33,23 +44,23 @@ Körningen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x
 
 ```
 WigellAutoCore/autocore/
-├── lib/            sqlite-jdbc, json
+├── pom.xml         bygget: JDK 25, JavaFX 25, SQLite och json
+├── lib/            sqlite-jdbc, json (kvar till E1-3)
 └── src/
-    ├── Main.java           JavaFX-appen
-    ├── ConsoleApp.java     Konsolversionen
-    ├── com/wac/autocore/
-    │   ├── data/           Databasen och demodata
-    │   ├── model/          Domänmodeller
-    │   ├── repository/     Läsning och skrivning mot SQLite
-    │   ├── service/        Affärslogik, GarageSystem som fasad
-    │   ├── seed/           Ordlista för demodata, svenska och engelska
-    │   └── ui/             Gränssnittet: dialoger, vyer, komponenter,
-    │                       i18n och teman
-    └── resources/com/wac/autocore/
-        ├── i18n/           sv.json och en.json
-        ├── seed/           Demodata per språk
-        └── theme/          CSS och temat Emerald
+    ├── ConsoleApp.java     Konsolversionen, kvar utanför Maven
+    └── main/java/
+        ├── Main.java       JavaFX-appen
+        └── com/wac/autocore/
+            ├── data/           Databasen och demodata
+            ├── model/          Domänmodeller
+            ├── repository/     Läsning och skrivning mot SQLite
+            ├── service/        Affärslogik, GarageSystem som fasad
+            ├── seed/           Ordlista för demodata, svenska och engelska
+            └── ui/             Gränssnittet: dialoger, vyer, komponenter,
+                                i18n och teman
 ```
+
+Resurserna, alltså SQL, JSON och CSS, ligger fortfarande inne i paketmappen och flyttas till `src/main/resources` i E1-2.
 
 Lagren går i en riktning: gränssnittet pratar med `GarageSystem`, som pratar med serviceklasserna, som pratar med repositoryt. Ingen genväg förbi.
 
