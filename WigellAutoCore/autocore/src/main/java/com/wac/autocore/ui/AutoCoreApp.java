@@ -2,6 +2,7 @@ package com.wac.autocore.ui;
 
 import com.wac.autocore.AutoCoreApplication;
 import com.wac.autocore.data.Db;
+import com.wac.autocore.data.Settings;
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.security.Identity;
@@ -162,9 +163,13 @@ public class AutoCoreApp extends Application {
         }
     }
 
-    /** Reads the last chosen language from the settings. */
+    /**
+     * Reads the last chosen language from the settings. The sign-in window is the first screen, so
+     * the language has to be known before anyone is signed in, and the guarded facade refuses every
+     * read until then. This one row is therefore read from the table directly.
+     */
     public void restoreLanguage() {
-        I18n.setLanguage(garage.getSetting(LANGUAGE_KEY, I18n.DEFAULT_LANG));
+        I18n.setLanguage(Settings.get(context.getBean(Db.class), LANGUAGE_KEY, I18n.DEFAULT_LANG));
     }
 
     /** Saves language switches so the choice survives a restart. */

@@ -190,4 +190,47 @@ class AuthorizationTest {
         assertTrue(nobody.isEmpty());
         assertThrows(IllegalArgumentException.class, () -> identity.set(null));
     }
+
+    @Test
+    void nobodySignedInCannotReadEither() {
+        GarageSystem garage = garage();
+
+        // The same answer as for a write, and the same text, so the caller is told to sign in
+        // rather than that the role is wrong.
+        NotAuthenticatedException lists = assertThrows(NotAuthenticatedException.class, garage::getCustomers);
+        assertEquals("dialog.access.sign_in", lists.getMessageKey());
+
+        assertThrows(NotAuthenticatedException.class, garage::getWorkOrders);
+        assertThrows(NotAuthenticatedException.class, () -> garage.findCustomer(1));
+        assertThrows(NotAuthenticatedException.class, () -> garage.getSetting("language", "sv"));
+        assertThrows(NotAuthenticatedException.class, () -> garage.canDeleteCustomer(1));
+    }
+
+    @Test
+    void everyRoleMayReadOnceSignedIn() {
+        for (Role role : Role.values()) {
+            signIn("lasare-" + role, role);
+
+            GarageSystem garage = garage();
+
+            assertDoesNotThrow(garage::getCustomers, "getCustomers för " + role);
+            assertDoesNotThrow(garage::getVehicles, "getVehicles för " + role);
+            assertDoesNotThrow(garage::getBookings, "getBookings för " + role);
+            assertDoesNotThrow(garage::getWorkOrders, "getWorkOrders för " + role);
+            assertDoesNotThrow(garage::getServiceItems, "getServiceItems för " + role);
+            assertDoesNotThrow(garage::getMechanics, "getMechanics för " + role);
+            assertDoesNotThrow(() -> garage.findCustomer(1), "findCustomer för " + role);
+        }
+    }
+
+    @Test
+    void signingOutClosesTheReadingToo() {
+        signIn("lasare", Role.READ_ONLY);
+        GarageSystem garage = garage();
+        assertDoesNotThrow(garage::getCustomers);
+
+        identity.clear();
+
+        assertThrows(NotAuthenticatedException.class, garage::getCustomers);
+    }
 }
