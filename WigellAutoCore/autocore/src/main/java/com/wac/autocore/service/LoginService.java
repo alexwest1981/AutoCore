@@ -36,6 +36,13 @@ public class LoginService {
         if (row.isEmpty() || !PasswordHash.matches(password, row.get().passwordHash())) {
             return Optional.empty();
         }
+
+        // The one moment the password is at hand is a successful sign-in, so that is when an old
+        // row is brought up to the current cost. Nothing else changes.
+        if (PasswordHash.needsRehash(row.get().passwordHash())) {
+            users.savePasswordHash(row.get().username(), PasswordHash.hash(password));
+        }
+
         return Optional.of(new Identity(row.get().username(), Role.fromText(row.get().role())));
     }
 }

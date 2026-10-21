@@ -8,6 +8,7 @@ import com.wac.autocore.security.Identity;
 import com.wac.autocore.security.IdentityHolder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.LoginService;
+import com.wac.autocore.service.PasswordRotation;
 import com.wac.autocore.theme.ThemeManager;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
@@ -60,6 +61,8 @@ public class AutoCoreApp extends Application {
             context.close();
             System.exit(1);
         }
+
+        applyConfiguredPasswords();
 
         garage = new GarageSystem(context.getBean(RepositoryFactory.class));
         identityHolder = context.getBean(IdentityHolder.class);
@@ -152,6 +155,24 @@ public class AutoCoreApp extends Application {
             return I18n.get("view.error.action_failed") + "\n\n" + failure.getMessage();
         }
         return I18n.get("view.error.action_failed") + "\n\n" + failure.toString();
+    }
+
+    /**
+     * Turns configured passwords into hashes once the schema is there. A bad value stops the start
+     * with the account it belongs to, never with the value itself.
+     */
+    private void applyConfiguredPasswords() {
+        try {
+            java.util.List<String> changed = context.getBean(PasswordRotation.class).apply();
+            if (!changed.isEmpty()) {
+                System.out.println("Lösenord satta från konfigurationen för: " + changed);
+            }
+        } catch (IllegalArgumentException bad) {
+            System.out.println(bad.getMessage());
+            System.out.println("Programmet startar inte med en ogiltig säkerhetskonfiguration.");
+            context.close();
+            System.exit(1);
+        }
     }
 
     /**

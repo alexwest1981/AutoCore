@@ -32,6 +32,17 @@ sources.txt
 # the L3 proof. Nothing opens it for writing; every run copies it to /tmp first.
 !WigellAutoCore/autocore/test/data/autocore-original.db
 
+# Secrets: never in the repository. Configuration holds placeholders, the values come from the
+# environment. See "Hemligheter" in README.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+secrets.properties
+
 # Archives & Temporary files
 *.zip
 *.pdf
