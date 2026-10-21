@@ -60,6 +60,8 @@ public final class LoginView {
                 password.requestFocus();
                 return;
             }
+            // The check is done; nothing needs the typed password after this line.
+            password.clear();
             onSignedIn.accept(identity.get());
         };
         signIn.setOnAction(clicked -> attempt.run());
