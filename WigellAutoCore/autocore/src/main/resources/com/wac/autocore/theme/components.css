@@ -183,7 +183,25 @@
     -fx-cursor: default;
 }
 
-/* the sign-in window (ui/LoginDialog) */
+/* the sign-in card (ui/LoginView) */
+.login-card {
+    -fx-background-color: -wac-card;
+    -fx-background-radius: 14;
+    -fx-border-color: -wac-line;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 30 28 26 28;
+}
+.login-secure {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -wac-text;
+    -fx-padding: 0 0 6 0;
+}
+.login-field-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -wac-muted;
+}
 .login-brand {
     -fx-font-size: 20px;
     -fx-font-weight: bold;
