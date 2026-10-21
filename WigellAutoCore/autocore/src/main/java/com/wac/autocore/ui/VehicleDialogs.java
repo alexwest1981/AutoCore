@@ -151,7 +151,7 @@ public final class VehicleDialogs {
                 try {
                     garage.deleteVehicle(vehicle.getId());
                 } catch (DataAccessException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    ActionDialogs.showAppError(e);
                     return;
                 }
                 if (onSuccess != null) onSuccess.run();

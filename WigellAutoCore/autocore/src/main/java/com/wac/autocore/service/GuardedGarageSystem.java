@@ -5,12 +5,16 @@ import com.wac.autocore.exception.NotAuthenticatedException;
 import com.wac.autocore.model.*;
 import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.security.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 public class GuardedGarageSystem extends GarageSystem {
+
+    private static final Logger log = LoggerFactory.getLogger(GuardedGarageSystem.class);
 
     private final IdentityHolder identityHolder;
 
@@ -25,11 +29,13 @@ public class GuardedGarageSystem extends GarageSystem {
         // without the right, and the order asks the system to tell them apart.
         java.util.Optional<Identity> current = identityHolder.current();
         if (current.isEmpty()) {
+            log.warn("Åtkomst nekad: ingen inloggad försökte {}", operation);
             throw new NotAuthenticatedException("Nobody is signed in, and " + operation + " needs one.");
         }
 
         Role role = current.get().role();
         if (!RoleMatrix.allows(role, operation)) {
+            log.warn("Åtkomst nekad: {} ({}) försökte {}", current.get().username(), role, operation);
             throw new AccessDeniedException("Role " + role + " may not " + operation + ".");
         }
     }

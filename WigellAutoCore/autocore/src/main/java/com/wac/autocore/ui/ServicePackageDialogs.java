@@ -89,10 +89,10 @@ public final class ServicePackageDialogs {
                     garage.createServicePackage(name, desc, items);
                 }
             } catch (DataAccessException e) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                ActionDialogs.showAppError(e);
                 return;
             } catch (ValidationException rejected) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(rejected.getMessageKey()));
+                ActionDialogs.showAppError(rejected);
                 return;
             }
             if (onSuccess != null) onSuccess.run();
@@ -160,7 +160,7 @@ public final class ServicePackageDialogs {
             try {
                 garageSystem.deleteServicePackage(selected.getId());
             } catch (DataAccessException e) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                ActionDialogs.showAppError(e);
                 return;
             }
             list.getItems().remove(selected);
