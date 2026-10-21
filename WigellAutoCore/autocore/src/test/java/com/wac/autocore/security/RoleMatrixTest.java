@@ -16,15 +16,27 @@ class RoleMatrixTest {
     }
 
     @Test
-    void aStaffMemberMayDoEverythingExceptTheFour() {
+    void aStaffMemberMayDoEverythingExceptTheFive() {
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_CUSTOMER));
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_VEHICLE));
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_MECHANIC));
+        assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_WORK_ORDER));
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.CHANGE_SETTINGS));
 
-        assertEquals(Operation.values().length - 4, countAllowed(Role.STAFF));
+        assertEquals(Operation.values().length - 5, countAllowed(Role.STAFF));
         assertTrue(RoleMatrix.allows(Role.STAFF, Operation.CANCEL_WORK_ORDER));
         assertTrue(RoleMatrix.allows(Role.STAFF, Operation.TAKE_PAYMENT));
+    }
+
+    @Test
+    void cancellingAnOrderIsNotTheSameAsRemovingIt() {
+        // A staff member calls off an order during the day, which is ordinary work. Removing the row
+        // afterwards is the administrator's answer for a mistake.
+        assertTrue(RoleMatrix.allows(Role.STAFF, Operation.CANCEL_WORK_ORDER));
+        assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_WORK_ORDER));
+
+        assertTrue(RoleMatrix.allows(Role.ADMIN, Operation.DELETE_WORK_ORDER));
+        assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.DELETE_WORK_ORDER));
     }
 
     @Test

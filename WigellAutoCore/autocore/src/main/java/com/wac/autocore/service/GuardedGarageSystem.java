@@ -77,6 +77,22 @@ public class GuardedGarageSystem extends GarageSystem {
         super.deleteCustomer(customerId);
     }
 
+    /**
+     * The row is gone afterwards, so the log is the only place left that says who removed it. It is
+     * written after the delete went through, never before, so a refused delete leaves no trace of
+     * one that did not happen.
+     */
+    @Override
+    public void deleteWorkOrder(int workOrderId) {
+
+        require(Operation.DELETE_WORK_ORDER);
+
+        super.deleteWorkOrder(workOrderId);
+
+        String who = identityHolder.current().map(Identity::username).orElse("okänd");
+        log.info("Arbetsorder {} borttagen av {}", workOrderId, who);
+    }
+
     @Override
     public Vehicle createVehicle(String registrationNumber, String brand, String model, int year, int customerId) {
 
@@ -686,6 +702,14 @@ public class GuardedGarageSystem extends GarageSystem {
         require(Operation.READ);
 
         return super.canDeleteServiceItem(serviceItemId);
+    }
+
+    @Override
+    public boolean canDeleteWorkOrder(int workOrderId) {
+
+        require(Operation.READ);
+
+        return super.canDeleteWorkOrder(workOrderId);
     }
 
     @Override
