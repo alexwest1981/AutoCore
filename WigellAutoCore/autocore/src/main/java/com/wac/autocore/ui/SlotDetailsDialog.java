@@ -11,6 +11,9 @@ import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -19,6 +22,8 @@ import com.wac.autocore.seed.SeedText;
 
 /** Dialogs for time slots and work order details. */
 public final class SlotDetailsDialog {
+
+    private static final Logger log = LoggerFactory.getLogger(SlotDetailsDialog.class);
 
     private SlotDetailsDialog() {}
 
@@ -158,7 +163,7 @@ public final class SlotDetailsDialog {
                             targetBooking.addServiceItem(garage.getServiceItems().get(0));
                             garage.saveBooking(targetBooking);
                         } catch (Exception ex) {
-                            System.out.println("Could not give the booking a service: " + ex.getMessage());
+                            log.warn("Could not give the booking a service", ex);
                         }
                     }
                     // One work order per mechanic, the same plan the work order dialog uses,

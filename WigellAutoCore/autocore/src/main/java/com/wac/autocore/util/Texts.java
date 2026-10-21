@@ -1,5 +1,7 @@
 package com.wac.autocore.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ import java.util.Map;
  * The only place a language is loaded and held.
  */
 public class Texts {
+
+    private static final Logger log = LoggerFactory.getLogger(Texts.class);
 
     public static final String LANG_EN = "en";
     public static final String LANG_SV = "sv";
@@ -58,7 +62,7 @@ public class Texts {
     public static Map<String, String> load(String lang) {
         URL url = Resources.find(RESOURCE_PATH + lang + ".json");
         if (url == null) {
-            System.err.println("Varning: Kunde inte hitta språkfilen för " + lang);
+            log.warn("Kunde inte hitta språkfilen för {}", lang);
             return Collections.emptyMap();
         }
         return Resources.json(url);

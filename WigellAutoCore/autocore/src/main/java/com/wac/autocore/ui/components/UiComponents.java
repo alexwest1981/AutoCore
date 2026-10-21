@@ -13,10 +13,15 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.InputStream;
 
 /** Shared building blocks for the interface. */
 public final class UiComponents {
+
+    private static final Logger log = LoggerFactory.getLogger(UiComponents.class);
 
     private UiComponents() {}
 
@@ -91,13 +96,13 @@ public final class UiComponents {
     public static Image loadLogoImage() {
         InputStream in = UiComponents.class.getResourceAsStream("/com/wac/autocore/images/Logo.png");
         if (in == null) {
-            System.err.println("Kunde inte hitta /com/wac/autocore/images/Logo.png");
+            log.warn("Kunde inte hitta /com/wac/autocore/images/Logo.png");
             return null;
         }
         try {
             return new Image(in);
         } catch (RuntimeException e) {
-            System.err.println("Kunde inte läsa logotypen: " + e.getMessage());
+            log.warn("Kunde inte läsa logotypen", e);
             return null;
         }
     }

@@ -1,5 +1,7 @@
 package com.wac.autocore.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -16,6 +18,8 @@ import org.json.JSONTokener;
  * classpath, so it does not matter where the program is started from.
  */
 public final class Resources {
+
+    private static final Logger log = LoggerFactory.getLogger(Resources.class);
 
     private Resources() {}
 
@@ -54,7 +58,7 @@ public final class Resources {
                 read = reader.read(buffer);
             }
         } catch (Exception e) {
-            System.err.println("Kunde inte läsa " + url + ": " + e.getMessage());
+            log.warn("Kunde inte läsa {}", url, e);
         }
         return out.toString();
     }
@@ -72,7 +76,7 @@ public final class Resources {
         try (Reader reader = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)) {
             collect(new JSONObject(new JSONTokener(reader)), "", result);
         } catch (Exception e) {
-            System.err.println("Kunde inte läsa " + url + ": " + e.getMessage());
+            log.warn("Kunde inte läsa {}", url, e);
         }
         return Collections.unmodifiableMap(result);
     }
