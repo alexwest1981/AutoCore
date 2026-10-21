@@ -1,6 +1,6 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
@@ -65,8 +65,8 @@ final class CreateReclamationDialog {
 
             try {
                 garage.createReclamation(original.getId(), description.getText());
-            } catch (RuleViolationException refused) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+            } catch (AppException refused) {
+                ActionDialogs.showAppError(refused);
                 return;
             }
 

@@ -6,6 +6,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.event.EventHandler;
@@ -194,7 +195,8 @@ public final class HoldToConfirmButton extends StackPane {
         progress.set(1);
         label.setText(confirmText);
         if (onConfirm != null) {
-            onConfirm.run();
+            // Outside the animation pulse: a dialog opened here with showAndWait is refused while the pulse runs.
+            Platform.runLater(onConfirm);
         }
         reset.playFromStart();
     }

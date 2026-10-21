@@ -1,6 +1,6 @@
 package com.wac.autocore.ui.components;
 
-import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
@@ -257,9 +257,9 @@ class KanbanSlotDrawer {
                 created = card.garage.createWorkOrder(target.getId(), slot.getMechanicId());
             }
 
-        } catch (RuleViolationException refused) {
+        } catch (AppException refused) {
 
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+            ActionDialogs.showAppError(refused);
             return;
         }
 

@@ -1,7 +1,7 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.exception.DataAccessException;
-import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
@@ -123,11 +123,8 @@ public final class VehicleDialogs {
                 } else {
                     garage.createVehicle(reg, brand, model, year, owner.getId());
                 }
-            } catch (RuleViolationException refused) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
-                return;
-            } catch (DataAccessException e) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+            } catch (AppException refused) {
+                ActionDialogs.showAppError(refused);
                 return;
             }
 
