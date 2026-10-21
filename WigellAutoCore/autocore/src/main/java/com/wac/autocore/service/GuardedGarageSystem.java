@@ -11,6 +11,8 @@ import org.slf4j.MDC;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -373,5 +375,364 @@ public class GuardedGarageSystem extends GarageSystem {
         require(Operation.CHANGE_SETTINGS);
 
         super.saveSetting(key, value);
+    }
+
+    // Reading is an operation too. Without this block a caller with no identity could walk straight
+    // past the window and read every customer, vehicle and work order in the database, which is
+    // exactly the way round the guard that the order says must not exist.
+    //
+    // Two methods stay open on purpose, because they hand out no data: addChangeListener and
+    // refreshSchedule only tell the window that something changed.
+
+    @Override
+    public List<Customer> getCustomers() {
+
+        require(Operation.READ);
+
+        return super.getCustomers();
+    }
+
+    @Override
+    public List<Vehicle> getVehicles() {
+
+        require(Operation.READ);
+
+        return super.getVehicles();
+    }
+
+    @Override
+    public List<Booking> getBookings() {
+
+        require(Operation.READ);
+
+        return super.getBookings();
+    }
+
+    @Override
+    public List<ServiceItem> getServiceItems() {
+
+        require(Operation.READ);
+
+        return super.getServiceItems();
+    }
+
+    @Override
+    public List<Mechanic> getMechanics() {
+
+        require(Operation.READ);
+
+        return super.getMechanics();
+    }
+
+    @Override
+    public List<WorkOrder> getWorkOrders() {
+
+        require(Operation.READ);
+
+        return super.getWorkOrders();
+    }
+
+    @Override
+    public List<Invoice> getInvoices() {
+
+        require(Operation.READ);
+
+        return super.getInvoices();
+    }
+
+    @Override
+    public List<Payment> getPayments() {
+
+        require(Operation.READ);
+
+        return super.getPayments();
+    }
+
+    @Override
+    public List<ServicePackage> getServicePackages() {
+
+        require(Operation.READ);
+
+        return super.getServicePackages();
+    }
+
+    @Override
+    public List<TimeSlot> getSlotsForDay(int mechanicId, LocalDate date) {
+
+        require(Operation.READ);
+
+        return super.getSlotsForDay(mechanicId, date);
+    }
+
+    @Override
+    public LocalDate getNextBookingDate(int mechanicId, LocalDate afterDate) {
+
+        require(Operation.READ);
+
+        return super.getNextBookingDate(mechanicId, afterDate);
+    }
+
+    @Override
+    public List<DayLoad> getWeekLoads(int mechanicId, LocalDate weekStart) {
+
+        require(Operation.READ);
+
+        return super.getWeekLoads(mechanicId, weekStart);
+    }
+
+    @Override
+    public List<MonthDayStatus> getMonthDays(int mechanicId, YearMonth month, boolean mechanicAvailable) {
+
+        require(Operation.READ);
+
+        return super.getMonthDays(mechanicId, month, mechanicAvailable);
+    }
+
+    @Override
+    public String getSetting(String key, String fallback) {
+
+        require(Operation.READ);
+
+        return super.getSetting(key, fallback);
+    }
+
+    @Override
+    public int bookingPrice(Booking booking) {
+
+        require(Operation.READ);
+
+        return super.bookingPrice(booking);
+    }
+
+    @Override
+    public Customer findCustomer(int id) {
+
+        require(Operation.READ);
+
+        return super.findCustomer(id);
+    }
+
+    @Override
+    public Vehicle findVehicle(int id) {
+
+        require(Operation.READ);
+
+        return super.findVehicle(id);
+    }
+
+    @Override
+    public Mechanic findMechanic(int id) {
+
+        require(Operation.READ);
+
+        return super.findMechanic(id);
+    }
+
+    @Override
+    public ServiceItem findServiceItem(int id) {
+
+        require(Operation.READ);
+
+        return super.findServiceItem(id);
+    }
+
+    @Override
+    public Booking findBooking(int id) {
+
+        require(Operation.READ);
+
+        return super.findBooking(id);
+    }
+
+    @Override
+    public WorkOrder findWorkOrder(int id) {
+
+        require(Operation.READ);
+
+        return super.findWorkOrder(id);
+    }
+
+    @Override
+    public Invoice findInvoice(int id) {
+
+        require(Operation.READ);
+
+        return super.findInvoice(id);
+    }
+
+    @Override
+    public Payment findPayment(int id) {
+
+        require(Operation.READ);
+
+        return super.findPayment(id);
+    }
+
+    @Override
+    public List<Mechanic> getQualifiedMechanics(ServiceItem service) {
+
+        require(Operation.READ);
+
+        return super.getQualifiedMechanics(service);
+    }
+
+    @Override
+    public List<Mechanic> getQualifiedMechanics(Collection<ServiceItem> services) {
+
+        require(Operation.READ);
+
+        return super.getQualifiedMechanics(services);
+    }
+
+    @Override
+    public List<Mechanic> getRequiredMechanics(Collection<ServiceItem> services) {
+
+        require(Operation.READ);
+
+        return super.getRequiredMechanics(services);
+    }
+
+    @Override
+    public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {
+
+        require(Operation.READ);
+
+        return super.isMechanicQualified(mechanic, service);
+    }
+
+    @Override
+    public int busyMinutes(List<ServiceItem> services, List<Mechanic> mechanics) {
+
+        require(Operation.READ);
+
+        return super.busyMinutes(services, mechanics);
+    }
+
+    @Override
+    public List<Booking> getInvoiceableBookings() {
+
+        require(Operation.READ);
+
+        return super.getInvoiceableBookings();
+    }
+
+    @Override
+    public boolean hasBookingWithUnfinishedWork() {
+
+        require(Operation.READ);
+
+        return super.hasBookingWithUnfinishedWork();
+    }
+
+    @Override
+    public LocalTime dropInStartTime(List<ServiceItem> services, List<Mechanic> mechanics) {
+
+        require(Operation.READ);
+
+        return super.dropInStartTime(services, mechanics);
+    }
+
+    @Override
+    public boolean canDeleteMechanic(int mechanicId) {
+
+        require(Operation.READ);
+
+        return super.canDeleteMechanic(mechanicId);
+    }
+
+    @Override
+    public boolean canDeleteCustomer(int customerId) {
+
+        require(Operation.READ);
+
+        return super.canDeleteCustomer(customerId);
+    }
+
+    @Override
+    public boolean canDeleteVehicle(int vehicleId) {
+
+        require(Operation.READ);
+
+        return super.canDeleteVehicle(vehicleId);
+    }
+
+    @Override
+    public boolean canCancelOrDeleteBooking(int bookingId) {
+
+        require(Operation.READ);
+
+        return super.canCancelOrDeleteBooking(bookingId);
+    }
+
+    @Override
+    public boolean canDeleteServiceItem(int serviceItemId) {
+
+        require(Operation.READ);
+
+        return super.canDeleteServiceItem(serviceItemId);
+    }
+
+    @Override
+    public void showCustomers() {
+
+        require(Operation.READ);
+
+        super.showCustomers();
+    }
+
+    @Override
+    public void showVehicles() {
+
+        require(Operation.READ);
+
+        super.showVehicles();
+    }
+
+    @Override
+    public void showBookings() {
+
+        require(Operation.READ);
+
+        super.showBookings();
+    }
+
+    @Override
+    public void showServiceItems() {
+
+        require(Operation.READ);
+
+        super.showServiceItems();
+    }
+
+    @Override
+    public void showMechanics() {
+
+        require(Operation.READ);
+
+        super.showMechanics();
+    }
+
+    @Override
+    public void showWorkOrders() {
+
+        require(Operation.READ);
+
+        super.showWorkOrders();
+    }
+
+    @Override
+    public void showInvoices() {
+
+        require(Operation.READ);
+
+        super.showInvoices();
+    }
+
+    @Override
+    public void showPayments() {
+
+        require(Operation.READ);
+
+        super.showPayments();
     }
 }
