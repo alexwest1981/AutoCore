@@ -188,13 +188,11 @@ public final class ActionDialogs {
         }
     }
 
-    /** Shows the app's own error: the translated sentence when it has a key, the developer text otherwise. */
+    /** Shows the app's own error in the words errorMessageFor gives it, after logging it. */
     public static void showAppError(AppException error) {
 
         logAppError(error);
-        String text = error.getMessageKey() == null ? error.getMessage() : I18n.get(error.getMessageKey());
-
-        showError(I18n.get("dialog.confirm.title"), text);
+        showError(I18n.get("dialog.confirm.title"), AutoCoreApp.errorMessageFor(error));
     }
 
     /** Every refusal the ui shows passes here, so it lands in the log exactly once. */

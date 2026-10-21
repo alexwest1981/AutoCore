@@ -278,8 +278,8 @@ public final class BookingDialogs {
             if (res == ButtonType.OK) {
                 try {
                     garage.cancelBooking(booking.getId());
-                } catch (Exception e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                } catch (AppException refused) {
+                    ActionDialogs.showAppError(refused);
                     return;
                 }
                 if (onSuccess != null) onSuccess.run();
@@ -304,8 +304,8 @@ public final class BookingDialogs {
             if (res == ButtonType.OK) {
                 try {
                     garage.deleteBooking(booking.getId());
-                } catch (Exception e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                } catch (AppException refused) {
+                    ActionDialogs.showAppError(refused);
                     return;
                 }
                 if (onSuccess != null) onSuccess.run();
