@@ -27,6 +27,9 @@ import java.util.List;
 /** The entry point the interface and the text version call. Passes on to the services. */
 public class GarageSystem implements WorkOrderGateway {
 
+    /** The settings row the chosen language is kept in. */
+    public static final String LANGUAGE_KEY = "language";
+
     private final Printer printer;
 
     private final Db db;
@@ -187,6 +190,14 @@ public class GarageSystem implements WorkOrderGateway {
     /** Stores a setting so it survives a restart. */
     public void saveSetting(String key, String value) {
         Settings.put(db, key, value);
+    }
+
+    /**
+     * Stores the chosen language so it survives a restart. It lives in the settings table but is not
+     * a business setting, so it has its own operation and every role may do it.
+     */
+    public void saveLanguage(String lang) {
+        Settings.put(db, LANGUAGE_KEY, lang);
     }
 
     /** The booking's price. The views ask here instead of adding it up themselves. */

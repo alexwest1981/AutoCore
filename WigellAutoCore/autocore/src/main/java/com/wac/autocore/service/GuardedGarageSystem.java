@@ -370,6 +370,18 @@ public class GuardedGarageSystem extends GarageSystem {
         super.saveSetting(key, value);
     }
 
+    /**
+     * Every role may choose the language for its own window, so this one is not behind
+     * CHANGE_SETTINGS. Nobody signed in still may not write it, for the same reason as the rest.
+     */
+    @Override
+    public void saveLanguage(String lang) {
+
+        require(Operation.CHANGE_LANGUAGE);
+
+        super.saveLanguage(lang);
+    }
+
     // Reading is an operation too. Without this block a caller with no identity could walk straight
     // past the window and read every customer, vehicle and work order in the database, which is
     // exactly the way round the guard that the order says must not exist.

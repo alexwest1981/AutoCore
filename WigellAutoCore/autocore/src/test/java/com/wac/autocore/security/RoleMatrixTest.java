@@ -28,13 +28,28 @@ class RoleMatrixTest {
     }
 
     @Test
-    void aReadOnlyAccountReadsAndNothingElse() {
+    void aReadOnlyAccountReadsAndChoosesItsLanguage() {
         assertTrue(RoleMatrix.allows(Role.READ_ONLY, Operation.READ));
-        assertEquals(1, countAllowed(Role.READ_ONLY));
+        assertTrue(RoleMatrix.allows(Role.READ_ONLY, Operation.CHANGE_LANGUAGE));
+        assertEquals(2, countAllowed(Role.READ_ONLY));
 
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.CANCEL_WORK_ORDER));
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.CREATE_CUSTOMER));
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.TAKE_PAYMENT));
+        assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.CHANGE_SETTINGS));
+    }
+
+    @Test
+    void theLanguageIsNotABusinessSetting() {
+        // The two are neighbours in the settings table but not in the matrix: choosing a language is
+        // something everyone does, changing the workshop's settings is not.
+        for (Role role : Role.values()) {
+            assertTrue(RoleMatrix.allows(role, Operation.CHANGE_LANGUAGE), "språkval för " + role);
+        }
+
+        assertFalse(RoleMatrix.allows(Role.STAFF, Operation.CHANGE_SETTINGS));
+        assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.CHANGE_SETTINGS));
+        assertTrue(RoleMatrix.allows(Role.ADMIN, Operation.CHANGE_SETTINGS));
     }
 
     @Test
