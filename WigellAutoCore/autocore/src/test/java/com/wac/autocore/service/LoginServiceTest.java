@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.repository.UserRepository;
 import com.wac.autocore.security.Identity;
+import com.wac.autocore.security.PasswordHash;
 import com.wac.autocore.security.Role;
 
 import org.junit.jupiter.api.AfterEach;
@@ -16,14 +17,20 @@ import java.io.File;
 import java.util.Optional;
 
 /**
- * Signing in against a database of the proof's own, built from the migrations. The accounts are
- * the three migration 004 writes, so this is the same path the window takes.
+ * Signing in against a database of the proof's own, built from the migrations. The account used
+ * for signing in is made here with a password nobody uses, so the demo accounts' values never
+ * enter the repository.
  */
 class LoginServiceTest {
 
     private File file;
 
     private LoginService login;
+
+    private UserRepository users;
+
+    /** A password nobody uses, stored at 210 000 rounds the way migration 004 stores them. */
+    private static final String FIXTURE_PASSWORD = "TestLosenord1";
 
     @BeforeEach
     void buildDatabase() {
@@ -35,7 +42,9 @@ class LoginServiceTest {
 
             Db db = new Db(file.getAbsolutePath());
             db.ensureReady();
-            login = new LoginService(new UserRepository(db));
+            users = new UserRepository(db);
+            login = new LoginService(users);
+            insertFixtureAccount(db);
         } catch (Exception cannotStart) {
             throw new IllegalStateException("Kunde inte bygga provets databas", cannotStart);
         }
@@ -49,35 +58,70 @@ class LoginServiceTest {
     }
 
     @Test
-    void theAdminSignsInWithTheRightPassword() {
-        Optional<Identity> identity = login.signIn("admin", "Admin123");
+    void theRightPasswordGivesTheAccountAndItsRole() {
+        Optional<Identity> identity = login.signIn("anna", FIXTURE_PASSWORD);
 
         assertTrue(identity.isPresent());
-        assertEquals("admin", identity.get().username());
-        assertEquals(Role.ADMIN, identity.get().role());
+        assertEquals("anna", identity.get().username());
+        assertEquals(Role.STAFF, identity.get().role());
     }
 
     @Test
-    void eachAccountGetsItsOwnRole() {
-        assertEquals(Role.STAFF, login.signIn("staff", "Staff123").orElseThrow().role());
-        assertEquals(Role.READ_ONLY, login.signIn("readonly", "ReadOnly123").orElseThrow().role());
+    void theMigrationStillCreatesThreeAccountsWithOneRoleEach() {
+        assertEquals(Role.ADMIN, Role.fromText(users.findByUsername("admin").orElseThrow().role()));
+        assertEquals(Role.STAFF, Role.fromText(users.findByUsername("staff").orElseThrow().role()));
+        assertEquals(Role.READ_ONLY, Role.fromText(users.findByUsername("readonly").orElseThrow().role()));
     }
 
     @Test
     void aWrongPasswordIsRefused() {
-        assertTrue(login.signIn("admin", "Admin1234").isEmpty());
-        assertTrue(login.signIn("admin", "").isEmpty());
+        assertTrue(login.signIn("anna", "TestLosenord2").isEmpty());
+        assertTrue(login.signIn("anna", "").isEmpty());
     }
 
     @Test
     void anUnknownNameIsRefusedTheSameWayAsAWrongPassword() {
-        assertTrue(login.signIn("nobody", "Admin123").isEmpty());
-        assertTrue(login.signIn("", "Admin123").isEmpty());
-        assertTrue(login.signIn(null, "Admin123").isEmpty());
+        assertTrue(login.signIn("nobody", FIXTURE_PASSWORD).isEmpty());
+        assertTrue(login.signIn("", FIXTURE_PASSWORD).isEmpty());
+        assertTrue(login.signIn(null, FIXTURE_PASSWORD).isEmpty());
     }
 
     @Test
     void theNameIsReadApartFromSurroundingSpaces() {
-        assertTrue(login.signIn("  admin  ", "Admin123").isPresent());
+        assertTrue(login.signIn("  anna  ", FIXTURE_PASSWORD).isPresent());
+    }
+
+    /**
+     * A row written before today's cost is replaced on the first successful sign-in, and only then:
+     * the password is the only thing that can make a new hash.
+     */
+    @Test
+    void anOldRowIsBroughtUpToTheCurrentCostWhenItsOwnerSignsIn() {
+        String before = users.findByUsername("anna").orElseThrow().passwordHash();
+        assertTrue(PasswordHash.needsRehash(before));
+
+        login.signIn("anna", FIXTURE_PASSWORD);
+
+        String after = users.findByUsername("anna").orElseThrow().passwordHash();
+        assertTrue(!PasswordHash.needsRehash(after));
+        assertTrue(after.startsWith("pbkdf2$" + PasswordHash.ITERATIONS + "$"));
+        assertTrue(PasswordHash.matches(FIXTURE_PASSWORD, after));
+    }
+
+    /** One account of the proof's own, with the 210 000 rounds migration 004 uses. */
+    private static void insertFixtureAccount(Db db) {
+        String hash = "pbkdf2$210000$AAECAwQFBgcICQoLDA0ODw=="
+                + "$w+2Z/MQIGBDn4rft8lPuBP2kPJ5qFVCMMGbPhzAe1wI=";
+        try (java.sql.Connection connection = db.getConnection();
+             java.sql.PreparedStatement insert = connection.prepareStatement(
+                     "INSERT INTO users (username, password_hash, role, created_at) VALUES (?, ?, ?, ?)")) {
+            insert.setString(1, "anna");
+            insert.setString(2, hash);
+            insert.setString(3, "STAFF");
+            insert.setString(4, "2026-10-21");
+            insert.executeUpdate();
+        } catch (java.sql.SQLException e) {
+            throw new IllegalStateException("Kunde inte lägga in provkontot", e);
+        }
     }
 }

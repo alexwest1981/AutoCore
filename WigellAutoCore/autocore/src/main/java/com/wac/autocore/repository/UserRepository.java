@@ -39,4 +39,13 @@ public class UserRepository {
 
         return rows.isEmpty() ? Optional.<UserRow>empty() : Optional.of(rows.get(0));
     }
+
+    /** Replaces the stored hash for a user. The password itself never reaches this layer. */
+    public void savePasswordHash(String username, String passwordHash) {
+        queries.write("UPDATE users SET password_hash = ? WHERE username = ?",
+                statement -> {
+                    statement.setString(1, passwordHash);
+                    statement.setString(2, username);
+                });
+    }
 }
