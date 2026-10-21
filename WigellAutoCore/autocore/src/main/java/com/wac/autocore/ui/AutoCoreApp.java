@@ -14,17 +14,17 @@ import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.navigation.SidebarView;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
+import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import java.util.Optional;
 
 /** The JavaFX interface for Wigell AutoCore. */
 public class AutoCoreApp extends Application {
@@ -35,6 +35,8 @@ public class AutoCoreApp extends Application {
     private ConfigurableApplicationContext context;
 
     private GarageSystem garage;
+
+    private StackPane root;
 
     private IdentityHolder identityHolder;
 
@@ -83,18 +85,35 @@ public class AutoCoreApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         installErrorBoundary();
-
-        if (!signIn()) {
-            // Closed or cancelled: nothing more to show. The context goes with the program.
-            Platform.exit();
-            return;
-        }
         persistLanguageChanges();
 
-        BorderPane stage = new BorderPane();
-        stage.setPadding(Insets.EMPTY);
-        stage.getStyleClass().addAll("root", "stage");
+        root = new StackPane();
+        root.getStyleClass().addAll("root", "stage");
 
+        Scene scene = new Scene(root, 1280, 800);
+        ThemeManager.apply(scene, com.wac.autocore.theme.ThemeCatalog.DEFAULT_SLUG);
+        com.wac.autocore.ui.motion.PressDepth.install(scene);
+
+        primaryStage.setTitle("Wigell AutoCore");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        showSignIn();
+    }
+
+    /** The window stands open, with the sign-in card in the middle of it. */
+    private void showSignIn() {
+        root.getChildren().setAll(LoginView.build(loginService, this::signedIn));
+        root.setAlignment(Pos.CENTER);
+    }
+
+    private void signedIn(Identity identity) {
+        identityHolder.set(identity);
+        showApplication();
+    }
+
+    /** The card gives way to the shell, and the first page is the overview. */
+    private void showApplication() {
         BorderPane shell = new BorderPane();
         shell.getStyleClass().add("shell");
 
@@ -106,28 +125,18 @@ public class AutoCoreApp extends Application {
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        // Set up navigation and the page handler with SidebarView
         PageRouter router = new PageRouter(garage, pageBox);
         SidebarView sidebar = new SidebarView(router::navigate);
         router.setSidebar(sidebar);
 
         BorderPane mainCol = new BorderPane();
         mainCol.getStyleClass().add("col");
-
         mainCol.setCenter(scroll);
 
         shell.setLeft(sidebar.getView());
         shell.setCenter(mainCol);
-        stage.setCenter(shell);
 
-        Scene scene = new Scene(stage, 1280, 800);
-        ThemeManager.apply(scene, com.wac.autocore.theme.ThemeCatalog.DEFAULT_SLUG);
-        com.wac.autocore.ui.motion.PressDepth.install(scene);
-
-        primaryStage.setTitle("Wigell AutoCore");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
+        root.getChildren().setAll(shell);
         router.navigate("overview");
     }
 
@@ -173,19 +182,6 @@ public class AutoCoreApp extends Application {
             context.close();
             System.exit(1);
         }
-    }
-
-    /**
-     * Shows the sign-in window and keeps who signed in. No protected operation happens before
-     * this returns true, and the identity is what the guard reads afterwards.
-     */
-    private boolean signIn() {
-        Optional<Identity> identity = LoginDialog.showAndWait(loginService);
-        if (identity.isEmpty()) {
-            return false;
-        }
-        identityHolder.set(identity.get());
-        return true;
     }
 
     /** Reads the last chosen language from the settings. */
