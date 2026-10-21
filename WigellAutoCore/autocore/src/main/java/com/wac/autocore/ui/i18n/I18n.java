@@ -2,6 +2,9 @@ package com.wac.autocore.ui.i18n;
 
 import com.wac.autocore.util.Texts;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +13,8 @@ import java.util.function.Consumer;
 
 /** The interface's view of the texts: placeholders like {0} and listeners for language switches. */
 public final class I18n {
+
+    private static final Logger log = LoggerFactory.getLogger(I18n.class);
 
     public static final String LANG_EN = Texts.LANG_EN;
     public static final String LANG_SV = Texts.LANG_SV;
@@ -47,8 +52,7 @@ public final class I18n {
             try {
                 listener.accept(Texts.getLanguage());
             } catch (Exception e) {
-                System.err.println("Could not tell a listener about language '"
-                        + Texts.getLanguage() + "': " + e.getMessage());
+                log.warn("Could not tell a listener about language '{}'", Texts.getLanguage(), e);;
             }
         }
     }

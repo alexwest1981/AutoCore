@@ -24,6 +24,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,6 +37,8 @@ import java.util.Map;
  * button that opens or creates its work order.
  */
 class KanbanSlotDrawer {
+
+    private static final Logger log = LoggerFactory.getLogger(KanbanSlotDrawer.class);
 
     private final MechanicKanbanCard card;
 
@@ -293,7 +298,7 @@ class KanbanSlotDrawer {
             booking.addServiceItem(card.garage.getServiceItems().get(0));
             card.garage.saveBooking(booking);
         } catch (Exception ex) {
-            System.out.println("Could not give the booking a service: " + ex.getMessage());
+            log.warn("Could not give the booking a service", ex);
         }
     }
 

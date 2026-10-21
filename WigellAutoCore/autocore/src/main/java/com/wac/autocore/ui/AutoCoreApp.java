@@ -19,10 +19,14 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** The JavaFX interface for Wigell AutoCore. */
 public class AutoCoreApp extends Application {
+
+    private static final Logger log = LoggerFactory.getLogger(AutoCoreApp.class);
 
     /** Key the language choice is stored under in the settings table. */
     public static final String LANGUAGE_KEY = "language";
@@ -53,8 +57,7 @@ public class AutoCoreApp extends Application {
         } catch (RuntimeException e) {
             // Without a finished database the window opens empty and still looks like
             // it works. Say what is wrong and open nothing, instead of half an app.
-            System.out.println(e.getMessage());
-            System.out.println("Databasen är inte körbar. Åtgärda felet och starta om.");
+            log.error("Databasen är inte körbar. Åtgärda felet och starta om.", e);
             context.close();
             System.exit(1);
         }
@@ -121,7 +124,7 @@ public class AutoCoreApp extends Application {
         Thread.setDefaultUncaughtExceptionHandler((thread, failure) -> {
             // A refusal with a sentence is the program working; only real faults need the trace.
             if (!(failure instanceof AppException) || ((AppException) failure).getMessageKey() == null) {
-                failure.printStackTrace();
+                log.error("Oväntat fel i tråden {}", thread.getName(), failure);
             }
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), errorMessageFor(failure));
         });
@@ -148,11 +151,10 @@ public class AutoCoreApp extends Application {
         try {
             java.util.List<String> changed = context.getBean(PasswordRotation.class).apply();
             if (!changed.isEmpty()) {
-                System.out.println("Lösenord satta från konfigurationen för: " + changed);
+                log.info("Lösenord satta från konfigurationen för: {}", changed);
             }
         } catch (IllegalArgumentException bad) {
-            System.out.println(bad.getMessage());
-            System.out.println("Programmet startar inte med en ogiltig säkerhetskonfiguration.");
+            log.error("Programmet startar inte med en ogiltig säkerhetskonfiguration: {}", bad.getMessage());
             context.close();
             System.exit(1);
         }
