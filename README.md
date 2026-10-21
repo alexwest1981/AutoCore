@@ -55,6 +55,21 @@ mvn -f WigellAutoCore/autocore/pom.xml spring-boot:run \
 
 Spring bygger `Db` med den sökvägen, och varje repository får sin `Db` via `RepositoryFactory` i stället för att läsa en statisk sökväg. Ett prov som körs utan Spring läser samma property med `-Dautocore.db.path=...`, eller tar filen som första argument.
 
+### Hemligheter
+
+Inga hemligheter ligger i git. Demokontona skapas av migrering 004, och kolumnen `password_hash` innehåller en PBKDF2-hash. En hash är inte en hemlighet: den går inte att räkna baklänges, och saltet är publik. Lösenorden i klartext finns bara hos gruppen.
+
+Vill man sätta dem utifrån i stället, till exempel på en annan maskin, läses de från miljön:
+
+```
+AUTOCORE_ADMIN_PASSWORD=... \
+AUTOCORE_STAFF_PASSWORD=... \
+AUTOCORE_READONLY_PASSWORD=... \
+./start.sh
+```
+
+Värdet hashas vid start med nytt salt och skrivs över bara om det skiljer sig från det som redan står i tabellen. Ett för kort lösenord stoppar starten med kontots namn, aldrig med värdet. `SecretScanTest` läser alla filer git spårar och faller om ett lösenord, en nyckel eller en token skrivs in.
+
 ## Arkitektur
 
 ```
