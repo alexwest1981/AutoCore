@@ -31,6 +31,13 @@ public enum Operation {
     CHANGE_WORK_ORDER_STATUS,
     CANCEL_WORK_ORDER,
 
+    /**
+     * Removing an order that was called off by mistake. Separate from cancelling: cancelling is
+     * part of the day's work and a staff member may do it, removing the row is not, and an
+     * administrator is the one who answers for it.
+     */
+    DELETE_WORK_ORDER,
+
     CREATE_INVOICE,
     TAKE_PAYMENT,
 

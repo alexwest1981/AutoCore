@@ -18,12 +18,14 @@ public final class RoleMatrix {
 
     /**
      * The exceptions, written out: the only things a staff member may not do. Customers, vehicles
-     * and mechanics are removed by an administrator, and settings are changed by one.
+     * and mechanics are removed by an administrator, settings are changed by one, and an order that
+     * was called off by mistake is removed by one.
      */
     private static final Set<Operation> ADMIN_ONLY = Collections.unmodifiableSet(EnumSet.of(
             Operation.DELETE_CUSTOMER,
             Operation.DELETE_VEHICLE,
             Operation.DELETE_MECHANIC,
+            Operation.DELETE_WORK_ORDER,
             Operation.CHANGE_SETTINGS));
 
     /**
