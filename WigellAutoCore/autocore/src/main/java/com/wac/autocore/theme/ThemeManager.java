@@ -1,6 +1,8 @@
 package com.wac.autocore.theme;
 
 import com.wac.autocore.util.Resources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,6 +13,8 @@ import javafx.scene.Parent;
 
 /** Puts the theme's stylesheet on a scene. */
 public final class ThemeManager {
+
+    private static final Logger log = LoggerFactory.getLogger(ThemeManager.class);
 
     private ThemeManager() {}
 
@@ -56,14 +60,14 @@ public final class ThemeManager {
             if (url != null) {
                 sheets.add(url.toExternalForm());
             } else {
-                System.err.println("[ThemeManager] Warning: Could not find component stylesheet: " + part);
+                log.warn("Could not find component stylesheet: {}", part);
             }
         }
         URL themeUrl = resolveResource(theme.stylesheet);
         if (themeUrl != null) {
             sheets.add(themeUrl.toExternalForm());
         } else {
-            System.err.println("[ThemeManager] Warning: Could not find stylesheet for theme '" + currentSlug + "': " + theme.stylesheet);
+            log.warn("Could not find stylesheet for theme '{}': {}", currentSlug, theme.stylesheet);
         }
 
         // Apply all stylesheets atomically in a single operation so JavaFX doesn't

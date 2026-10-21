@@ -1,5 +1,7 @@
 package com.wac.autocore.data;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Db {
+
+    private static final Logger log = LoggerFactory.getLogger(Db.class);
 
     /** The file the application uses when the configuration says nothing. */
     public static final String DEFAULT_PATH = "data/autocore.db";
@@ -49,7 +53,7 @@ public class Db {
     private void initTables() {
         Migrations.apply(this);
 
-        System.out.println("Databas redo: " + databasePath);
+        log.info("Databas redo: {}", databasePath);
 
         // The space in the registration number goes in at the right spot, which SQL cannot do.
         normalizeRegistrationNumbers();
@@ -85,7 +89,7 @@ public class Db {
             write.close();
         } catch (java.sql.SQLException e) {
             // A repair that fails must not stop the start, and there is no caller to tell yet.
-            System.out.println("Kunde inte rätta registreringsnumren: " + e.getMessage());
+            log.warn("Kunde inte rätta registreringsnumren", e);
         }
     }
 }

@@ -64,3 +64,5 @@ Thumbs.db
 # JVM crash logs
 hs_err_pid*.log
 
+# Log files written by the app, created at runtime and never version controlled.
+logs/
