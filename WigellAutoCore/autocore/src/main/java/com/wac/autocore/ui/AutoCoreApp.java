@@ -11,16 +11,10 @@ import com.wac.autocore.service.LoginService;
 import com.wac.autocore.service.PasswordRotation;
 import com.wac.autocore.theme.ThemeManager;
 import com.wac.autocore.ui.i18n.I18n;
-import com.wac.autocore.ui.navigation.PageRouter;
-import com.wac.autocore.ui.navigation.SidebarView;
 import javafx.application.Application;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
 import javafx.geometry.Pos;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -114,30 +108,9 @@ public class AutoCoreApp extends Application {
 
     /** The card gives way to the shell, and the first page is the overview. */
     private void showApplication() {
-        BorderPane shell = new BorderPane();
-        shell.getStyleClass().add("shell");
-
-        VBox pageBox = new VBox(18);
-        pageBox.getStyleClass().add("pages");
-
-        ScrollPane scroll = new ScrollPane(pageBox);
-        scroll.setFitToWidth(true);
-        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-
-        PageRouter router = new PageRouter(garage, pageBox);
-        SidebarView sidebar = new SidebarView(router::navigate);
-        router.setSidebar(sidebar);
-
-        BorderPane mainCol = new BorderPane();
-        mainCol.getStyleClass().add("col");
-        mainCol.setCenter(scroll);
-
-        shell.setLeft(sidebar.getView());
-        shell.setCenter(mainCol);
-
-        root.getChildren().setAll(shell);
-        router.navigate("overview");
+        AppShell shell = new AppShell(garage);
+        root.getChildren().setAll(shell.getView());
+        shell.open("overview");
     }
 
     /**
