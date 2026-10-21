@@ -7,10 +7,12 @@ import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.security.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 public class GuardedGarageSystem extends GarageSystem {
 
@@ -24,6 +26,11 @@ public class GuardedGarageSystem extends GarageSystem {
     }
 
     private void require(Operation operation) {
+
+        // A new operation starts here: every line it logs, down to the dialog that shows a
+        // refusal, carries the same trace-id and the operation's name.
+        MDC.put("traceId", UUID.randomUUID().toString().substring(0, 8));
+        MDC.put("operation", operation.name());
 
         // Two refusals, two answers. Nobody signed in is a different thing from being signed in
         // without the right, and the order asks the system to tell them apart.
