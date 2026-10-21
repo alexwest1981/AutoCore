@@ -1,6 +1,6 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.ServiceItem;
@@ -336,8 +336,8 @@ final class WorkOrderDetailsDialog {
             if ("confirm".equals(key)) {
                 try {
                     garage.confirmWorkOrder(workOrder.getId());
-                } catch (RuleViolationException refused) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                } catch (AppException refused) {
+                    ActionDialogs.showAppError(refused);
                     return;
                 }
                 refreshDialog(garage, workOrder, dialog);
