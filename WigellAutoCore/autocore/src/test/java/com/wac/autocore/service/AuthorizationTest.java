@@ -233,4 +233,34 @@ class AuthorizationTest {
 
         assertThrows(NotAuthenticatedException.class, garage::getCustomers);
     }
+
+    @Test
+    void everyRoleMayKeepItsLanguageChoice() {
+        for (Role role : Role.values()) {
+            signIn("sprak-" + role, role);
+
+            GarageSystem garage = garage();
+
+            assertDoesNotThrow(() -> garage.saveLanguage("en"), "saveLanguage för " + role);
+            assertEquals("en", garage.getSetting(GarageSystem.LANGUAGE_KEY, "sv"));
+        }
+    }
+
+    @Test
+    void aLanguageChoiceIsStillAWriteNobodyUnsignedCanMake() {
+        GarageSystem garage = garage();
+
+        assertThrows(NotAuthenticatedException.class, () -> garage.saveLanguage("en"));
+    }
+
+    @Test
+    void savingTheSettingsStaysWithTheAdministrator() {
+        signIn("verkstaden", Role.STAFF);
+        GarageSystem garage = garage();
+
+        // Choosing a language is allowed, changing the workshop's settings is not. They are two
+        // operations even though both end up in the settings table.
+        assertDoesNotThrow(() -> garage.saveLanguage("en"));
+        assertThrows(AccessDeniedException.class, () -> garage.saveSetting("language", "en"));
+    }
 }

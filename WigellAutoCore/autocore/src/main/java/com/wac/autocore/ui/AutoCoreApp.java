@@ -29,9 +29,6 @@ public class AutoCoreApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(AutoCoreApp.class);
 
-    /** Key the language choice is stored under in the settings table. */
-    public static final String LANGUAGE_KEY = "language";
-
     private ConfigurableApplicationContext context;
 
     private GarageSystem garage;
@@ -169,12 +166,12 @@ public class AutoCoreApp extends Application {
      * read until then. This one row is therefore read from the table directly.
      */
     public void restoreLanguage() {
-        I18n.setLanguage(Settings.get(context.getBean(Db.class), LANGUAGE_KEY, I18n.DEFAULT_LANG));
+        I18n.setLanguage(Settings.get(context.getBean(Db.class), GarageSystem.LANGUAGE_KEY, I18n.DEFAULT_LANG));
     }
 
-    /** Saves language switches so the choice survives a restart. */
+    /** Saves language switches so the choice survives a restart. Every role may do this. */
     public void persistLanguageChanges() {
-        I18n.addListener(lang -> garage.saveSetting(LANGUAGE_KEY, lang));
+        I18n.addListener(garage::saveLanguage);
     }
 
     public static void main(String[] args) {
