@@ -225,7 +225,8 @@
   },
   "dialog": {
     "access": {
-      "denied": "Du har inte behörighet till den åtgärden."
+      "denied": "Du har inte behörighet till den åtgärden.",
+      "sign_in": "Du är inte inloggad. Logga in och försök igen."
     },
     "copy": {
       "booking": {
