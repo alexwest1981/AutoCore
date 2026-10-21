@@ -263,4 +263,24 @@ class AuthorizationTest {
         assertDoesNotThrow(() -> garage.saveLanguage("en"));
         assertThrows(AccessDeniedException.class, () -> garage.saveSetting("language", "en"));
     }
+
+    @Test
+    void removingAnOrderIsTheAdministratorsAnswer() {
+        signIn("verkstaden", Role.STAFF);
+        GarageSystem garage = garage();
+
+        // The staff member may call an order off, but not make the row disappear.
+        AccessDeniedException refused = assertThrows(AccessDeniedException.class,
+                () -> garage.deleteWorkOrder(1));
+
+        assertEquals("dialog.access.denied", refused.getMessageKey());
+    }
+
+    @Test
+    void nobodySignedInCannotAskToRemoveAnOrder() {
+        GarageSystem garage = garage();
+
+        assertThrows(NotAuthenticatedException.class, () -> garage.canDeleteWorkOrder(1));
+        assertThrows(NotAuthenticatedException.class, () -> garage.deleteWorkOrder(1));
+    }
 }

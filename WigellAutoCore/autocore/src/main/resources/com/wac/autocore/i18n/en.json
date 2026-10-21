@@ -102,6 +102,7 @@
       "action_create": "+ Create Work Order",
       "action_start": "▶ Start order",
       "action_cancel": "Cancel order",
+      "action_delete": "Delete order",
       "action_confirm": "Confirm order",
       "action_mark_performed": "Mark performed work",
       "action_complete": "Complete order",
@@ -467,6 +468,10 @@
       "cancel.title": "Cancel work order",
       "cancel.header": "Confirm cancellation",
       "cancel.confirm": "Are you sure you want to cancel work order #{0}?",
+      "delete.title": "Delete work order",
+      "delete.header": "Confirm removal",
+      "delete.confirm": "Are you sure you want to delete work order #{0}? The order and its service rows are removed.",
+      "delete.has_history": "Only a cancelled order with no invoice and no reclamation can be removed.",
       "open_in_orders": "Open in Work Orders",
       "reclamations_title": "Reclamations on this work order",
       "no_reclamations": "No reclamations"

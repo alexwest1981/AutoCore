@@ -312,6 +312,14 @@ final class WorkOrderDetailsDialog {
             row.getChildren().addAll(spacer, actionButton("cancel", garage, workOrder, dialog));
         }
 
+        // Only an order that was called off by mistake gets this far; the rule answers for the
+        // rest, and the same question decides whether the button is drawn at all.
+        if (garage.canDeleteWorkOrder(workOrder.getId())) {
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            row.getChildren().addAll(spacer, deleteButton(garage, workOrder, dialog));
+        }
+
         if (row.getChildren().isEmpty()) {
             Label emptyLabel = new Label(I18n.get("dialog.workorder.no_actions"));
             emptyLabel.getStyleClass().add("small");
@@ -321,10 +329,42 @@ final class WorkOrderDetailsDialog {
         return row;
     }
 
+    /**
+     * Removes an order that was created and called off by mistake. The rule has already said yes
+     * before the button is drawn, but it is asked again on the way through the service, so a page
+     * that was drawn before something changed still cannot remove what it should not.
+     */
+    private static Button deleteButton(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
+
+        Button button = UiComponents.secondaryButton(I18n.get("entity.workorders.action_delete"));
+        button.getStyleClass().add("danger-button");
+
+        button.setOnAction(e -> {
+            Alert ask = ActionDialogs.confirm(I18n.get("dialog.workorder.delete.title"),
+                    I18n.get("dialog.workorder.delete.header"),
+                    I18n.get("dialog.workorder.delete.confirm", String.valueOf(workOrder.getId())));
+
+            if (ask.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+                return;
+            }
+
+            try {
+                garage.deleteWorkOrder(workOrder.getId());
+            } catch (AppException refused) {
+                ActionDialogs.showAppError(refused);
+                return;
+            }
+
+            // The order is gone, so there is nothing left for the dialog to show.
+            dialog.close();
+        });
+
+        return button;
+    }
+
     /** The reclamation is created from the completed work and shows in the list as soon as the
      *  dialog redraws. */
-    private static Button reclamationButton(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {
-        Button button = UiComponents.secondaryButton(I18n.get("entity.workorders.action_reclamation"));
+    private static Button reclamationButton(GarageSystem garage, WorkOrder workOrder, Dialog<ButtonType> dialog) {        Button button = UiComponents.secondaryButton(I18n.get("entity.workorders.action_reclamation"));
         button.setOnAction(e -> ActionDialogs.showCreateReclamationDialog(garage, workOrder,
                 () -> refreshDialog(garage, workOrder, dialog)));
         return button;

@@ -102,6 +102,7 @@
       "action_create": "+ Ny arbetsorder",
       "action_start": "▶ Starta order",
       "action_cancel": "Avbryt order",
+      "action_delete": "Ta bort order",
       "action_confirm": "Bekräfta order",
       "action_mark_performed": "Markera utförda arbeten",
       "action_complete": "Slutför order",
@@ -467,6 +468,10 @@
       "cancel.title": "Avbryt arbetsorder",
       "cancel.header": "Bekräfta avbrytande",
       "cancel.confirm": "Är du säker på att du vill avbryta arbetsorder #{0}?",
+      "delete.title": "Ta bort arbetsorder",
+      "delete.header": "Bekräfta borttagning",
+      "delete.confirm": "Är du säker på att du vill ta bort arbetsorder #{0}? Ordern och dess tjänsterader försvinner.",
+      "delete.has_history": "Bara en avbruten order som varken har faktura eller reklamation går att ta bort.",
       "open_in_orders": "Öppna i arbetsordrar",
       "reclamations_title": "Reklamationer på denna order",
       "no_reclamations": "Inga reklamationer"

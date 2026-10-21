@@ -113,6 +113,41 @@ public class RemovalRules {
         return true;
     }
 
+    /**
+     * Removing an order that was created and called off by mistake, and that nothing else points at.
+     * The database refuses the rest through its keys, but the service has to say so first: a
+     * technical error is not an answer to a person.
+     */
+    public boolean canDeleteWorkOrder(int workOrderId) {
+
+        WorkOrder order = null;
+        for (WorkOrder candidate : workOrders()) {
+            if (candidate.getId() == workOrderId) {
+                order = candidate;
+            }
+        }
+
+        // Only an order that was called off is a mistake. One that is still open can be cancelled,
+        // and a finished one is the workshop's history.
+        if (order == null || order.getStatus() != WorkOrderStatus.CANCELLED) {
+            return false;
+        }
+
+        // invoices.work_order_id is ON DELETE RESTRICT.
+        if (hasInvoiceForWorkOrder(workOrderId)) {
+            return false;
+        }
+
+        // work_orders.original_work_order_id is ON DELETE RESTRICT: a reclamation is its own order.
+        for (WorkOrder candidate : workOrders()) {
+            if (candidate.getOriginalWorkOrderId() == workOrderId) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public boolean canDeleteServiceItem(int serviceItemId) {
         // The work order's own rows point at the service whatever the order's status is, and the
         // key is ON DELETE RESTRICT. So the rule has to answer no in every status, not only the

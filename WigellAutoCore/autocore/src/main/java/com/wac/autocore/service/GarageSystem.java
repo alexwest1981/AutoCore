@@ -51,6 +51,7 @@ public class GarageSystem implements WorkOrderGateway {
     private final VehicleRepository vehicleRepository;
     private final BookingRepository bookingRepository;
     private final MechanicSchedule mechanicSchedule;
+    private final WorkOrderRepository workOrderRepository;
 
     public GarageSystem(RepositoryFactory repositories) {
         this(repositories, new Printer() { });
@@ -69,7 +70,7 @@ public class GarageSystem implements WorkOrderGateway {
         serviceItemRepository = repositories.createServiceItemRepository();
         mechanicRepository = repositories.createMechanicRepository();
 
-        WorkOrderRepository workOrderRepository = repositories.createWorkOrderRepository();
+        workOrderRepository = repositories.createWorkOrderRepository();
         InvoiceRepository invoiceRepository = repositories.createInvoiceRepository();
         PaymentRepository paymentRepository = repositories.createPaymentRepository();
         ServicePackageRepository servicePackageRepository = repositories.createServicePackageRepository();
@@ -613,6 +614,23 @@ public class GarageSystem implements WorkOrderGateway {
                 "Fordonet kan inte tas bort: det har en bokning eller ett fakturerat jobb.",
                 "dialog.vehicle.delete.has_active_orders");
         vehicleRepository.delete(vehicleId);
+        changed();
+    }
+
+    public boolean canDeleteWorkOrder(int workOrderId) {
+        return removalRules.canDeleteWorkOrder(workOrderId);
+    }
+
+    /**
+     * Removes an order that was created and called off by mistake, with its service rows, which
+     * the key takes with it. Anything that points at the order, an invoice or a reclamation, keeps
+     * it in place; {@link RemovalRules} answers that before the database has to.
+     */
+    public void deleteWorkOrder(int workOrderId) {
+        refuseUnless(canDeleteWorkOrder(workOrderId),
+                "Arbetsordern kan inte tas bort: bara en avbruten order utan faktura eller reklamation går att ta bort.",
+                "dialog.workorder.delete.has_history");
+        workOrderRepository.delete(workOrderId);
         changed();
     }
 
