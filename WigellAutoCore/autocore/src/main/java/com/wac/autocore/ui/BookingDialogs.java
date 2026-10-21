@@ -17,6 +17,8 @@ import javafx.scene.control.Dialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,6 +27,8 @@ import java.util.ArrayList;
 
 /** The dialogs for creating, changing, cancelling and deleting a booking. */
 public final class BookingDialogs {
+
+    private static final Logger log = LoggerFactory.getLogger(BookingDialogs.class);
 
     private BookingDialogs() {}
 
@@ -323,11 +327,10 @@ public final class BookingDialogs {
             // The service has already found and worded the problem; the dialog only shows it.
             ActionDialogs.showAppError(refused);
             return false;
-        } catch (Exception e) {
-            String reason = e.getMessage();
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"),
-                    I18n.get("dialog.booking.save_failed")
-                            + (reason == null || reason.trim().isEmpty() ? "" : " (" + reason + ")"));
+        } catch (RuntimeException unexpected) {
+            // Not one of ours: the details go to the log, the reader gets the plain sentence.
+            log.error("Bokningen kunde inte sparas", unexpected);
+            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get("dialog.booking.save_failed"));
             return false;
         }
     }
