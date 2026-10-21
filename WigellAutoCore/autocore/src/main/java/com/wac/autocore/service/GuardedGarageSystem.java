@@ -1,6 +1,7 @@
 package com.wac.autocore.service;
 
 import com.wac.autocore.exception.AccessDeniedException;
+import com.wac.autocore.exception.NotAuthenticatedException;
 import com.wac.autocore.model.*;
 import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.security.*;
@@ -8,6 +9,7 @@ import com.wac.autocore.security.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public class GuardedGarageSystem extends GarageSystem {
 
@@ -20,7 +22,13 @@ public class GuardedGarageSystem extends GarageSystem {
 
     private void require(Operation operation) {
 
-        Role role = identityHolder.current().map(Identity::role).orElse(null);
+        Optional<Identity> current = identityHolder.current();
+
+        if (current.isEmpty()) {
+            throw new NotAuthenticatedException("No identity in the holder, so the operation is refused.");
+        }
+
+        Role role = current.get().role();
 
         if (!RoleMatrix.allows(role, operation)) {
             throw new AccessDeniedException("Role " + role + " may not " + operation + ".");

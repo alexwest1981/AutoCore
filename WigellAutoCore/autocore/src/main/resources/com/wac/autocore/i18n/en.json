@@ -225,7 +225,8 @@
   },
   "dialog": {
     "access": {
-      "denied": "You are not allowed to do that."
+      "denied": "You are not allowed to do that.",
+      "not_signed_in": "You are not signed in."
     },
     "copy": {
       "booking": {

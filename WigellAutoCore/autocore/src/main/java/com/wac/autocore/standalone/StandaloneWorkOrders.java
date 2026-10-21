@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import com.wac.autocore.data.Db;
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Mechanic;
@@ -16,6 +17,7 @@ import com.wac.autocore.security.IdentityHolder;
 import com.wac.autocore.security.Role;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.GuardedGarageSystem;
+import com.wac.autocore.ui.i18n.I18n;
 
 /**
  * Two of the garage's operations from a plain Java program, without Spring.
@@ -24,15 +26,29 @@ public final class StandaloneWorkOrders {
 
     public static void main(String[] args) {
 
+        try {
+            run(args);
+
+        } catch (AppException refused) {
+            System.out.println("NEKAD: " + I18n.get(refused.getMessageKey()));
+        }
+    }
+
+    /** The ordinary run: a database, a booking, and a work order carried through to done. */
+    private static void run(String[] args) {
+
         String databasePath = args.length > 0 ? args[0] : Db.DEFAULT_PATH;
 
         Db db = new Db(databasePath);
         db.ensureReady();
 
-        // Nobody logs in here, so the program says who is running it and the core reads the same
-        // holder the window fills at login.
+        // Nobody logs in here, so the program fills the same holder the window fills at login. The
+        // second argument decides whether it does, so a run without identity can be shown too.
         IdentityHolder identity = new IdentityHolder();
-        identity.set(new Identity("fristaende", Role.STAFF));
+
+        if (args.length < 2 || !"utan".equals(args[1])) {
+            identity.set(new Identity("fristaende", Role.STAFF));
+        }
 
         GarageSystem garage = new GuardedGarageSystem(new SqliteRepositoryFactory(db), identity);
 
@@ -111,6 +127,7 @@ public final class StandaloneWorkOrders {
         int hours = 0;
 
         for (Booking booking : garage.getBookings()) {
+
             if (booking.getVehicleId() == vehicleId && day.equals(booking.getDate())) {
                 hours++;
             }
