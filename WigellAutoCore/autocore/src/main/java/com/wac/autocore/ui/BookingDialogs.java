@@ -1,6 +1,6 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.*;
 import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.service.GarageSystem;
@@ -89,8 +89,8 @@ public final class BookingDialogs {
                 if (saveNewBooking(garage, form, copying, defaultHour)) {
                     if (onSuccess != null) onSuccess.run();
                 }
-            } catch (RuleViolationException refused) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+            } catch (AppException refused) {
+                ActionDialogs.showAppError(refused);
             }
 
         });
@@ -319,9 +319,9 @@ public final class BookingDialogs {
             garage.saveBooking(booking);
             return true;
 
-        } catch (RuleViolationException refused) {
+        } catch (AppException refused) {
             // The service has already found and worded the problem; the dialog only shows it.
-            ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+            ActionDialogs.showAppError(refused);
             return false;
         } catch (Exception e) {
             String reason = e.getMessage();

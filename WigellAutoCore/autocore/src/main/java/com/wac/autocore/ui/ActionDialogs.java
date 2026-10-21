@@ -1,5 +1,6 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
@@ -9,6 +10,7 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
 
 import javafx.geometry.Insets;
@@ -177,6 +179,14 @@ public final class ActionDialogs {
         if (window instanceof javafx.stage.Stage && needed > window.getHeight()) {
             ((javafx.stage.Stage) window).setHeight(needed);
         }
+    }
+
+    /** Shows the app's own error: the translated sentence when it has a key, the developer text otherwise. */
+    public static void showAppError(AppException error) {
+
+        String text = error.getMessageKey() == null ? error.getMessage() : I18n.get(error.getMessageKey());
+
+        showError(I18n.get("dialog.confirm.title"), text);
     }
 
     public static void showError(String title, String message) {

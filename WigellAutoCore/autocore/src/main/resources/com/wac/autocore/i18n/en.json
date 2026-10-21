@@ -224,6 +224,9 @@
     "footer_terms": "Payment terms: {0} days net."
   },
   "dialog": {
+    "access": {
+      "denied": "You are not allowed to do that."
+    },
     "copy": {
       "booking": {
         "title": "New booking from an earlier one",

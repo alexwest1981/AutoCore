@@ -15,6 +15,7 @@ import com.wac.autocore.security.Identity;
 import com.wac.autocore.security.IdentityHolder;
 import com.wac.autocore.security.Role;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.service.GuardedGarageSystem;
 
 /**
  * Two of the garage's operations from a plain Java program, without Spring.
@@ -28,12 +29,12 @@ public final class StandaloneWorkOrders {
         Db db = new Db(databasePath);
         db.ensureReady();
 
-        GarageSystem garage = new GarageSystem(new SqliteRepositoryFactory(db));
-
         // Nobody logs in here, so the program says who is running it and the core reads the same
         // holder the window fills at login.
         IdentityHolder identity = new IdentityHolder();
         identity.set(new Identity("fristaende", Role.STAFF));
+
+        GarageSystem garage = new GuardedGarageSystem(new SqliteRepositoryFactory(db), identity);
 
         Mechanic mechanic = firstAvailableMechanic(garage);
         ServiceItem service = garage.getServiceItems().get(0);
