@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.AccessDeniedException;
+import com.wac.autocore.exception.NotAuthenticatedException;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.model.WorkOrderStatus;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
@@ -64,11 +65,27 @@ class StandaloneWorkOrdersTest {
         assertNotNull(garage.createCustomer("Tillåten kund", "070-0000001", "tillaten@exempel.com"));
     }
 
+    @Test
+    void refusesAWriteWhenNobodyIsSignedIn() throws Exception {
+
+        Path file = Files.createTempFile("autocore-anonymous-", ".db");
+        Files.deleteIfExists(file);
+
+        Db db = new Db(file.toString());
+        db.ensureReady();
+
+        GarageSystem garage = new GuardedGarageSystem(new SqliteRepositoryFactory(db), new IdentityHolder());
+
+        assertThrows(NotAuthenticatedException.class,
+                () -> garage.createCustomer("Anonym kund", "070-0000002", "anonym@exempel.com"));
+    }
+
     private static WorkOrder newest(List<WorkOrder> orders) {
 
         WorkOrder newest = null;
 
         for (WorkOrder order : orders) {
+
             if (newest == null || order.getId() > newest.getId()) {
                 newest = order;
             }
