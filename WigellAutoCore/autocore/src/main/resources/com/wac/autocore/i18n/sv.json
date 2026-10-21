@@ -224,6 +224,9 @@
     "footer_terms": "Betalningsvillkor: {0} dagar netto."
   },
   "dialog": {
+    "access": {
+      "denied": "Du har inte behörighet till den åtgärden."
+    },
     "copy": {
       "booking": {
         "title": "Ny bokning utifrån en tidigare",

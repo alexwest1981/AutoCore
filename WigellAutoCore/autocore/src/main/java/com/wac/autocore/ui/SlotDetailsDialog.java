@@ -1,6 +1,6 @@
 package com.wac.autocore.ui;
 
-import com.wac.autocore.exception.RuleViolationException;
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
@@ -185,8 +185,8 @@ public final class SlotDetailsDialog {
                             // because the booking has only one service. Then the order is created for them.
                             createdWo = garage.createWorkOrder(targetBooking.getId(), slot.getMechanicId());
                         }
-                    } catch (RuleViolationException refused) {
-                        ActionDialogs.showError(I18n.get("dialog.confirm.title"), I18n.get(refused.getMessageKey()));
+                    } catch (AppException refused) {
+                        ActionDialogs.showAppError(refused);
                         return;
                     }
                     if (createdWo != null) {

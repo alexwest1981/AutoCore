@@ -7,6 +7,7 @@ import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.security.Identity;
 import com.wac.autocore.security.IdentityHolder;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.service.GuardedGarageSystem;
 import com.wac.autocore.service.LoginService;
 import com.wac.autocore.service.PasswordRotation;
 import com.wac.autocore.theme.ThemeManager;
@@ -64,7 +65,7 @@ public class AutoCoreApp extends Application {
 
         applyConfiguredPasswords();
 
-        garage = new GarageSystem(context.getBean(RepositoryFactory.class));
+        garage = new GuardedGarageSystem(context.getBean(RepositoryFactory.class), context.getBean(IdentityHolder.class));
         identityHolder = context.getBean(IdentityHolder.class);
         loginService = context.getBean(LoginService.class);
 
