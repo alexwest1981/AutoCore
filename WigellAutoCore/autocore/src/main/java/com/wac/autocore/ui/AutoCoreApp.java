@@ -2,6 +2,7 @@ package com.wac.autocore.ui;
 
 import com.wac.autocore.AutoCoreApplication;
 import com.wac.autocore.data.Db;
+import com.wac.autocore.data.Settings;
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.security.Identity;
@@ -27,9 +28,6 @@ import org.slf4j.LoggerFactory;
 public class AutoCoreApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(AutoCoreApp.class);
-
-    /** Key the language choice is stored under in the settings table. */
-    public static final String LANGUAGE_KEY = "language";
 
     private ConfigurableApplicationContext context;
 
@@ -162,14 +160,18 @@ public class AutoCoreApp extends Application {
         }
     }
 
-    /** Reads the last chosen language from the settings. */
+    /**
+     * Reads the last chosen language from the settings. The sign-in window is the first screen, so
+     * the language has to be known before anyone is signed in, and the guarded facade refuses every
+     * read until then. This one row is therefore read from the table directly.
+     */
     public void restoreLanguage() {
-        I18n.setLanguage(garage.getSetting(LANGUAGE_KEY, I18n.DEFAULT_LANG));
+        I18n.setLanguage(Settings.get(context.getBean(Db.class), GarageSystem.LANGUAGE_KEY, I18n.DEFAULT_LANG));
     }
 
-    /** Saves language switches so the choice survives a restart. */
+    /** Saves language switches so the choice survives a restart. Every role may do this. */
     public void persistLanguageChanges() {
-        I18n.addListener(lang -> garage.saveSetting(LANGUAGE_KEY, lang));
+        I18n.addListener(garage::saveLanguage);
     }
 
     public static void main(String[] args) {

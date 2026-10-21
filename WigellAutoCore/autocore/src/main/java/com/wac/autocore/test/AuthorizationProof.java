@@ -15,7 +15,9 @@ import java.io.File;
 import java.util.Optional;
 
 /**
- * E3-5: the same operation, tried by nobody, by each of the three accounts, and printed as a table.
+ * E3-5 and E3-7: the same operations, tried by nobody, by each of the three accounts, and printed as
+ * a table. Reading is one of the operations, because a caller with no identity must not reach the
+ * data any more than it may change it.
  *
  * The accounts and their passwords are given on the command line, so no password is written into
  * the repository:
@@ -65,11 +67,12 @@ public final class AuthorizationProof {
         String nobody = create(garage, 1);
         holds &= nobody.startsWith("nekad (inte inloggad)");
 
-        System.out.printf("%-16s %-34s %s%n", "roll", "createCustomer", "saveSetting");
-        System.out.printf("%-16s %-34s %s%n", "ingen inloggad", nobody, "-");
+        System.out.printf("%-16s %-30s %-30s %s%n", "roll", "getCustomers", "createCustomer", "saveSetting");
+        System.out.printf("%-16s %-30s %-30s %s%n", "ingen inloggad", read(garage), nobody, "-");
         String[] roles = new String[args.length];
         String[] creates = new String[args.length];
         String[] settings = new String[args.length];
+        String[] reads = new String[args.length];
 
         for (int i = 0; i < args.length; i++) {
             String[] parts = args[i].split(":", 2);
@@ -81,25 +84,27 @@ public final class AuthorizationProof {
             }
             holder.set(identity.get());
             roles[i] = identity.get().role().toString();
+            reads[i] = read(garage);
             creates[i] = create(garage, i + 2);
             settings[i] = changeSetting(garage);
-            System.out.printf("%-16s %-34s %s%n", roles[i], creates[i], settings[i]);
-            holds &= isExpected(identity.get().role(), creates[i], settings[i]);
+            System.out.printf("%-16s %-30s %-30s %s%n", roles[i], reads[i], creates[i], settings[i]);
+            holds &= isExpected(identity.get().role(), reads[i], creates[i], settings[i]);
         }
 
-        System.out.println();
-        System.out.println("läsning för varje roll: " + (garage.getCustomers().isEmpty()
-                ? "tomt register" : garage.getCustomers().size() + " kunder, ingen invändning"));
         System.out.println();
         System.out.println("stämmer med kraven: " + holds);
         System.exit(holds ? 0 : 1);
     }
 
     /**
-     * The answer each level is supposed to get: the administrator does everything, a staff member
-     * may create a customer but not change the settings, and a read-only account may do neither.
+     * The answer each level is supposed to get: everybody signed in may read, the administrator does
+     * everything, a staff member may create a customer but not change the settings, and a read-only
+     * account may do neither.
      */
-    private static boolean isExpected(Role role, String create, String setting) {
+    private static boolean isExpected(Role role, String read, String create, String setting) {
+        if (!read.startsWith("tillåts")) {
+            return false;
+        }
         if (role == Role.ADMIN) {
             return "tillåts".equals(create) && "tillåts".equals(setting);
         }
@@ -107,6 +112,17 @@ public final class AuthorizationProof {
             return "tillåts".equals(create) && setting.startsWith("nekad (AccessDenied");
         }
         return create.startsWith("nekad (AccessDenied") && setting.startsWith("nekad (AccessDenied");
+    }
+
+    /** Reads the customer list and names the answer, so nobody can slip past the window unseen. */
+    private static String read(GarageSystem garage) {
+        try {
+            return "tillåts (" + garage.getCustomers().size() + " kunder)";
+        } catch (NotAuthenticatedException notSignedIn) {
+            return "nekad (inte inloggad)";
+        } catch (RuntimeException refused) {
+            return "nekad (" + refused.getClass().getSimpleName() + ")";
+        }
     }
 
     /**

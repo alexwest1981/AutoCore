@@ -46,5 +46,11 @@ public enum Operation {
     UPDATE_SERVICE_PACKAGE,
     DELETE_SERVICE_PACKAGE,
 
-    CHANGE_SETTINGS
+    CHANGE_SETTINGS,
+
+    /**
+     * Choosing the language. It is stored next to the settings but is not one: it says something
+     * about the person looking at the window, not about how the workshop runs, so every role has it.
+     */
+    CHANGE_LANGUAGE
 }

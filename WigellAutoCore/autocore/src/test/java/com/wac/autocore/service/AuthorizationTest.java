@@ -190,4 +190,77 @@ class AuthorizationTest {
         assertTrue(nobody.isEmpty());
         assertThrows(IllegalArgumentException.class, () -> identity.set(null));
     }
+
+    @Test
+    void nobodySignedInCannotReadEither() {
+        GarageSystem garage = garage();
+
+        // The same answer as for a write, and the same text, so the caller is told to sign in
+        // rather than that the role is wrong.
+        NotAuthenticatedException lists = assertThrows(NotAuthenticatedException.class, garage::getCustomers);
+        assertEquals("dialog.access.sign_in", lists.getMessageKey());
+
+        assertThrows(NotAuthenticatedException.class, garage::getWorkOrders);
+        assertThrows(NotAuthenticatedException.class, () -> garage.findCustomer(1));
+        assertThrows(NotAuthenticatedException.class, () -> garage.getSetting("language", "sv"));
+        assertThrows(NotAuthenticatedException.class, () -> garage.canDeleteCustomer(1));
+    }
+
+    @Test
+    void everyRoleMayReadOnceSignedIn() {
+        for (Role role : Role.values()) {
+            signIn("lasare-" + role, role);
+
+            GarageSystem garage = garage();
+
+            assertDoesNotThrow(garage::getCustomers, "getCustomers för " + role);
+            assertDoesNotThrow(garage::getVehicles, "getVehicles för " + role);
+            assertDoesNotThrow(garage::getBookings, "getBookings för " + role);
+            assertDoesNotThrow(garage::getWorkOrders, "getWorkOrders för " + role);
+            assertDoesNotThrow(garage::getServiceItems, "getServiceItems för " + role);
+            assertDoesNotThrow(garage::getMechanics, "getMechanics för " + role);
+            assertDoesNotThrow(() -> garage.findCustomer(1), "findCustomer för " + role);
+        }
+    }
+
+    @Test
+    void signingOutClosesTheReadingToo() {
+        signIn("lasare", Role.READ_ONLY);
+        GarageSystem garage = garage();
+        assertDoesNotThrow(garage::getCustomers);
+
+        identity.clear();
+
+        assertThrows(NotAuthenticatedException.class, garage::getCustomers);
+    }
+
+    @Test
+    void everyRoleMayKeepItsLanguageChoice() {
+        for (Role role : Role.values()) {
+            signIn("sprak-" + role, role);
+
+            GarageSystem garage = garage();
+
+            assertDoesNotThrow(() -> garage.saveLanguage("en"), "saveLanguage för " + role);
+            assertEquals("en", garage.getSetting(GarageSystem.LANGUAGE_KEY, "sv"));
+        }
+    }
+
+    @Test
+    void aLanguageChoiceIsStillAWriteNobodyUnsignedCanMake() {
+        GarageSystem garage = garage();
+
+        assertThrows(NotAuthenticatedException.class, () -> garage.saveLanguage("en"));
+    }
+
+    @Test
+    void savingTheSettingsStaysWithTheAdministrator() {
+        signIn("verkstaden", Role.STAFF);
+        GarageSystem garage = garage();
+
+        // Choosing a language is allowed, changing the workshop's settings is not. They are two
+        // operations even though both end up in the settings table.
+        assertDoesNotThrow(() -> garage.saveLanguage("en"));
+        assertThrows(AccessDeniedException.class, () -> garage.saveSetting("language", "en"));
+    }
 }
