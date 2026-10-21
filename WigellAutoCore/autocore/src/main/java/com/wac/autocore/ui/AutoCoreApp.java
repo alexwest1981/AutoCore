@@ -140,7 +140,8 @@ public class AutoCoreApp extends Application {
             }
             return I18n.get("view.error.action_failed") + "\n\n" + failure.getMessage();
         }
-        return I18n.get("view.error.action_failed") + "\n\n" + failure.toString();
+        // Not one of ours: the class and its text are for the log, the reader gets the sentence.
+        return I18n.get("view.error.action_failed");
     }
 
     /**
