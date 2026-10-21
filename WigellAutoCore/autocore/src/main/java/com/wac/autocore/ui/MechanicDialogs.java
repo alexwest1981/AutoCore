@@ -93,7 +93,7 @@ public final class MechanicDialogs {
                     garage.createMechanic(name, phone, specialization);
                 }
             } catch (DataAccessException e) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                ActionDialogs.showAppError(e);
                 return;
             }
             String problem = Mechanic.validationProblem(name, phone);
@@ -199,7 +199,7 @@ public final class MechanicDialogs {
                 try {
                     garage.deleteMechanic(mechanic.getId());
                 } catch (DataAccessException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    ActionDialogs.showAppError(e);
                     return;
                 }
                 if (onSuccess != null) onSuccess.run();

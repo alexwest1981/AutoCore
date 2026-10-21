@@ -1,6 +1,9 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.AccessDeniedException;
 import com.wac.autocore.exception.AppException;
+import com.wac.autocore.exception.DataAccessException;
+import com.wac.autocore.exception.NotAuthenticatedException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
@@ -29,6 +32,8 @@ import javafx.scene.layout.Priority;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableBooleanValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,6 +41,8 @@ import java.util.List;
 
 /** Opens the right dialog for each entity. */
 public final class ActionDialogs {
+
+    private static final Logger log = LoggerFactory.getLogger(ActionDialogs.class);
 
     private ActionDialogs() {}
 
@@ -184,9 +191,22 @@ public final class ActionDialogs {
     /** Shows the app's own error: the translated sentence when it has a key, the developer text otherwise. */
     public static void showAppError(AppException error) {
 
+        logAppError(error);
         String text = error.getMessageKey() == null ? error.getMessage() : I18n.get(error.getMessageKey());
 
         showError(I18n.get("dialog.confirm.title"), text);
+    }
+
+    /** Every refusal the ui shows passes here, so it lands in the log exactly once. */
+    public static void logAppError(AppException error) {
+        if (error instanceof AccessDeniedException || error instanceof NotAuthenticatedException) {
+            return; // the guard has already logged who and what
+        }
+        if (error instanceof DataAccessException) {
+            log.error("Databasoperationen misslyckades: {}", error.getMessage(), error);
+        } else {
+            log.warn("Åtgärden avvisades ({}): {}", error.getClass().getSimpleName(), error.getMessage());
+        }
     }
 
     public static void showError(String title, String message) {

@@ -106,7 +106,7 @@ public final class ServiceItemDialogs {
                     garage.createServiceItem(name, desc, price, time, requirementKey(specBox));
                 }
             } catch (DataAccessException e) {
-                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                ActionDialogs.showAppError(e);
                 return;
             }
 
@@ -156,7 +156,7 @@ public final class ServiceItemDialogs {
                 try {
                     garage.deleteServiceItem(serviceItem.getId());
                 } catch (DataAccessException e) {
-                    ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                    ActionDialogs.showAppError(e);
                     return;
                 }
                 if (onSuccess != null) onSuccess.run();

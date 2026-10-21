@@ -10,6 +10,9 @@ import com.wac.autocore.repository.ServiceItemRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.repository.VehicleRepository;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,6 +20,8 @@ import java.util.Map;
 
 /** The work order's life cycle from created to finished. */
 public class WorkOrderService {
+
+    private static final Logger log = LoggerFactory.getLogger(WorkOrderService.class);
 
     private final WorkOrderRepository workOrderRepository;
     private final BookingRepository bookingRepository;
@@ -147,7 +152,7 @@ public class WorkOrderService {
         booking.setStatus(BookingStatus.WORK_ORDER_CREATED);
         saveBooking(booking);
 
-
+        log.info("Arbetsorder {} skapad för bokning {}", workOrder.getId(), bookingId);
         return workOrder;
     }
 
@@ -346,6 +351,7 @@ public class WorkOrderService {
             booking.setStatus(BookingStatus.COMPLETED);
             saveBooking(booking);
         }
+        log.info("Arbetsorder {} slutförd", workOrderId);
         return true;
     }
 
