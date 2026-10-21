@@ -1,6 +1,7 @@
 package com.wac.autocore.service;
 
 import com.wac.autocore.exception.AccessDeniedException;
+import com.wac.autocore.exception.NotAuthenticatedException;
 import com.wac.autocore.model.*;
 import com.wac.autocore.repository.RepositoryFactory;
 import com.wac.autocore.security.*;
@@ -20,8 +21,14 @@ public class GuardedGarageSystem extends GarageSystem {
 
     private void require(Operation operation) {
 
-        Role role = identityHolder.current().map(Identity::role).orElse(null);
+        // Two refusals, two answers. Nobody signed in is a different thing from being signed in
+        // without the right, and the order asks the system to tell them apart.
+        java.util.Optional<Identity> current = identityHolder.current();
+        if (current.isEmpty()) {
+            throw new NotAuthenticatedException("Nobody is signed in, and " + operation + " needs one.");
+        }
 
+        Role role = current.get().role();
         if (!RoleMatrix.allows(role, operation)) {
             throw new AccessDeniedException("Role " + role + " may not " + operation + ".");
         }
