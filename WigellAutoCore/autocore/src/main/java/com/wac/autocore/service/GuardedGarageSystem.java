@@ -9,7 +9,6 @@ import com.wac.autocore.security.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
 public class GuardedGarageSystem extends GarageSystem {
 
@@ -22,14 +21,14 @@ public class GuardedGarageSystem extends GarageSystem {
 
     private void require(Operation operation) {
 
-        Optional<Identity> current = identityHolder.current();
-
+        // Two refusals, two answers. Nobody signed in is a different thing from being signed in
+        // without the right, and the order asks the system to tell them apart.
+        java.util.Optional<Identity> current = identityHolder.current();
         if (current.isEmpty()) {
-            throw new NotAuthenticatedException("No identity in the holder, so the operation is refused.");
+            throw new NotAuthenticatedException("Nobody is signed in, and " + operation + " needs one.");
         }
 
         Role role = current.get().role();
-
         if (!RoleMatrix.allows(role, operation)) {
             throw new AccessDeniedException("Role " + role + " may not " + operation + ".");
         }
