@@ -205,7 +205,9 @@ public final class ActionDialogs {
         if (error instanceof DataAccessException) {
             log.error("Databasoperationen misslyckades: {}", error.getMessage(), error);
         } else {
-            log.warn("Åtgärden avvisades ({}): {}", error.getClass().getSimpleName(), error.getMessage());
+            // The class and the text key say what went wrong; the message may name a customer's data.
+            String key = error.getMessageKey();
+            log.warn("Åtgärden avvisades: {}{}", error.getClass().getSimpleName(), key == null ? "" : " (" + key + ")");
         }
     }
 
