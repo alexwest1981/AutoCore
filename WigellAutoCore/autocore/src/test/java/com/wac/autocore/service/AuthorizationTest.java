@@ -375,6 +375,20 @@ class AuthorizationTest {
     }
 
     @Test
+    void theScheduleCannotBeReadBySomeoneWhoIsNotSignedIn() {
+
+        // SCRUM-337: refreshSchedule reads the database, and was the one public method that went
+        // round the guard. The other one, addChangeListener, hands the window a Runnable and reads
+        // nothing, so it stays open and says so in the code.
+        GarageSystem garage = garage();
+
+        assertThrows(NotAuthenticatedException.class, () -> garage.refreshSchedule());
+
+        signIn("lasare", Role.READ_ONLY);
+        assertDoesNotThrow(() -> garage.refreshSchedule(), "Den som får läsa får också läsa schemat");
+    }
+
+    @Test
     void theDropInTheProofsUseIsGuardedToo() {
         GarageSystem garage = garage();
 
