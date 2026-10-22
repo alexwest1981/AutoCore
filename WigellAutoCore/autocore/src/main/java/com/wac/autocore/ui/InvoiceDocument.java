@@ -4,7 +4,9 @@ import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
+import com.wac.autocore.model.Seller;
 import com.wac.autocore.model.Vehicle;
+import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.UiFormatters;
@@ -27,18 +29,19 @@ import javafx.scene.text.FontWeight;
 
 import java.time.LocalDate;
 
-/** The invoice as it is printed, with the company, the customer, the vehicle and the work. */
+/**
+ * The invoice as it is printed, with the company, the customer, the vehicle and the work.
+ *
+ * Everything an invoice must carry stands here and nowhere else: who sold the work and under which
+ * organisation and VAT numbers, who buys it and where, the number from the series, the date, the
+ * quantity and the price of each line, the VAT base and the VAT at its rate. A correction is a
+ * credit invoice, which points back at the invoice it takes back.
+ *
+ * The company details come from the settings each time the document is built, so a changed address
+ * reaches the next invoice. shortcoming: an invoice that has already been sent is reprinted with the
+ * details of today, not the ones it was sent with.
+ */
 public final class InvoiceDocument {
-
-    /** The company details in the invoice header. Change here when the workshop address changes. */
-    private static final String COMPANY_NAME = "Wigell AutoCore";
-    private static final String COMPANY_STREET = "Verkstadsvägen 1";
-    private static final String COMPANY_POSTAL = "512 00 Svenljunga";
-    private static final String COMPANY_PHONE = "070-000 00 00";
-    private static final String COMPANY_EMAIL = "info@wigellautocore.se";
-
-    /** Payment terms in days. Counted from the invoice date and shown as the due date. */
-    private static final int PAYMENT_TERMS_DAYS = 30;
 
     /** Paper width in points (A4 with margins), so the preview resembles the printout. */
     private static final double PAPER_WIDTH = 520;
@@ -49,6 +52,8 @@ public final class InvoiceDocument {
     private InvoiceDocument() {}
 
     public static Node build(GarageSystem garage, Invoice invoice) {
+        Seller seller = garage.seller();
+
         VBox paper = new VBox(0);
         paper.setPrefWidth(PAPER_WIDTH);
         paper.setMinWidth(PAPER_WIDTH);
@@ -57,9 +62,9 @@ public final class InvoiceDocument {
         paper.setStyle("-fx-background-color: #ffffff;");
 
         paper.getChildren().addAll(
-                header(),
+                header(seller),
                 rule(),
-                title(invoice),
+                title(garage, invoice, seller),
                 rule(),
                 parties(garage, invoice),
                 new Spacer(18),
@@ -67,11 +72,11 @@ public final class InvoiceDocument {
                 new Spacer(14),
                 totals(invoice),
                 new Spacer(24),
-                footer());
+                footer(seller));
         return paper;
     }
 
-    private static Node header() {
+    private static Node header(Seller seller) {
         Image logo = com.wac.autocore.ui.components.UiComponents.loadLogoImage();
         Node left;
         if (logo != null && !logo.isError()) {
@@ -81,14 +86,16 @@ public final class InvoiceDocument {
             view.setSmooth(true);
             left = view;
         } else {
-            left = label(COMPANY_NAME, 22, true, INK);
+            left = label(seller.name(), 22, true, INK);
         }
 
         VBox company = new VBox(2,
-                right(label(COMPANY_NAME, 13, true, INK)),
-                right(label(COMPANY_STREET, 11, false, MUTED)),
-                right(label(COMPANY_POSTAL, 11, false, MUTED)),
-                right(label(COMPANY_PHONE + "  ·  " + COMPANY_EMAIL, 11, false, MUTED)));
+                right(label(seller.name(), 13, true, INK)),
+                right(label(seller.street(), 11, false, MUTED)),
+                right(label(seller.postalAndCity(), 11, false, MUTED)),
+                right(label(seller.phone() + "  ·  " + seller.email(), 11, false, MUTED)),
+                right(label(I18n.get("invoice.org_number") + " " + seller.orgNumber()
+                        + "  ·  " + I18n.get("invoice.vat_number") + " " + seller.vatNumber(), 11, false, MUTED)));
 
         HBox head = new HBox(16, left, growing(), company);
         head.setAlignment(Pos.TOP_LEFT);
@@ -96,34 +103,55 @@ public final class InvoiceDocument {
         return head;
     }
 
-    private static Node title(Invoice invoice) {
-        VBox titleBox = new VBox(4, label(I18n.get("invoice.title"), 20, true, INK),
-                label(I18n.get("invoice.thanks_line"), 11, false, MUTED));
+    private static Node title(GarageSystem garage, Invoice invoice, Seller seller) {
+        VBox titleBox = new VBox(4,
+                label(I18n.get(invoice.isCredit() ? "invoice.credit_title" : "invoice.title"), 20, true, INK));
+        if (!invoice.isCredit()) {
+            titleBox.getChildren().add(label(I18n.get("invoice.thanks_line"), 11, false, MUTED));
+        }
 
         GridPane facts = new GridPane();
         facts.setHgap(14);
         facts.setVgap(3);
-        facts.add(right(label(I18n.get("invoice.number"), 11, false, MUTED)), 0, 0);
-        facts.add(right(label("#" + invoice.getId(), 11, true, INK)), 1, 0);
-        facts.add(right(label(I18n.get("invoice.date"), 11, false, MUTED)), 0, 1);
-        facts.add(right(label(String.valueOf(invoice.getInvoiceDate()), 11, false, INK)), 1, 1);
-        facts.add(right(label(I18n.get("invoice.due_date"), 11, false, MUTED)), 0, 2);
-        facts.add(right(label(String.valueOf(dueDate(invoice)), 11, false, INK)), 1, 2);
-        facts.add(right(label(I18n.get("invoice.status"), 11, false, MUTED)), 0, 3);
-        facts.add(right(label(I18n.get(invoice.isPaid() ? "status.paid" : "status.unpaid"), 11, true,
-                invoice.isPaid() ? "-fx-text-fill: #047857;" : "-fx-text-fill: #b91c1c;")), 1, 3);
+        int row = 0;
+        facts.add(right(label(I18n.get("invoice.number"), 11, false, MUTED)), 0, row);
+        facts.add(right(label(invoice.getNumber(), 11, true, INK)), 1, row++);
+        facts.add(right(label(I18n.get("invoice.date"), 11, false, MUTED)), 0, row);
+        facts.add(right(label(String.valueOf(invoice.getInvoiceDate()), 11, false, INK)), 1, row++);
+        // A credit invoice has no due date of its own: it is a claim the customer pays nothing for.
+        if (!invoice.isCredit()) {
+            facts.add(right(label(I18n.get("invoice.due_date"), 11, false, MUTED)), 0, row);
+            facts.add(right(label(String.valueOf(dueDate(invoice, seller.paymentTermsDays())), 11, false, INK)),
+                    1, row++);
+        }
+        // A credit invoice has no due date and nothing to pay, so its status is not the invoice's.
+        if (!invoice.isCredit()) {
+            facts.add(right(label(I18n.get("invoice.status"), 11, false, MUTED)), 0, row);
+            facts.add(right(label(I18n.get(invoice.isPaid() ? "status.paid" : "status.unpaid"), 11, true,
+                    invoice.isPaid() ? "-fx-text-fill: #047857;" : "-fx-text-fill: #b91c1c;")), 1, row);
+        }
 
-        HBox row = new HBox(20, titleBox, growing(), facts);
-        row.setPadding(new Insets(18, 0, 18, 0));
-        return row;
+        VBox box = new VBox(6, titleBox);
+        if (invoice.isCredit()) {
+            box.getChildren().add(label(I18n.get("invoice.credits") + " " + originalNumber(garage, invoice)
+                    + (invoice.getCreditReason().isEmpty() ? ""
+                    : "  ·  " + I18n.get("invoice.credit_reason") + ": " + invoice.getCreditReason()), 11, true, INK));
+        }
+
+        HBox line = new HBox(20, box, growing(), facts);
+        line.setPadding(new Insets(18, 0, 18, 0));
+        return line;
     }
 
     private static Node parties(GarageSystem garage, Invoice invoice) {
         Customer customer = customerFor(garage, invoice);
         Vehicle vehicle = vehicleFor(garage, invoice);
+        Booking booking = bookingFor(garage, invoice);
 
         VBox customerBox = block(I18n.get("invoice.customer"),
                 customer == null ? "-" : customer.getName(),
+                customer == null ? "" : customer.getAddress(),
+                customer == null ? "" : customer.getPostalAndCity(),
                 customer == null || customer.getPhone() == null ? "" : customer.getPhone(),
                 customer == null || customer.getEmail() == null ? "" : customer.getEmail());
 
@@ -137,6 +165,7 @@ public final class InvoiceDocument {
         VBox vehicleBox = block(I18n.get("invoice.vehicle"),
                 car.length() == 0 ? "-" : car.toString(),
                 extra.toString(),
+                booking == null ? "" : I18n.get("invoice.performed") + ": " + booking.getDate(),
                 I18n.get("invoice.booking") + " #" + bookingIdFor(garage, invoice));
 
         HBox row = new HBox(40, customerBox, vehicleBox);
@@ -162,12 +191,14 @@ public final class InvoiceDocument {
         grid.setVgap(6);
         grid.getColumnConstraints().addAll(
                 column(Priority.ALWAYS, HPos.LEFT),
+                column(45, HPos.RIGHT),
                 column(70, HPos.RIGHT),
                 column(70, HPos.RIGHT),
                 column(80, HPos.RIGHT));
 
         addRow(grid, 0,
                 label(I18n.get("invoice.col.description"), 10, true, MUTED),
+                right(label(I18n.get("invoice.col.quantity"), 10, true, MUTED)),
                 right(label(I18n.get("invoice.col.price"), 10, true, MUTED)),
                 right(label(I18n.get("invoice.col.discount"), 10, true, MUTED)),
                 right(label(I18n.get("invoice.col.sum"), 10, true, MUTED)));
@@ -188,8 +219,11 @@ public final class InvoiceDocument {
                 addRow(grid, row++, label(heading, 11, true, INK));
             }
             for (InvoiceLine line : group.getValue()) {
+                // Every line is one performed job, at one price. The quantity is what the invoice
+                // must state and it is one piece of work, not a number the workshop has to fill in.
                 addRow(grid, row++,
                         label(com.wac.autocore.seed.SeedText.resolve(line.getServiceName()), 11, false, INK),
+                        right(label(I18n.get("invoice.quantity_piece", 1), 11, false, INK)),
                         right(label(UiFormatters.formatMoney(line.getPrice()), 11, false, INK)),
                         right(label(UiFormatters.formatMoney(line.getDiscount()), 11, false, MUTED)),
                         right(label(UiFormatters.formatMoney(line.getFinalPrice()), 11, true, INK)));
@@ -204,38 +238,55 @@ public final class InvoiceDocument {
         grid.setVgap(4);
         grid.getColumnConstraints().addAll(column(Priority.ALWAYS, HPos.RIGHT), column(110, HPos.RIGHT));
 
-        grid.add(right(label(I18n.get("invoice.subtotal"), 11, false, MUTED)), 0, 0);
-        grid.add(right(label(UiFormatters.formatMoney(invoice.getAmount()), 11, false, INK)), 1, 0);
-        if (invoice.getDiscount() > 0) {
-            grid.add(right(label(I18n.get("invoice.discount_total"), 11, false, MUTED)), 0, 1);
-            grid.add(right(label("- " + UiFormatters.formatMoney(invoice.getDiscount()), 11, false, INK)), 1, 1);
+        int row = 0;
+        grid.add(right(label(I18n.get("invoice.subtotal"), 11, false, MUTED)), 0, row);
+        grid.add(right(label(UiFormatters.formatMoney(invoice.getAmount()), 11, false, INK)), 1, row++);
+        if (invoice.getDiscount() != 0) {
+            grid.add(right(label(I18n.get("invoice.discount_total"), 11, false, MUTED)), 0, row);
+            // The row shows the deduction with its own sign: a credit invoice gives the discount back.
+            grid.add(right(label(UiFormatters.formatMoney(-invoice.getDiscount()), 11, false, INK)), 1, row++);
         }
-        grid.add(right(label(I18n.get("invoice.vat"), 11, false, MUTED)), 0, 2);
-        grid.add(right(label(UiFormatters.formatMoney(invoice.getVatAmount()), 11, false, INK)), 1, 2);
+        // The base the VAT is counted on, stated on its own: the invoice must show it.
+        grid.add(right(label(I18n.get("invoice.vat_base"), 11, false, MUTED)), 0, row);
+        grid.add(right(label(UiFormatters.formatMoney(invoice.getTotalAmount()), 11, false, INK)), 1, row++);
+        grid.add(right(label(I18n.get("invoice.vat"), 11, false, MUTED)), 0, row);
+        grid.add(right(label(UiFormatters.formatMoney(invoice.getVatAmount()), 11, false, INK)), 1, row++);
 
         // To pay is the amount the customer owes, that is with VAT added.
         Label totalLabel = label(I18n.get("invoice.total"), 13, true, INK);
         Label totalValue = label(UiFormatters.formatMoney(invoice.getTotalIncludingVat()), 13, true, INK);
-        grid.add(right(totalLabel), 0, 3);
-        grid.add(right(totalValue), 1, 3);
+        grid.add(right(totalLabel), 0, row);
+        grid.add(right(totalValue), 1, row);
 
         VBox box = new VBox(8, rule(), grid);
         box.setPadding(new Insets(4, 0, 0, 0));
         return box;
     }
 
-    private static Node footer() {
+    private static Node footer(Seller seller) {
         VBox footer = new VBox(3,
                 label(I18n.get("invoice.footer"), 10, false, MUTED),
-                label(I18n.get("invoice.footer_terms", PAYMENT_TERMS_DAYS), 10, false, MUTED),
-                label(COMPANY_NAME + " · " + COMPANY_PHONE + " · " + COMPANY_EMAIL, 10, false, MUTED));
+                label(I18n.get("invoice.footer_terms", seller.paymentTermsDays()), 10, false, MUTED),
+                label(seller.name() + " · " + I18n.get("invoice.org_number") + " " + seller.orgNumber()
+                        + " · " + I18n.get("invoice.vat_number") + " " + seller.vatNumber(), 10, false, MUTED),
+                label(seller.phone() + "  ·  " + seller.email(), 10, false, MUTED));
         footer.setPadding(new Insets(12, 0, 0, 0));
         return footer;
     }
 
-    static LocalDate dueDate(Invoice invoice) {
+    static LocalDate dueDate(Invoice invoice, int paymentTermsDays) {
         LocalDate date = invoice.getInvoiceDate() == null ? LocalDate.now() : invoice.getInvoiceDate();
-        return date.plusDays(PAYMENT_TERMS_DAYS);
+        return date.plusDays(paymentTermsDays);
+    }
+
+    /** The number of the invoice this one takes back, or its id when the row has no number. */
+    private static String originalNumber(GarageSystem garage, Invoice invoice) {
+        for (Invoice row : garage.getInvoices()) {
+            if (row.getId() == invoice.getCreditOf() && !row.getNumber().isEmpty()) {
+                return row.getNumber();
+            }
+        }
+        return String.valueOf(invoice.getCreditOf());
     }
 
     private static Customer customerFor(GarageSystem garage, Invoice invoice) {
@@ -243,13 +294,17 @@ public final class InvoiceDocument {
         return vehicle == null ? null : garage.findCustomer(vehicle.getCustomerId());
     }
 
+    private static Booking bookingFor(GarageSystem garage, Invoice invoice) {
+        return garage.findBooking(bookingIdFor(garage, invoice));
+    }
+
     private static Vehicle vehicleFor(GarageSystem garage, Invoice invoice) {
-        Booking booking = garage.findBooking(bookingIdFor(garage, invoice));
+        Booking booking = bookingFor(garage, invoice);
         return booking == null ? null : garage.findVehicle(booking.getVehicleId());
     }
 
     private static int bookingIdFor(GarageSystem garage, Invoice invoice) {
-        for (com.wac.autocore.model.WorkOrder order : garage.getWorkOrders()) {
+        for (WorkOrder order : garage.getWorkOrders()) {
             if (order.getId() == invoice.getWorkOrderId()) {
                 return order.getBookingId();
             }

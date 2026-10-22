@@ -68,7 +68,9 @@ public class InvoiceLine {
 
     public int getFinalPrice() {
         int finalPrice = price - discount;
-        return finalPrice < 0 ? 0 : finalPrice;
+        // A credit line carries a negative price and keeps it. On an ordinary line the discount
+        // can never take the row below zero.
+        return finalPrice < 0 && price >= 0 ? 0 : finalPrice;
     }
 
     @Override

@@ -53,15 +53,6 @@ public class InvoiceLineRepository {
         }
     }
 
-    public void deleteByInvoiceId(Connection connection, int invoiceId) throws SQLException {
-        String sql = "DELETE FROM invoice_lines WHERE invoice_id = ?";
-
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, invoiceId);
-            statement.executeUpdate();
-        }
-    }
-
     private static InvoiceLine build(ResultSet resultSet) throws SQLException {
         InvoiceLine line = new InvoiceLine(
                 resultSet.getInt("id"),

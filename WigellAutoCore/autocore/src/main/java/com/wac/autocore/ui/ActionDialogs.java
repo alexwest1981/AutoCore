@@ -305,6 +305,14 @@ public final class ActionDialogs {
         BillingDialogs.showInvoiceDocumentDialog(garage, invoice);
     }
 
+    public static void showCreditInvoiceDialog(GarageSystem garage, Invoice invoice, Runnable onSuccess) {
+        BillingDialogs.showCreditInvoiceDialog(garage, invoice, onSuccess);
+    }
+
+    public static void showSellerDialog(GarageSystem garage, Runnable onSuccess) {
+        BillingDialogs.showSellerDialog(garage, onSuccess);
+    }
+
     public static void showCreateMechanicDialog(GarageSystem garage, Runnable onSuccess) {
         MechanicDialogs.showCreateMechanicDialog(garage, onSuccess);
     }

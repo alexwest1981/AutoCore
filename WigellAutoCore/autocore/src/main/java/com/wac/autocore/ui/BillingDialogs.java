@@ -1,9 +1,11 @@
 package com.wac.autocore.ui;
 
+import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.PaymentType;
+import com.wac.autocore.model.Seller;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
@@ -200,7 +202,7 @@ public final class BillingDialogs {
         invoiceBox.setConverter(new StringConverter<Invoice>() {
             @Override
             public String toString(Invoice inv) {
-                return inv == null ? "" : I18n.get("table.col.invoice") + " #" + inv.getId() + " - " + UiFormatters.formatMoney(inv.getTotalAmount()) + " (" + I18n.get("table.col.workorder") + " #" + inv.getWorkOrderId() + ")";
+                return inv == null ? "" : I18n.get("table.col.invoice") + " " + inv.getNumber() + " - " + UiFormatters.formatMoney(inv.getTotalAmount()) + " (" + I18n.get("table.col.workorder") + " #" + inv.getWorkOrderId() + ")";
             }
             @Override
             public Invoice fromString(String string) { return null; }
@@ -248,8 +250,8 @@ public final class BillingDialogs {
     static void showInvoiceLinesDialog(Invoice invoice) {
         if (invoice == null) return;
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("table.col.invoice") + " #" + invoice.getId());
-        dialog.setHeaderText(I18n.get("table.col.invoice") + " #" + invoice.getId()
+        dialog.setTitle(I18n.get("table.col.invoice") + " " + invoice.getNumber());
+        dialog.setHeaderText(I18n.get("table.col.invoice") + " " + invoice.getNumber()
                 + " (" + I18n.get("table.col.workorder") + " #" + invoice.getWorkOrderId()
                 + ", " + invoice.getInvoiceDate() + ")");
         ActionDialogs.styleDialog(dialog);
@@ -326,12 +328,145 @@ public final class BillingDialogs {
         dialog.showAndWait();
     }
 
+    /**
+     * Takes back an issued invoice with a credit invoice of its own. The original stays exactly as
+     * it was sent, and the credit note is shown for printing when it is done.
+     */
+    static void showCreditInvoiceDialog(GarageSystem garage, Invoice invoice, Runnable onSuccess) {
+        if (invoice == null) return;
+
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.credit.title"));
+        dialog.setHeaderText(I18n.get("dialog.credit.header"));
+        ActionDialogs.styleDialog(dialog);
+
+        GridPane grid = ActionDialogs.createGrid();
+
+        TextField reasonField = new TextField();
+        reasonField.setPromptText(I18n.get("dialog.credit.reason_prompt"));
+        reasonField.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(reasonField, Priority.ALWAYS);
+
+        grid.add(new Label(I18n.get("dialog.credit.invoice") + ":"), 0, 0);
+        grid.add(new Label(invoice.getNumber() + "  ·  "
+                + UiFormatters.formatMoney(invoice.getTotalIncludingVat())), 1, 0);
+        grid.add(new Label(I18n.get("dialog.credit.reason") + ":"), 0, 1);
+        grid.add(reasonField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        // A credit note says why, and no note leaves the shop without it.
+        ActionDialogs.requireFilled(dialog, reasonField);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response != ButtonType.OK) {
+                return;
+            }
+            Invoice credit;
+            try {
+                credit = garage.createCreditInvoice(invoice.getId(), reasonField.getText().trim());
+            } catch (com.wac.autocore.exception.RuleViolationException e) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"), e.getMessage());
+                return;
+            } catch (DataAccessException e) {
+                ActionDialogs.showAppError(e);
+                return;
+            }
+
+            if (onSuccess != null) onSuccess.run();
+            showInvoiceDocumentDialog(garage, credit);
+        });
+    }
+
+    /** The workshop's own details, the ones that stand on every invoice. Administrator only. */
+    static void showSellerDialog(GarageSystem garage, Runnable onSuccess) {
+        Seller current = garage.seller();
+
+        Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("dialog.seller.title"));
+        dialog.setHeaderText(I18n.get("dialog.seller.header"));
+        ActionDialogs.styleDialog(dialog);
+
+        GridPane grid = ActionDialogs.createGrid();
+
+        TextField nameField = ActionDialogs.field("dialog.seller.name", current.name());
+        TextField streetField = ActionDialogs.field("dialog.seller.street", current.street());
+        TextField postalField = ActionDialogs.field("dialog.seller.postal_code", current.postalCode());
+        TextField cityField = ActionDialogs.field("dialog.seller.city", current.city());
+        TextField phoneField = ActionDialogs.field("dialog.seller.phone", current.phone());
+        TextField emailField = ActionDialogs.field("dialog.seller.email", current.email());
+        TextField orgField = ActionDialogs.field("dialog.seller.org_number", current.orgNumber());
+        TextField vatField = ActionDialogs.field("dialog.seller.vat_number", current.vatNumber());
+        TextField termsField = ActionDialogs.field("dialog.seller.payment_terms",
+                String.valueOf(current.paymentTermsDays()));
+
+        Label note = new Label(I18n.get("dialog.seller.note"));
+        note.setWrapText(true);
+        note.getStyleClass().addAll("srow-sub", "small");
+
+        int row = 0;
+        grid.add(new Label(I18n.get("dialog.seller.name") + ":"), 0, row);
+        grid.add(nameField, 1, row++);
+        grid.add(new Label(I18n.get("dialog.seller.street") + ":"), 0, row);
+        grid.add(streetField, 1, row++);
+        grid.add(new Label(I18n.get("dialog.seller.postal_code") + ":"), 0, row);
+        grid.add(postalField, 1, row++);
+        grid.add(new Label(I18n.get("dialog.seller.city") + ":"), 0, row);
+        grid.add(cityField, 1, row++);
+        grid.add(new Label(I18n.get("dialog.seller.phone") + ":"), 0, row);
+        grid.add(phoneField, 1, row++);
+        grid.add(new Label(I18n.get("dialog.seller.email") + ":"), 0, row);
+        grid.add(emailField, 1, row++);
+        grid.add(new Label(I18n.get("dialog.seller.org_number") + ":"), 0, row);
+        grid.add(orgField, 1, row++);
+        grid.add(new Label(I18n.get("dialog.seller.vat_number") + ":"), 0, row);
+        grid.add(vatField, 1, row++);
+        grid.add(new Label(I18n.get("dialog.seller.payment_terms") + ":"), 0, row);
+        grid.add(termsField, 1, row++);
+        grid.add(note, 0, row, 2, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ActionDialogs.requireFilled(dialog, nameField, streetField, postalField, cityField,
+                orgField, vatField, termsField);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response != ButtonType.OK) {
+                return;
+            }
+
+            int terms;
+            try {
+                terms = Integer.parseInt(termsField.getText().trim());
+            } catch (NumberFormatException e) {
+                terms = 0;
+            }
+            if (terms <= 0) {
+                ActionDialogs.showError(I18n.get("dialog.confirm.title"),
+                        I18n.get("dialog.seller.invalid_terms"));
+                return;
+            }
+
+            try {
+                garage.saveSeller(new Seller(nameField.getText().trim(), streetField.getText().trim(),
+                        postalField.getText().trim(), cityField.getText().trim(),
+                        phoneField.getText().trim(), emailField.getText().trim(),
+                        orgField.getText().trim(), vatField.getText().trim(), terms));
+            } catch (DataAccessException e) {
+                ActionDialogs.showAppError(e);
+                return;
+            }
+
+            if (onSuccess != null) onSuccess.run();
+        });
+    }
+
     /** Previews the invoice and sends it to the printer. The window is not closed. */
     static void showInvoiceDocumentDialog(GarageSystem garage, Invoice invoice) {
         if (invoice == null) return;
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        dialog.setTitle(I18n.get("dialog.invoice.print_title") + " #" + invoice.getId());
+        dialog.setTitle(I18n.get("dialog.invoice.print_title") + " " + invoice.getNumber());
         dialog.setHeaderText(I18n.get("dialog.invoice.print_header"));
         ActionDialogs.styleDialog(dialog);
         dialog.setResizable(true);

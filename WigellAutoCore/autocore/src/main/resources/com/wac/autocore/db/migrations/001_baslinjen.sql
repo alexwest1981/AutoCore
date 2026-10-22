@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS customers (
     name TEXT NOT NULL,
     phone TEXT,
     email TEXT,
+    address TEXT,
+    postal_code TEXT,
+    city TEXT,
     vip INTEGER DEFAULT 0);
 
 CREATE TABLE IF NOT EXISTS vehicles (
@@ -95,6 +98,9 @@ CREATE TABLE IF NOT EXISTS invoices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     work_order_id INTEGER,
     invoice_date TEXT,
+    invoice_number TEXT,
+    credit_of INTEGER,
+    credit_reason TEXT,
     amount REAL,
     discount REAL,
     total_amount REAL,

@@ -216,7 +216,9 @@ public final class EntityPages {
         FilterableTable<Invoice> table = TableFactory.create(garage.getInvoices());
         TableView<Invoice> t = table.getTableView();
         t.getColumns().addAll(
-                TableFactory.idCol(c -> String.valueOf(c.getId())),
+                // The number from the series is what the customer quotes, not the row's id.
+                TableFactory.sizeCol(I18n.get("invoice.number"), TableFactory.W_REF,
+                        c -> c.getNumber().isEmpty() ? String.valueOf(c.getId()) : c.getNumber()),
                 TableFactory.sizeCol(I18n.get("table.col.booking"), TableFactory.W_REF, c -> String.valueOf(EntityLookup.bookingIdForWorkOrder(garage, c.getWorkOrderId()))),
                 TableFactory.sizeCol(I18n.get("table.col.vehicle"), TableFactory.W_REG_NR, c -> EntityLookup.invoiceVehicleReg(garage, c)),
                 TableFactory.textCol(I18n.get("table.col.customer"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.invoiceCustomerName(garage, c)),
@@ -253,10 +255,28 @@ public final class EntityPages {
             }
         });
 
+        Button creditBtn = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.invoices.action_credit")), garage,
+                Operation.CREATE_INVOICE);
+        creditBtn.setDisable(true);
+        creditBtn.setOnAction(e -> {
+            Invoice sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActionDialogs.showCreditInvoiceDialog(garage, sel, router::requestReload);
+            }
+        });
+
+        Button companyBtn = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.invoices.action_company")), garage,
+                Operation.CHANGE_SETTINGS);
+        companyBtn.setOnAction(e -> ActionDialogs.showSellerDialog(garage, router::requestReload));
+
         t.getSelectionModel().selectedItemProperty().addListener((obs, oldV, sel) -> {
             payBtn.setDisable(sel == null || sel.isPaid());
             linesBtn.setDisable(sel == null);
             printBtn.setDisable(sel == null);
+            // A credit invoice takes back an invoice, and an invoice is taken back once.
+            creditBtn.setDisable(sel == null || sel.isCredit() || alreadyCredited(garage, sel));
         });
 
         payBtn.setOnAction(e -> {
@@ -285,7 +305,17 @@ public final class EntityPages {
                                 garage.getInvoices()),
                         I18n.get("view.notice.invoices.one"),
                         I18n.get("view.notice.invoices.many")),
-                table, printBtn, linesBtn, payBtn, addBtn);
+                table, printBtn, linesBtn, creditBtn, payBtn, addBtn, companyBtn);
+    }
+
+    /** True when a credit invoice already takes this one back. */
+    private static boolean alreadyCredited(GarageSystem garage, Invoice invoice) {
+        for (Invoice row : garage.getInvoices()) {
+            if (row.getCreditOf() == invoice.getId()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static VBox buildPaymentsPage(GarageSystem garage, PageRouter router) {
