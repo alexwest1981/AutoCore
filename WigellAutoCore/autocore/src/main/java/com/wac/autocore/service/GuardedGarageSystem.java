@@ -420,12 +420,18 @@ public class GuardedGarageSystem extends GarageSystem {
         super.saveLanguage(lang);
     }
 
+    @Override
+    public void refreshSchedule() {
+
+        require(Operation.READ);
+
+        super.refreshSchedule();
+    }
+
     // Reading is an operation too. Without this block a caller with no identity could walk straight
     // past the window and read every customer, vehicle and work order in the database, which is
     // exactly the way round the guard that the order says must not exist.
-    //
-    // Two methods stay open on purpose, because they hand out no data: addChangeListener and
-    // refreshSchedule only tell the window that something changed.
+    // addChangeListener stays open on purpose: it hands the window a Runnable and reads nothing.
 
     @Override
     public List<Customer> getCustomers() {
