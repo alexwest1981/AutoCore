@@ -6,7 +6,7 @@ Dokumentet skrevs under sprinten och uppdaterades när risker slog till, vilket 
 
 ## 1. Nuvarande teknikplattform och viktigaste beroenden
 
-Utgångsläget var Java 8, BellSoft Liberica 1.8.0_504, med JavaFX 8. Två jar-filer låg i `WigellAutoCore/autocore/lib/`: `sqlite-jdbc-3.53.4.0` och `json-20231013`. Det fanns ingen byggbeskrivning. `start.sh` kompilerade källan för hand med `javac` mot de två filerna och startade den, och bevisen var vanliga `main()`-program som kördes en och en.
+Utgångsläget var Java 8, BellSoft Liberica 1.8.0_504, med JavaFX 8. Två jar-filer låg i `WigellAutoCore/autocore/lib/`: `sqlite-jdbc-3.53.4.0` och `json-20231013`. Det fanns ingen byggbeskrivning. `start.sh` kompilerade källan för hand med `javac` mot de två filerna och startade programmet, och bevisen var vanliga `main()`-program som kördes en och en.
 
 Det finns alltså fyra saker att byta ut samtidigt: språkversionen, gränssnittsbiblioteket, sättet att hämta beroenden och sättet att bygga.
 
@@ -45,11 +45,11 @@ Det fristående programmet bokade alltid dagens datum plus trettio dagar, vilket
 - Gränssnittet: inloggningen blir ett kort i huvudfönstret i stället för ett eget fönster.
 - Säkerheten: `Operation`, `RoleMatrix` och en dekoratör framför fasaden.
 - Loggningen: `logback-spring.xml` med profil per miljö, och MDC med trace-id och operation.
-- Bevisen: ut ur produktionsträdet.
+- Bevisen: ut ur produktionsträdet, vilket är SCRUM-332.
 
 ## 4. Hur befintlig information ska bevaras
 
-Migreringarna är additiva och körs i ordning: `001_baslinjen.sql`, `002_nycklar.sql`, `003_ore.sql`, `004_users.sql`. Ingen av dem raderar verksamhetsdata. 002 bygger om tabellerna för att få riktiga nycklar och kopierar raderna in i de nya tabellerna innan de gamla släpps. 003 lägger till öret som enhet. 004 lägger till konton.
+Migreringarna körs i ordning: `001_baslinjen.sql`, `002_nycklar.sql`, `003_ore.sql`, `004_users.sql`. 001 skapar grunden, 002 och 003 bygger om tabellerna för att få riktiga nycklar respektive öret som enhet, och 004 lägger till konton. Den som bygger om kopierar raderna in i den nya tabellen och släpper den gamla först efteråt.
 
 `WigellAutoCore/autocore/test/data/autocore-original.db` är en riktig äldre databas som ligger i git. `OldDatabaseProof` lyfter den genom 4.0 och visar att innehållet står kvar: `customers=6 vehicles=6 bookings=6 work_orders=6 mechanics=3` före och efter, med `schema_version` 4 och tre konton som enda tillägg.
 
@@ -79,10 +79,10 @@ Det använder samma `GarageSystem` och samma dekoratör som applikationen, så a
 
 ## 8. Hur vi kontrollerar att tidigare funktionalitet fortfarande fungerar
 
-Enhetstesterna är 69 JUnit-prov som kör affärsregler, prisräkning, inloggning, hashning, rollmatris, spärr, loggning, hemlighetsskanning och att Spring-kontexten startar med rätt databassökväg.
+Enhetstesterna är 69 JUnit-prov: inloggning, lösenordshashning och rotation, identitetshållaren, rollmatrisen, spärren för läsning och skrivning, raderingsregeln för en avbruten order, det fristående programmet, loggning och spårbarhet, hemlighetsskanning, och att Spring-kontexten startar med rätt databassökväg.
 
-Bevisprogrammen är fjorton program som var och en skriver ut sitt svar och avslutar med en exitkod. De täcker bokningens ändringar, avbrutna ordrar, utkast och validering, hela flödet från kund till betalning, prisregler, nummerregler, statusvägar, arbetsorderns rader, den gamla databasen och behörigheten.
+Bevisprogrammen är femton program som skriver ut sitt svar, och tolv av dem avslutar med en exitkod så att en körning kan fällas maskinellt. Tillsammans täcker de bokningar och ändringar av dem, arbetsorderns vägar och rader, utkast och validering, fakturor och betalningar, tal- och avrundningsregler, felhantering och felmeddelanden på båda språken, den gamla databasen, rollmatrisen, behörigheten, raderingen av en avbruten order och en samlad självkontroll.
 
 Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit `ce1fde8`, den sista innan Maven-bygget. Samma elva kördes på 4.0. Tio svarar lika. Den elfte, `StatusRoutesProof`, prövade tre vägar av fyra eftersom körningen gjordes efter stängning, vilket är ett tidsberoende i provet och inte i koden. Det ligger som eget ärende att rätta.
 
-Sviten körs vid varje ändring, och den har fångat den brutna `start.sh`, den dagberoende bokningen i det fristående programmet, och att baslinjen låg i `/tmp` och försvann.
+Sviten körs vid varje ändring, och det var den som fångade att det fristående programmet bokade en dag som kunde vara stängd. Två saker hittades utanför den: den brutna `start.sh`, som föll först när någon startade den, och baslinjen som låg i `/tmp` och hade försvunnit när den skulle användas.
