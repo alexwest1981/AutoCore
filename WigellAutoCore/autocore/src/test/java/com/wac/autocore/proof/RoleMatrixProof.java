@@ -1,4 +1,4 @@
-package com.wac.autocore.test;
+package com.wac.autocore.proof;
 
 import com.wac.autocore.security.Operation;
 import com.wac.autocore.security.Role;
