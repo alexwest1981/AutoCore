@@ -1,0 +1,15 @@
+Databas redo: /tmp/bas.db
+år 1899: nekas
+år 1900: går igenom
+år 2100: går igenom
+år 2101: nekas
+ett år som inte är en siffra: nekas
+
+tio procent av 999 öre blir 100:  true
+noll procent blir noll:           true
+hundra procent blir hela beloppet: true
+hundra öre fördelade på 700 och 300: 70 + 30 = 100
+
+årtalen följer regeln:                  true
+avrundningen följer regeln:              true
+rabatten fördelas utan att tappa ören:   true

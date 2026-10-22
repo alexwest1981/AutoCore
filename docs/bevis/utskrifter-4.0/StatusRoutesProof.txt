@@ -1,0 +1,29 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/home/alex/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+10:48:35.734 [main] INFO com.wac.autocore.data.Db -- Databas redo: /tmp/status-routes-16889305155113120836.db
+10:48:35.839 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 7 skapad för bokning 7
+10:48:35.857 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 7 slutförd
+10:48:35.874 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 8 skapad för bokning 8
+10:48:35.891 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 9 skapad för bokning 9
+Samma statusbyten på 4 vägar: [bokning, drop-in, reklamation, utkast]
+
+10:48:35.961 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 8 slutförd
+bokning: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+10:48:36.036 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 9 slutförd
+drop-in: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+10:48:36.111 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 10 slutförd
+reklamation: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+10:48:36.187 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 11 slutförd
+utkast: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+
+alla vägar svarar lika: true
+
+10:48:36.227 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 12 skapad för bokning 10
+nej till IN_PROGRESS: bokning WORK_ORDER_CREATED -> WORK_ORDER_CREATED, mekaniker ledig true -> true
+10:48:36.265 [main] INFO com.wac.autocore.service.WorkOrderService -- Arbetsorder 12 slutförd
+nej till CANCELLED: bokning COMPLETED -> COMPLETED, mekaniker ledig true -> true
+ett nej lämnar inget efter sig: true
+alla fyra vägarna prövades: true
