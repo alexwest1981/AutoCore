@@ -35,6 +35,8 @@ public class SidebarView {
     /** The selection travels down the list instead of appearing under the new item. */
     private final javafx.scene.shape.Rectangle navPill = new javafx.scene.shape.Rectangle();
     private VBox navRoot;
+    /** The item the pill marks, kept so a later layout pass can put the pill back. */
+    private Button currentNav;
 
     private Label brandSub;
     private Button overviewBtn;
@@ -65,12 +67,22 @@ public class SidebarView {
             b.setCursor(here ? Cursor.DEFAULT : Cursor.HAND);
 
             if (here) {
-                // the accent block is the travelling pill, so the item itself stays flat
+                // the accent block is the pill, so the item itself stays flat
                 b.getStyleClass().add("nav-current");
                 target = b;
             }
         }
+        currentNav = target;
         movePillTo(target);
+        // Marking happens while the new page is being put in place, before the menu and its items
+        // have been measured. Their heights are zero at that moment, so the pill is placed again
+        // on the next pulse, when the layout that gives them their size has run.
+        javafx.application.Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                movePillTo(currentNav);
+            }
+        });
     }
 
     /**
@@ -92,8 +104,10 @@ public class SidebarView {
             navPill.setVisible(false);
             return;
         }
-        javafx.geometry.Bounds inScene = target.localToScene(target.getBoundsInLocal());
-        // layoutBounds, not the scene bounds: a button's bounds include its drop shadow
+        // layoutBounds and not boundsInLocal: the second one counts the button's shadow and its
+        // focus ring, which made the pill 12 px larger than the item and let it overlap the
+        // neighbours. The pill has to cover exactly the button it marks.
+        javafx.geometry.Bounds inScene = target.localToScene(target.getLayoutBounds());
         javafx.geometry.Bounds b = navRoot.sceneToLocal(inScene);
         if (b.getHeight() <= 0) {
             return;
@@ -378,6 +392,12 @@ public class SidebarView {
             b.setGraphic(icon);
             b.setGraphicTextGap(10);
         }
+
+        // Every item says when it has been measured, and the pill copies the one it marks. The
+        // first page is marked before any of this has a size, so without these the pill waited
+        // for the next click to appear.
+        b.heightProperty().addListener((obs, was, now) -> movePillTo(currentNav));
+        b.widthProperty().addListener((obs, was, now) -> movePillTo(currentNav));
 
         b.setOnAction(e -> {
             if (onNavigate != null) {

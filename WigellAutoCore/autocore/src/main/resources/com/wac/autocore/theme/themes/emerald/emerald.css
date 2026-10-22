@@ -359,19 +359,16 @@ TableView .table-view, .table-view { -fx-padding: 0; }
 }
 .nav-item:hover, Button.ghost.nav-item:hover {
     -fx-background-color: #384c42;
-    -fx-border-color: transparent transparent transparent -wac-accent2;
     -fx-text-fill: #ffffff;
     -fx-cursor: hand;
 }
 .nav-item.selected, Button.ghost.nav-item.selected {
     -fx-background-color: -wac-accent;
-    -fx-border-color: transparent transparent transparent -wac-accent2;
     -fx-text-fill: -wac-on-accent;
     -fx-cursor: hand;
 }
 .nav-item.selected:hover, Button.ghost.nav-item.selected:hover {
     -fx-background-color: -wac-accent-hover;
-    -fx-border-color: transparent transparent transparent -wac-accent2;
     -fx-text-fill: #ffffff;
     -fx-cursor: hand;
 }
