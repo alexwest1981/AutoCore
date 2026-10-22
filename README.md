@@ -27,6 +27,8 @@ Siffrorna i menyn visar vad som väntar på hantering.
 
 JDK 25 och Maven 3.9 eller senare. Bygget kräver exakt JDK 25: `pom.xml` stannar med ett meddelande om du kör en annan version.
 
+Skälet är JavaFX, inte Spring. `spring-boot-4.0.6.jar` och `spring-core-7.0.7.jar` är byggda för Java 17 (class file 61), men `javafx-base-25.0.4-linux.jar` är byggd för Java 23 (class file 67). Under 23 går bygget inte alls, och då svarar `pom.xml` med en läsbar rad i stället för ett fel om class file-versioner. Vi stannar på 25 eftersom det är den version projektet byggs och prövas på, både lokalt och i CI. WAC4_0 §2 säger "Java 17 eller senare", så kravet är uppfyllt; bygget begär bara mer än kravet gör.
+
 ```
 mise use java@25
 mvn -f WigellAutoCore/autocore/pom.xml package
@@ -155,6 +157,12 @@ Fakturan bygger på de tjänster som markerats som utförda, och tar priset som 
 ### Språk
 
 Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord och valutor följer språket.
+
+## Prov och bevis
+
+`mvn test` kör 102 JUnit-prov, och ingen av dem hoppas över: loggprovningen skriver sin egen loggfil i stället för att läsa en som råkar finnas. Utöver dem ligger femton bevisprogram i `src/test/java/com/wac/autocore/proof/`, utanför jar-filen, där var och ett skriver ut sitt svar.
+
+Jämförelsen mot Java 8-baslinjen, elva prov inspelade på `b0ef2b9` och samma elva körda på 4.0, ligger i [docs/bevis/](docs/bevis/README.md) tillsammans med utskrifterna från båda sidorna. Den som bara har repot kan läsa varje rad som skiljer sig.
 
 ## Team
 

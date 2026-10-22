@@ -43,6 +43,10 @@ public final class CustomerDialogs {
         TextField nameField = ActionDialogs.field("dialog.customer.name_prompt", editing ? existing.getName() : null);
         TextField phoneField = ActionDialogs.field("dialog.customer.phone_prompt", editing ? existing.getPhone() : null);
         TextField emailField = ActionDialogs.field("dialog.customer.email_prompt", editing ? existing.getEmail() : null);
+        TextField addressField = ActionDialogs.field("dialog.customer.address_prompt", editing ? existing.getAddress() : null);
+        TextField postalField = ActionDialogs.field("dialog.customer.postal_code_prompt",
+                editing ? existing.getPostalCode() : null);
+        TextField cityField = ActionDialogs.field("dialog.customer.city_prompt", editing ? existing.getCity() : null);
 
         CheckBox vipBox = new CheckBox(I18n.get("table.col.vip"));
         if (editing) {
@@ -55,10 +59,16 @@ public final class CustomerDialogs {
         grid.add(phoneField, 1, 1);
         grid.add(new Label(I18n.get("dialog.customer.email") + ":"), 0, 2);
         grid.add(emailField, 1, 2);
+        grid.add(new Label(I18n.get("dialog.customer.address") + ":"), 0, 3);
+        grid.add(addressField, 1, 3);
+        grid.add(new Label(I18n.get("dialog.customer.postal_code") + ":"), 0, 4);
+        grid.add(postalField, 1, 4);
+        grid.add(new Label(I18n.get("dialog.customer.city") + ":"), 0, 5);
+        grid.add(cityField, 1, 5);
         // The vip flag belongs to a customer that already exists, so the create form leaves it out.
         if (editing) {
-            grid.add(new Label(I18n.get("table.col.vip") + ":"), 0, 3);
-            grid.add(vipBox, 1, 3);
+            grid.add(new Label(I18n.get("table.col.vip") + ":"), 0, 6);
+            grid.add(vipBox, 1, 6);
         }
 
         dialog.getDialogPane().setContent(grid);
@@ -85,10 +95,19 @@ public final class CustomerDialogs {
                     existing.setName(name);
                     existing.setPhone(phone);
                     existing.setEmail(email);
+                    existing.setAddress(addressField.getText().trim());
+                    existing.setPostalCode(postalField.getText().trim());
+                    existing.setCity(cityField.getText().trim());
                     existing.setVip(vipBox.isSelected());
                     garage.updateCustomer(existing);
                 } else {
-                    garage.createCustomer(name, phone, email);
+                    // The address is part of the customer and not a detail on the invoice, so it is
+                    // saved with the row itself. The creation rule is unchanged.
+                    Customer created = garage.createCustomer(name, phone, email);
+                    created.setAddress(addressField.getText().trim());
+                    created.setPostalCode(postalField.getText().trim());
+                    created.setCity(cityField.getText().trim());
+                    garage.updateCustomer(created);
                 }
             } catch (DataAccessException e) {
                 ActionDialogs.showAppError(e);

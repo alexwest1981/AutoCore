@@ -73,6 +73,7 @@
                             <rules>
                                 <requireJavaVersion>
                                     <version>[25,26)</version>
+                                    <message>Bygget kräver JDK 25: JavaFX 25 är byggt för Java 23 (class file 67) och Spring Boot 4 för Java 17, och 25 är den version projektet byggs och prövas på. Kör mise use java@25. Se README, Innan du bygger.</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.9,)</version>

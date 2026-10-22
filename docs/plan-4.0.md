@@ -12,6 +12,8 @@ Det finns alltså fyra saker att byta ut samtidigt: språkversionen, gränssnitt
 
 Målet enligt WAC4_0 §2 är Spring Boot 4.x på Java 17 eller senare. Vi valde Spring Boot 4.1.1 och Java 25, JavaFX 25.0.4, och Maven som hämtar allt, inklusive de två biblioteken som låg i `lib/`. Loggning kommer från `spring-boot-starter` och provkörningen från `spring-boot-starter-test`.
 
+Golvet i praktiken är JavaFX, inte Spring. `spring-boot-4.0.6.jar` och `spring-core-7.0.7.jar` är byggda för Java 17 (class file 61), medan `javafx-base-25.0.4-linux.jar` är byggd för Java 23 (class file 67). Under 23 går bygget alltså inte, och `pom.xml` svarar först med ett läsbart meddelande i stället för ett fel om class file-versioner. Vi stannar på 25, som är den version projektet byggs och prövas på lokalt och i CI. Kravet "Java 17 eller senare" är därmed uppfyllt med marginal; att bygget kräver mer än kravet står i `README` under "Innan du bygger" och i `pom.xml`.
+
 ## 2. Risker vid migreringen
 
 De risker vi räknade upp innan arbetet började:
@@ -59,7 +61,7 @@ Att lösa migreringen genom att börja om med en tom databas är alltså uteslut
 
 Konton ligger i en egen tabell med roll och PBKDF2-hash. Hashen är 210 000 varv i migreringen och smälts om till 600 000 vid nästa lyckade inloggning. Lösenorden i klartext finns bara hos gruppen, och de kan sättas utifrån med miljövariabler som hashas vid start.
 
-Inloggningen fyller en `IdentityHolder`. Rollmatrisen är data: 29 operationer och tre roller, där administratören har allt, verkstadspersonalen allt utom fem saker, och en läsbehörig får läsa och välja språk.
+Inloggningen fyller en `IdentityHolder`. Rollmatrisen är data: 30 operationer och tre roller. Administratören har allt. Verkstadspersonalen arbetar med kunder, fordon, bokningar, arbetsorder, tjänster och mekaniker, och har varken borttagningarna, inställningarna eller ekonomin. En läsbehörig läser dagens arbete och väljer språk, och ser inte heller ekonomin. Fakturor och betalningar är administratörens, både att läsa, skapa och ta emot.
 
 Kontrollen sitter i en dekoratör framför fasaden, inte i gränssnittet. Den täcker både skrivningar och läsningar, och den svarar olika för "ingen är inloggad" och "rollen får inte", eftersom kravet skiljer på dem. Samma dekoratör används i det fristående programmet.
 
@@ -81,7 +83,7 @@ Dagen väljs ur `OpeningHours` innan tjänsten tillfrågas, så programmet hoppa
 
 ## 8. Hur vi kontrollerar att tidigare funktionalitet fortfarande fungerar
 
-Enhetstesterna är 77 JUnit-prov: inloggning, lösenordshashning och rotation, identitetshållaren, rollmatrisen, spärren för läsning och skrivning, raderingsregeln för en avbruten order, det fristående programmet, bokning och drop-in, loggning och spårbarhet, hemlighetsskanning, och att Spring-kontexten startar med rätt databassökväg.
+Enhetstesterna är 102 JUnit-prov: inloggning, lösenordshashning och rotation, identitetshållaren, rollmatrisen, spärren för läsning och skrivning, raderingsregeln för en avbruten order, det fristående programmet, bokning och drop-in, loggning och spårbarhet, hemlighetsskanning, och att Spring-kontexten startar med rätt databassökväg. Ingen av dem hoppas över: loggprovningen skriver sin egen loggfil i stället för att läsa en som råkar finnas.
 
 Bevisprogrammen är femton program som skriver ut sitt svar, och tolv av dem avslutar med en exitkod så att en körning kan fällas maskinellt. Tillsammans täcker de verksamhetsreglerna: bokningar och arbetsordrar, utkast och validering, fakturor och betalningar, tal- och avrundningsregler, felhantering på båda språken, den gamla databasen, rollmatrisen, behörigheten, raderingen av en avbruten order och självkontrollen. De ligger i `src/test/java/com/wac/autocore/proof/`, alltså utanför jar-filen, och körs efter `mvn test-compile` med `target/test-classes` först i classpath:
 
@@ -92,6 +94,8 @@ java -cp "WigellAutoCore/autocore/target/test-classes:WigellAutoCore/autocore/ta
 
 Surefire hoppar över samma paket i `pom.xml`, eftersom `SelfTest` annars hade setts som ett JUnit-prov på namnet.
 
-Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit `b0ef2b9`, den sista som ändrade koden före Maven-bygget. Samma elva kördes på 4.0. Alla elva svarar lika, eller skiljer sig bara där indata gör det. `StatusRoutesProof` var den som avvek först, eftersom körningen gjordes efter stängning, och den är rättad i SCRUM-326.
+Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit [`b0ef2b9`](https://github.com/alexwest1981/AutoCore/commit/b0ef2b9), den sista som ändrade koden före Maven-bygget. Samma elva kördes på 4.0. Alla elva svarar lika, eller skiljer sig bara där indata gör det. `StatusRoutesProof` var den som avvek först, eftersom körningen gjordes efter stängning, och den är rättad i SCRUM-326.
+
+Båda sidornas utskrifter ligger i repot, i [bevis/baslinje-java8/](bevis/baslinje-java8/) och [bevis/utskrifter-4.0/](bevis/utskrifter-4.0/), tillsammans med tabellen och förklaringen i [bevis/regressionsjamforelse.md](bevis/regressionsjamforelse.md). Den som bara har repot kan alltså läsa varje rad som skiljer sig och se vilket prov den kom från. Argumenten per prov står i [bevis/baslinje-java8/README.txt](bevis/baslinje-java8/README.txt).
 
 Sviten körs vid varje ändring, och det var den som fångade att det fristående programmet bokade en dag som kunde vara stängd. Två saker hittades utanför den: den brutna `start.sh`, som föll först när någon startade den, och baslinjen som låg i `/tmp` och hade försvunnit när den skulle användas.

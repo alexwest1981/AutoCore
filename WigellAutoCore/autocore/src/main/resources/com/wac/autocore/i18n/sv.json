@@ -120,7 +120,9 @@
       "action_create": "+ Skapa faktura",
       "action_pay": "Betala vald faktura",
       "action_lines": "Detaljer",
-      "action_print": "Visa faktura"
+      "action_print": "Visa faktura",
+      "action_credit": "Kreditera vald faktura",
+      "action_company": "Företagsuppgifter"
     },
     "payments": {
       "title": "Betalningar",
@@ -216,14 +218,23 @@
       "description": "Beskrivning",
       "price": "Pris",
       "discount": "Rabatt",
-      "sum": "Summa"
+      "sum": "Summa",
+      "quantity": "Antal"
     },
     "subtotal": "Delsumma",
     "discount_total": "Rabatt",
     "vat": "Moms (25 %)",
     "total": "Att betala",
     "footer": "Tack för ditt förtroende!",
-    "footer_terms": "Betalningsvillkor: {0} dagar netto."
+    "footer_terms": "Betalningsvillkor: {0} dagar netto.",
+    "credit_title": "KREDITFAKTURA",
+    "credits": "Krediterar faktura",
+    "credit_reason": "Orsak",
+    "org_number": "Org.nr",
+    "vat_number": "Momsreg.nr",
+    "vat_base": "Momsunderlag",
+    "performed": "Utfört",
+    "quantity_piece": "{0} st"
   },
   "dialog": {
     "access": {
@@ -257,7 +268,13 @@
       "phone": "Telefonnummer",
       "name_prompt": "För- och efternamn",
       "phone_prompt": "070-1234567",
-      "email_prompt": "namn@exempel.se"
+      "email_prompt": "namn@exempel.se",
+      "address": "Gatuadress",
+      "postal_code": "Postnummer",
+      "city": "Ort",
+      "address_prompt": "Storgatan 1",
+      "postal_code_prompt": "512 00",
+      "city_prompt": "Svenljunga"
     },
     "vehicle": {
       "create": {
@@ -466,6 +483,7 @@
       "details_title": "Arbetsorderdetaljer",
       "historical_notice": "Visar debiterade priser som gällde när arbetet utfördes.",
       "no_actions": "Inga åtgärder kvar på den här ordern.",
+      "read_only": "Ditt konto får läsa ordern. Åtgärderna tillhör någon annan.",
       "cancel.title": "Avbryt arbetsorder",
       "cancel.header": "Bekräfta avbrytande",
       "cancel.confirm": "Är du säker på att du vill avbryta arbetsorder #{0}?",
@@ -521,6 +539,34 @@
     },
     "confirm": {
       "title": "Bekräfta"
+    },
+    "credit": {
+      "title": "Kreditera faktura",
+      "header": "Ta tillbaka en utfärdad faktura",
+      "invoice": "Faktura",
+      "reason": "Orsak till krediteringen",
+      "reason_prompt": "T.ex. fel pris, reklamation",
+      "confirmed": "Kreditfaktura {0} skapades och tar tillbaka {1}.",
+      "failed": "Kreditfakturan kunde inte skapas.",
+      "already": "Fakturan är redan krediterad.",
+      "not_credit_note": "En kreditfaktura kan inte krediteras."
+    },
+    "seller": {
+      "title": "Företagsuppgifter",
+      "header": "Uppgifterna som står på fakturan",
+      "name": "Företagsnamn",
+      "street": "Gatuadress",
+      "postal_code": "Postnummer",
+      "city": "Ort",
+      "phone": "Telefon",
+      "email": "E-post",
+      "org_number": "Organisationsnummer",
+      "vat_number": "Momsregistreringsnummer",
+      "payment_terms": "Betalningsvillkor (dagar)",
+      "note": "Uppgifterna här är påhittade för demon. Byt till företagets egna innan en faktura skickas.",
+      "invalid_terms": "Ange betalningsvillkor som ett heltal dagar, större än 0.",
+      "saved": "Företagsuppgifterna är sparade.",
+      "failed": "Företagsuppgifterna kunde inte sparas."
     }
   },
   "kanban": {

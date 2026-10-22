@@ -33,6 +33,24 @@ public class GuardedGarageSystem extends GarageSystem {
         this.identityHolder = identityHolder;
     }
 
+    /**
+     * The same rule the guard enforces, as a question. The window asks this before it draws a
+     * button, so a function the role cannot use is never offered.
+     */
+    @Override
+    public boolean may(Operation operation) {
+
+        return identityHolder.current()
+                .map(identity -> RoleMatrix.allows(identity.role(), operation))
+                .orElse(false);
+    }
+
+    @Override
+    public Identity identity() {
+
+        return identityHolder.current().orElse(null);
+    }
+
     private void require(Operation operation) {
 
         // A new operation starts here: every line it logs, down to the dialog that shows a
@@ -319,6 +337,30 @@ public class GuardedGarageSystem extends GarageSystem {
     }
 
     @Override
+    public Invoice createCreditInvoice(int invoiceId, String reason) {
+
+        require(Operation.CREATE_INVOICE);
+
+        return super.createCreditInvoice(invoiceId, reason);
+    }
+
+    @Override
+    public Seller seller() {
+
+        require(Operation.READ);
+
+        return super.seller();
+    }
+
+    @Override
+    public void saveSeller(Seller seller) {
+
+        require(Operation.CHANGE_SETTINGS);
+
+        super.saveSeller(seller);
+    }
+
+    @Override
     public Payment processPayment(int invoiceId, String paymentType) {
 
         require(Operation.TAKE_PAYMENT);
@@ -490,7 +532,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public List<Invoice> getInvoices() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.getInvoices();
     }
@@ -498,7 +540,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public List<Payment> getPayments() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.getPayments();
     }
@@ -618,7 +660,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public Invoice findInvoice(int id) {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.findInvoice(id);
     }
@@ -626,7 +668,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public Payment findPayment(int id) {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.findPayment(id);
     }
@@ -674,7 +716,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public List<Booking> getInvoiceableBookings() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.getInvoiceableBookings();
     }
@@ -740,7 +782,10 @@ public class GuardedGarageSystem extends GarageSystem {
 
         require(Operation.READ);
 
-        return super.canDeleteWorkOrder(workOrderId);
+        // The question is whether this person may remove this order, so the role is part of the
+        // answer. Without it the window drew a delete button for a staff member and the refusal
+        // only arrived after the press, which is the behaviour the team asked to be rid of.
+        return may(Operation.DELETE_WORK_ORDER) && super.canDeleteWorkOrder(workOrderId);
     }
 
     @Override
@@ -794,7 +839,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public void showInvoices() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         super.showInvoices();
     }
@@ -802,7 +847,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public void showPayments() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         super.showPayments();
     }

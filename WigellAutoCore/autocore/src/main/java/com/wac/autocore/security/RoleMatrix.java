@@ -18,23 +18,34 @@ public final class RoleMatrix {
 
     /**
      * The exceptions, written out: the only things a staff member may not do. Customers, vehicles
-     * and mechanics are removed by an administrator, settings are changed by one, and an order that
-     * was called off by mistake is removed by one.
+     * and mechanics are removed by an administrator, and settings are changed by one.
+     *
+     * The whole economy is here as well, and it is one item with two parts on purpose: an invoice is
+     * read, made and paid in the same place, so a role that may make one and not see it would be
+     * offered a door with nothing behind it. The order describes the staff's day as customers,
+     * vehicles and work orders, and puts invoicing outside it.
      */
     private static final Set<Operation> ADMIN_ONLY = Collections.unmodifiableSet(EnumSet.of(
             Operation.DELETE_CUSTOMER,
             Operation.DELETE_VEHICLE,
             Operation.DELETE_MECHANIC,
             Operation.DELETE_WORK_ORDER,
-            Operation.CHANGE_SETTINGS));
+            Operation.CHANGE_SETTINGS,
+            Operation.READ_FINANCE,
+            Operation.CREATE_INVOICE,
+            Operation.TAKE_PAYMENT));
 
     /**
-     * A read-only account reads everything and changes nothing, apart from choosing the language for
-     * its own window. That is a preference, not a change to the workshop's data.
+     * A read-only account reads the day's work and changes nothing, apart from choosing the language
+     * for its own window. That is a preference, not a change to the workshop's data.
+     *
+     * The economy is not in the row either, for the same reason it is not in the staff's: what the
+     * workshop charged and was paid is the administrator's to look at.
      */
     private static final Set<Operation> READING = Collections.unmodifiableSet(EnumSet.of(
             Operation.READ,
             Operation.CHANGE_LANGUAGE));
+
 
     /** One row per role. Built once; nothing may change it afterwards. */
     private static final Map<Role, Set<Operation>> ROWS = rows();
@@ -65,7 +76,7 @@ public final class RoleMatrix {
             if (allowed.size() == Operation.values().length) {
                 text.append("allt (").append(allowed.size()).append(" operationer)");
             } else if (allowed.equals(READING)) {
-                text.append("bara läsa och välja språk");
+                text.append("läsa dagens arbete och välja språk, inte ekonomin");
             } else {
                 EnumSet<Operation> refused = EnumSet.allOf(Operation.class);
                 refused.removeAll(allowed);

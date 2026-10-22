@@ -29,7 +29,7 @@ public final class AppShell {
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
         router = new PageRouter(garage, pageBox);
-        SidebarView sidebar = new SidebarView(router::navigate, onSignOut);
+        SidebarView sidebar = new SidebarView(router::navigate, onSignOut, garage);
         router.setSidebar(sidebar);
 
         BorderPane mainCol = new BorderPane();

@@ -14,6 +14,7 @@ import com.wac.autocore.exception.NotAuthenticatedException;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.security.Identity;
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.security.IdentityHolder;
 import com.wac.autocore.security.Role;
 
@@ -135,14 +136,41 @@ class AuthorizationTest {
     }
 
     @Test
-    void aReadOnlyAccountMayReadEverything() {
+    void aReadOnlyAccountMayReadTheDaysWork() {
         signIn("lasare", Role.READ_ONLY);
         GarageSystem garage = garage();
 
         assertFalse(garage.getCustomers().isEmpty());
         assertFalse(garage.getWorkOrders().isEmpty());
-        // No invoice in the seed, but the read must be allowed rather than refused.
+        assertDoesNotThrow(garage::getBookings);
+        assertDoesNotThrow(garage::getServiceItems);
+        assertDoesNotThrow(garage::getMechanics);
+    }
+
+    @Test
+    void aReadOnlyAccountMayNotLookAtTheEconomy() {
+        signIn("lasare", Role.READ_ONLY);
+        GarageSystem garage = garage();
+
+        // The team's decision: what the workshop charged and was paid is not for an account that
+        // is there to look things up. The refusal is the same kind as for a write, so the window
+        // can answer it the same way.
+        AccessDeniedException refused = assertThrows(AccessDeniedException.class, garage::getInvoices);
+
+        assertEquals("dialog.access.denied", refused.getMessageKey());
+        assertThrows(AccessDeniedException.class, garage::getPayments);
+        assertThrows(AccessDeniedException.class, () -> garage.findInvoice(1));
+        assertThrows(AccessDeniedException.class, () -> garage.findPayment(1));
+
+        // The staff member does not see it either: the economy is the administrator's, all of it.
+        signIn("verkstaden", Role.STAFF);
+        assertThrows(AccessDeniedException.class, garage::getInvoices);
+        assertThrows(AccessDeniedException.class,
+                () -> garage.createInvoice(1, null));
+
+        signIn("chefen", Role.ADMIN);
         assertDoesNotThrow(garage::getInvoices);
+        assertDoesNotThrow(garage::getPayments);
     }
 
     @Test
@@ -277,6 +305,65 @@ class AuthorizationTest {
                 () -> garage.deleteWorkOrder(1));
 
         assertEquals("dialog.access.denied", refused.getMessageKey());
+    }
+
+    @Test
+    void theWindowCanAskWhatTheGuardWouldAnswer() {
+        GarageSystem garage = garage();
+
+        // Before anyone is signed in nothing is allowed, so no button is drawn for a role that is
+        // not there. The window asks this before it builds a toolbar.
+        assertFalse(garage.may(Operation.READ));
+        assertFalse(garage.may(Operation.CREATE_BOOKING));
+
+        signIn("lasare", Role.READ_ONLY);
+
+        assertTrue(garage.may(Operation.READ));
+        assertTrue(garage.may(Operation.CHANGE_LANGUAGE));
+        assertFalse(garage.may(Operation.CREATE_BOOKING));
+        assertFalse(garage.may(Operation.CREATE_CUSTOMER));
+        assertFalse(garage.may(Operation.DELETE_WORK_ORDER));
+        // The work-order list offers "Detaljer" to whoever may read, so this account can open an
+        // order. Everything inside that dialog is a change, and none of it is drawn for it.
+        assertFalse(garage.may(Operation.UPDATE_WORK_ORDER));
+        assertFalse(garage.may(Operation.CHANGE_WORK_ORDER_STATUS));
+
+        signIn("verkstaden", Role.STAFF);
+
+        assertTrue(garage.may(Operation.CREATE_BOOKING));
+        assertTrue(garage.may(Operation.CREATE_WORK_ORDER));
+        assertFalse(garage.may(Operation.DELETE_WORK_ORDER));
+        assertFalse(garage.may(Operation.CHANGE_SETTINGS));
+        // The economy is the administrator's, so no finance button is drawn for a staff member.
+        assertFalse(garage.may(Operation.READ_FINANCE));
+        assertFalse(garage.may(Operation.CREATE_INVOICE));
+        assertFalse(garage.may(Operation.TAKE_PAYMENT));
+
+        signIn("chefen", Role.ADMIN);
+
+        assertTrue(garage.may(Operation.DELETE_WORK_ORDER));
+        assertTrue(garage.may(Operation.CHANGE_SETTINGS));
+        assertTrue(garage.may(Operation.READ_FINANCE));
+        assertTrue(garage.may(Operation.CREATE_INVOICE));
+        assertTrue(garage.may(Operation.TAKE_PAYMENT));
+    }
+
+    @Test
+    void aStaffMemberIsNotOfferedTheDeleteQuestionAtAll() {
+        GarageSystem garage = garage();
+
+        signIn("verkstaden", Role.STAFF);
+
+        // The question the details dialog asks before it draws the delete button. A staff member
+        // may call an order off but not remove the row, so the answer has to be no whatever the
+        // order's status is, otherwise the button is drawn and the refusal comes after the press.
+        assertFalse(garage.canDeleteWorkOrder(1), "personalen ska inte ens få frågan besvarad med ja");
+
+        signIn("chefen", Role.ADMIN);
+
+        // The same order, asked by an administrator: now the status decides, and order 1 exists in
+        // the seeded database, so an answer is given without a refusal.
+        assertDoesNotThrow(() -> garage.canDeleteWorkOrder(1));
     }
 
     @Test

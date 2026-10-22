@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.views;
 
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
@@ -7,6 +8,7 @@ import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.Actions;
 import com.wac.autocore.ui.motion.HoldToConfirmButton;
 import com.wac.autocore.ui.navigation.PageRouter;
 import javafx.scene.control.Button;
@@ -32,13 +34,17 @@ final class CustomerPage {
                         c -> c.isVip() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 
-        Button addButton = UiComponents.primaryButton(I18n.get("entity.customers.action_create"));
+        Button addButton = Actions.button(
+                UiComponents.primaryButton(I18n.get("entity.customers.action_create")), garage, Operation.CREATE_CUSTOMER);
         addButton.setOnAction(e -> ActionDialogs.showCreateCustomerDialog(garage, router::requestReload));
 
-        Button editButton = UiComponents.secondaryButton(I18n.get("entity.customers.action_edit"));
-        HoldToConfirmButton deleteButton = new HoldToConfirmButton(I18n.get("entity.customers.action_delete"))
-                .hint(I18n.get("motion.hold"))
-                .confirmText(I18n.get("motion.done"));
+        Button editButton = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.customers.action_edit")), garage, Operation.UPDATE_CUSTOMER);
+        HoldToConfirmButton deleteButton = Actions.hold(
+                new HoldToConfirmButton(I18n.get("entity.customers.action_delete"))
+                        .hint(I18n.get("motion.hold"))
+                        .confirmText(I18n.get("motion.done")),
+                garage, Operation.DELETE_CUSTOMER);
         editButton.setDisable(true);
         deleteButton.setDisable(true);
 
