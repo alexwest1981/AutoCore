@@ -9,6 +9,7 @@ import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Mechanic;
+import com.wac.autocore.model.OpeningHours;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
@@ -24,6 +25,12 @@ import com.wac.autocore.ui.i18n.I18n;
  * Two of the garage's operations from a plain Java program, without Spring.
  */
 public final class StandaloneWorkOrders {
+
+    /** Far enough ahead that the seeded bookings cannot hold the mechanic at that time. */
+    private static final int DAYS_AHEAD = 30;
+
+    /** How many open days the program is willing to walk through before it gives up. */
+    private static final int OPEN_DAYS_TO_TRY = 30;
 
     public static void main(String[] args) {
 
@@ -59,28 +66,16 @@ public final class StandaloneWorkOrders {
         Customer customer = customerNamed(garage, "Fristående Kund");
         Vehicle vehicle = vehicleOf(garage, customer, "STD 001");
 
-        // Far enough ahead that the seeded bookings cannot hold the mechanic at that time. The
-        // workshop is closed on some of those days, and then the booking is refused, so the program
-        // walks on to the first day that takes it. Each run takes the next free hour on that day, so
-        // it can run again on the same file.
-        Booking booking = null;
-        for (int daysAhead = 30; daysAhead < 60 && booking == null; daysAhead++) {
-
-            LocalDate day = LocalDate.now().plusDays(daysAhead);
-            LocalTime start = LocalTime.of(8, 0).plusHours(hoursBooked(garage, vehicle.getId(), day));
-
-            try {
-                booking = garage.createBooking(vehicle.getId(), day,
-                        "Fristående körning", start, mechanic.getId(), service.getId());
-            } catch (RuleViolationException closedOrFull) {
-                // A closed day, or a day with no free hour left. The next one gets the same try.
-            }
-        }
+        // Far enough ahead that the seeded bookings cannot hold the mechanic at that time.
+        Booking booking = bookOnFirstOpenDay(garage, vehicle.getId(), mechanic, service,
+                LocalDate.now().plusDays(DAYS_AHEAD));
 
         if (booking == null) {
             System.out.println("Ingen ledig dag hittades för en bokning.");
             return;
         }
+
+        System.out.println("Bokade " + booking.getDate() + " klockan " + booking.getStartTime() + ".");
 
         WorkOrder order = garage.createWorkOrder(booking.getId(), mechanic.getId());
 
@@ -98,6 +93,46 @@ public final class StandaloneWorkOrders {
         System.out.println("Skapade arbetsorder " + order.getId() + " för bokning " + booking.getId() + ".");
         System.out.println("Slutförde samma order, status är nu " + finished.getStatus() + ".");
         System.out.println("STANDALONE_OK");
+    }
+
+    /**
+     * The first booking from {@code firstTry} onwards that lands on a day the workshop has open, or
+     * null when {@link #OPEN_DAYS_TO_TRY} open days are all full. The day is chosen from
+     * {@link OpeningHours} before the service is asked, so a closed day is never handed over and
+     * never answered with a refusal. Each run takes the next free hour on the day, so the program
+     * can run again on the same file.
+     */
+    static Booking bookOnFirstOpenDay(GarageSystem garage, int vehicleId, Mechanic mechanic,
+                                      ServiceItem service, LocalDate firstTry) {
+
+        LocalDate day = firstOpenDayOnOrAfter(firstTry);
+
+        for (int tried = 0; tried < OPEN_DAYS_TO_TRY; tried++) {
+
+            LocalTime start = LocalTime.of(8, 0).plusHours(hoursBooked(garage, vehicleId, day));
+
+            try {
+                return garage.createBooking(vehicleId, day, "Fristående körning", start,
+                        mechanic.getId(), service.getId());
+            } catch (RuleViolationException full) {
+                // The day is open but has no hour left for the job. The next open day gets the try.
+                day = firstOpenDayOnOrAfter(day.plusDays(1));
+            }
+        }
+
+        return null;
+    }
+
+    /** The day itself when it is a weekday, otherwise the Monday that follows it. */
+    static LocalDate firstOpenDayOnOrAfter(LocalDate day) {
+
+        LocalDate candidate = day;
+
+        while (!OpeningHours.isOpenOn(candidate)) {
+            candidate = candidate.plusDays(1);
+        }
+
+        return candidate;
     }
 
     private static Mechanic firstAvailableMechanic(GarageSystem garage) {
