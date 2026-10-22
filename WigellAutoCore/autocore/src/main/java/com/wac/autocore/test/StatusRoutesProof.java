@@ -70,18 +70,16 @@ public final class StatusRoutesProof {
 
         roads.put("bokning", fromBooking(garage, vehicleId, mechanic, service, day, LocalTime.of(10, 0)));
 
-        // A drop-in takes the current hour today: none after closing, and none at all on a weekend.
-        Booking dropIn = null;
-        try {
-            dropIn = garage.createDropInBooking(vehicleId, Arrays.asList(service), Arrays.asList(mechanic));
-        } catch (RuleViolationException closedToday) {
-            // Same answer as no free hour: this road is not tried in this run.
-        }
-        if (dropIn != null) {
+        // A drop-in happens the day it happens, so the proof hands it the same fixed weekday the other
+        // roads use and asks from eight. It used to take the current hour today, which meant the road
+        // disappeared from this run after closing and on weekends.
+        Booking dropIn = garage.createDropInBooking(vehicleId, Arrays.asList(service), Arrays.asList(mechanic),
+                day, LocalTime.of(8, 0));
+        if (dropIn == null) {
+            System.out.println("drop-in: ingen ledig tid på " + day + ", vägen prövas inte i den här körningen");
+        } else {
             roads.put("drop-in", garage.createWorkOrder(dropIn.getId(), mechanic.getId(),
                     Arrays.asList(service.getId())));
-        } else {
-            System.out.println("drop-in: ingen ledig tid kvar i dag, vägen prövas inte i den här körningen");
         }
 
         roads.put("reklamation", garage.createReclamation(original.getId(), "Reklamation i provet"));
@@ -99,7 +97,8 @@ public final class StatusRoutesProof {
         roads.put("utkast", draft);
 
 
-        System.out.println("Samma statusbyten på de fyra vägarna");
+        // The number is counted, so the heading says what was tried and not what was meant.
+        System.out.println("Samma statusbyten på " + roads.size() + " vägar: " + roads.keySet());
         System.out.println();
 
         List<String> first = null;
@@ -125,7 +124,8 @@ public final class StatusRoutesProof {
         boolean clean = refusalsLeaveNothing(garage, vehicleId, mechanic, service, day);
         System.out.println("ett nej lämnar inget efter sig: " + clean);
 
-        System.exit(same && clean ? 0 : 1);
+        System.out.println("alla fyra vägarna prövades: " + (roads.size() == 4));
+        System.exit(same && clean && roads.size() == 4 ? 0 : 1);
     }
 
     /** A booking with a time, and the work order made from it — the way the booking dialog does it. */

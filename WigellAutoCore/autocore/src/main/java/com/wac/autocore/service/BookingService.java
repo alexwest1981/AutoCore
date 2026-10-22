@@ -69,6 +69,16 @@ public class BookingService {
     // Drop-in: the customer is standing in the shop with no booked time. The services go in as
     // objects, because WorkOrderPlan hands them out mechanic by mechanic when the orders are made.
     public Booking createDropInBooking(int vehicleId, List<ServiceItem> services, List<Mechanic> team) {
+        return createDropInBooking(vehicleId, services, team, LocalDate.now(), LocalTime.now());
+    }
+
+    /**
+     * The same drop-in, on a day and from an hour the caller decides. The window runs with the first
+     * and asks the clock; a proof runs with the second, so its answer is the same at nine in the
+     * morning as at midnight.
+     */
+    public Booking createDropInBooking(int vehicleId, List<ServiceItem> services, List<Mechanic> team,
+                                       LocalDate date, LocalTime from) {
 
         Vehicle vehicle = findVehicle(vehicleId);
         if (vehicle == null) {
@@ -81,9 +91,7 @@ public class BookingService {
 
         List<Integer> mechanicIds = mechanicIdsOf(team);
 
-        LocalDate date = LocalDate.now();
-
-        // The shop is closed on weekends, and a drop-in happens today, whatever day that is.
+        // The shop is closed on weekends, and a drop-in happens the day it happens.
         if (!OpeningHours.isOpenOn(date)) {
             throw new RuleViolationException("Drop-in on a closed day: " + date,
                     "dialog.booking.date_weekend");
@@ -95,7 +103,7 @@ public class BookingService {
 
         // A drop-in happens when the customer walks in, so the booking starts from the current hour.
         // If that one is taken the team gets the next free one, otherwise two customers collide.
-        LocalTime startTime = firstFreeHourForTeam(date, mechanicIds);
+        LocalTime startTime = firstFreeHourForTeam(date, mechanicIds, from);
         if (startTime == null) {
             return null;
         }
@@ -120,7 +128,7 @@ public class BookingService {
         if (services == null || services.isEmpty() || team == null || team.isEmpty()) {
             return null;
         }
-        return firstFreeHourForTeam(LocalDate.now(), mechanicIdsOf(team));
+        return firstFreeHourForTeam(LocalDate.now(), mechanicIdsOf(team), LocalTime.now());
     }
 
     private List<Integer> mechanicIdsOf(List<Mechanic> team) {
@@ -133,7 +141,7 @@ public class BookingService {
 
     // The first hour today where the whole team is free, counted from the current hour, or null when
     // the day is full. Everyone in the team has to be free, otherwise one mechanic holds two jobs at once.
-    private LocalTime firstFreeHourForTeam(LocalDate date, List<Integer> mechanicIds) {
+    private LocalTime firstFreeHourForTeam(LocalDate date, List<Integer> mechanicIds, LocalTime notBefore) {
         List<Booking> bookedToday = new ArrayList<Booking>();
         for (Booking booking : getAll()) {
             if (date.equals(booking.getDate()) && booking.getStartTime() != null
@@ -143,7 +151,7 @@ public class BookingService {
         }
 
         // The working day lives in OpeningHours, the same hours the Kanban draws.
-        int fromHour = Math.max(LocalTime.now().getHour(), OpeningHours.firstHour());
+        int fromHour = Math.max(notBefore.getHour(), OpeningHours.firstHour());
         for (int hour = fromHour; hour < OpeningHours.closingHour(); hour++) {
             if (isHourFree(bookedToday, mechanicIds, hour)) {
                 return LocalTime.of(hour, 0);

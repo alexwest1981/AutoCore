@@ -440,6 +440,18 @@ public class GarageSystem implements WorkOrderGateway {
         return booking;
     }
 
+    /**
+     * The same drop-in on a day and from an hour the caller decides. The window always uses the one
+     * above, which reads the clock; a proof uses this one so its answer does not depend on when it
+     * is run.
+     */
+    public Booking createDropInBooking(int vehicleId, java.util.List<ServiceItem> services,
+                                       java.util.List<Mechanic> mechanics, LocalDate day, LocalTime from) {
+        Booking booking = bookingService.createDropInBooking(vehicleId, services, mechanics, day, from);
+        changed();
+        return booking;
+    }
+
     /** The time a drop-in would get right now, or null when the team's hours are out for the day. */
     public LocalTime dropInStartTime(java.util.List<ServiceItem> services,
                                      java.util.List<Mechanic> mechanics) {
