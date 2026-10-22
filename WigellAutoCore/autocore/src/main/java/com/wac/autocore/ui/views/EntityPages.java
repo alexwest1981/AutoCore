@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.views;
 
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.model.*;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
@@ -7,6 +8,7 @@ import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.Actions;
 import com.wac.autocore.ui.motion.HoldToConfirmButton;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.util.EntityLookup;
@@ -54,11 +56,14 @@ public final class EntityPages {
                 TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
-        Button addBtn = UiComponents.primaryButton(I18n.get("entity.bookings.action_create"));
+        Button addBtn = Actions.button(
+                UiComponents.primaryButton(I18n.get("entity.bookings.action_create")), garage, Operation.CREATE_BOOKING);
         addBtn.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, router::requestReload));
 
-        Button cancelBtn = UiComponents.secondaryButton(I18n.get("entity.bookings.action_cancel"));
-        Button editBtn = UiComponents.secondaryButton(I18n.get("entity.bookings.action_edit"));
+        Button cancelBtn = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.bookings.action_cancel")), garage, Operation.CANCEL_BOOKING);
+        Button editBtn = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.bookings.action_edit")), garage, Operation.UPDATE_BOOKING);
         HoldToConfirmButton deleteBtn = new HoldToConfirmButton(I18n.get("entity.bookings.action_delete"))
                 .hint(I18n.get("motion.hold"))
                 .confirmText(I18n.get("motion.done"));
@@ -129,13 +134,16 @@ public final class EntityPages {
                 TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
         router.setActiveTable(table);
 
-        Button addBtn = UiComponents.primaryButton(I18n.get("entity.workorders.action_create"));
+        Button addBtn = Actions.button(
+                UiComponents.primaryButton(I18n.get("entity.workorders.action_create")), garage, Operation.CREATE_WORK_ORDER);
         addBtn.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, router::requestReload));
 
-        Button draftBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_draft"));
+        Button draftBtn = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.workorders.action_draft")), garage, Operation.CREATE_WORK_ORDER);
         draftBtn.setOnAction(e -> ActionDialogs.showCreateDraftDialog(garage, router::requestReload));
 
-        Button detailsBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_details"));
+        Button detailsBtn = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.workorders.action_details")), garage, Operation.UPDATE_WORK_ORDER);
         detailsBtn.setDisable(true);
         detailsBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();
@@ -217,10 +225,12 @@ public final class EntityPages {
                 TableFactory.sizeBadge(I18n.get("table.col.paid"), TableFactory.W_FLAG, c -> c.isPaid() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 
-        Button addBtn = UiComponents.primaryButton(I18n.get("entity.invoices.action_create"));
+        Button addBtn = Actions.button(
+                UiComponents.primaryButton(I18n.get("entity.invoices.action_create")), garage, Operation.CREATE_INVOICE);
         addBtn.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, router::requestReload));
 
-        Button payBtn = UiComponents.secondaryButton(I18n.get("entity.invoices.action_pay"));
+        Button payBtn = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.invoices.action_pay")), garage, Operation.TAKE_PAYMENT);
         payBtn.setDisable(true);
 
         Button linesBtn = UiComponents.secondaryButton(I18n.get("entity.invoices.action_lines"));
@@ -290,7 +300,8 @@ public final class EntityPages {
                 TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> c.isSuccessful() ? I18n.get("status.successful") : I18n.get("status.failed")));
         router.setActiveTable(table);
 
-        Button addBtn = UiComponents.primaryButton(I18n.get("entity.payments.action_create"));
+        Button addBtn = Actions.button(
+                UiComponents.primaryButton(I18n.get("entity.payments.action_create")), garage, Operation.TAKE_PAYMENT);
         addBtn.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, router::requestReload));
 
         return UiComponents.buildEntityPage(

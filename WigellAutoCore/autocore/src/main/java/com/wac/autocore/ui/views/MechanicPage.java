@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.views;
 
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.service.GarageSystem;
@@ -8,6 +9,7 @@ import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.Actions;
 import com.wac.autocore.ui.navigation.PageRouter;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableRow;
@@ -32,10 +34,13 @@ final class MechanicPage {
                         c -> c.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);
 
-        Button addButton = UiComponents.primaryButton(I18n.get("entity.mechanics.action_create"));
+        Button addButton = Actions.button(
+                UiComponents.primaryButton(I18n.get("entity.mechanics.action_create")), garage, Operation.CREATE_MECHANIC);
         addButton.setOnAction(e -> ActionDialogs.showCreateMechanicDialog(garage, router::requestReload));
-        Button editButton = UiComponents.secondaryButton(I18n.get("entity.mechanics.action_edit"));
-        Button deleteButton = UiComponents.secondaryButton(I18n.get("entity.mechanics.action_delete"));
+        Button editButton = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.mechanics.action_edit")), garage, Operation.UPDATE_MECHANIC);
+        Button deleteButton = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.mechanics.action_delete")), garage, Operation.DELETE_MECHANIC);
         editButton.setDisable(true);
         deleteButton.setDisable(true);
 

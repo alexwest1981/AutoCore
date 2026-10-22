@@ -79,8 +79,13 @@ class KanbanDayView {
             Region spr = new Region();
             HBox.setHgrow(spr, Priority.ALWAYS);
 
+            // A free hour is drawn with a plus, which books it. A role that may not book gets the
+            // hour with no plus, so an empty slot looks empty instead of offering something that
+            // would only end in a refusal.
             Button bookBtn = new Button();
             bookBtn.getStyleClass().addAll("primary", "kanban-slot-plus-btn");
+            com.wac.autocore.ui.util.Actions.button(bookBtn, card.garage,
+                    com.wac.autocore.security.Operation.CREATE_BOOKING);
 
             javafx.scene.shape.SVGPath plusIcon = new javafx.scene.shape.SVGPath();
             plusIcon.setContent("M 4 0 H 6 V 4 H 10 V 6 H 6 V 10 H 4 V 6 H 0 V 4 H 4 Z");

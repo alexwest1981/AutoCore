@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.views;
 
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
@@ -7,6 +8,7 @@ import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.Actions;
 import com.wac.autocore.ui.navigation.PageRouter;
 import com.wac.autocore.ui.util.EntityLookup;
 import javafx.scene.control.Button;
@@ -33,11 +35,14 @@ final class VehiclePage {
                         c -> EntityLookup.customerName(garage, c.getCustomerId())));
         router.setActiveTable(table);
 
-        Button addButton = UiComponents.primaryButton(I18n.get("entity.vehicles.action_create"));
+        Button addButton = Actions.button(
+                UiComponents.primaryButton(I18n.get("entity.vehicles.action_create")), garage, Operation.CREATE_VEHICLE);
         addButton.setOnAction(e -> ActionDialogs.showCreateVehicleDialog(garage, router::requestReload));
 
-        Button editButton = UiComponents.secondaryButton(I18n.get("entity.vehicles.action_edit"));
-        Button deleteButton = UiComponents.secondaryButton(I18n.get("entity.vehicles.action_delete"));
+        Button editButton = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.vehicles.action_edit")), garage, Operation.UPDATE_VEHICLE);
+        Button deleteButton = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.vehicles.action_delete")), garage, Operation.DELETE_VEHICLE);
         editButton.setDisable(true);
         deleteButton.setDisable(true);
 
