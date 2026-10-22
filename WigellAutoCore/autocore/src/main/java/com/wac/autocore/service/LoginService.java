@@ -8,6 +8,9 @@ import com.wac.autocore.security.Role;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Signing in: a name and a password become an identity, or nothing at all.
  *
@@ -17,6 +20,8 @@ import java.util.Optional;
 public class LoginService {
 
     private final UserRepository users;
+
+    private static final Logger log = LoggerFactory.getLogger(LoginService.class);
 
     public LoginService(UserRepository users) {
         this.users = users;
@@ -28,12 +33,15 @@ public class LoginService {
      * is a fault to fix, not a person to keep out.
      */
     public Optional<Identity> signIn(String username, String password) {
+
         if (password == null || password.isEmpty()) {
             return Optional.empty();
         }
 
         Optional<UserRow> row = users.findByUsername(username);
+
         if (row.isEmpty() || !PasswordHash.matches(password, row.get().passwordHash())) {
+            log.warn("Inloggning nekad för {}", username);
             return Optional.empty();
         }
 
@@ -43,6 +51,9 @@ public class LoginService {
             users.savePasswordHash(row.get().username(), PasswordHash.hash(password));
         }
 
-        return Optional.of(new Identity(row.get().username(), Role.fromText(row.get().role())));
+        Identity identity = new Identity(row.get().username(), Role.fromText(row.get().role()));
+        log.info("Inloggning: {} ({})", identity.username(), identity.role());
+
+        return Optional.of(identity);
     }
 }
