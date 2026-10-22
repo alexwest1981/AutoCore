@@ -408,15 +408,6 @@
       "name_prompt": "T.ex. Anders Svensson",
       "phone_prompt": "070-1234567"
     },
-    "slot": {
-      "header": "Bokningsdetaljer: {0}",
-      "time_date": "Tid & datum:",
-      "booked_status": "Bokad tid (ej påbörjad)",
-      "open_order": "Öppna i arbetsordrar",
-      "create_order": "Skapa & öppna arbetsorder",
-      "estimated_time": "Beräknad arbetstid:",
-      "estimated_cost": "Beräknat pris:"
-    },
     "draft": {
       "title": "Nytt utkast",
       "header": "Registrera jobbet innan tiden är bokad",
@@ -462,7 +453,6 @@
       "partial_failed": "Bara {0} av {1} arbetsordrar skapades. Mekaniker som inte var tillgängliga blev utan arbetsorder.",
       "mark_performed_title": "Markera utförda arbeten",
       "mark_performed_header": "Vilka arbeten är utförda?",
-      "details_header": "Detaljer för arbetsorder #{0}",
       "details_title": "Arbetsorderdetaljer",
       "historical_notice": "Visar debiterade priser som gällde när arbetet utfördes.",
       "no_actions": "Inga åtgärder kvar på den här ordern.",
@@ -474,7 +464,6 @@
       "delete.header": "Bekräfta borttagning",
       "delete.confirm": "Är du säker på att du vill ta bort arbetsorder #{0}? Ordern och dess tjänsterader försvinner.",
       "delete.has_history": "Bara en avbruten order som varken har faktura eller reklamation går att ta bort.",
-      "open_in_orders": "Öppna i arbetsordrar",
       "reclamations_title": "Reklamationer på denna order",
       "no_reclamations": "Inga reklamationer"
     },

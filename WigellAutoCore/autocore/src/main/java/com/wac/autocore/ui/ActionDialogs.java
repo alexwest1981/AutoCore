@@ -8,10 +8,8 @@ import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
-import com.wac.autocore.model.TimeSlot;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
-import com.wac.autocore.ui.navigation.PageRouter;
 
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -329,17 +327,5 @@ public final class ActionDialogs {
 
     public static void showDeleteServiceItemConfirmation(GarageSystem garage, ServiceItem serviceItem, Runnable onSuccess) {
         ServiceItemDialogs.showDeleteServiceItemConfirmation(garage, serviceItem, onSuccess);
-    }
-
-    public static void showSlotDetailsDialog(GarageSystem garage,
-                                             TimeSlot slot,
-                                             PageRouter router,
-                                             Runnable onRefresh) {
-        SlotDetailsDialog.showSlotDetailsDialog(garage, slot, router, onRefresh);
-    }
-
-    public static void showWorkOrderDetailsDialog(GarageSystem garage, int workOrderId,
-                                                  PageRouter router, Runnable onRefresh) {
-        SlotDetailsDialog.showWorkOrderDetailsDialog(garage, workOrderId, router, onRefresh);
     }
 }
