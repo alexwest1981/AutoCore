@@ -44,6 +44,16 @@ Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder a
 
 Körningen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv, eftersom JavaFX annars kraschar i GTK.
 
+### Fristående program
+
+Det fristående programmet startas utanför Maven, och då behöver JDK 25 veta att SQLite får använda inbyggd kod. Utan flaggan kommer `WARNING: Restricted methods will be blocked in a future release`:
+
+```
+java --enable-native-access=ALL-UNNAMED -cp "WigellAutoCore/autocore/target/classes:$(cat WigellAutoCore/autocore/target/cp.txt)" com.wac.autocore.standalone.StandaloneWorkOrders /tmp/fristaende.db
+```
+
+Jar-filen behöver ingen flagga. Raden `Enable-Native-Access: ALL-UNNAMED` står i manifestet genom `maven-jar-plugin` i `pom.xml`, så `java -jar WigellAutoCore/autocore/target/autocore-4.0.0.jar` startar utan varning.
+
 ### Var databasen ligger
 
 Sökvägen är en inställning och inte kod. Den står som `autocore.db.path` i `src/main/resources/application.properties` och kan skrivas över vid körning:
