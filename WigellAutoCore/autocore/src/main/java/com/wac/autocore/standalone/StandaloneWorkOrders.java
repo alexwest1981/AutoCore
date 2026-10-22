@@ -3,6 +3,8 @@ package com.wac.autocore.standalone;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.exception.RuleViolationException;
@@ -20,11 +22,15 @@ import com.wac.autocore.security.Role;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.GuardedGarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Two of the garage's operations from a plain Java program, without Spring.
  */
 public final class StandaloneWorkOrders {
+
+    private static final Logger log = LoggerFactory.getLogger(StandaloneWorkOrders.class);
 
     /** Far enough ahead that the seeded bookings cannot hold the mechanic at that time. */
     private static final int DAYS_AHEAD = 30;
@@ -34,10 +40,13 @@ public final class StandaloneWorkOrders {
 
     public static void main(String[] args) {
 
+        configureLogging();
+
         try {
             run(args);
 
         } catch (AppException refused) {
+            log.warn("Avbruten: {}", refused.getMessageKey());
             System.out.println("NEKAD: " + I18n.get(refused.getMessageKey()));
         }
     }
@@ -185,5 +194,21 @@ public final class StandaloneWorkOrders {
         }
 
         return hours;
+    }
+
+    /** Loads the standalone logging setup, since Spring is not here to read logback-spring.xml. */
+    private static void configureLogging() {
+
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(context);
+        context.reset();
+
+        try {
+            configurator.doConfigure(StandaloneWorkOrders.class.getResource("/logback-standalone.xml"));
+
+        } catch (Exception cannotRead) {
+            System.out.println("Kunde inte läsa logginställningen: " + cannotRead.getMessage());
+        }
     }
 }
