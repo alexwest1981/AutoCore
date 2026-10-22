@@ -135,6 +135,11 @@ public class GarageSystem implements WorkOrderGateway {
         return workOrderService.getAll();
     }
 
+    /** True if the booking still has a service no active work order has taken. */
+    public boolean hasServicesLeftForAWorkOrder(int bookingId) {
+        return workOrderService.hasServicesLeft(bookingId);
+    }
+
     public List<Invoice> getInvoices() {
         return billingService.getAll();
     }

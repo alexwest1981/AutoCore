@@ -4,6 +4,7 @@ import com.wac.autocore.exception.AppException;
 import com.wac.autocore.model.*;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
+import com.wac.autocore.ui.WorkOrderPlan;
 import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.views.EntityPages;
 import com.wac.autocore.ui.views.OverviewView;
@@ -217,8 +218,7 @@ public class PageRouter {
         if (sidebar == null) {
             return;
         }
-        sidebar.setNavCount("workorders",
-                countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()));
+        sidebar.setNavCount("workorders", countBookingsWaitingForWorkOrder(garage));
         sidebar.setNavCount("bookings", 0);
         sidebar.setNavCount("invoices",
                 countBookingsReadyForInvoice(garage.getBookings(), garage.getWorkOrders(),
@@ -256,21 +256,11 @@ public class PageRouter {
         return count;
     }
 
-    /** Bookings without a work order. Cancelled ones do not count. */
-    public static int countBookingsWithoutWorkOrder(List<Booking> bookings, List<WorkOrder> orders) {
+    /** Bookings that can get a work order now, by the same rule the create dialog lists them. */
+    public static int countBookingsWaitingForWorkOrder(GarageSystem garage) {
         int count = 0;
-        for (Booking booking : bookings) {
-            if (booking.getStatus() == BookingStatus.CANCELLED) {
-                continue;
-            }
-            boolean hasOrder = false;
-            for (WorkOrder order : orders) {
-                if (order.getBookingId() == booking.getId()) {
-                    hasOrder = true;
-                    break;
-                }
-            }
-            if (!hasOrder) {
+        for (Booking booking : garage.getBookings()) {
+            if (WorkOrderPlan.waitsForAWorkOrder(garage, booking)) {
                 count++;
             }
         }
