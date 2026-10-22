@@ -45,6 +45,12 @@ public class GuardedGarageSystem extends GarageSystem {
                 .orElse(false);
     }
 
+    @Override
+    public Identity identity() {
+
+        return identityHolder.current().orElse(null);
+    }
+
     private void require(Operation operation) {
 
         // A new operation starts here: every line it logs, down to the dialog that shows a
@@ -502,7 +508,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public List<Invoice> getInvoices() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.getInvoices();
     }
@@ -510,7 +516,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public List<Payment> getPayments() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.getPayments();
     }
@@ -622,7 +628,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public Invoice findInvoice(int id) {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.findInvoice(id);
     }
@@ -630,7 +636,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public Payment findPayment(int id) {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.findPayment(id);
     }
@@ -678,7 +684,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public List<Booking> getInvoiceableBookings() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         return super.getInvoiceableBookings();
     }
@@ -801,7 +807,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public void showInvoices() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         super.showInvoices();
     }
@@ -809,7 +815,7 @@ public class GuardedGarageSystem extends GarageSystem {
     @Override
     public void showPayments() {
 
-        require(Operation.READ);
+        require(Operation.READ_FINANCE);
 
         super.showPayments();
     }

@@ -6,6 +6,7 @@ import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.data.Settings;
 import com.wac.autocore.model.*;
+import com.wac.autocore.security.Identity;
 import com.wac.autocore.security.Operation;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
@@ -67,6 +68,14 @@ public class GarageSystem implements WorkOrderGateway {
      */
     public boolean may(Operation operation) {
         return true;
+    }
+
+    /**
+     * Who is using the service, or null when nobody is. The window uses it for the log line when an
+     * action is stopped before it reaches the service; the guard answers with the signed-in person.
+     */
+    public Identity identity() {
+        return null;
     }
 
     public GarageSystem(RepositoryFactory repositories, Printer printer) {
