@@ -90,7 +90,7 @@ class KanbanMonthView {
             card.renderBody();
         });
 
-        Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
+        Locale locale = I18n.isSwedish() ? Locale.of("sv", "SE") : Locale.ENGLISH;
         String monthName = ym.getMonth().getDisplayName(TextStyle.SHORT, locale).toUpperCase(locale);
         Label monthTitle = new Label(monthName + " " + ym.getYear());
         monthTitle.getStyleClass().add("kanban-date-title-compact");

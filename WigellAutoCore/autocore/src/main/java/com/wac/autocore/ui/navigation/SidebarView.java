@@ -138,9 +138,7 @@ public class SidebarView {
             countLabel.setVisible(false);
             return;
         }
-        String next = "+" + count;
-        boolean changed = !next.equals(countLabel.getText());
-        countLabel.setText(next);
+        countLabel.setText("+" + count);
         countLabel.setVisible(true);
     }
 

@@ -143,7 +143,7 @@ class KanbanDayView {
             card.renderBody();
         });
 
-        Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
+        Locale locale = I18n.isSwedish() ? Locale.of("sv", "SE") : Locale.ENGLISH;
         // The full weekday name in the day view's heading. The short form ("LÖ 3 okt") looked
         // cut off above the rows, and the heading has room for the whole name.
         String dayName = card.selectedDate.getDayOfWeek().getDisplayName(TextStyle.FULL, locale);

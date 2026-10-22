@@ -78,7 +78,7 @@ public class InvoiceRepository {
                 + "credit_reason, amount, discount, total_amount, paid) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        int id = queries.insert(connection, sql, statement -> {
+        int id = Queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setString(3, number);
@@ -124,7 +124,7 @@ public class InvoiceRepository {
 
     /** The only change an issued invoice allows. Everything else about it is history. */
     private void markPaid(Connection connection, Invoice invoice) throws SQLException {
-        queries.write(connection, "UPDATE invoices SET paid = ? WHERE id = ?", statement -> {
+        Queries.write(connection, "UPDATE invoices SET paid = ? WHERE id = ?", statement -> {
             statement.setBoolean(1, invoice.isPaid());
             statement.setInt(2, invoice.getId());
         });

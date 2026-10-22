@@ -64,9 +64,9 @@ public class WorkOrderRepository {
         new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
-                queries.write(connection, "DELETE FROM work_order_service_items WHERE work_order_id = ?",
+                Queries.write(connection, "DELETE FROM work_order_service_items WHERE work_order_id = ?",
                         statement -> statement.setInt(1, id));
-                queries.write(connection, "DELETE FROM work_orders WHERE id = ?",
+                Queries.write(connection, "DELETE FROM work_orders WHERE id = ?",
                         statement -> statement.setInt(1, id));
                 return null;
             }
@@ -79,7 +79,7 @@ public class WorkOrderRepository {
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
-        int id = queries.insert(connection, sql, statement -> {
+        int id = Queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus().name());
@@ -103,7 +103,7 @@ public class WorkOrderRepository {
                 + "description = ?, original_work_order_id = ?, planned_date = ?, planned_time = ?, "
                 + "customer_instructions = ?, other_comments = ? WHERE id = ?";
 
-        queries.write(connection, sql, statement -> {
+        Queries.write(connection, sql, statement -> {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus().name());

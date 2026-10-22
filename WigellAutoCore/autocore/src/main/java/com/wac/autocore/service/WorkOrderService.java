@@ -13,8 +13,6 @@ import com.wac.autocore.repository.VehicleRepository;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

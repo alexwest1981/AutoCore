@@ -113,7 +113,8 @@ public class GuardedGarageSystem extends GarageSystem {
 
         super.deleteWorkOrder(workOrderId);
 
-        String who = identityHolder.current().map(Identity::username).orElse("okänd");
+        java.util.Optional<Identity> current = identityHolder.current();
+        String who = current.isPresent() ? current.get().username() : "okänd";
         log.info("Arbetsorder {} borttagen av {}", workOrderId, who);
     }
 

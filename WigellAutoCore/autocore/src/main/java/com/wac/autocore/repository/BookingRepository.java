@@ -76,7 +76,7 @@ public class BookingRepository {
             protected Void step(Connection connection) throws SQLException {
                 bookingServiceItemRepository.deleteByBookingId(connection, id);
                 bookingMechanicRepository.deleteByBookingId(connection, id);
-                queries.write(connection, "DELETE FROM bookings WHERE id = ?",
+                Queries.write(connection, "DELETE FROM bookings WHERE id = ?",
                         statement -> statement.setInt(1, id));
                 return null;
             }
@@ -87,7 +87,7 @@ public class BookingRepository {
         String sql = "INSERT INTO bookings (vehicle_id, date, description, status, start_time, "
                 + "end_time, mechanic_id, service_item_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        int id = queries.insert(connection, sql, statement -> {
+        int id = Queries.insert(connection, sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
@@ -107,7 +107,7 @@ public class BookingRepository {
         String sql = "UPDATE bookings SET vehicle_id = ?, date = ?, description = ?, status = ?, "
                 + "start_time = ?, end_time = ?, mechanic_id = ?, service_item_id = ? WHERE id = ?";
 
-        queries.write(connection, sql, statement -> {
+        Queries.write(connection, sql, statement -> {
             statement.setInt(1, booking.getVehicleId());
             setDate(statement, 2, booking.getDate());
             statement.setString(3, booking.getDescription());
