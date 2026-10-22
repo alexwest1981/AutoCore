@@ -1,15 +1,15 @@
 /* 15. WCAG 2.1: focus marking and contrast. */
+/* The ring is a colour and a halo, never a wider border: a border is part of the control's
+   insets, so two extra pixels would make the control two pixels bigger and push everything
+   beside it. The halo is what the eye reads as the ring. */
 .button:focused, .nav-item:focused,
 .text-field:focused, .combo-box:focused, .date-picker:focused {
     -fx-border-color: -wac-ring;
-    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, -wac-ring, 6, 0.5, 0, 0);
 }
 
 .date-picker > .text-field,
-.date-picker > .text-field:focused,
-.date-picker:focused > .text-field,
-.combo-box > .text-field,
-.combo-box > .text-field:focused {
+.combo-box > .text-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-border-width: 0;

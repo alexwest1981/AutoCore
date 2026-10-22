@@ -172,19 +172,16 @@ ComboBox, .combo-box, .combo-box-base, .choice-box {
 .combo-box:hover, .combo-box-base:hover, .choice-box:hover {
     -fx-background-color: #ffffff;
     -fx-border-color: -wac-ring;
-    -fx-border-width: 1px;
 }
 .combo-box:showing, .combo-box-base:showing, .choice-box:showing {
     -fx-background-color: #ffffff;
     -fx-border-color: -wac-ring;
-    -fx-border-width: 1px;
 }
 TextField:focused, PasswordField:focused, TextArea:focused, ComboBox:focused,
 .text-field:focused, .combo-box:focused, .combo-box-base:focused {
     -fx-effect: null;
     -fx-background-color: #ffffff;
     -fx-border-color: -wac-ring;
-    -fx-border-width: 1px;
 }
 .combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
     -fx-background-color: transparent;
@@ -208,16 +205,12 @@ DatePicker, .date-picker {
 }
 DatePicker:hover, .date-picker:hover {
     -fx-border-color: -wac-ring;
-    -fx-border-width: 1px;
 }
 DatePicker:focused, .date-picker:focused,
 .date-picker:contains-focus {
     -fx-border-color: -wac-ring;
-    -fx-border-width: 1px;
 }
-.date-picker > .text-field,
-.date-picker > .text-field:focused,
-.date-picker:focused > .text-field {
+.date-picker > .text-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-border-width: 0;
@@ -381,7 +374,6 @@ TableView .table-view, .table-view { -fx-padding: 0; }
     -fx-background-color: -wac-accent;
     -fx-border-color: transparent transparent transparent -wac-accent2;
     -fx-text-fill: -wac-on-accent;
-    -fx-font-weight: bold;
     -fx-cursor: hand;
 }
 .nav-item.selected:hover, Button.ghost.nav-item.selected:hover {

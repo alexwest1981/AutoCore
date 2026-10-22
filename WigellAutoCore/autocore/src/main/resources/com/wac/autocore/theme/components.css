@@ -96,7 +96,6 @@
 .combo-box:focused, .combo-box-base:focused, .choice-box:focused {
     -fx-background-color: white;
     -fx-border-color: -wac-ring;
-    -fx-border-width: 1.5;
 }
 .combo-box .cell, .combo-box-base .cell, .combo-box .list-cell, .choice-box .label {
     -fx-background-color: transparent;
@@ -166,12 +165,11 @@
     -fx-arc-width: 8;
     -fx-arc-height: 8;
 }
-/* nav-current: the pill carries the accent, so the item itself stays flat */
-.sidebar .nav-item.nav-current,
-.sidebar .nav-item.nav-current:hover {
+/* nav-current: the pill carries the accent, so the item itself stays flat. The weight stays
+   the same as on every other item: a bold label is a wider label, which moves the text. */
+.sidebar .nav-item.nav-current {
     -fx-background-color: transparent;
     -fx-text-fill: -wac-on-accent;
-    -fx-font-weight: bold;
     -fx-border-color: transparent;
 }
 .sidebar .nav-item.nav-current .nav-icon {
