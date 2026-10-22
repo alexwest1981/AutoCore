@@ -168,7 +168,7 @@ Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord oc
 
 ## Prov och bevis
 
-`mvn test` kör 109 JUnit-prov, och ingen av dem hoppas över: loggprovningen skriver sin egen loggfil i stället för att läsa en som råkar finnas. Utöver dem ligger femton bevisprogram i `src/test/java/com/wac/autocore/proof/`, utanför jar-filen, där var och ett skriver ut sitt svar.
+`mvn test` kör 102 JUnit-prov, och ingen av dem hoppas över: loggprovningen skriver sin egen loggfil i stället för att läsa en som råkar finnas. Utöver dem ligger femton bevisprogram i `src/test/java/com/wac/autocore/proof/`, utanför jar-filen, där var och ett skriver ut sitt svar.
 
 Jämförelsen mot Java 8-baslinjen, elva prov inspelade på `b0ef2b9` och samma elva körda på 4.0, ligger i [docs/bevis/](docs/bevis/README.md) tillsammans med utskrifterna från båda sidorna. Den som bara har repot kan läsa varje rad som skiljer sig.
 
