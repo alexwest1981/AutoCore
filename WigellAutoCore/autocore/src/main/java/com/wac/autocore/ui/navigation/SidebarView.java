@@ -259,9 +259,13 @@ public class SidebarView {
                 navItem("services", "nav.item.services"),
                 navItem("mechanics", "nav.item.mechanics"),
                 navItem("workorders", "nav.item.workorders"));
-        addGroup(groups, "nav.section.finance",
-                navItem("invoices", "nav.item.invoices"),
-                navItem("payments", "nav.item.payments"));
+        // The economy is the one part of the day a read-only account may not look at, so the whole
+        // section goes with it rather than standing there with two dead entries.
+        if (garage == null || garage.may(com.wac.autocore.security.Operation.READ_FINANCE)) {
+            addGroup(groups, "nav.section.finance",
+                    navItem("invoices", "nav.item.invoices"),
+                    navItem("payments", "nav.item.payments"));
+        }
         nav.getChildren().add(groups);
 
         ScrollPane navScroll = new ScrollPane(nav);

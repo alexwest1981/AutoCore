@@ -136,14 +136,36 @@ class AuthorizationTest {
     }
 
     @Test
-    void aReadOnlyAccountMayReadEverything() {
+    void aReadOnlyAccountMayReadTheDaysWork() {
         signIn("lasare", Role.READ_ONLY);
         GarageSystem garage = garage();
 
         assertFalse(garage.getCustomers().isEmpty());
         assertFalse(garage.getWorkOrders().isEmpty());
-        // No invoice in the seed, but the read must be allowed rather than refused.
+        assertDoesNotThrow(garage::getBookings);
+        assertDoesNotThrow(garage::getServiceItems);
+        assertDoesNotThrow(garage::getMechanics);
+    }
+
+    @Test
+    void aReadOnlyAccountMayNotLookAtTheEconomy() {
+        signIn("lasare", Role.READ_ONLY);
+        GarageSystem garage = garage();
+
+        // The team's decision: what the workshop charged and was paid is not for an account that
+        // is there to look things up. The refusal is the same kind as for a write, so the window
+        // can answer it the same way.
+        AccessDeniedException refused = assertThrows(AccessDeniedException.class, garage::getInvoices);
+
+        assertEquals("dialog.access.denied", refused.getMessageKey());
+        assertThrows(AccessDeniedException.class, garage::getPayments);
+        assertThrows(AccessDeniedException.class, () -> garage.findInvoice(1));
+        assertThrows(AccessDeniedException.class, () -> garage.findPayment(1));
+
+        // The two roles that work in the shop still see it.
+        signIn("verkstaden", Role.STAFF);
         assertDoesNotThrow(garage::getInvoices);
+        assertDoesNotThrow(garage::getPayments);
     }
 
     @Test

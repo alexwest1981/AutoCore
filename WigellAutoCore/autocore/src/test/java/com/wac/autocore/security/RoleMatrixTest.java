@@ -49,6 +49,12 @@ class RoleMatrixTest {
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.CREATE_CUSTOMER));
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.TAKE_PAYMENT));
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.CHANGE_SETTINGS));
+
+        // The economy is read, but it is not in this role's row: what the workshop charged and was
+        // paid is not something an account kept for looking things up needs to see.
+        assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.READ_FINANCE));
+        assertTrue(RoleMatrix.allows(Role.STAFF, Operation.READ_FINANCE));
+        assertTrue(RoleMatrix.allows(Role.ADMIN, Operation.READ_FINANCE));
     }
 
     @Test
@@ -82,7 +88,7 @@ class RoleMatrixTest {
         assertTrue(text.contains("ADMIN"));
         assertTrue(text.contains("STAFF"));
         assertTrue(text.contains("READ_ONLY"));
-        assertTrue(text.contains("bara läsa"));
+        assertTrue(text.contains("läsa dagens arbete"));
     }
 
     private static int countAllowed(Role role) {
