@@ -77,12 +77,14 @@ Verksamhetshändelser loggas när en arbetsorder skapas och slutförs. Säkerhet
 
 Det använder samma `GarageSystem` och samma dekoratör som applikationen, så affärsreglerna är desamma. Identiteten sätts i hållaren på samma sätt som inloggningen gör det, och programmet kan köras utan identitet för att visa att spärren gäller även där.
 
+Dagen väljs ur `OpeningHours` innan tjänsten tillfrågas, så programmet hoppar över helger i stället för att bli nekad, och det skriver ut vilken dag och timme bokningen fick. Valet ligger i en egen metod som tar startdagen som argument, så det går att pröva med ett fast datum i stället för dagens.
+
 ## 8. Hur vi kontrollerar att tidigare funktionalitet fortfarande fungerar
 
-Enhetstesterna är 69 JUnit-prov: inloggning, lösenordshashning och rotation, identitetshållaren, rollmatrisen, spärren för läsning och skrivning, raderingsregeln för en avbruten order, det fristående programmet, loggning och spårbarhet, hemlighetsskanning, och att Spring-kontexten startar med rätt databassökväg.
+Enhetstesterna är 77 JUnit-prov: inloggning, lösenordshashning och rotation, identitetshållaren, rollmatrisen, spärren för läsning och skrivning, raderingsregeln för en avbruten order, det fristående programmet, bokning och drop-in, loggning och spårbarhet, hemlighetsskanning, och att Spring-kontexten startar med rätt databassökväg.
 
 Bevisprogrammen är femton program som skriver ut sitt svar, och tolv av dem avslutar med en exitkod så att en körning kan fällas maskinellt. Tillsammans täcker de verksamhetsreglerna: bokningar och arbetsordrar, utkast och validering, fakturor och betalningar, tal- och avrundningsregler, felhantering på båda språken, den gamla databasen, rollmatrisen, behörigheten, raderingen av en avbruten order och självkontrollen.
 
-Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit `b0ef2b9`, den sista som ändrade koden före Maven-bygget. Samma elva kördes på 4.0. Tio svarar lika. Den elfte, `StatusRoutesProof`, prövade tre vägar av fyra eftersom körningen gjordes efter stängning, vilket är ett tidsberoende i provet och inte i koden. Det ligger som eget ärende att rätta.
+Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit `b0ef2b9`, den sista som ändrade koden före Maven-bygget. Samma elva kördes på 4.0. Alla elva svarar lika, eller skiljer sig bara där indata gör det. `StatusRoutesProof` var den som avvek först, eftersom körningen gjordes efter stängning, och den är rättad i SCRUM-326.
 
 Sviten körs vid varje ändring, och det var den som fångade att det fristående programmet bokade en dag som kunde vara stängd. Två saker hittades utanför den: den brutna `start.sh`, som föll först när någon startade den, och baslinjen som låg i `/tmp` och hade försvunnit när den skulle användas.
