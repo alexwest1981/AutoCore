@@ -92,7 +92,6 @@ public class AutoCoreApp extends Application {
 
         Scene scene = new Scene(root, 1280, 800);
         ThemeManager.apply(scene, com.wac.autocore.theme.ThemeCatalog.DEFAULT_SLUG);
-        com.wac.autocore.ui.motion.PressDepth.install(scene);
 
         primaryStage.setTitle("Wigell AutoCore");
         primaryStage.setScene(scene);
