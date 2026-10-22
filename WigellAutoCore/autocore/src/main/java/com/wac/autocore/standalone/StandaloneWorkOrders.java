@@ -46,9 +46,8 @@ public final class StandaloneWorkOrders {
             run(args);
 
         } catch (AppException refused) {
-            log.warn("Avbruten: {}", refused.getMessageKey());
-            // The line in the log was written where the refusal was raised. Here only the words
-            // for the reader are left, and an error without a key of its own keeps its message.
+            // The line in the log was written where the refusal was raised, with its cause. Here
+            // only the words for the reader are left.
             String key = refused.getMessageKey();
             System.out.println("NEKAD: " + (key == null ? refused.getMessage() : I18n.get(key)));
         }

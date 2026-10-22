@@ -13,4 +13,13 @@ public class DatabaseInitException extends AppException {
         initCause(cause);
         noteRaised();
     }
+
+    /**
+     * The reader gets one sentence; the SQL cause and the message stay in the log, where the line
+     * already carries them.
+     */
+    @Override
+    public String getMessageKey() {
+        return "view.error.startup";
+    }
 }
