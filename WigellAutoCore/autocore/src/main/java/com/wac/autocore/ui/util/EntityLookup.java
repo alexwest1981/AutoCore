@@ -185,9 +185,16 @@ public final class EntityLookup {
         return order == null ? 0 : order.getBookingId();
     }
 
-    /** The invoice covering the work order. It belongs to the booking, not to one order. */
+    /**
+     * The invoice covering the work order. It belongs to the booking, not to one order.
+     *
+     * Answers null for a role that may not see the economy. The question is asked from screens the
+     * staff uses, such as the details of an order, and a role without the finance must get "nothing
+     * to show" rather than a refusal it cannot act on.
+     */
     public static Invoice invoiceForWorkOrder(GarageSystem garage, int workOrderId) {
         if (garage == null || workOrderId <= 0) return null;
+        if (!garage.may(com.wac.autocore.security.Operation.READ_FINANCE)) return null;
 
         WorkOrder order = garage.findWorkOrder(workOrderId);
         if (order == null) return null;

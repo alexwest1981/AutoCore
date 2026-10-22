@@ -162,8 +162,13 @@ class AuthorizationTest {
         assertThrows(AccessDeniedException.class, () -> garage.findInvoice(1));
         assertThrows(AccessDeniedException.class, () -> garage.findPayment(1));
 
-        // The two roles that work in the shop still see it.
+        // The staff member does not see it either: the economy is the administrator's, all of it.
         signIn("verkstaden", Role.STAFF);
+        assertThrows(AccessDeniedException.class, garage::getInvoices);
+        assertThrows(AccessDeniedException.class,
+                () -> garage.createInvoice(1, null));
+
+        signIn("chefen", Role.ADMIN);
         assertDoesNotThrow(garage::getInvoices);
         assertDoesNotThrow(garage::getPayments);
     }
@@ -322,14 +327,21 @@ class AuthorizationTest {
         signIn("verkstaden", Role.STAFF);
 
         assertTrue(garage.may(Operation.CREATE_BOOKING));
-        assertTrue(garage.may(Operation.TAKE_PAYMENT));
+        assertTrue(garage.may(Operation.CREATE_WORK_ORDER));
         assertFalse(garage.may(Operation.DELETE_WORK_ORDER));
         assertFalse(garage.may(Operation.CHANGE_SETTINGS));
+        // The economy is the administrator's, so no finance button is drawn for a staff member.
+        assertFalse(garage.may(Operation.READ_FINANCE));
+        assertFalse(garage.may(Operation.CREATE_INVOICE));
+        assertFalse(garage.may(Operation.TAKE_PAYMENT));
 
         signIn("chefen", Role.ADMIN);
 
         assertTrue(garage.may(Operation.DELETE_WORK_ORDER));
         assertTrue(garage.may(Operation.CHANGE_SETTINGS));
+        assertTrue(garage.may(Operation.READ_FINANCE));
+        assertTrue(garage.may(Operation.CREATE_INVOICE));
+        assertTrue(garage.may(Operation.TAKE_PAYMENT));
     }
 
     @Test
