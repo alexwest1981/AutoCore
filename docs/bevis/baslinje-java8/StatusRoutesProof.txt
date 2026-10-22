@@ -1,0 +1,13 @@
+Databas redo: /tmp/status-routes-4299350189747548811.db
+Samma statusbyten på de fyra vägarna
+
+bokning: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+drop-in: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+reklamation: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+utkast: [IN_PROGRESS nej, CONFIRMED ja, COMPLETED nej, IN_PROGRESS ja, CANCELLED ja, IN_PROGRESS ja, COMPLETED ja, CANCELLED nej, CONFIRMED nej]
+
+alla vägar svarar lika: true
+
+nej till IN_PROGRESS: bokning WORK_ORDER_CREATED -> WORK_ORDER_CREATED, mekaniker ledig true -> true
+nej till CANCELLED: bokning COMPLETED -> COMPLETED, mekaniker ledig true -> true
+ett nej lämnar inget efter sig: true
