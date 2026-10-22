@@ -4,6 +4,8 @@ Ett verkstadssystem för Wigell Group. Kunder, fordon, bokningar, arbetsordrar, 
 
 Planen för migreringen till 4.0, med riskanalysen, ligger i [docs/plan-4.0.md](docs/plan-4.0.md).
 
+Loggerna som demonstrationen kräver, med kommandona som ger dem, ligger i [docs/demo-loggning.md](docs/demo-loggning.md).
+
 ## Vad systemet gör
 
 - Kunder och fordon, med ägarkoppling.
@@ -63,6 +65,14 @@ java --enable-native-access=ALL-UNNAMED -cp "WigellAutoCore/autocore/target/clas
 ```
 
 Jar-filen behöver ingen flagga. Raden `Enable-Native-Access: ALL-UNNAMED` står i manifestet genom `maven-jar-plugin` i `pom.xml`, så `java -jar WigellAutoCore/autocore/target/autocore-4.0.0.jar` startar utan varning.
+
+### Konsolversionen
+
+`ConsoleApp` är en meny i terminalen över samma tjänst. Den frågar efter användare och lösenord, loggar in med samma konton som fönstret och går genom samma behörighetsspärr, så den är inte en väg runt inloggningen. Tre försök, sedan avslutas den med felkod.
+
+```
+java -cp "WigellAutoCore/autocore/target/classes:$(cat WigellAutoCore/autocore/target/cp.txt)" com.wac.autocore.ConsoleApp data/autocore.db
+```
 
 ### Var databasen ligger
 
