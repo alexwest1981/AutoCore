@@ -49,14 +49,16 @@ case "$(uname -s 2>/dev/null || echo unknown)" in
     *) export GDK_BACKEND="${GDK_BACKEND:-x11}" ;;
 esac
 
-# JavaFX draws through GTK here, so GDK_SCALE decides the size of every button and
-# every font. A session started before the monitor scale was lowered keeps the old
-# value, and then the whole window is drawn twice its size.
+# JavaFX draws through GTK here, so the GDK scale decides the size of every button and
+# every font. A session started before the monitor scale was lowered keeps the old value,
+# and then the whole window is drawn twice its size. The value is therefore set here
+# instead of being inherited; AUTOCORE_UI_SCALE asks for another one.
 if [ -n "${GDK_SCALE:-}" ] && [ "$GDK_SCALE" != "1" ]; then
-    warn "GDK_SCALE=$GDK_SCALE ärvs in i JavaFX och ritar gränssnittet $GDK_SCALE gånger
-         så stort. Stämmer det inte med skärmarnas scale är värdet kvar från en äldre
-         session: logga ut och in, eller starta med 'GDK_SCALE=1 ./start.sh'."
+    warn "GDK_SCALE=$GDK_SCALE ärvdes från sessionen och hade ritat gränssnittet dubbelt så
+         stort. start.sh sätter den till 1. Behöver skärmen en annan skala, kör med
+         'AUTOCORE_UI_SCALE=2 ./start.sh'."
 fi
+export GDK_SCALE="${AUTOCORE_UI_SCALE:-1}"
 
 exec mvn -f "$POM" spring-boot:run \
     -Dspring-boot.run.jvmArguments="--enable-native-access=ALL-UNNAMED"

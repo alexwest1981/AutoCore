@@ -31,7 +31,7 @@ Två av de sex hände, och tre till som inte stod på listan.
 
 Statiska `Db` kostade mer än väntat. Varje repository läste en sökväg som sattes någon annanstans, och proven kunde bara köras för att klassen var statisk. Den blev en böna med sökvägen i `autocore.db.path`, och varje repository får sin `Db` via `RepositoryFactory`.
 
-`GDK_SCALE=2` hade vi inte skrivit upp. Variabeln låg kvar i en befintlig session och fördubblade hela gränssnittet, eftersom JavaFX ritar genom GTK. Ingen kod hade ändrats. Det syns nu som en varning i `start.sh`.
+`GDK_SCALE=2` hade vi inte skrivit upp. Variabeln låg kvar i en befintlig session och fördubblade hela gränssnittet, eftersom JavaFX ritar genom GTK. Ingen kod hade ändrats. `Main` sätter nu `glass.gtk.uiScale` till 1 innan JavaFX startar, och `start.sh` sätter `GDK_SCALE` i stället för att ärva det.
 
 Behörighetsspärren täckte skrivningarna men inte läsningarna, så en anropare utan identitet kunde läsa hela registret. Det upptäcktes vid genomläsning efteråt och rättades i E3-7 (SCRUM-320).
 

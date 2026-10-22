@@ -44,6 +44,16 @@ Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder a
 
 Körningen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv, eftersom JavaFX annars kraschar i GTK.
 
+### Skalan gränssnittet ritas i
+
+JavaFX frågar GTK hur stort allt ska vara, och svaret kommer från `GDK_SCALE`. En session som startades innan skärmens skala sänktes behåller det gamla värdet, och då ritas varje knapp, varje typsnitt och hela fönstret dubbelt så stort. `Main` sätter därför `glass.gtk.uiScale` till 1 innan JavaFX startar, så ett ärvt värde inte når fönstret. Det gäller även när appen startas från IntelliJ, som aldrig går genom `start.sh`.
+
+Behöver skärmen en annan skala går det att be om den:
+
+```
+AUTOCORE_UI_SCALE=2 ./start.sh
+```
+
 ### Fristående program
 
 Det fristående programmet startas utanför Maven, och då behöver JDK 25 veta att SQLite får använda inbyggd kod. Utan flaggan kommer `WARNING: Restricted methods will be blocked in a future release`:
