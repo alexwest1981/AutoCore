@@ -30,7 +30,7 @@ mise use java@25
 mvn -f WigellAutoCore/autocore/pom.xml package
 ```
 
-JavaFX 25, sqlite-jdbc och json hämtas av Maven, så inget installeras för hand och `lib/` behövs inte längre.
+JavaFX 25, sqlite-jdbc och json hämtas av Maven, så inget installeras för hand.
 
 Öppna projektet i IntelliJ genom att högerklicka på `WigellAutoCore/autocore/pom.xml` och välja **Add as Maven Project**. Modulfilerna delas inte via git, eftersom de pekar på den plattform din maskin råkar ha. Maven väljer rätt JavaFX för Linux, Windows och macOS, så samma pull fungerar för alla.
 
@@ -40,7 +40,7 @@ JavaFX 25, sqlite-jdbc och json hämtas av Maven, så inget installeras för han
 
 ### Får du "No suitable driver found for jdbc:sqlite"?
 
-Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder att IntelliJ kör en gammal projektmodell: välj **File → Reload All from Disk**, eller stäng och öppna projektet. Går det inte, lägg till `WigellAutoCore/autocore/lib/sqlite-jdbc-3.53.4.0.jar` under **File → Project Structure → Modules → Dependencies**. `./start.sh` behöver inget av det.
+Drivrutinen ligger i `.idea/libraries/` och följer med i giten. Felet betyder att IntelliJ kör en gammal projektmodell: välj **File → Reload All from Disk**, eller stäng och öppna projektet. Går det inte, kör `mvn -f WigellAutoCore/autocore/pom.xml dependency:resolve` så att Maven hämtar filerna igen. `./start.sh` behöver inget av det.
 
 Körningen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv, eftersom JavaFX annars kraschar i GTK.
 
@@ -85,12 +85,11 @@ Värdet hashas vid start med nytt salt och skrivs över bara om det skiljer sig 
 ```
 WigellAutoCore/autocore/
 ├── pom.xml         bygget: JDK 25, JavaFX 25, SQLite och json
-├── lib/            sqlite-jdbc, json (kvar till E1-3)
 └── src/
-    ├── ConsoleApp.java     Konsolversionen, kvar utanför Maven
     └── main/java/
         ├── Main.java       JavaFX-appen
         └── com/wac/autocore/
+            ├── ConsoleApp.java Konsolversionen
             ├── config/         Konfigurationen: Db som böna, sökvägen som property
             ├── data/           Databasen och demodata
             ├── model/          Domänmodeller
@@ -101,7 +100,7 @@ WigellAutoCore/autocore/
                                 i18n och teman
 ```
 
-Resurserna, alltså SQL, JSON och CSS, ligger fortfarande inne i paketmappen och flyttas till `src/main/resources` i E1-2.
+Resurserna, alltså SQL, JSON och CSS, ligger under `src/main/resources`.
 
 Lagren går i en riktning: gränssnittet pratar med `GarageSystem`, som pratar med serviceklasserna, som pratar med repositoryt. Ingen genväg förbi.
 
