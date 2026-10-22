@@ -7,11 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.RuleViolationException;
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.WorkOrder;
-import com.wac.autocore.model.WorkOrderStatus;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
+import com.wac.autocore.model.*;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.security.Identity;
 import com.wac.autocore.security.IdentityHolder;
@@ -170,5 +166,41 @@ class WorkOrderRulesTest {
 
         assertNotEquals(first.getId(), second.getId());
         assertEquals(WorkOrderStatus.CANCELLED, garage.findWorkOrder(first.getId()).getStatus());
+    }
+    @Test
+    void aCancelledReclamationLeavesTheBookingCompleted() {
+        Booking booking = ownBooking();
+        WorkOrder original = garage.createWorkOrder(booking.getId(), freeMechanic(), List.of(aService()));
+        garage.confirmWorkOrder(original.getId());
+        garage.startWorkOrder(original.getId());
+        garage.completeWorkOrder(original.getId());
+
+        WorkOrder reclamation = garage.createReclamation(original.getId(), "Reklamation i provet");
+        garage.cancelWorkOrder(reclamation.getId());
+
+        assertEquals(BookingStatus.COMPLETED, garage.findBooking(booking.getId()).getStatus());
+    }
+
+    @Test
+    void cancellingOneOfTwoOrdersKeepsTheBooking() {
+        Booking booking = ownBooking();
+        int mechanicId = freeMechanic();
+        List<Integer> services = twoServices();
+        WorkOrder first = garage.createWorkOrder(booking.getId(), mechanicId, List.of(services.get(0)));
+        garage.createWorkOrder(booking.getId(), mechanicId, List.of(services.get(1)));
+
+        garage.cancelWorkOrder(first.getId());
+
+        assertNotEquals(BookingStatus.CANCELLED, garage.findBooking(booking.getId()).getStatus());
+    }
+
+    @Test
+    void cancellingTheOnlyOrderStillCancelsTheBooking() {
+        Booking booking = ownBooking();
+        WorkOrder only = garage.createWorkOrder(booking.getId(), freeMechanic(), List.of(aService()));
+
+        garage.cancelWorkOrder(only.getId());
+
+        assertEquals(BookingStatus.CANCELLED, garage.findBooking(booking.getId()).getStatus());
     }
 }
