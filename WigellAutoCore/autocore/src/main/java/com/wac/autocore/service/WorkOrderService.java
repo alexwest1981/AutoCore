@@ -247,23 +247,24 @@ public class WorkOrderService {
         return workOrder;
     }
 
+    /** The orders on a booking that still count: every one that has not been cancelled. */
+    private List<WorkOrder> activeOrdersOn(int bookingId) {
+        List<WorkOrder> active = new ArrayList<WorkOrder>();
+        for (WorkOrder order : getAll()) {
+            if (order.getBookingId() == bookingId && order.getStatus() != WorkOrderStatus.CANCELLED) {
+                active.add(order);
+            }
+        }
+        return active;
+    }
+
     /** True if the service already sits on a work order for the same booking. The catalogue is shared. */
     private boolean isClaimed(int bookingId, int serviceItemId) {
-        for (WorkOrder order : getAll()) {
-
-            if (order.getStatus() == WorkOrderStatus.CANCELLED) {
-                continue;
-            }
-
-            if (order.getBookingId() != bookingId) {
-                continue;
-            }
-
+        for (WorkOrder order : activeOrdersOn(bookingId)) {
             if (order.getServiceItemIds().contains(Integer.valueOf(serviceItemId))) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -392,13 +393,34 @@ public class WorkOrderService {
         }
 
         if (booking != null) {
-            booking.setStatus(BookingStatus.CANCELLED);
-            saveBooking(booking);
-            mechanicSchedule.cancelSlotForBooking(booking.getId());
-            mechanicSchedule.syncFromDatabase();
+            // The order is not saved as cancelled yet, so it is taken out of the list by hand.
+            List<WorkOrder> others = activeOrdersOn(booking.getId());
+            others.removeIf(order -> order.getId() == workOrder.getId());
+
+            if (others.isEmpty()) {
+                // The last order on the booking: the booking goes with it and its time is freed.
+                booking.setStatus(BookingStatus.CANCELLED);
+                saveBooking(booking);
+                mechanicSchedule.cancelSlotForBooking(booking.getId());
+                mechanicSchedule.syncFromDatabase();
+            } else if (allCompleted(others)) {
+                // Only finished work is left, such as the original of a cancelled reclamation.
+                booking.setStatus(BookingStatus.COMPLETED);
+                saveBooking(booking);
+            }
+            // Otherwise another order is still open, and the booking keeps its status and its time.
         }
 
         saveWorkOrder(workOrder);
+        return true;
+    }
+
+    private static boolean allCompleted(List<WorkOrder> orders) {
+        for (WorkOrder order : orders) {
+            if (order.getStatus() != WorkOrderStatus.COMPLETED) {
+                return false;
+            }
+        }
         return true;
     }
 
