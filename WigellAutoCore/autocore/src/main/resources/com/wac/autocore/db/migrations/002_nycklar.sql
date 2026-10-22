@@ -205,13 +205,19 @@ CREATE TABLE invoices_ny (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     work_order_id INTEGER REFERENCES work_orders (id) ON DELETE RESTRICT,
     invoice_date TEXT,
+    invoice_number TEXT,
+    credit_of INTEGER,
+    credit_reason TEXT,
     amount REAL,
     discount REAL,
     total_amount REAL,
     paid INTEGER DEFAULT 0);
 
-INSERT INTO invoices_ny (id, work_order_id, invoice_date, amount, discount, total_amount, paid)
-SELECT id, work_order_id, invoice_date, amount, discount, total_amount, paid FROM invoices;
+INSERT INTO invoices_ny (id, work_order_id, invoice_date, invoice_number, credit_of, credit_reason,
+                         amount, discount, total_amount, paid)
+SELECT id, work_order_id, invoice_date, invoice_number, credit_of, credit_reason,
+       amount, discount, total_amount, paid
+FROM invoices;
 
 DROP TABLE invoices;
 

@@ -337,6 +337,30 @@ public class GuardedGarageSystem extends GarageSystem {
     }
 
     @Override
+    public Invoice createCreditInvoice(int invoiceId, String reason) {
+
+        require(Operation.CREATE_INVOICE);
+
+        return super.createCreditInvoice(invoiceId, reason);
+    }
+
+    @Override
+    public Seller seller() {
+
+        require(Operation.READ);
+
+        return super.seller();
+    }
+
+    @Override
+    public void saveSeller(Seller seller) {
+
+        require(Operation.CHANGE_SETTINGS);
+
+        super.saveSeller(seller);
+    }
+
+    @Override
     public Payment processPayment(int invoiceId, String paymentType) {
 
         require(Operation.TAKE_PAYMENT);

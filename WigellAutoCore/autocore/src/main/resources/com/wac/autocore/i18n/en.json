@@ -120,7 +120,9 @@
       "action_create": "+ Create Invoice",
       "action_pay": "Pay selected invoice",
       "action_lines": "Details",
-      "action_print": "Show invoice"
+      "action_print": "Show invoice",
+      "action_credit": "Credit selected invoice",
+      "action_company": "Company details"
     },
     "payments": {
       "title": "Payments",
@@ -216,14 +218,23 @@
       "description": "Description",
       "price": "Price",
       "discount": "Discount",
-      "sum": "Amount"
+      "sum": "Amount",
+      "quantity": "Qty"
     },
     "subtotal": "Subtotal",
     "discount_total": "Discount",
     "vat": "VAT (25%)",
     "total": "Amount due",
     "footer": "Thank you for your business!",
-    "footer_terms": "Payment terms: {0} days net."
+    "footer_terms": "Payment terms: {0} days net.",
+    "credit_title": "CREDIT NOTE",
+    "credits": "Credits invoice",
+    "credit_reason": "Reason",
+    "org_number": "Reg. no.",
+    "vat_number": "VAT no.",
+    "vat_base": "VAT base",
+    "performed": "Performed",
+    "quantity_piece": "{0} pc"
   },
   "dialog": {
     "access": {
@@ -257,7 +268,13 @@
       "phone": "Phone number",
       "name_prompt": "First and last name",
       "phone_prompt": "555-1234567",
-      "email_prompt": "name@example.com"
+      "email_prompt": "name@example.com",
+      "address": "Street address",
+      "postal_code": "Postal code",
+      "city": "City",
+      "address_prompt": "1 Main Street",
+      "postal_code_prompt": "512 00",
+      "city_prompt": "Svenljunga"
     },
     "vehicle": {
       "create": {
@@ -522,6 +539,34 @@
     },
     "confirm": {
       "title": "Confirm"
+    },
+    "credit": {
+      "title": "Credit invoice",
+      "header": "Take back an issued invoice",
+      "invoice": "Invoice",
+      "reason": "Reason for the credit",
+      "reason_prompt": "E.g. wrong price, reclamation",
+      "confirmed": "Credit note {0} was created and takes back {1}.",
+      "failed": "The credit note could not be created.",
+      "already": "The invoice has already been credited.",
+      "not_credit_note": "A credit note cannot be credited."
+    },
+    "seller": {
+      "title": "Company details",
+      "header": "The details that stand on the invoice",
+      "name": "Company name",
+      "street": "Street address",
+      "postal_code": "Postal code",
+      "city": "City",
+      "phone": "Phone",
+      "email": "Email",
+      "org_number": "Organisation number",
+      "vat_number": "VAT registration number",
+      "payment_terms": "Payment terms (days)",
+      "note": "The details here are invented for the demo. Replace them with the company's own before an invoice is sent.",
+      "invalid_terms": "Enter the payment terms as a whole number of days, greater than 0.",
+      "saved": "The company details were saved.",
+      "failed": "The company details could not be saved."
     }
   },
   "kanban": {
