@@ -37,11 +37,10 @@ public final class LoginView {
 
         final PasswordField password = new PasswordField();
 
-        final Label error = new Label();
+        final Label error = new Label(I18n.get("login.error"));
         error.getStyleClass().add("login-error");
         error.setWrapText(true);
-        error.setVisible(false);
-        error.setManaged(false);
+        error.setOpacity(0);
 
         final Button signIn = new Button(I18n.get("login.sign_in"));
         signIn.getStyleClass().add("primary-button");
@@ -53,9 +52,7 @@ public final class LoginView {
             if (identity.isEmpty()) {
                 // Stay on the card and say why. The window is already open, so there is nowhere
                 // else to go and nothing to close.
-                error.setText(I18n.get("login.error"));
-                error.setVisible(true);
-                error.setManaged(true);
+                error.setOpacity(1);
                 password.clear();
                 password.requestFocus();
                 return;
@@ -80,6 +77,7 @@ public final class LoginView {
         card.setMaxWidth(CARD_WIDTH);
         // The stack that holds the card would stretch it top to bottom without this.
         card.setMaxHeight(Region.USE_PREF_SIZE);
+
         return card;
     }
 
