@@ -29,12 +29,16 @@ public final class RoleMatrix {
             Operation.CHANGE_SETTINGS));
 
     /**
-     * A read-only account reads everything and changes nothing, apart from choosing the language for
-     * its own window. That is a preference, not a change to the workshop's data.
+     * A read-only account reads the day's work and changes nothing, apart from choosing the language
+     * for its own window. That is a preference, not a change to the workshop's data.
+     *
+     * The economy is not in the row. Invoices and payments say what the workshop charged and was
+     * paid, and the team decided a read-only account is there to look things up, not to see that.
      */
     private static final Set<Operation> READING = Collections.unmodifiableSet(EnumSet.of(
             Operation.READ,
             Operation.CHANGE_LANGUAGE));
+
 
     /** One row per role. Built once; nothing may change it afterwards. */
     private static final Map<Role, Set<Operation>> ROWS = rows();
@@ -65,7 +69,7 @@ public final class RoleMatrix {
             if (allowed.size() == Operation.values().length) {
                 text.append("allt (").append(allowed.size()).append(" operationer)");
             } else if (allowed.equals(READING)) {
-                text.append("bara läsa och välja språk");
+                text.append("läsa dagens arbete och välja språk, inte ekonomin");
             } else {
                 EnumSet<Operation> refused = EnumSet.allOf(Operation.class);
                 refused.removeAll(allowed);

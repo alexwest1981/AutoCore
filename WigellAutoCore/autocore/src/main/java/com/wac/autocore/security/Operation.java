@@ -10,8 +10,17 @@ package com.wac.autocore.security;
  */
 public enum Operation {
 
-    /** Every read there is: lists, lookups, prices, availability. */
+    /** The day's work: customers, vehicles, bookings, work orders, services, mechanics, prices. */
     READ,
+
+    /**
+     * The money: invoices, payments and what a booking can be invoiced for.
+     *
+     * Reading is otherwise one operation, because whoever may read one part of the workshop's day
+     * may read all of it. The economy is the exception the team agreed on: a read-only account is
+     * there to look things up, not to see what the workshop has charged and been paid.
+     */
+    READ_FINANCE,
 
     CREATE_CUSTOMER,
     UPDATE_CUSTOMER,
