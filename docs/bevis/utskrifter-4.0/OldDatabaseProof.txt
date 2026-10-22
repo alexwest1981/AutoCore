@@ -1,0 +1,64 @@
+L3 · en gammal databas möter de nya reglerna
+gammal: /home/alex/Documents/Skolgrejer/Systemarkitektur/WigellAutoCore/autocore/test/data/autocore-original.db (rörs aldrig)
+
+1. kolumnerna saknas, som i en bas från en tidigare sprint
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/home/alex/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+   före:  booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 service_items=4 service_package_items=0 service_packages=0 settings=0 vehicles=6 work_order_service_items=7 work_orders=6
+   programmet startar mot kopian
+20:13:35.478 [main] INFO com.wac.autocore.data.Db -- Databas redo: /tmp/old-database-5173328147092178072.db
+   efter: booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 schema_version=4 service_items=4 service_package_items=0 service_packages=0 settings=0 users=3 vehicles=6 work_order_service_items=7 work_orders=6
+   service_items.price: [rad 1 = 1295.00 kronor, rad 2 = 2495.00 kronor, rad 3 = 995.00 kronor, rad 4 = 3495.00 kronor]  ->  [rad 1 = 1295.00 kronor (129500 öre), rad 2 = 2495.00 kronor (249500 öre), rad 3 = 995.00 kronor (99500 öre), rad 4 = 3495.00 kronor (349500 öre)]
+   work_order_service_items.price: inga rader  ->  inga rader
+   invoices.amount: inga rader  ->  inga rader
+   invoices.discount: inga rader  ->  inga rader
+   invoices.total_amount: inga rader  ->  inga rader
+   invoice_lines.price: inga rader  ->  inga rader
+   invoice_lines.discount: inga rader  ->  inga rader
+   payments.amount: inga rader  ->  inga rader
+   rader som tappades:    inga
+   värden som ändrades:   inga
+   kolumner som fylldes:  {work_orders.vehicle_id=6}
+   kolumner som tillkom:  [booking_service_items.package_name, work_order_service_items.package_name, work_orders.type, work_orders.original_work_order_id, work_orders.planned_date, work_orders.planned_time, work_orders.customer_instructions, work_orders.other_comments]
+   rader som tillkom:     inga
+   foreign_key_check:     rent
+   schema_version:        [1 001_baslinjen.sql, 2 002_nycklar.sql, 3 003_ore.sql, 4 004_users.sql]
+
+2. kolumnerna finns, men registret gör det inte
+   kolumnerna ditlagda i förväg, som en bas från mellanläget
+   före:  booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 service_items=4 service_package_items=0 service_packages=0 settings=0 vehicles=6 work_order_service_items=7 work_orders=6
+   programmet startar mot kopian
+20:13:35.529 [main] INFO com.wac.autocore.data.Db -- Databas redo: /tmp/old-database-5951415935098702151.db
+   efter: booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 schema_version=4 service_items=4 service_package_items=0 service_packages=0 settings=0 users=3 vehicles=6 work_order_service_items=7 work_orders=6
+   service_items.price: [rad 1 = 1295.00 kronor, rad 2 = 2495.00 kronor, rad 3 = 995.00 kronor, rad 4 = 3495.00 kronor]  ->  [rad 1 = 1295.00 kronor (129500 öre), rad 2 = 2495.00 kronor (249500 öre), rad 3 = 995.00 kronor (99500 öre), rad 4 = 3495.00 kronor (349500 öre)]
+   work_order_service_items.price: inga rader  ->  inga rader
+   invoices.amount: inga rader  ->  inga rader
+   invoices.discount: inga rader  ->  inga rader
+   invoices.total_amount: inga rader  ->  inga rader
+   invoice_lines.price: inga rader  ->  inga rader
+   invoice_lines.discount: inga rader  ->  inga rader
+   payments.amount: inga rader  ->  inga rader
+   rader som tappades:    inga
+   värden som ändrades:   inga
+   kolumner som fylldes:  {work_orders.vehicle_id=6}
+   kolumner som tillkom:  inga
+   rader som tillkom:     inga
+   foreign_key_check:     rent
+   schema_version:        [1 001_baslinjen.sql, 2 002_nycklar.sql, 3 003_ore.sql, 4 004_users.sql]
+
+3. ingen bas alls, den byggs från grunden
+   filen finns från början: false
+   programmet startar och bygger den
+20:13:35.554 [main] INFO com.wac.autocore.data.Db -- Databas redo: /tmp/new-database-11428544956611247291.db
+   efter: booking_mechanics=6 booking_service_items=7 bookings=6 customers=6 invoice_lines=0 invoices=0 mechanics=3 payments=0 schema_version=4 service_items=4 service_package_items=0 service_packages=0 settings=0 users=3 vehicles=6 work_order_service_items=7 work_orders=6
+   schema_version:     [1 001_baslinjen.sql, 2 002_nycklar.sql, 3 003_ore.sql, 4 004_users.sql]
+   foreign_key_check:  rent
+   tabeller som saknas: inga
+   kolumner som saknas: inga
+   fröet kommer in:     true
+läses som förut, utan kolumnerna: true
+läses som förut, med kolumnerna:  true
+byggs från grunden:               true

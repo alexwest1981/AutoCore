@@ -1,0 +1,20 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/home/alex/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+20:13:20.078 [main] INFO com.wac.autocore.data.Db -- Databas redo: /tmp/booking-change-12058760192309323829.db
+Ändrad bokning mot ny bokning
+
+ny bokning kl 10:     nekad: dialog.booking.slot_busy_error
+ändrad bokning kl 10: nekad: dialog.booking.slot_busy_error
+ändrad text, samma tid: sparad
+ny bokning på lördag:     nekad: dialog.booking.date_weekend
+ändrad bokning på lördag: nekad: dialog.booking.date_weekend
+ny bokning kl 16:50:     nekad: dialog.booking.closing_time_exceeded
+ändrad bokning kl 16:50: nekad: dialog.booking.closing_time_exceeded
+
+krocken nekas lika:         true
+helgen nekas lika:          true
+stängningstiden nekas lika: true
+egen tid är ingen krock:    true

@@ -1,0 +1,29 @@
+B5 · samma operation ger samma svar utan fönstret
+register: /tmp/work-order-rows-2912700362036845368.db (kopia av /tmp/fardig/rows.db)
+
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/home/alex/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+20:14:44.890 [main] INFO com.wac.autocore.data.Db -- Databas redo: /tmp/work-order-rows-2912700362036845368.db
+1. utan fönster, genom WorkOrderGateway
+   utkast 7, status CREATED
+   ändrat: mekaniker 1, tjänst 1
+   avbrutet
+
+2. genom fönstret, samma anrop som dialogerna gör
+   utkast 8, status CREATED
+   ändrat: mekaniker 1, tjänst 1
+   avbrutet
+
+3. raderna, utan id som med flit skiljer sig
+   arbetsorder, utan fönster:      [booking_id=null  mechanic_id=1  status=CANCELLED  type=STANDARD  vehicle_id=1  description=Bromsok, bromsbelagg och vatska  original_work_order_id=null  planned_date=2026-10-16  planned_time=09:30  customer_instructions=Nycklarna ligger i bilen.  other_comments=Kunden ringer innan hamtning.]
+   arbetsorder, genom fönstret:    [booking_id=null  mechanic_id=1  status=CANCELLED  type=STANDARD  vehicle_id=1  description=Bromsok, bromsbelagg och vatska  original_work_order_id=null  planned_date=2026-10-16  planned_time=09:30  customer_instructions=Nycklarna ligger i bilen.  other_comments=Kunden ringer innan hamtning.]
+   tjänster, utan fönster:         [service_item_id=1  completed=0  price=null  package_name=null]
+   tjänster, genom fönstret:       [service_item_id=1  completed=0  price=null  package_name=null]
+
+samma rader för arbetsordern:         true
+samma rader för tjänsterna:           true
+raderna är vad operationen ska lämna: true
+findWorkOrder svarar vad raden säger: true
