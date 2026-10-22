@@ -68,11 +68,8 @@ public final class ActionDialogs {
                     if (dScene.getRoot() != null && !dScene.getRoot().getStyleClass().contains("root")) {
                         dScene.getRoot().getStyleClass().add("root");
                     }
-                    // a dialog has its own Scene, so the press depth is installed per dialog
-                    com.wac.autocore.ui.motion.PressDepth.install(dScene);
                 }
             }
-            com.wac.autocore.ui.motion.DialogEntrance.enter(pane);
         });
     }
 

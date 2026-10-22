@@ -114,8 +114,6 @@ public final class KanbanBoard {
 
             countLabel.setText(I18n.get("kanban.filter.showing", count, mechanics.size()));
             scroll.setHvalue(0.0);
-            // the cards arrive one after another instead of all at once
-            com.wac.autocore.ui.motion.Motion.stagger(new ArrayList<javafx.scene.Node>(cardsRow.getChildren()), 45);
         };
 
         I18n.addListener(lang -> populateCards.run());

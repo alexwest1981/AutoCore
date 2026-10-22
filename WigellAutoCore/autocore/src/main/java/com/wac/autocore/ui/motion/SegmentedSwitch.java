@@ -1,37 +1,29 @@
 package com.wac.autocore.ui.motion;
 
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.geometry.Bounds;
 import javafx.scene.AccessibleRole;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntConsumer;
 
 /**
- * A segmented control whose indicator slides to the selected item.
+ * A segmented control whose indicator sits on the selected item.
  *
- * The pill is a Rectangle because width is a writable property on a shape, so the slide and the
- * width change animate as one gesture over 180 ms. Under reduced motion the pill is placed.
+ * The pill is a Rectangle because width is a writable property on a shape, which makes it easy to
+ * stretch over the chosen button. It used to slide there; it is placed instead, so nothing moves.
  *
  * The indicator is unmanaged, so the HBox lays out the buttons as if it were not there.
  */
 public final class SegmentedSwitch extends HBox {
 
-    private static final Duration SLIDE = Duration.millis(180);
-
     private final Rectangle pill = new Rectangle();
     private final List<Button> buttons = new ArrayList<Button>();
     private int selected;
-    private boolean sliding;
     private IntConsumer onSelect;
     private boolean labelsSet;
 
@@ -52,8 +44,8 @@ public final class SegmentedSwitch extends HBox {
         getChildren().add(pill);
 
         setLabels(labels);
-        widthProperty().addListener((obs, was, now) -> placePill(selected, false));
-        heightProperty().addListener((obs, was, now) -> placePill(selected, false));
+        widthProperty().addListener((obs, was, now) -> placePill(selected));
+        heightProperty().addListener((obs, was, now) -> placePill(selected));
 
         setOnKeyPressed(e -> {
             int next = selected;
@@ -61,7 +53,7 @@ public final class SegmentedSwitch extends HBox {
             else if (e.getCode() == KeyCode.RIGHT) next = Math.min(buttons.size() - 1, selected + 1);
             else return;
             e.consume();
-            if (next != selected) choose(next, true);
+            if (next != selected) choose(next);
         });
     }
 
@@ -72,7 +64,7 @@ public final class SegmentedSwitch extends HBox {
                 final Button b = new Button(label);
                 b.getStyleClass().add(itemStyleClass);
                 b.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
-                b.setOnAction(e -> choose(buttons.indexOf(b), true));
+                b.setOnAction(e -> choose(buttons.indexOf(b)));
                 b.setAccessibleRole(AccessibleRole.RADIO_BUTTON);
                 buttons.add(b);
                 getChildren().add(b);
@@ -84,7 +76,7 @@ public final class SegmentedSwitch extends HBox {
             }
         }
         markActive();
-        placePill(selected, false);
+        placePill(selected);
     }
 
     public void setOnSelect(IntConsumer handler) {
@@ -100,27 +92,25 @@ public final class SegmentedSwitch extends HBox {
         if (index < 0 || index >= buttons.size()) return;
         selected = index;
         markActive();
-        placePill(index, false);
+        placePill(index);
     }
 
-    private void choose(int index, boolean animate) {
+    private void choose(int index) {
         if (index < 0 || index >= buttons.size()) return;
         boolean changed = index != selected;
         selected = index;
         markActive();
-        placePill(index, animate);
+        placePill(index);
         if (changed && onSelect != null) {
             onSelect.accept(index);
         }
     }
 
-    /** Every layout pass puts the pill exactly where the selected button is; the slide overrides it. */
+    /** Every layout pass puts the pill exactly where the selected button is. */
     @Override
     protected void layoutChildren() {
         super.layoutChildren();
-        if (!sliding) {
-            placePill(selected, false);
-        }
+        placePill(selected);
     }
 
     private void markActive() {
@@ -136,7 +126,7 @@ public final class SegmentedSwitch extends HBox {
         }
     }
 
-    private void placePill(int index, boolean animate) {
+    private void placePill(int index) {
         if (index < 0 || index >= buttons.size()) return;
         Button target = buttons.get(index);
         // layoutBounds: boundsInParent includes the button's drop shadow, which put the
@@ -152,17 +142,9 @@ public final class SegmentedSwitch extends HBox {
         pill.setY(y);
         pill.setHeight(h);
 
-        boolean travel = animate && !Motion.isReduced() && pill.getWidth() > 0 && pill.getX() != x;
-        if (!travel) {
-            pill.setX(x);
-            pill.setWidth(w);
-            return;
-        }
-        final Timeline t = new Timeline(new KeyFrame(SLIDE,
-                new KeyValue(pill.xProperty(), x, Interpolator.EASE_BOTH),
-                new KeyValue(pill.widthProperty(), w, Interpolator.EASE_BOTH)));
-        sliding = true;
-        t.setOnFinished(e -> sliding = false);
-        t.play();
+        // The pill is placed where the chosen segment is. It used to slide there over 200 ms,
+        // which read as the whole switch moving; the colour change is the feedback.
+        pill.setX(x);
+        pill.setWidth(w);
     }
 }
