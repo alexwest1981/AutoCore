@@ -39,9 +39,12 @@ public class SidebarView {
 
     private Label brandSub;
     private Button overviewBtn;
+    private final Runnable onSignOut;
+    private Button signOutBtn;
 
-    public SidebarView(Consumer<String> onNavigate) {
+    public SidebarView(Consumer<String> onNavigate, Runnable onSignOut) {
         this.onNavigate = onNavigate;
+        this.onSignOut = onSignOut;
         this.container = buildSidebar();
         I18n.addListener(lang -> refreshTexts());
     }
@@ -147,6 +150,9 @@ public class SidebarView {
         }
         for (Map.Entry<String, Button> entry : navButtonMap.entrySet()) {
             entry.getValue().setText(I18n.get("nav.item." + entry.getKey()));
+        }
+        if (signOutBtn != null) {
+            signOutBtn.setText(I18n.get("nav.sign_out"));
         }
         updateToggleButtons();
     }
@@ -260,7 +266,18 @@ public class SidebarView {
         sidebar.setMinWidth(240);
         sidebar.setPrefWidth(240);
         sidebar.setMaxWidth(240);
-        sidebar.getChildren().addAll(brandNode, navScroll, langToggle);
+
+        // Signing out sits last, below the language: the way out of the app, not a page in it.
+        signOutBtn = new Button(I18n.get("nav.sign_out"));
+        signOutBtn.getStyleClass().addAll("ghost", "nav-item");
+        signOutBtn.setMaxWidth(Double.MAX_VALUE);
+        signOutBtn.setAlignment(Pos.CENTER_LEFT);
+        signOutBtn.setCursor(Cursor.HAND);
+        signOutBtn.setOnAction(e -> onSignOut.run());
+        VBox signOutBox = new VBox(signOutBtn);
+        signOutBox.setPadding(new Insets(0, 12, 14, 12));
+
+        sidebar.getChildren().addAll(brandNode, navScroll, langToggle, signOutBox);
         return sidebar;
     }
 

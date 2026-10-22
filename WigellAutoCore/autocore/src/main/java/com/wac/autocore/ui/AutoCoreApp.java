@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.slf4j.MDC;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.slf4j.Logger;
@@ -38,6 +39,9 @@ public class AutoCoreApp extends Application {
     private IdentityHolder identityHolder;
 
     private LoginService loginService;
+
+    /** Built at the first sign-in and kept, so its listeners are not added again at every sign-in. */
+    private AppShell shell;
 
     /**
      * The context is opened here, on the JavaFX launcher thread, because JavaFX creates this
@@ -112,10 +116,24 @@ public class AutoCoreApp extends Application {
     /** The card gives way to the shell, and the first page is the overview. */
     private void showApplication() {
         root.getStyleClass().remove("login-backdrop");
-        AppShell shell = new AppShell(garage);
+        if (shell == null) {
+            shell = new AppShell(garage, this::signOut);
+        }
         root.getChildren().setAll(shell.getView());
         shell.open("overview");
     }
+
+    /** Forgets who was signed in and shows the sign-in card again, without closing the window. */
+    private void signOut() {
+        identityHolder.current().ifPresent(who ->
+                log.info("Utloggning: {} ({})", who.username(), who.role()));
+        identityHolder.clear();
+        // The next user's lines start clean, so none of them carries the last user's trace-id.
+        MDC.clear();
+        showSignIn();
+    }
+
+
 
     /**
      * Shows our own failures as a sentence instead of a stack trace. One place covers every screen.
