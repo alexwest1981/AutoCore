@@ -2,6 +2,7 @@ package com.wac.autocore.service;
 
 import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
@@ -84,6 +85,47 @@ public class BillingService {
         List<WorkOrder> orders = new ArrayList<WorkOrder>();
         orders.add(workOrder);
         return createInvoiceFrom(orders, workOrderId, discountCode, extraName, extraAmount);
+    }
+
+    /**
+     * Takes back an issued invoice with a credit invoice of its own. The original is left exactly
+     * as it was sent, and the two together come to zero.
+     */
+    public Invoice createCreditInvoice(int invoiceId, String reason) {
+        Invoice original = findInvoice(invoiceId);
+        if (original == null) {
+            throw new NotFoundException("Invoice with ID " + invoiceId + " does not exist.");
+        }
+        if (original.isCredit()) {
+            throw new RuleViolationException(
+                    "Invoice " + original.getNumber() + " is a credit invoice and cannot be credited.");
+        }
+        Invoice alreadyCredited = invoiceRepository.findCreditFor(invoiceId);
+        if (alreadyCredited != null) {
+            throw new RuleViolationException("Invoice " + original.getNumber()
+                    + " is already credited by " + alreadyCredited.getNumber() + ".");
+        }
+
+        // Every amount is mirrored, including the discount, so the VAT is given back exactly as it
+        // was charged and the pair nets to zero.
+        Invoice credit = new Invoice(0, original.getWorkOrderId(), LocalDate.now(), -original.getAmount());
+        credit.setDiscount(-original.getDiscount());
+        credit.setCreditOf(original.getId());
+        credit.setCreditReason(reason);
+
+        for (InvoiceLine line : original.getLines()) {
+            InvoiceLine copied = new InvoiceLine(0, 0, line.getServiceItemId(), line.getServiceName(),
+                    -line.getPrice(), -line.getDiscount());
+            copied.setPackageName(line.getPackageName());
+            credit.addLine(copied);
+        }
+
+        try {
+            invoiceRepository.save(credit);
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not save credit invoice", e);
+        }
+        return credit;
     }
 
     /** Invoices all the work done on a booking on a single invoice. */
@@ -348,6 +390,14 @@ public class BillingService {
             throw new DataAccessException("Could not check for existing invoices", e);
         }
         return false;
+    }
+
+    private Invoice findInvoice(int id) {
+        try {
+            return invoiceRepository.findById(id);
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not read invoice " + id, e);
+        }
     }
 
     private WorkOrder findWorkOrder(int id) {

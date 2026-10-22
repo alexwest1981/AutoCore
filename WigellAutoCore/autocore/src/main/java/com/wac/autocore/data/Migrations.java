@@ -27,7 +27,8 @@ final class Migrations {
         "001_baslinjen.sql",
         "002_nycklar.sql",
         "003_ore.sql",
-        "004_users.sql"
+        "004_users.sql",
+        "005_fakturanummer.sql"
     };
 
     /**
@@ -46,7 +47,13 @@ final class Migrations {
         {"work_orders", "other_comments", "TEXT"},
         {"booking_service_items", "package_name", "TEXT"},
         {"invoice_lines", "package_name", "TEXT"},
-        {"work_order_service_items", "package_name", "TEXT"}
+        {"work_order_service_items", "package_name", "TEXT"},
+        {"customers", "address", "TEXT"},
+        {"customers", "postal_code", "TEXT"},
+        {"customers", "city", "TEXT"},
+        {"invoices", "invoice_number", "TEXT"},
+        {"invoices", "credit_of", "INTEGER"},
+        {"invoices", "credit_reason", "TEXT"}
     };
 
     private Migrations() {}

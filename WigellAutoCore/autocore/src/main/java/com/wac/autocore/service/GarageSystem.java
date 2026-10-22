@@ -222,6 +222,46 @@ public class GarageSystem implements WorkOrderGateway {
         Settings.put(db, LANGUAGE_KEY, lang);
     }
 
+    /** The workshop's own details as they stand on an invoice, or the built-in ones. */
+    public Seller seller() {
+        Seller defaults = Seller.defaults();
+        return new Seller(
+                Settings.get(db, Seller.KEY_NAME, defaults.name()),
+                Settings.get(db, Seller.KEY_STREET, defaults.street()),
+                Settings.get(db, Seller.KEY_POSTAL_CODE, defaults.postalCode()),
+                Settings.get(db, Seller.KEY_CITY, defaults.city()),
+                Settings.get(db, Seller.KEY_PHONE, defaults.phone()),
+                Settings.get(db, Seller.KEY_EMAIL, defaults.email()),
+                Settings.get(db, Seller.KEY_ORG_NUMBER, defaults.orgNumber()),
+                Settings.get(db, Seller.KEY_VAT_NUMBER, defaults.vatNumber()),
+                paymentTermsDays());
+    }
+
+    /** Stores the workshop's own details. They stand on every invoice, so an administrator sets them. */
+    public void saveSeller(Seller seller) {
+        Settings.put(db, Seller.KEY_NAME, seller.name());
+        Settings.put(db, Seller.KEY_STREET, seller.street());
+        Settings.put(db, Seller.KEY_POSTAL_CODE, seller.postalCode());
+        Settings.put(db, Seller.KEY_CITY, seller.city());
+        Settings.put(db, Seller.KEY_PHONE, seller.phone());
+        Settings.put(db, Seller.KEY_EMAIL, seller.email());
+        Settings.put(db, Seller.KEY_ORG_NUMBER, seller.orgNumber());
+        Settings.put(db, Seller.KEY_VAT_NUMBER, seller.vatNumber());
+        Settings.put(db, Seller.KEY_PAYMENT_TERMS_DAYS, String.valueOf(seller.paymentTermsDays()));
+        changed();
+    }
+
+    private int paymentTermsDays() {
+        int fallback = Seller.defaults().paymentTermsDays();
+        try {
+            int days = Integer.parseInt(Settings.get(db, Seller.KEY_PAYMENT_TERMS_DAYS,
+                    String.valueOf(fallback)));
+            return days > 0 ? days : fallback;
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
     /** The booking's price. The views ask here instead of adding it up themselves. */
     public int bookingPrice(Booking booking) {
         return bookingService.priceOf(booking);
@@ -504,6 +544,13 @@ public class GarageSystem implements WorkOrderGateway {
         Invoice invoice = billingService.createInvoiceForBooking(bookingId, discountCode, extraName, extraAmount);
         changed();
         return invoice;
+    }
+
+    /** Takes back an issued invoice with a credit invoice of its own. */
+    public Invoice createCreditInvoice(int invoiceId, String reason) {
+        Invoice credit = billingService.createCreditInvoice(invoiceId, reason);
+        changed();
+        return credit;
     }
 
     public Mechanic createMechanic(String name, String phone, String specialization) {

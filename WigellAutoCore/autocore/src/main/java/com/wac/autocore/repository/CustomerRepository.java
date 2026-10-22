@@ -15,7 +15,7 @@ public class CustomerRepository {
         this.queries = new Queries(db);
     }
 
-    private static final String COLUMNS = "id, name, phone, email, vip";
+    private static final String COLUMNS = "id, name, phone, email, address, postal_code, city, vip";
 
     public void save(Customer customer) {
         if (customer.getId() == 0 || findById(customer.getId()) == null) {
@@ -39,14 +39,18 @@ public class CustomerRepository {
     }
 
     private void insert(Customer customer) {
-        String sql = "INSERT INTO customers (name, phone, email, vip) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO customers (name, phone, email, address, postal_code, city, vip) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         // Only set the id when the database gave one, as before.
         int id = queries.insert(sql, statement -> {
             statement.setString(1, customer.getName());
             statement.setString(2, customer.getPhone());
             statement.setString(3, customer.getEmail());
-            statement.setInt(4, customer.isVip() ? 1 : 0);
+            statement.setString(4, emptyToNull(customer.getAddress()));
+            statement.setString(5, emptyToNull(customer.getPostalCode()));
+            statement.setString(6, emptyToNull(customer.getCity()));
+            statement.setInt(7, customer.isVip() ? 1 : 0);
         });
 
         if (id > 0) {
@@ -55,15 +59,23 @@ public class CustomerRepository {
     }
 
     private void update(Customer customer) {
-        String sql = "UPDATE customers SET name = ?, phone = ?, email = ?, vip = ? WHERE id = ?";
+        String sql = "UPDATE customers SET name = ?, phone = ?, email = ?, address = ?, postal_code = ?, "
+                + "city = ?, vip = ? WHERE id = ?";
 
         queries.write(sql, statement -> {
             statement.setString(1, customer.getName());
             statement.setString(2, customer.getPhone());
             statement.setString(3, customer.getEmail());
-            statement.setInt(4, customer.isVip() ? 1 : 0);
-            statement.setInt(5, customer.getId());
+            statement.setString(4, emptyToNull(customer.getAddress()));
+            statement.setString(5, emptyToNull(customer.getPostalCode()));
+            statement.setString(6, emptyToNull(customer.getCity()));
+            statement.setInt(7, customer.isVip() ? 1 : 0);
+            statement.setInt(8, customer.getId());
         });
+    }
+
+    private static String emptyToNull(String text) {
+        return text == null || text.trim().isEmpty() ? null : text.trim();
     }
 
     private static Customer build(ResultSet resultSet) throws SQLException {
@@ -74,6 +86,9 @@ public class CustomerRepository {
                 resultSet.getString("email")
         );
 
+        customer.setAddress(resultSet.getString("address"));
+        customer.setPostalCode(resultSet.getString("postal_code"));
+        customer.setCity(resultSet.getString("city"));
         customer.setVip(resultSet.getInt("vip") == 1);
 
         return customer;
