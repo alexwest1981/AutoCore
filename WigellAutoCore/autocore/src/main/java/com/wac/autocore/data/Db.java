@@ -44,9 +44,12 @@ public class Db {
         if (ready) {
             return;
         }
-        ready = true;
         initTables();
         SeedData.seedIfEmpty(this);
+        // Last, and only once the schema is in place. A start that failed must not be remembered as
+        // done: if it were, every later call would query a database without tables and report
+        // "no such table" instead of the error that actually happened.
+        ready = true;
     }
 
     /** Makes sure the database holds the schema the code expects. */
