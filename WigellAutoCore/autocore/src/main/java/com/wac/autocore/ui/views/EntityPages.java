@@ -169,7 +169,7 @@ public final class EntityPages {
 
         VBox notices = new javafx.scene.layout.VBox(6,
                 UiComponents.viewNotice(
-                        PageRouter.countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()),
+                        PageRouter.countBookingsWaitingForWorkOrder(garage),
                         I18n.get("view.notice.workorders.one"),
                         I18n.get("view.notice.workorders.many")),
                 UiComponents.viewNotice(

@@ -32,10 +32,8 @@ final class CreateWorkOrderDialog {
         // booking that is only partly split (some services left) should still be fillable.
         List<Booking> bookings = new ArrayList<Booking>();
         for (Booking b : garage.getBookings()) {
-            if (b.getStatus() == BookingStatus.BOOKED || b.getStatus() == BookingStatus.CONFIRMED) {
-                if (WorkOrderPlan.hasServicesLeftForAWorkOrder(garage, b)) {
-                    bookings.add(b);
-                }
+            if (WorkOrderPlan.waitsForAWorkOrder(garage, b)) {
+                bookings.add(b);
             }
         }
 

@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.wac.autocore.model.Booking;
-import com.wac.autocore.model.Mechanic;
-import com.wac.autocore.model.ServiceItem;
-import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.*;
 import com.wac.autocore.service.GarageSystem;
 
 /**
@@ -73,23 +70,14 @@ public final class WorkOrderPlan {
 
         return plan;
     }
-
-    /** True if the booking has at least one service no work order has taken care of. */
-    static boolean hasServicesLeftForAWorkOrder(GarageSystem garage, Booking booking) {
-        for (Integer serviceItemId : booking.getServiceItemIds()) {
-            boolean claimed = false;
-            for (WorkOrder order : garage.getWorkOrders()) {
-                if (order.getBookingId() == booking.getId()
-                        && order.getServiceItemIds().contains(serviceItemId)) {
-                    claimed = true;
-                    break;
-                }
-            }
-            if (!claimed) {
-                return true;
-            }
-        }
-        return false;
+    /**
+     * A booking that can get a work order now: booked or confirmed, with a service no active
+     * order has taken. The dialog lists these and the menu counts them, so both say the same.
+     */
+    public static boolean waitsForAWorkOrder(GarageSystem garage, Booking booking) {
+        BookingStatus status = booking.getStatus();
+        return (status == BookingStatus.BOOKED || status == BookingStatus.CONFIRMED)
+                && garage.hasServicesLeftForAWorkOrder(booking.getId());
     }
 
     /** A booking without services cannot become a work order. */
