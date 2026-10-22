@@ -8,6 +8,7 @@ public class ValidationException extends AppException {
     public ValidationException(String keySuffix) {
         super(keySuffix);
         this.keySuffix = keySuffix;
+        noteRaised();
     }
 
     /** The full i18n key, for example dialog.validation.phone_ten_digits. */

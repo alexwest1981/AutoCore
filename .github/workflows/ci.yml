@@ -10,10 +10,19 @@ on:
       - develop
       - main
 
+# **Ett flöde per gren.** Utan det startar varje push en egen körning; på en sprintgren med
+# öppen PR blir det två samtidigt (push + pull_request) som slåss om samma runners. Den äldre
+# avbryts i stället — den senaste är den som gäller.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     name: Build
     runs-on: ubuntu-latest
+    # En hängande Maven-körning ska inte kunna stå i timmar: standardtaket är sex timmar.
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository

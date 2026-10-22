@@ -5,5 +5,6 @@ public class MechanicUnavailableException extends AppException {
 
     public MechanicUnavailableException(String message) {
         super(message);
+        noteRaised();
     }
 }
