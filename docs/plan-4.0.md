@@ -69,7 +69,7 @@ Logback konfigureras i `logback-spring.xml` med två profiler. Utan profil, elle
 
 Varje rad bär tidpunkt, nivå, tråd och komponent. I MDC ligger ett trace-id och namnet på operationen, så en nekad åtkomst och raden som förklarar den hör ihop.
 
-Verksamhetshändelser loggas när en arbetsorder skapas och slutförs. Säkerhetshändelser loggas när någon nekas, med användarnamn och operation men aldrig med det användaren skrev. Tekniska fel loggas med undantaget, medan användaren får en mening utan klassnamn och utan intern text. Tre prov håller det: `LogContentTest` läser loggfilen, `EventLoggingTest` fångar raderna i minnet, och `SecretScanTest` läser allt git spårar.
+Verksamhetshändelser loggas när en arbetsorder skapas och slutförs. Säkerhetshändelser loggas när någon nekas, med användarnamn och operation men aldrig med det användaren skrev. Tekniska fel loggas med undantaget, medan användaren får en mening utan klassnamn och utan intern text. Loggningen hålls av två prov: `LogContentTest` läser loggfilen och letar trace-id, hemligheter och personuppgifter, och `EventLoggingTest` fångar raderna i minnet och prövar händelserna och användartexten. `SecretScanTest` hör till samma sak men läser källkoden i stället, och faller om en hemlighet skrivs in där.
 
 ## 7. Hur kravet på fristående verksamhetsfunktionalitet uppfylls
 
