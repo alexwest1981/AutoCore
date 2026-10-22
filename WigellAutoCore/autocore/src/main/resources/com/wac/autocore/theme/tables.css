@@ -139,6 +139,13 @@ TableView .column-header .arrow,
     -fx-background-color: #ffffff;
 }
 
+/* Every row is the same height. A row is as tall as its tallest cell, so a row carrying a
+   status chip was 39 px and a row with plain text 34 px, and the rows hopped down the page.
+   The height is fixed here instead, tall enough for a chip and for a cell with a sub-line. */
+.table-row-cell {
+    -fx-cell-size: 40;
+}
+
 /* Table cells: padding 8 8 and left alignment matching the column header. */
 TableColumn,
 TableView .table-cell,

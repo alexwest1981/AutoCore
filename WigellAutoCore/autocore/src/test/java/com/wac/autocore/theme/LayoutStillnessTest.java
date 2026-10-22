@@ -90,6 +90,19 @@ class LayoutStillnessTest {
      * and that folder holds classes and no CSS, so a classpath lookup finds it first and comes up
      * empty. The source tree is complete, and it is the file a person edits.
      */
+    @Test
+    void everyTableRowHasTheSameHeight() throws IOException {
+
+        // A row is as tall as its tallest cell, so a row carrying a status chip came out five
+        // pixels taller than a row of plain text and the rows hopped down the page. A fixed
+        // cell size is what holds them level.
+        Path tables = themeDir().resolve("tables.css");
+        String text = stripComments(new String(Files.readAllBytes(tables), StandardCharsets.UTF_8));
+
+        assertTrue(Pattern.compile("\\.table-row-cell\\s*\\{[^}]*\\s*-fx-cell-size\\s*:").matcher(text).find(),
+                "tables.css måste sätta -fx-cell-size på .table-row-cell, annars blir raderna olika höga");
+    }
+
     private static Path themeDir() {
         Path fromSource = Paths.get("src/main/resources/com/wac/autocore/theme");
         if (Files.isDirectory(fromSource)) {
