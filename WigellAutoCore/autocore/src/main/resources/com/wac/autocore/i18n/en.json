@@ -466,6 +466,7 @@
       "details_title": "Work Order Details",
       "historical_notice": "Showing charged prices in effect when work was performed.",
       "no_actions": "No actions left on this order.",
+      "read_only": "Your account may read this order. The actions belong to someone else.",
       "cancel.title": "Cancel work order",
       "cancel.header": "Confirm cancellation",
       "cancel.confirm": "Are you sure you want to cancel work order #{0}?",

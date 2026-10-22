@@ -142,8 +142,10 @@ public final class EntityPages {
                 UiComponents.secondaryButton(I18n.get("entity.workorders.action_draft")), garage, Operation.CREATE_WORK_ORDER);
         draftBtn.setOnAction(e -> ActionDialogs.showCreateDraftDialog(garage, router::requestReload));
 
+        // Looking at an order is a reading, so a role that only reads gets this button. What it may
+        // do once the order is open is a separate question, answered inside the dialog.
         Button detailsBtn = Actions.button(
-                UiComponents.secondaryButton(I18n.get("entity.workorders.action_details")), garage, Operation.UPDATE_WORK_ORDER);
+                UiComponents.secondaryButton(I18n.get("entity.workorders.action_details")), garage, Operation.READ);
         detailsBtn.setDisable(true);
         detailsBtn.setOnAction(e -> {
             WorkOrder sel = t.getSelectionModel().getSelectedItem();

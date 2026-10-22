@@ -466,6 +466,7 @@
       "details_title": "Arbetsorderdetaljer",
       "historical_notice": "Visar debiterade priser som gällde när arbetet utfördes.",
       "no_actions": "Inga åtgärder kvar på den här ordern.",
+      "read_only": "Ditt konto får läsa ordern. Åtgärderna tillhör någon annan.",
       "cancel.title": "Avbryt arbetsorder",
       "cancel.header": "Bekräfta avbrytande",
       "cancel.confirm": "Är du säker på att du vill avbryta arbetsorder #{0}?",
