@@ -59,7 +59,7 @@ Att lösa migreringen genom att börja om med en tom databas är alltså uteslut
 
 Konton ligger i en egen tabell med roll och PBKDF2-hash. Hashen är 210 000 varv i migreringen och smälts om till 600 000 vid nästa lyckade inloggning. Lösenorden i klartext finns bara hos gruppen, och de kan sättas utifrån med miljövariabler som hashas vid start.
 
-Inloggningen fyller en `IdentityHolder`. Rollmatrisen är data: 30 operationer och tre roller, där administratören har allt, verkstadspersonalen allt utom fem saker, och en läsbehörig får läsa dagens arbete och välja språk men inte ekonomin.
+Inloggningen fyller en `IdentityHolder`. Rollmatrisen är data: 30 operationer och tre roller. Administratören har allt. Verkstadspersonalen arbetar med kunder, fordon, bokningar, arbetsorder, tjänster och mekaniker, och har varken borttagningarna, inställningarna eller ekonomin. En läsbehörig läser dagens arbete och väljer språk, och ser inte heller ekonomin. Fakturor och betalningar är administratörens, både att läsa, skapa och ta emot.
 
 Kontrollen sitter i en dekoratör framför fasaden, inte i gränssnittet. Den täcker både skrivningar och läsningar, och den svarar olika för "ingen är inloggad" och "rollen får inte", eftersom kravet skiljer på dem. Samma dekoratör används i det fristående programmet.
 

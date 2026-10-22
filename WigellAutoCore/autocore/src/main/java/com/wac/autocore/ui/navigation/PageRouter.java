@@ -220,10 +220,16 @@ public class PageRouter {
         sidebar.setNavCount("workorders",
                 countBookingsWithoutWorkOrder(garage.getBookings(), garage.getWorkOrders()));
         sidebar.setNavCount("bookings", 0);
-        sidebar.setNavCount("invoices",
-                countBookingsReadyForInvoice(garage.getBookings(), garage.getWorkOrders(),
-                        garage.getInvoices()));
-        sidebar.setNavCount("payments", countUnpaidInvoices(garage.getInvoices()));
+
+        // The two finance badges ask for invoices, and a role that may not see the economy would be
+        // refused for a number it is not allowed to be told. Asking only when the answer is allowed
+        // keeps the menu honest: no badge, because there is no page to put it on.
+        if (garage.may(com.wac.autocore.security.Operation.READ_FINANCE)) {
+            sidebar.setNavCount("invoices",
+                    countBookingsReadyForInvoice(garage.getBookings(), garage.getWorkOrders(),
+                            garage.getInvoices()));
+            sidebar.setNavCount("payments", countUnpaidInvoices(garage.getInvoices()));
+        }
     }
 
     /** Unpaid invoices are money to come in, that is what is waiting to be handled. */
