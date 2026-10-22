@@ -35,6 +35,8 @@ public class SidebarView {
     /** The selection travels down the list instead of appearing under the new item. */
     private final javafx.scene.shape.Rectangle navPill = new javafx.scene.shape.Rectangle();
     private VBox navRoot;
+    /** The service, so a menu entry that only creates something can be left out. */
+    private com.wac.autocore.service.GarageSystem garage;
     /** The item the pill marks, kept so a later layout pass can put the pill back. */
     private Button currentNav;
 
@@ -44,8 +46,15 @@ public class SidebarView {
     private Button signOutBtn;
 
     public SidebarView(Consumer<String> onNavigate, Runnable onSignOut) {
+        this(onNavigate, onSignOut, null);
+    }
+
+    /** With the service at hand the menu can leave out the pages a role may not do anything on. */
+    public SidebarView(Consumer<String> onNavigate, Runnable onSignOut,
+                       com.wac.autocore.service.GarageSystem garage) {
         this.onNavigate = onNavigate;
         this.onSignOut = onSignOut;
+        this.garage = garage;
         this.container = buildSidebar();
         I18n.addListener(lang -> refreshTexts());
     }
@@ -236,9 +245,16 @@ public class SidebarView {
         groups.setPadding(new Insets(18, 0, 16, 0));
         addGroup(groups, "nav.section.customers", navItem("customers", "nav.item.customers"));
         addGroup(groups, "nav.section.vehicles", navItem("vehicles", "nav.item.vehicles"));
-        addGroup(groups, "nav.section.bookings",
-                navItem("bookings", "nav.item.bookings"),
-                navItem("dropin", "nav.item.dropin"));
+        // Drop-in is not a page: pressing it opens the drop-in booking. A role that may not create
+        // a booking gets no such entry.
+        if (garage == null || garage.may(com.wac.autocore.security.Operation.CREATE_BOOKING)) {
+            addGroup(groups, "nav.section.bookings",
+                    navItem("bookings", "nav.item.bookings"),
+                    navItem("dropin", "nav.item.dropin"));
+        } else {
+            addGroup(groups, "nav.section.bookings",
+                    navItem("bookings", "nav.item.bookings"));
+        }
         addGroup(groups, "nav.section.workshop",
                 navItem("services", "nav.item.services"),
                 navItem("mechanics", "nav.item.mechanics"),

@@ -33,6 +33,18 @@ public class GuardedGarageSystem extends GarageSystem {
         this.identityHolder = identityHolder;
     }
 
+    /**
+     * The same rule the guard enforces, as a question. The window asks this before it draws a
+     * button, so a function the role cannot use is never offered.
+     */
+    @Override
+    public boolean may(Operation operation) {
+
+        return identityHolder.current()
+                .map(identity -> RoleMatrix.allows(identity.role(), operation))
+                .orElse(false);
+    }
+
     private void require(Operation operation) {
 
         // A new operation starts here: every line it logs, down to the dialog that shows a
@@ -732,7 +744,10 @@ public class GuardedGarageSystem extends GarageSystem {
 
         require(Operation.READ);
 
-        return super.canDeleteWorkOrder(workOrderId);
+        // The question is whether this person may remove this order, so the role is part of the
+        // answer. Without it the window drew a delete button for a staff member and the refusal
+        // only arrived after the press, which is the behaviour the team asked to be rid of.
+        return may(Operation.DELETE_WORK_ORDER) && super.canDeleteWorkOrder(workOrderId);
     }
 
     @Override

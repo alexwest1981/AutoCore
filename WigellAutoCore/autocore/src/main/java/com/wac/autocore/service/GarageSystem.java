@@ -6,6 +6,7 @@ import com.wac.autocore.exception.ValidationException;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.data.Settings;
 import com.wac.autocore.model.*;
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.repository.BookingRepository;
 import com.wac.autocore.repository.CustomerRepository;
 import com.wac.autocore.repository.InvoiceRepository;
@@ -55,6 +56,17 @@ public class GarageSystem implements WorkOrderGateway {
 
     public GarageSystem(RepositoryFactory repositories) {
         this(repositories, new Printer() { });
+    }
+
+    /**
+     * Whether the person using the system may do this. The window asks before it draws a button,
+     * so a function the role cannot use is not offered at all rather than offered and then refused.
+     *
+     * Without a guard around the service nobody is signed in and nothing is restricted, which is
+     * the truth for a plain service object. {@link GuardedGarageSystem} answers for real.
+     */
+    public boolean may(Operation operation) {
+        return true;
     }
 
     public GarageSystem(RepositoryFactory repositories, Printer printer) {
