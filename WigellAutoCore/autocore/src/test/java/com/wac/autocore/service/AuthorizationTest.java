@@ -11,6 +11,7 @@ import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.AccessDeniedException;
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.exception.NotAuthenticatedException;
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.security.Identity;
 import com.wac.autocore.security.IdentityHolder;
@@ -21,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Optional;
 
 /**
@@ -282,5 +285,24 @@ class AuthorizationTest {
 
         assertThrows(NotAuthenticatedException.class, () -> garage.canDeleteWorkOrder(1));
         assertThrows(NotAuthenticatedException.class, () -> garage.deleteWorkOrder(1));
+    }
+
+    @Test
+    void theDropInTheProofsUseIsGuardedToo() {
+        GarageSystem garage = garage();
+
+        // The overload with the day in the caller's hand writes the same row as the window does, so
+        // it has to stand behind the same guard. A new public method is a new door unless it is.
+        assertThrows(NotAuthenticatedException.class,
+                () -> garage.createDropInBooking(1, java.util.Collections.emptyList(),
+                        java.util.Collections.emptyList(), LocalDate.of(2027, 3, 3), LocalTime.NOON));
+
+        signIn("verkstaden", Role.STAFF);
+
+        // Nothing to book, but the guard has let the call through: the refusal now comes from the
+        // business rule and not from the door.
+        assertThrows(RuleViolationException.class,
+                () -> garage.createDropInBooking(1, java.util.Collections.emptyList(),
+                        java.util.Collections.emptyList(), LocalDate.of(2027, 3, 3), LocalTime.NOON));
     }
 }
