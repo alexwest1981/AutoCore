@@ -8,11 +8,22 @@ import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Payment;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
+import com.wac.autocore.repository.UserRepository;
+import com.wac.autocore.security.Identity;
+import com.wac.autocore.security.IdentityHolder;
 import com.wac.autocore.service.GarageSystem;
+import com.wac.autocore.service.GuardedGarageSystem;
+import com.wac.autocore.service.LoginService;
 import com.wac.autocore.ui.ConsolePrinter;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import org.slf4j.LoggerFactory;
+
+import java.io.Console;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class ConsoleApp {
@@ -25,8 +36,21 @@ public class ConsoleApp {
 
     public static void main(String[] args) {
 
+        configureLogging();
+
         Db db = new Db(DatabasePath.resolve(args));
-        garageSystem = new GarageSystem(new SqliteRepositoryFactory(db), new ConsolePrinter());
+
+        // This is a second way into the database, so it has to stand behind the same guard as the
+        // window. Without a sign-in it went straight to GarageSystem and could read and write
+        // everything, which is the way round the access control that the order says must not exist.
+        IdentityHolder identity = new IdentityHolder();
+
+        if (!signIn(db, identity)) {
+            System.out.println("Ingen inloggning, programmet avslutas.");
+            System.exit(1);
+        }
+
+        garageSystem = new GuardedGarageSystem(new SqliteRepositoryFactory(db), identity, new ConsolePrinter());
 
         boolean running = true;
 
@@ -119,6 +143,69 @@ public class ConsoleApp {
         System.out.println("Goodbye!");
 
         scanner.close();
+    }
+
+    /**
+     * The same sign-in the window uses: a name and a password become an identity in the holder the
+     * guard reads. Three tries, then no. The password is read without echo when the terminal can.
+     */
+    private static boolean signIn(Db db, IdentityHolder identity) {
+
+        LoginService login = new LoginService(new UserRepository(db));
+        Console terminal = System.console();
+
+        for (int attempt = 1; attempt <= 3; attempt++) {
+
+            System.out.print("Användare: ");
+            String username = readLine();
+            if (username == null) {
+                return false;
+            }
+
+            String password;
+            if (terminal != null) {
+                char[] typed = terminal.readPassword("Lösenord: ");
+                System.out.println();
+                password = typed == null ? "" : new String(typed);
+            } else {
+                System.out.print("Lösenord: ");
+                password = readLine();
+                if (password == null) {
+                    return false;
+                }
+            }
+
+            Optional<Identity> signedIn = login.signIn(username.trim(), password);
+
+            if (signedIn.isPresent()) {
+                identity.set(signedIn.get());
+                return true;
+            }
+            System.out.println("Fel användare eller lösenord.");
+        }
+
+        return false;
+    }
+
+    /** The next line, or null when the input has ended. A closed stdin is not a crash. */
+    private static String readLine() {
+        return scanner.hasNextLine() ? scanner.nextLine() : null;
+    }
+
+    /** Loads the standalone logging setup, since Spring is not here to read logback-spring.xml. */
+    private static void configureLogging() {
+
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(context);
+        context.reset();
+
+        try {
+            configurator.doConfigure(ConsoleApp.class.getResource("/logback-standalone.xml"));
+
+        } catch (Exception cannotRead) {
+            System.out.println("Kunde inte läsa logginställningen: " + cannotRead.getMessage());
+        }
     }
 
     private static void printHeader() {
