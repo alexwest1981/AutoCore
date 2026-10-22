@@ -5,10 +5,12 @@ public class DatabaseInitException extends AppException {
 
     public DatabaseInitException(String message) {
         super(message);
+        noteRaised();
     }
 
     public DatabaseInitException(String message, Throwable cause) {
         super(message);
         initCause(cause);
+        noteRaised();
     }
 }

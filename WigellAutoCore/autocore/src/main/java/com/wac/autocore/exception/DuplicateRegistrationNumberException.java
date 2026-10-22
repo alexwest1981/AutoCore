@@ -5,5 +5,6 @@ public class DuplicateRegistrationNumberException extends AppException {
 
     public DuplicateRegistrationNumberException(String message) {
         super(message);
+        noteRaised();
     }
 }

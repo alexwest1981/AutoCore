@@ -2,6 +2,7 @@ package com.wac.autocore.logging;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.qos.logback.classic.Level;
@@ -11,6 +12,7 @@ import ch.qos.logback.core.read.ListAppender;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.AccessDeniedException;
+import com.wac.autocore.exception.AppException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Booking;
@@ -110,15 +112,14 @@ class EventLoggingTest {
     @Test
     void aRefusalIsLoggedWithoutTheTextTheUserTyped() {
 
-        Logger dialogs = (Logger) LoggerFactory.getLogger(ActionDialogs.class);
-        ListAppender<ILoggingEvent> lines = attach(dialogs);
+        ListAppender<ILoggingEvent> lines = attach(refusals());
 
         // The message may name a customer, so it is the class and the key that go in the log.
-        ActionDialogs.logAppError(new RuleViolationException(
-                "Kunde inte spara kund Anna Andersson på 070-1234567",
-                "dialog.workorder.no_services"));
-
-        dialogs.detachAppender(lines);
+        assertThrows(RuleViolationException.class, () -> {
+            throw new RuleViolationException(
+                    "Kunde inte spara kund Anna Andersson på 070-1234567",
+                    "dialog.workorder.no_services");
+        });
 
         assertEquals(1, lines.list.size());
 
@@ -133,13 +134,12 @@ class EventLoggingTest {
     @Test
     void aFailedDatabaseOperationIsLoggedWithItsException() {
 
-        Logger dialogs = (Logger) LoggerFactory.getLogger(ActionDialogs.class);
-        ListAppender<ILoggingEvent> lines = attach(dialogs);
+        ListAppender<ILoggingEvent> lines = attach(refusals());
 
         RuntimeException cause = new RuntimeException("no such table: work_orders");
-        ActionDialogs.logAppError(new DataAccessException("Kunde inte läsa arbetsordrarna", cause));
-
-        dialogs.detachAppender(lines);
+        assertThrows(DataAccessException.class, () -> {
+            throw new DataAccessException("Kunde inte läsa arbetsordrarna", cause);
+        });
 
         assertEquals(1, lines.list.size());
         ILoggingEvent line = lines.list.get(0);
@@ -151,15 +151,28 @@ class EventLoggingTest {
     @Test
     void theGuardLogsARefusalOnceAndNotTwice() {
 
-        Logger dialogs = (Logger) LoggerFactory.getLogger(ActionDialogs.class);
-        ListAppender<ILoggingEvent> lines = attach(dialogs);
+        ListAppender<ILoggingEvent> lines = attach(refusals());
 
-        // The guard has already written who and what, so the ui stays quiet.
-        ActionDialogs.logAppError(new AccessDeniedException("Role READ_ONLY may not CREATE_CUSTOMER"));
-
-        dialogs.detachAppender(lines);
+        // The guard has already written who and what, so the exception stays quiet.
+        assertThrows(AccessDeniedException.class, () -> {
+            throw new AccessDeniedException("Role READ_ONLY may not CREATE_CUSTOMER");
+        });
 
         assertTrue(lines.list.isEmpty(), "Nekad åtkomst ska inte loggas två gånger");
+    }
+
+    @Test
+    void aRefusalReachesTheLogWithoutAnyoneInTheUiLoggingIt() {
+
+        ListAppender<ILoggingEvent> lines = attach(refusals());
+
+        // The way in is the console's: call the service and say something about the no. Nothing in
+        // the caller writes to the log, so the line can only come from where the no was raised.
+        assertThrows(AppException.class, () -> garage.createCustomer("", "", ""));
+        assertThrows(AppException.class, () -> garage.createCustomer("", "", ""));
+
+        assertEquals(2, lines.list.size(), "Två nekade försök ska ge två rader, inte noll och inte fyra");
+        assertTrue(lines.list.get(0).getFormattedMessage().contains("ValidationException"));
     }
 
     @Test
@@ -178,6 +191,11 @@ class EventLoggingTest {
                 new AccessDeniedException("Role READ_ONLY may not CREATE_CUSTOMER"));
 
         assertEquals(I18n.get("dialog.access.denied"), refusal);
+    }
+
+    /** The logger every refusal writes to, whichever way the program was entered. */
+    private static Logger refusals() {
+        return (Logger) LoggerFactory.getLogger(AppException.class);
     }
 
     private static ListAppender<ILoggingEvent> attach(Logger logger) {

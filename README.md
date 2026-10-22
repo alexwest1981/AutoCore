@@ -160,9 +160,20 @@ Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord oc
 
 ## Prov och bevis
 
-`mvn test` kör 102 JUnit-prov, och ingen av dem hoppas över: loggprovningen skriver sin egen loggfil i stället för att läsa en som råkar finnas. Utöver dem ligger femton bevisprogram i `src/test/java/com/wac/autocore/proof/`, utanför jar-filen, där var och ett skriver ut sitt svar.
+`mvn test` kör 109 JUnit-prov, och ingen av dem hoppas över: loggprovningen skriver sin egen loggfil i stället för att läsa en som råkar finnas. Utöver dem ligger femton bevisprogram i `src/test/java/com/wac/autocore/proof/`, utanför jar-filen, där var och ett skriver ut sitt svar.
 
 Jämförelsen mot Java 8-baslinjen, elva prov inspelade på `b0ef2b9` och samma elva körda på 4.0, ligger i [docs/bevis/](docs/bevis/README.md) tillsammans med utskrifterna från båda sidorna. Den som bara har repot kan läsa varje rad som skiljer sig.
+
+### Ett kort stängs med ett bevis som går att köra om
+
+Ett bevis är en av tre saker:
+
+1. Ett prov som fäller när beteendet försvinner.
+2. Ett dokument i `docs/` med ett kommando som går att köra om.
+3. En fil i `docs/bevis/` med utskriften och hur den togs.
+
+En muntlig genomgång räknas inte, och en commit som nämner nyckeln räknas inte. Automationen stänger kortet när en PR nämner det, så nyckeln i en commit säger ingenting om att arbetet finns. Skriv i kortet vilken av de tre det är och var den ligger, och flytta först därefter kortet till Done. Saknas beviset stannar kortet där det är.
+
 
 ## Team
 
