@@ -323,6 +323,10 @@ class AuthorizationTest {
         assertFalse(garage.may(Operation.CREATE_BOOKING));
         assertFalse(garage.may(Operation.CREATE_CUSTOMER));
         assertFalse(garage.may(Operation.DELETE_WORK_ORDER));
+        // The work-order list offers "Detaljer" to whoever may read, so this account can open an
+        // order. Everything inside that dialog is a change, and none of it is drawn for it.
+        assertFalse(garage.may(Operation.UPDATE_WORK_ORDER));
+        assertFalse(garage.may(Operation.CHANGE_WORK_ORDER_STATUS));
 
         signIn("verkstaden", Role.STAFF);
 
