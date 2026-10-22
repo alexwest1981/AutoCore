@@ -27,6 +27,12 @@ public class GuardedGarageSystem extends GarageSystem {
         this.identityHolder = identityHolder;
     }
 
+    /** The same guard over a service that writes somewhere other than the window, such as a console. */
+    public GuardedGarageSystem(RepositoryFactory repositories, IdentityHolder identityHolder, Printer printer) {
+        super(repositories, printer);
+        this.identityHolder = identityHolder;
+    }
+
     private void require(Operation operation) {
 
         // A new operation starts here: every line it logs, down to the dialog that shows a
