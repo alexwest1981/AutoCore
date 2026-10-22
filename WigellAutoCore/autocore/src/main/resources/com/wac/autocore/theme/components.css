@@ -165,6 +165,39 @@
     -fx-arc-width: 8;
     -fx-arc-height: 8;
 }
+/* Signing out ends the session, not a page in it. The section is separated by a line and the
+   button has a border of its own, so it reads as something to press and not as a menu item. */
+/* Two classes in the selector, because the theme's own Button rule is loaded after this file
+   and wins over a single class: without the .sidebar prefix the button came out white. */
+.sidebar .sign-out-box {
+    -fx-border-color: -wac-accent2 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+.sidebar .sign-out-button {
+    -fx-background-color: -wac-side-hover;
+    -fx-text-fill: -wac-side-text;
+    -fx-border-color: -wac-accent2;
+    -fx-border-width: 1;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+    -fx-padding: 9 12;
+    -fx-font-size: 13px;
+}
+.sidebar .sign-out-button:hover {
+    -fx-background-color: -wac-sidebar;
+    -fx-border-color: -wac-side-text;
+}
+.sidebar .sign-out-button:pressed {
+    -fx-background-color: -wac-accent-soft;
+    -fx-border-color: -wac-side-text;
+}
+.sign-out-icon {
+    -fx-fill: -wac-side-muted;
+}
+.sidebar .sign-out-button:hover .sign-out-icon {
+    -fx-fill: -wac-side-text;
+}
+
 /* nav-current: the pill carries the accent, so the item itself stays flat. The weight stays
    the same as on every other item: a bold label is a wider label, which moves the text. */
 .sidebar .nav-item.nav-current {

@@ -250,15 +250,21 @@ public class SidebarView {
         sidebar.setPrefWidth(240);
         sidebar.setMaxWidth(240);
 
-        // Signing out sits last, below the language: the way out of the app, not a page in it.
+        // Signing out ends the session, so it is not a page in the menu. It sits in its own
+        // section at the bottom, under a line, and is drawn as a button rather than as a menu
+        // item: a bordered cap with an icon, so it reads as something to press.
         signOutBtn = new Button(I18n.get("nav.sign_out"));
-        signOutBtn.getStyleClass().addAll("ghost", "nav-item");
+        signOutBtn.getStyleClass().add("sign-out-button");
         signOutBtn.setMaxWidth(Double.MAX_VALUE);
         signOutBtn.setAlignment(Pos.CENTER_LEFT);
         signOutBtn.setCursor(Cursor.HAND);
+        signOutBtn.setGraphic(createSignOutIcon());
+        signOutBtn.setGraphicTextGap(10);
         signOutBtn.setOnAction(e -> onSignOut.run());
+
         VBox signOutBox = new VBox(signOutBtn);
-        signOutBox.setPadding(new Insets(0, 12, 14, 12));
+        signOutBox.getStyleClass().add("sign-out-box");
+        signOutBox.setPadding(new Insets(12, 12, 14, 12));
 
         sidebar.getChildren().addAll(brandNode, navScroll, langToggle, signOutBox);
         return sidebar;
@@ -396,6 +402,15 @@ public class SidebarView {
         StackPane.setMargin(count, new Insets(0, 10, 0, 0));
         nav.getChildren().add(holder);
         return b;
+    }
+
+    /** A door with an arrow on its way out: the sign for leaving. */
+    private static SVGPath createSignOutIcon() {
+        SVGPath icon = new SVGPath();
+        icon.setContent("M 1 1 h 4 v 2 h -2 v 8 h 2 v 2 h -4 Z"
+                + " M 7 6.2 h 3.6 l -1.3 -1.3 l 1.3 -1.3 l 3.4 3.4 l -3.4 3.4 l -1.3 -1.3 l 1.3 -1.3 h -3.6 Z");
+        icon.getStyleClass().add("sign-out-icon");
+        return icon;
     }
 
     private static SVGPath createNavIcon(String key) {
