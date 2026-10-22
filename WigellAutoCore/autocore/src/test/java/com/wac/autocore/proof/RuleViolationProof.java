@@ -1,4 +1,4 @@
-package com.wac.autocore.test;
+package com.wac.autocore.proof;
 
 import com.wac.autocore.model.DraftChanges;
 import com.wac.autocore.config.DatabasePath;

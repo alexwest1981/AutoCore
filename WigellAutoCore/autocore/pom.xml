@@ -94,6 +94,18 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- The proofs are programs with their own main, not JUnit tests. They live in
+                         src/test/java to stay out of the jar; SelfTest must not be picked up just
+                         because its name ends in Test. -->
+                    <excludes>
+                        <exclude>**/proof/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>

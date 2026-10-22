@@ -1,4 +1,4 @@
-package com.wac.autocore.test;
+package com.wac.autocore.proof;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.model.WorkOrder;

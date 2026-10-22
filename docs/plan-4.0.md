@@ -19,7 +19,7 @@ De risker vi räknade upp innan arbetet började:
 - Två byggvägar. `start.sh` kompilerade för hand vid sidan av Maven. Så länge båda finns kan det ena fungera medan det andra är trasigt.
 - JavaFX 8 mot 25. Gränssnittet, temaarken och resurserna flyttar från filsystemet till classpath, och en del API:er har ändrats.
 - Statisk `Db`. Lagringen låg i en statisk klass som både gränssnittet och proven muterade, vilket krockar med en kontext som äger sina bönor.
-- Bevisen ligger i produktionsträdet. `src/main/java/com/wac/autocore/test/` är program som ingen applikation anropar men som ändå följer med i bygget.
+- Bevisen låg i produktionsträdet. `src/main/java/com/wac/autocore/test/` var program som ingen applikation anropar men som ändå följde med i bygget, och tio av dem byggde tjänsten förbi behörighetsspärren. De ligger nu i `src/test/java/com/wac/autocore/proof/`, utanför jar-filen.
 - Hemligheter. Demokonton och konfiguration riskerar att hamna i källkoden eller i loggen.
 - Behörighet som bara göms. Om kontrollen sitter i gränssnittet går den att gå runt.
 
@@ -45,7 +45,7 @@ Det fristående programmet bokade alltid dagens datum plus trettio dagar, vilket
 - Gränssnittet: inloggningen blir ett kort i huvudfönstret i stället för ett eget fönster.
 - Säkerheten: `Operation`, `RoleMatrix` och en dekoratör framför fasaden.
 - Loggningen: `logback-spring.xml` med profil per miljö, och MDC med trace-id och operation.
-- Bevisen: ut ur produktionsträdet, vilket är SCRUM-332.
+- Bevisen: ut ur produktionsträdet, vilket var SCRUM-332 och är gjort.
 
 ## 4. Hur befintlig information ska bevaras
 
@@ -83,7 +83,14 @@ Dagen väljs ur `OpeningHours` innan tjänsten tillfrågas, så programmet hoppa
 
 Enhetstesterna är 77 JUnit-prov: inloggning, lösenordshashning och rotation, identitetshållaren, rollmatrisen, spärren för läsning och skrivning, raderingsregeln för en avbruten order, det fristående programmet, bokning och drop-in, loggning och spårbarhet, hemlighetsskanning, och att Spring-kontexten startar med rätt databassökväg.
 
-Bevisprogrammen är femton program som skriver ut sitt svar, och tolv av dem avslutar med en exitkod så att en körning kan fällas maskinellt. Tillsammans täcker de verksamhetsreglerna: bokningar och arbetsordrar, utkast och validering, fakturor och betalningar, tal- och avrundningsregler, felhantering på båda språken, den gamla databasen, rollmatrisen, behörigheten, raderingen av en avbruten order och självkontrollen.
+Bevisprogrammen är femton program som skriver ut sitt svar, och tolv av dem avslutar med en exitkod så att en körning kan fällas maskinellt. Tillsammans täcker de verksamhetsreglerna: bokningar och arbetsordrar, utkast och validering, fakturor och betalningar, tal- och avrundningsregler, felhantering på båda språken, den gamla databasen, rollmatrisen, behörigheten, raderingen av en avbruten order och självkontrollen. De ligger i `src/test/java/com/wac/autocore/proof/`, alltså utanför jar-filen, och körs efter `mvn test-compile` med `target/test-classes` först i classpath:
+
+```
+java -cp "WigellAutoCore/autocore/target/test-classes:WigellAutoCore/autocore/target/classes:$(cat WigellAutoCore/autocore/target/cp.txt)" \
+     com.wac.autocore.proof.StatusRoutesProof
+```
+
+Surefire hoppar över samma paket i `pom.xml`, eftersom `SelfTest` annars hade setts som ett JUnit-prov på namnet.
 
 Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit `b0ef2b9`, den sista som ändrade koden före Maven-bygget. Samma elva kördes på 4.0. Alla elva svarar lika, eller skiljer sig bara där indata gör det. `StatusRoutesProof` var den som avvek först, eftersom körningen gjordes efter stängning, och den är rättad i SCRUM-326.
 
