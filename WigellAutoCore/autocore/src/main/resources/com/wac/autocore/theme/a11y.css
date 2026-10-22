@@ -25,6 +25,17 @@
     -fx-border-color: -wac-side-text;
 }
 
+/* The same for the segmented controls: the filter chips above the board and the day, week and
+   month switch on each card. The chosen item is already filled or outlined, so a halo around it
+   says nothing new and reads as a glow. The mark is drawn for the keyboard, and on a light chip
+   the ring colour is the mark. */
+.segmented Button:focused {
+    -fx-effect: null;
+}
+.segmented Button:focus-visible {
+    -fx-border-color: -wac-ring;
+}
+
 .date-picker > .text-field,
 .combo-box > .text-field {
     -fx-background-color: transparent;
