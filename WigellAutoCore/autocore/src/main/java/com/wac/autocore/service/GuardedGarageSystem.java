@@ -165,6 +165,17 @@ public class GuardedGarageSystem extends GarageSystem {
         return super.createDropInBooking(vehicleId, services, mechanics);
     }
 
+    /** The proof's road, with the day in the caller's hand. It writes the same row, so it is guarded
+     *  the same way. */
+    @Override
+    public Booking createDropInBooking(int vehicleId, List<ServiceItem> services, List<Mechanic> mechanics,
+                                       LocalDate day, LocalTime from) {
+
+        require(Operation.CREATE_BOOKING);
+
+        return super.createDropInBooking(vehicleId, services, mechanics, day, from);
+    }
+
     @Override
     public WorkOrder createWorkOrder(int bookingId, int mechanicId) {
 
