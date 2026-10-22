@@ -45,7 +45,7 @@ public class ServicePackageRepository {
     }
 
     private void insert(Connection connection, ServicePackage servicePackage) throws SQLException {
-        int id = queries.insert(connection, "INSERT INTO service_packages (name, description) VALUES (?, ?)",
+        int id = Queries.insert(connection, "INSERT INTO service_packages (name, description) VALUES (?, ?)",
                 statement -> {
                     statement.setString(1, servicePackage.getName());
                     statement.setString(2, servicePackage.getDescription());
@@ -57,7 +57,7 @@ public class ServicePackageRepository {
     }
 
     private void update(Connection connection, ServicePackage servicePackage) throws SQLException {
-        queries.write(connection, "UPDATE service_packages SET name = ?, description = ? WHERE id = ?",
+        Queries.write(connection, "UPDATE service_packages SET name = ?, description = ? WHERE id = ?",
                 statement -> {
                     statement.setString(1, servicePackage.getName());
                     statement.setString(2, servicePackage.getDescription());
@@ -124,9 +124,9 @@ public class ServicePackageRepository {
         new DatabaseWork<Void>(db) {
             @Override
             protected Void step(Connection connection) throws SQLException {
-                queries.write(connection, "DELETE FROM service_package_items WHERE package_id = ?",
+                Queries.write(connection, "DELETE FROM service_package_items WHERE package_id = ?",
                         statement -> statement.setInt(1, id));
-                queries.write(connection, "DELETE FROM service_packages WHERE id = ?",
+                Queries.write(connection, "DELETE FROM service_packages WHERE id = ?",
                         statement -> statement.setInt(1, id));
                 return null;
             }

@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * One run over the nine areas the order lists, against a database of its own. The real file is
@@ -133,10 +134,9 @@ public final class SelfTest {
 
     private static String payments(GarageSystem garage) {
         Invoice invoice = garage.createInvoice(completedOrder(garage, LocalDate.of(2027, 3, 5)).getId(), "");
-        Payment payment = garage.processPayment(invoice.getId(), "CARD");
-        if (payment == null || !payment.isSuccessful()) {
-            throw new IllegalStateException("kortbetalningen gick inte igenom");
-        }
+        Payment payment = Objects.requireNonNull(garage.processPayment(invoice.getId(), "CARD"),
+                "kortbetalningen gick inte igenom");
+        must(payment.isSuccessful(), "kortbetalningen gick inte igenom");
         must(garage.findInvoice(invoice.getId()).isPaid(), "fakturan står inte som betald");
         return "kort på " + payment.getAmount() + " öre, fakturan betald";
     }

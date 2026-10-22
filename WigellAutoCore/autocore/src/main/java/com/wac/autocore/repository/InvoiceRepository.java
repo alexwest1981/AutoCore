@@ -72,7 +72,7 @@ public class InvoiceRepository {
         String sql = "INSERT INTO invoices (work_order_id, invoice_date, amount, discount, total_amount, paid) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        int id = queries.insert(connection, sql, statement -> {
+        int id = Queries.insert(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setInt(3, invoice.getAmount());
@@ -92,7 +92,7 @@ public class InvoiceRepository {
         String sql = "UPDATE invoices SET work_order_id = ?, invoice_date = ?, amount = ?, discount = ?, "
                 + "total_amount = ?, paid = ? WHERE id = ?";
 
-        queries.write(connection, sql, statement -> {
+        Queries.write(connection, sql, statement -> {
             Queries.setReference(statement, 1, invoice.getWorkOrderId());
             setDate(statement, 2, invoice.getInvoiceDate());
             statement.setInt(3, invoice.getAmount());

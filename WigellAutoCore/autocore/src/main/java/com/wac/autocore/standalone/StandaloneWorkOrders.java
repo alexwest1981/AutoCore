@@ -22,15 +22,12 @@ import com.wac.autocore.security.Role;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.GuardedGarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Two of the garage's operations from a plain Java program, without Spring.
  */
 public final class StandaloneWorkOrders {
-
-    private static final Logger log = LoggerFactory.getLogger(StandaloneWorkOrders.class);
 
     /** Far enough ahead that the seeded bookings cannot hold the mechanic at that time. */
     private static final int DAYS_AHEAD = 30;
