@@ -2,7 +2,7 @@
 
 WAC4_0 §10 ber om en kortfattad plan före större förändringar: nuvarande plattform, risker, vad som behöver ändras, hur information bevaras, hur autentisering och behörighet införs, hur loggning och felhantering förbättras, hur det fristående kravet uppfylls, och hur vi kontrollerar att tidigare funktionalitet håller.
 
-Dokumentet skrevs under sprinten och uppdaterades när risker slog till, vilket kravet också säger att det ska. Avsnitt 2 skiljer därför på risker vi såg på förhand och risker som faktiskt hände.
+Dokumentet skrevs under sprinten och uppdaterades när risker slog till, vilket kravet också säger att det ska.
 
 ## 1. Nuvarande teknikplattform och viktigaste beroenden
 
@@ -16,30 +16,36 @@ Målet enligt WAC4_0 §2 är Spring Boot 4.x på Java 17 eller senare. Vi valde 
 
 De risker vi räknade upp innan arbetet började:
 
-- **Två byggvägar.** `start.sh` kompilerade för hand vid sidan av Maven. Så länge båda finns kan det ena fungera medan det andra är trasigt.
-- **JavaFX 8 mot 25.** Gränssnittet, temaarken och resurserna flyttar från filsystemet till classpath, och en del API:er har ändrats.
-- **Statisk `Db`.** Lagringen låg i en statisk klass som både gränssnittet och proven muterade, vilket krockar med en kontext som äger sina bönor.
-- **Bevisen ligger i produktionsträdet.** `src/main/java/com/wac/autocore/test/` är program som ingen applikation anropar men som ändå följer med i bygget.
-- **Hemligheter.** Demokonton och konfiguration riskerar att hamna i källkoden eller i loggen.
-- **Behörighet som bara göms.** Om kontrollen sitter i gränssnittet går den att gå runt.
+- Två byggvägar. `start.sh` kompilerade för hand vid sidan av Maven. Så länge båda finns kan det ena fungera medan det andra är trasigt.
+- JavaFX 8 mot 25. Gränssnittet, temaarken och resurserna flyttar från filsystemet till classpath, och en del API:er har ändrats.
+- Statisk `Db`. Lagringen låg i en statisk klass som både gränssnittet och proven muterade, vilket krockar med en kontext som äger sina bönor.
+- Bevisen ligger i produktionsträdet. `src/main/java/com/wac/autocore/test/` är program som ingen applikation anropar men som ändå följer med i bygget.
+- Hemligheter. Demokonton och konfiguration riskerar att hamna i källkoden eller i loggen.
+- Behörighet som bara göms. Om kontrollen sitter i gränssnittet går den att gå runt.
 
 ### Risker som slog till
 
-Fyra av dem hände, och tre till som vi inte hade skrivit upp.
+Två av de sex hände, och tre till som inte stod på listan.
 
-`start.sh` blev precis så farlig som vi befarade. Efter att Spring och JavaFX flyttat in i `pom.xml` föll den med `package org.springframework.boot does not exist`, eftersom den fortfarande kompilerade mot `lib/`. Den byggdes om till att köra Maven.
+`start.sh` blev farlig på det sätt vi befarat. Efter att Spring och JavaFX flyttat in i `pom.xml` föll den med `package org.springframework.boot does not exist`, eftersom den fortfarande kompilerade mot `lib/`. Den byggdes om till att köra Maven.
 
-Statiska `Db` kostade mer än väntat. Den gjorde att varje repository läste en sökväg som sattes någon annanstans, och att proven kunde köra utan kontext. Den blev en böna med sökvägen i `autocore.db.path`, och varje repository får sin `Db` via `RepositoryFactory`.
+Statiska `Db` kostade mer än väntat. Varje repository läste en sökväg som sattes någon annanstans, och proven kunde bara köras för att klassen var statisk. Den blev en böna med sökvägen i `autocore.db.path`, och varje repository får sin `Db` via `RepositoryFactory`.
 
-En risk vi inte hade skrivit upp: `GDK_SCALE=2` i en befintlig session fördubblade hela gränssnittet, eftersom JavaFX ritar genom GTK. Ingen kod hade ändrats. Det syns nu som en varning i `start.sh` i stället för som en överraskning.
+`GDK_SCALE=2` hade vi inte skrivit upp. Variabeln låg kvar i en befintlig session och fördubblade hela gränssnittet, eftersom JavaFX ritar genom GTK. Ingen kod hade ändrats. Det syns nu som en varning i `start.sh`.
 
-En till: behörighetsspärren täckte skrivningarna men inte läsningarna, så en anropare utan identitet kunde läsa hela registret. Den upptäcktes vid genomläsning efteråt och rättades i E3-7.
+Behörighetsspärren täckte skrivningarna men inte läsningarna, så en anropare utan identitet kunde läsa hela registret. Det upptäcktes vid genomläsning efteråt och rättades i E3-7.
 
-Och en som visade sig först morgonen därpå: det fristående programmet bokade alltid dagens datum plus trettio dagar, vilket är en lördag ibland. Samma kod, samma prov, annat datum, och sviten gick från grön till röd utan att någon ändrat något.
+Det fristående programmet bokade alltid dagens datum plus trettio dagar, vilket är en lördag ibland. Det visade sig morgonen därpå, när samma kod och samma prov gav rött i stället för grönt.
 
 ## 3. Vilka delar av systemet som behöver förändras
 
-Bygget: `pom.xml` tillkommer och `start.sh` skriver om. Datalagret: `Db` blir en böna, `RepositoryFactory` fördelar den. Kärnan: `IdentityHolder` flyttar in så att appen och det fristående programmet delar samma identitet. Gränssnittet: inloggningen blir ett kort i huvudfönstret i stället för ett eget fönster. Säkerheten: `Operation`, `RoleMatrix` och en dekoratör framför fasaden. Loggningen: `logback-spring.xml` med profil per miljö, och MDC med trace-id och operation. Bevisen: ut ur produktionsträdet.
+- Bygget: `pom.xml` tillkommer och `start.sh` skrivs om.
+- Datalagret: `Db` blir en böna, och `RepositoryFactory` fördelar den.
+- Kärnan: `IdentityHolder` flyttar in, så att appen och det fristående programmet delar samma identitet.
+- Gränssnittet: inloggningen blir ett kort i huvudfönstret i stället för ett eget fönster.
+- Säkerheten: `Operation`, `RoleMatrix` och en dekoratör framför fasaden.
+- Loggningen: `logback-spring.xml` med profil per miljö, och MDC med trace-id och operation.
+- Bevisen: ut ur produktionsträdet.
 
 ## 4. Hur befintlig information ska bevaras
 
@@ -69,16 +75,14 @@ Verksamhetshändelser loggas när en arbetsorder skapas och slutförs. Säkerhet
 
 `StandaloneWorkOrders` är ett vanligt Java-program utan Spring, utan gränssnitt och utan webbserver. Det bokar och driver en arbetsorder hela vägen till `COMPLETED`, alltså två operationer där en är arbetsorderns livscykel.
 
-Det använder samma `GarageSystem` och samma dekoratör som applikationen, så affärsreglerna är desamma och inte en kopia. Identiteten sätts i hållaren på samma sätt som inloggningen gör det, och programmet kan köras utan identitet för att visa att spärren gäller även där.
+Det använder samma `GarageSystem` och samma dekoratör som applikationen, så affärsreglerna är desamma. Identiteten sätts i hållaren på samma sätt som inloggningen gör det, och programmet kan köras utan identitet för att visa att spärren gäller även där.
 
 ## 8. Hur vi kontrollerar att tidigare funktionalitet fortfarande fungerar
 
-Tre nivåer.
+Enhetstesterna är 69 JUnit-prov som kör affärsregler, prisräkning, inloggning, hashning, rollmatris, spärr, loggning, hemlighetsskanning och att Spring-kontexten startar med rätt databassökväg.
 
-**Enhetstesterna.** 69 JUnit-prov som kör affärsregler, prisräkning, inloggning, hashning, rollmatris, spärr, loggning, hemlighetsskanning och att Spring-kontexten startar med rätt databassökväg.
+Bevisprogrammen är fjorton program som var och en skriver ut sitt svar och avslutar med en exitkod. De täcker bokningens ändringar, avbrutna ordrar, utkast och validering, hela flödet från kund till betalning, prisregler, nummerregler, statusvägar, arbetsorderns rader, den gamla databasen och behörigheten.
 
-**Bevisprogrammen.** Fjorton program som var och en skriver ut sitt svar och avslutar med en exitkod. De täcker bokningens ändringar, avbrutna ordrar, utkast och validering, hela flödet från kund till betalning, prisregler, nummerregler, statusvägar, arbetsorderns rader, den gamla databasen och behörigheten.
+Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit `ce1fde8`, den sista innan Maven-bygget. Samma elva kördes på 4.0. Tio svarar lika. Den elfte, `StatusRoutesProof`, prövade tre vägar av fyra eftersom körningen gjordes efter stängning, vilket är ett tidsberoende i provet och inte i koden. Det ligger som eget ärende att rätta.
 
-**Jämförelsen mot baslinjen.** Elva bevis spelades in på Java 8 i commit `ce1fde8`, den sista innan Maven-bygget. Samma elva kördes på 4.0 och jämfördes. Tio svarar lika. Den elfte, `StatusRoutesProof`, prövade tre vägar av fyra eftersom körningen gjordes efter stängning, vilket är ett tidsberoende i provet och inte i koden. Det ligger som eget ärende att rätta.
-
-Utöver det körs sviten vid varje ändring, och den har fångat tre saker som annars hade gått till redovisningen: den brutna `start.sh`, den dagberoende bokningen i det fristående programmet, och det faktum att baslinjen låg i `/tmp` och försvann.
+Sviten körs vid varje ändring, och den har fångat den brutna `start.sh`, den dagberoende bokningen i det fristående programmet, och att baslinjen låg i `/tmp` och försvann.
