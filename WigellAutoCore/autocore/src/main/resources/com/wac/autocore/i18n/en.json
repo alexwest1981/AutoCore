@@ -629,6 +629,6 @@
     "password": "Password",
     "sign_in": "Sign in",
     "error": "Wrong username or password.",
-    "secure": "AutoCore SecureLogin"
+    "secure": "Login"
   }
 }
