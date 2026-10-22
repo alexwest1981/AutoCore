@@ -4,6 +4,8 @@ Ett verkstadssystem för Wigell Group. Kunder, fordon, bokningar, arbetsordrar, 
 
 Planen för migreringen till 4.0, med riskanalysen, ligger i [docs/plan-4.0.md](docs/plan-4.0.md).
 
+Loggerna som demonstrationen kräver, med kommandona som ger dem, ligger i [docs/demo-loggning.md](docs/demo-loggning.md).
+
 ## Vad systemet gör
 
 - Kunder och fordon, med ägarkoppling.
