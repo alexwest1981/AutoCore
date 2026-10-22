@@ -1,10 +1,5 @@
 package com.wac.autocore.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.*;
@@ -18,8 +13,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class WorkOrderRulesTest {
 
@@ -202,5 +202,23 @@ class WorkOrderRulesTest {
         garage.cancelWorkOrder(only.getId());
 
         assertEquals(BookingStatus.CANCELLED, garage.findBooking(booking.getId()).getStatus());
+    }
+    @Test
+    void aCancelledOrderGivesTheBookingItsServicesBack() {
+        ServiceItem service = garage.getServiceItems().get(0);
+        Mechanic mechanic = garage.getQualifiedMechanics(service).get(0);
+        mechanic.setAvailable(true);
+        garage.updateMechanic(mechanic);
+        LocalDate monday = LocalDate.now().plusDays(30).with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        int vehicleId = garage.getVehicles().get(0).getId();
+
+        Booking booking = garage.createBooking(vehicleId, monday, "Prov för en återställd bokning",
+                LocalTime.of(8, 0), mechanic.getId(), service.getId());
+        WorkOrder order = garage.createWorkOrder(booking.getId(), mechanic.getId());
+        assertFalse(garage.hasServicesLeftForAWorkOrder(booking.getId()), "tjänsten sitter på en order");
+
+        garage.cancelWorkOrder(order.getId());
+
+        assertTrue(garage.hasServicesLeftForAWorkOrder(booking.getId()), "en avbruten order håller inte tjänsten");
     }
 }

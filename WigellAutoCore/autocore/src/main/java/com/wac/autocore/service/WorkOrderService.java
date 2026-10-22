@@ -266,6 +266,20 @@ public class WorkOrderService {
         return false;
     }
 
+    /** True if the booking has at least one service that no active work order has taken. */
+    public boolean hasServicesLeft(int bookingId) {
+        Booking booking = findBooking(bookingId);
+        if (booking == null) {
+            return false;
+        }
+        for (Integer serviceItemId : booking.getServiceItemIds()) {
+            if (!isClaimed(bookingId, serviceItemId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean startWorkOrder(int workOrderId) {
 
         WorkOrder workOrder = findById(workOrderId);

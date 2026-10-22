@@ -626,6 +626,14 @@ public class GuardedGarageSystem extends GarageSystem {
     }
 
     @Override
+    public boolean hasServicesLeftForAWorkOrder(int bookingId) {
+
+        require(Operation.READ);
+
+        return super.hasServicesLeftForAWorkOrder(bookingId);
+    }
+
+    @Override
     public Invoice findInvoice(int id) {
 
         require(Operation.READ_FINANCE);
