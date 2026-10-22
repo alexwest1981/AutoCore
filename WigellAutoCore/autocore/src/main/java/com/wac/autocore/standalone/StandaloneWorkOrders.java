@@ -5,6 +5,7 @@ import java.time.LocalTime;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.AppException;
+import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Mechanic;
@@ -58,13 +59,28 @@ public final class StandaloneWorkOrders {
         Customer customer = customerNamed(garage, "Fristående Kund");
         Vehicle vehicle = vehicleOf(garage, customer, "STD 001");
 
-        // Far enough ahead that the seeded bookings cannot hold the mechanic at that time. Each run
-        // takes the next free hour on the same day, so the program can run again on the same file.
-        LocalDate day = LocalDate.now().plusDays(30);
-        LocalTime start = LocalTime.of(8, 0).plusHours(hoursBooked(garage, vehicle.getId(), day));
+        // Far enough ahead that the seeded bookings cannot hold the mechanic at that time. The
+        // workshop is closed on some of those days, and then the booking is refused, so the program
+        // walks on to the first day that takes it. Each run takes the next free hour on that day, so
+        // it can run again on the same file.
+        Booking booking = null;
+        for (int daysAhead = 30; daysAhead < 60 && booking == null; daysAhead++) {
 
-        Booking booking = garage.createBooking(vehicle.getId(), day,
-                "Fristående körning", start, mechanic.getId(), service.getId());
+            LocalDate day = LocalDate.now().plusDays(daysAhead);
+            LocalTime start = LocalTime.of(8, 0).plusHours(hoursBooked(garage, vehicle.getId(), day));
+
+            try {
+                booking = garage.createBooking(vehicle.getId(), day,
+                        "Fristående körning", start, mechanic.getId(), service.getId());
+            } catch (RuleViolationException closedOrFull) {
+                // A closed day, or a day with no free hour left. The next one gets the same try.
+            }
+        }
+
+        if (booking == null) {
+            System.out.println("Ingen ledig dag hittades för en bokning.");
+            return;
+        }
 
         WorkOrder order = garage.createWorkOrder(booking.getId(), mechanic.getId());
 
