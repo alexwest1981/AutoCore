@@ -1,3 +1,5 @@
+package com.wac.autocore;
+
 import com.wac.autocore.exception.AppException;
 import com.wac.autocore.config.DatabasePath;
 import com.wac.autocore.data.Db;
