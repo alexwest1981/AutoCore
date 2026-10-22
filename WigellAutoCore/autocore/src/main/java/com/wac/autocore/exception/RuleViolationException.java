@@ -12,6 +12,7 @@ public class RuleViolationException extends AppException {
     public RuleViolationException(String message, String messageKey) {
         super(message);
         this.messageKey = messageKey;
+        noteRaised();
     }
 @Override
     public String getMessageKey() {

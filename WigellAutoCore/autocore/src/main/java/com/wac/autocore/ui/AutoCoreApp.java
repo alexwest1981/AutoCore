@@ -139,10 +139,9 @@ public class AutoCoreApp extends Application {
      */
     public static void installErrorBoundary() {
         Thread.setDefaultUncaughtExceptionHandler((thread, failure) -> {
-            // Our own refusals are logged by kind; anything else is a real fault and needs the trace.
-            if (failure instanceof AppException) {
-                ActionDialogs.logAppError((AppException) failure);
-            } else {
+            // Our own refusals wrote their line where they were raised. Anything else is a real
+            // fault and needs the trace.
+            if (!(failure instanceof AppException)) {
                 log.error("Oväntat fel i tråden {}", thread.getName(), failure);
             }
             ActionDialogs.showError(I18n.get("dialog.confirm.title"), errorMessageFor(failure));

@@ -15,6 +15,7 @@ import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.service.GuardedGarageSystem;
 import com.wac.autocore.service.LoginService;
 import com.wac.autocore.ui.ConsolePrinter;
+import com.wac.autocore.ui.i18n.I18n;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -239,6 +240,22 @@ public class ConsoleApp {
         System.out.println("===========================================");
     }
 
+    /**
+     * A refusal is said the way the window says it: the sentence the key names, not the key.
+     * "Customer was not saved: required" was the internal word for a missing value; the reader is
+     * owed the same English the window shows. The line in the log was written where the error was
+     * raised, so the console has nothing to log of its own.
+     */
+    private static void say(String what, AppException rejected) {
+        String key = rejected.getMessageKey();
+        if (key != null) {
+            System.out.println(what + ": " + I18n.get(key));
+            return;
+        }
+        // No key: the message is already a sentence, and it is the only thing to say.
+        System.out.println(what + ": " + rejected.getMessage());
+    }
+
     private static void createCustomer() {
 
         System.out.println();
@@ -260,7 +277,7 @@ public class ConsoleApp {
                 System.out.println("Customer created successfully.");
             }
         } catch (AppException rejected) {
-            System.out.println("Customer was not saved: " + rejected.getMessage());
+            say("Customer was not saved", rejected);
         }
     }
 
@@ -297,7 +314,7 @@ public class ConsoleApp {
                 System.out.println("Vehicle created successfully.");
             }
         } catch (AppException rejected) {
-            System.out.println("Vehicle was not saved: " + rejected.getMessage());
+            say("Vehicle was not saved", rejected);
         }
     }
 
@@ -337,7 +354,7 @@ public class ConsoleApp {
         try {
             garageSystem.createWorkOrder(bookingId, mechanicId);
         } catch (AppException rejected) {
-            System.out.println(rejected.getMessage());
+            say("Work order was not created", rejected);
         }
     }
 
@@ -353,7 +370,7 @@ public class ConsoleApp {
         try {
             garageSystem.startWorkOrder(workOrderId);
         } catch (AppException rejected) {
-            System.out.println(rejected.getMessage());
+            say("Work order was not started", rejected);
         }
     }
 
@@ -369,7 +386,7 @@ public class ConsoleApp {
         try {
             garageSystem.completeWorkOrder(workOrderId);
         } catch (AppException rejected) {
-            System.out.println(rejected.getMessage());
+            say("Work order was not completed", rejected);
         }
     }
 
