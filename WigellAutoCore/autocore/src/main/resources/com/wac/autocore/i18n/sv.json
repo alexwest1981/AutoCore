@@ -629,6 +629,6 @@
     "password": "Lösenord",
     "sign_in": "Logga in",
     "error": "Fel användarnamn eller lösenord.",
-    "secure": "AutoCore SecureLogin"
+    "secure": "Login"
   }
 }
