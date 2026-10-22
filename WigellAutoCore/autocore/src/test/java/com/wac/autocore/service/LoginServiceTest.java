@@ -1,7 +1,13 @@
 package com.wac.autocore.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 
 import com.wac.autocore.data.Db;
 import com.wac.autocore.repository.UserRepository;
@@ -12,6 +18,7 @@ import com.wac.autocore.security.Role;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Optional;
@@ -106,6 +113,29 @@ class LoginServiceTest {
         assertTrue(!PasswordHash.needsRehash(after));
         assertTrue(after.startsWith("pbkdf2$" + PasswordHash.ITERATIONS + "$"));
         assertTrue(PasswordHash.matches(FIXTURE_PASSWORD, after));
+    }
+
+    @Test
+    void aRefusedAndAnAcceptedSignInAreBothLogged() {
+        Logger logger = (Logger) LoggerFactory.getLogger(LoginService.class);
+        ListAppender<ILoggingEvent> captured = new ListAppender<ILoggingEvent>();
+        captured.start();
+        logger.addAppender(captured);
+
+        try {
+            login.signIn("anna", "FelLosenord1");
+            login.signIn("anna", FIXTURE_PASSWORD);
+
+        } finally {
+            logger.detachAppender(captured);
+        }
+
+        assertEquals(2, captured.list.size(), "En nekad och en lyckad ska ge två rader");
+        assertEquals(Level.WARN, captured.list.get(0).getLevel());
+        assertTrue(captured.list.get(0).getFormattedMessage().contains("anna"));
+        assertFalse(captured.list.get(0).getFormattedMessage().contains("FelLosenord1"),
+                "Lösenordet får aldrig stå i loggen");
+        assertEquals(Level.INFO, captured.list.get(1).getLevel());
     }
 
     /** One account of the proof's own, with the 210 000 rounds migration 004 uses. */
