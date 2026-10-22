@@ -1,13 +1,11 @@
 package com.wac.autocore.ui.components;
 
 import com.wac.autocore.model.*;
-import com.wac.autocore.model.OpeningHours;
 import com.wac.autocore.model.BookingStatus;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
-import com.wac.autocore.ui.util.BookingAvailability;
 
 import java.util.HashMap;
 import java.util.Map;

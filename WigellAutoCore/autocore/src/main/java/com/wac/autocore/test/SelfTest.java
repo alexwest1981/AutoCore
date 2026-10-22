@@ -135,7 +135,9 @@ public final class SelfTest {
     private static String payments(GarageSystem garage) {
         Invoice invoice = garage.createInvoice(completedOrder(garage, LocalDate.of(2027, 3, 5)).getId(), "");
         Payment payment = garage.processPayment(invoice.getId(), "CARD");
-        must(payment != null && payment.isSuccessful(), "kortbetalningen gick inte igenom");
+        if (payment == null || !payment.isSuccessful()) {
+            throw new IllegalStateException("kortbetalningen gick inte igenom");
+        }
         must(garage.findInvoice(invoice.getId()).isPaid(), "fakturan står inte som betald");
         return "kort på " + payment.getAmount() + " öre, fakturan betald";
     }

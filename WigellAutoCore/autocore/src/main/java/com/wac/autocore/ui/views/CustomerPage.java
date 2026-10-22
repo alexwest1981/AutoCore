@@ -25,9 +25,9 @@ final class CustomerPage {
         TableView<Customer> view = table.getTableView();
         view.getColumns().addAll(
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
-                TableFactory.textCol(I18n.get("table.col.name"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, Customer::getName),
-                TableFactory.sizeCol(I18n.get("table.col.phone"), TableFactory.W_PHONE, Customer::getPhone),
-                TableFactory.textCol(I18n.get("table.col.email"), TableFactory.W_EMAIL_MIN, TableFactory.W_EMAIL_MAX, Customer::getEmail),
+                TableFactory.textCol(I18n.get("table.col.name"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> c.getName()),
+                TableFactory.sizeCol(I18n.get("table.col.phone"), TableFactory.W_PHONE, c -> c.getPhone()),
+                TableFactory.textCol(I18n.get("table.col.email"), TableFactory.W_EMAIL_MIN, TableFactory.W_EMAIL_MAX, c -> c.getEmail()),
                 TableFactory.sizeBadge(I18n.get("table.col.vip"), TableFactory.W_FLAG,
                         c -> c.isVip() ? I18n.get("common.yes") : I18n.get("common.no")));
         router.setActiveTable(table);

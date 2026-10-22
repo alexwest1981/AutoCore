@@ -40,12 +40,12 @@ public final class CustomerDialogs {
 
         GridPane grid = ActionDialogs.createGrid();
 
-        TextField nameField = ActionDialogs.field("dialog.customer.name_prompt", editing ? existing.getName() : null);
-        TextField phoneField = ActionDialogs.field("dialog.customer.phone_prompt", editing ? existing.getPhone() : null);
-        TextField emailField = ActionDialogs.field("dialog.customer.email_prompt", editing ? existing.getEmail() : null);
+        TextField nameField = ActionDialogs.field("dialog.customer.name_prompt", existing != null ? existing.getName() : null);
+        TextField phoneField = ActionDialogs.field("dialog.customer.phone_prompt", existing != null ? existing.getPhone() : null);
+        TextField emailField = ActionDialogs.field("dialog.customer.email_prompt", existing != null ? existing.getEmail() : null);
 
         CheckBox vipBox = new CheckBox(I18n.get("table.col.vip"));
-        if (editing) {
+        if (existing != null) {
             vipBox.setSelected(existing.isVip());
         }
 
@@ -81,7 +81,7 @@ public final class CustomerDialogs {
             }
 
             try {
-                if (editing) {
+                if (existing != null) {
                     existing.setName(name);
                     existing.setPhone(phone);
                     existing.setEmail(email);

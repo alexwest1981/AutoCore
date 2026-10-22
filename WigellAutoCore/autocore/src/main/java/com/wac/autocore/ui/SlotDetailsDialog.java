@@ -56,8 +56,7 @@ public final class SlotDetailsDialog {
         final Booking b = booking;
 
         Dialog<ButtonType> dialog = new Dialog<ButtonType>();
-        boolean hasWorkOrder = (wo != null);
-        String title = hasWorkOrder
+        String title = wo != null
                 ? I18n.get("kanban.drawer.work_order", wo.getId())
                 : I18n.get("kanban.drawer.booked");
         dialog.setTitle(title);
@@ -94,15 +93,15 @@ public final class SlotDetailsDialog {
         grid.add(new Label(desc), 1, rowIdx++);
 
         grid.add(new Label(I18n.get("table.col.services") + ":"), 0, rowIdx);
-        String sNames = (hasWorkOrder && !wo.getServiceItemIds().isEmpty())
+        String sNames = (wo != null && !wo.getServiceItemIds().isEmpty())
                 ? EntityLookup.serviceNames(garage, wo.getServiceItemIds())
                 : (b != null ? EntityLookup.bookingServices(garage, b) : "-");
         grid.add(new Label(sNames), 1, rowIdx++);
 
-        int estMin = (hasWorkOrder && wo != null)
+        int estMin = wo != null
                 ? EntityLookup.workOrderTotalMinutes(garage, wo)
                 : ((b != null) ? EntityLookup.bookingTotalMinutes(garage, b) : 0);
-        int estCost = (hasWorkOrder && wo != null)
+        int estCost = wo != null
                 ? EntityLookup.workOrderTotal(garage, wo)
                 : ((b != null) ? garage.bookingPrice(b) : 0);
         if (estMin > 0) {
@@ -114,7 +113,7 @@ public final class SlotDetailsDialog {
             grid.add(new Label(UiFormatters.formatMoney(estCost)), 1, rowIdx++);
         }
 
-        if (hasWorkOrder) {
+        if (wo != null) {
             grid.add(new Label(I18n.get("table.col.status") + ":"), 0, rowIdx);
             Label stLabel = new Label(UiFormatters.statusWord(wo.getStatus()));
             stLabel.getStyleClass().addAll("badge", UiFormatters.badgeClass(stLabel.getText()));
@@ -127,7 +126,7 @@ public final class SlotDetailsDialog {
         }
 
         ButtonType actionBtnType = new ButtonType(
-                hasWorkOrder ? I18n.get("dialog.slot.open_order")
+                wo != null ? I18n.get("dialog.slot.open_order")
                              : I18n.get("dialog.slot.create_order"),
                 javafx.scene.control.ButtonBar.ButtonData.OTHER
         );

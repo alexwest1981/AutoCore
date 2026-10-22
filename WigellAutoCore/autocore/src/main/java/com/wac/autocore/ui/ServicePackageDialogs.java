@@ -54,7 +54,7 @@ public final class ServicePackageDialogs {
         serviceBox.setItems(garage.getServiceItems());
         serviceBox.setKeyProvider(s -> s.getId());
 
-        if (editing) {
+        if (existing != null) {
             nameField.setText(existing.getName());
             descField.setText(existing.getDescription() == null ? "" : existing.getDescription());
             serviceBox.setSelectedItems(existing.getServiceItems());
@@ -81,7 +81,7 @@ public final class ServicePackageDialogs {
                 String desc = descField.getText().trim();
                 List<ServiceItem> items = new ArrayList<ServiceItem>(serviceBox.getSelectedItems());
 
-                if (editing){
+                if (existing != null){
                     ServicePackage changed = new ServicePackage(existing.getId(), name, desc);
                     changed.setServiceItems(items);
                     garage.updateServicePackage(changed);

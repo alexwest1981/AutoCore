@@ -46,13 +46,13 @@ public final class MechanicDialogs {
 
         GridPane grid = ActionDialogs.createGrid();
 
-        TextField nameField = ActionDialogs.field("dialog.mechanic.name_prompt", editing ? existing.getName() : null);
-        TextField phoneField = ActionDialogs.field("dialog.mechanic.phone_prompt", editing ? existing.getPhone() : null);
+        TextField nameField = ActionDialogs.field("dialog.mechanic.name_prompt", existing != null ? existing.getName() : null);
+        TextField phoneField = ActionDialogs.field("dialog.mechanic.phone_prompt", existing != null ? existing.getPhone() : null);
         ComboBox<String> specBox = createSpecializationBox(garage,
-                editing ? SeedText.resolve(existing.getSpecialization()) : null);
+                existing != null ? SeedText.resolve(existing.getSpecialization()) : null);
 
         CheckBox availBox = new CheckBox(I18n.get("dialog.mechanic.available"));
-        if (editing) {
+        if (existing != null) {
             availBox.setSelected(existing.isAvailable());
         }
 
@@ -83,7 +83,7 @@ public final class MechanicDialogs {
             String specialization = specializationToStore(chosenSpecialization(specBox));
 
             try {
-                if (editing) {
+                if (existing != null) {
                     existing.setName(name);
                     existing.setPhone(phone);
                     existing.setSpecialization(specialization);

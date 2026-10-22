@@ -44,16 +44,16 @@ public final class ServiceItemDialogs {
 
         // An existing service can carry a seed key instead of plain text, so it is resolved first.
         TextField nameField = ActionDialogs.field("dialog.service.name_prompt",
-                editing && existing.getName() != null ? SeedText.resolve(existing.getName()) : null);
+                existing != null && existing.getName() != null ? SeedText.resolve(existing.getName()) : null);
         TextField descField = ActionDialogs.field("dialog.service.desc_prompt",
-                editing && existing.getDescription() != null ? SeedText.resolve(existing.getDescription()) : null);
+                existing != null && existing.getDescription() != null ? SeedText.resolve(existing.getDescription()) : null);
         TextField priceField = ActionDialogs.field("dialog.service.price_prompt",
-                editing ? String.valueOf(existing.getPrice()) : null);
+                existing != null ? String.valueOf(existing.getPrice()) : null);
         TextField timeField = ActionDialogs.field("dialog.service.time_prompt",
-                editing ? String.valueOf(existing.getEstimatedMinutes()) : null);
+                existing != null ? String.valueOf(existing.getEstimatedMinutes()) : null);
 
         ComboBox<String> specBox = requirementBox(garage);
-        if (editing) {
+        if (existing != null) {
             showRequirement(specBox, existing);
         }
 
@@ -95,7 +95,7 @@ public final class ServiceItemDialogs {
             }
 
             try {
-                if (editing) {
+                if (existing != null) {
                     existing.setName(name);
                     existing.setDescription(desc);
                     existing.setPrice(price);

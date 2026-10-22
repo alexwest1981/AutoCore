@@ -16,7 +16,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.util.StringConverter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** Dialogs for managing vehicles. */
@@ -52,7 +51,7 @@ public final class VehicleDialogs {
 
         ComboBox<Customer> customerBox = new ComboBox<Customer>();
         customerBox.getItems().addAll(customers);
-        if (editing) {
+        if (existing != null) {
             for (Customer c : customers) {
                 if (c.getId() == existing.getCustomerId()) {
                     customerBox.getSelectionModel().select(c);
@@ -73,11 +72,11 @@ public final class VehicleDialogs {
         });
 
         TextField regField = ActionDialogs.field("dialog.vehicle.reg_prompt",
-                editing ? existing.getRegistrationNumber() : null);
-        TextField brandField = ActionDialogs.field("dialog.vehicle.brand_prompt", editing ? existing.getBrand() : null);
-        TextField modelField = ActionDialogs.field("dialog.vehicle.model_prompt", editing ? existing.getModel() : null);
+                existing != null ? existing.getRegistrationNumber() : null);
+        TextField brandField = ActionDialogs.field("dialog.vehicle.brand_prompt", existing != null ? existing.getBrand() : null);
+        TextField modelField = ActionDialogs.field("dialog.vehicle.model_prompt", existing != null ? existing.getModel() : null);
         TextField yearField = ActionDialogs.field("dialog.vehicle.year_prompt",
-                editing ? String.valueOf(existing.getYear()) : null);
+                existing != null ? String.valueOf(existing.getYear()) : null);
 
         grid.add(new Label(I18n.get("dialog.vehicle.customer_select") + ":"), 0, 0);
         grid.add(customerBox, 1, 0);
@@ -114,7 +113,7 @@ public final class VehicleDialogs {
             int year = Integer.parseInt(yearStr.trim());
 
             try {
-                if (editing) {
+                if (existing != null) {
                     existing.setCustomerId(owner.getId());
                     existing.setRegistrationNumber(reg);
                     existing.setBrand(brand);

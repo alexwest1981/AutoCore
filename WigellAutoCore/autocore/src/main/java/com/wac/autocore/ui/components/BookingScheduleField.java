@@ -12,6 +12,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.skin.DatePickerSkin;
 import javafx.util.StringConverter;
 
 import com.wac.autocore.model.Booking;
@@ -55,8 +56,7 @@ public class BookingScheduleField {
         return cell;
         });
 
-        com.sun.javafx.scene.control.skin.DatePickerSkin dateSkin =
-        new com.sun.javafx.scene.control.skin.DatePickerSkin(this.datePicker);
+        DatePickerSkin dateSkin = new DatePickerSkin(this.datePicker);
         this.calendarNode = dateSkin.getPopupContent();
         // The theme colours are set in the stylesheet (.booking-calendar): an inline style cannot
         // resolve -wac-card/-wac-line, so they dropped out silently and the calendar went see-through.

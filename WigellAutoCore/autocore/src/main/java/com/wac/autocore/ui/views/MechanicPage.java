@@ -25,8 +25,8 @@ final class MechanicPage {
         TableView<Mechanic> view = table.getTableView();
         view.getColumns().addAll(
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
-                TableFactory.textCol(I18n.get("table.col.name"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, Mechanic::getName),
-                TableFactory.sizeCol(I18n.get("table.col.phone"), TableFactory.W_PHONE, Mechanic::getPhone),
+                TableFactory.textCol(I18n.get("table.col.name"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> c.getName()),
+                TableFactory.sizeCol(I18n.get("table.col.phone"), TableFactory.W_PHONE, c -> c.getPhone()),
                 TableFactory.textCol(I18n.get("table.col.specialisation"), TableFactory.W_SPEC_MIN, TableFactory.W_SPEC_MAX, c -> SeedText.resolve(c.getSpecialization())),
                 TableFactory.sizeBadge(I18n.get("table.col.available"), TableFactory.W_FLAG,
                         c -> c.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));

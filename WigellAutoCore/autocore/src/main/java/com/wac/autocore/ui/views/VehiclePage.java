@@ -25,9 +25,9 @@ final class VehiclePage {
         TableView<Vehicle> view = table.getTableView();
         view.getColumns().addAll(
                 TableFactory.idCol(c -> String.valueOf(c.getId())),
-                TableFactory.sizeCol(I18n.get("table.col.reg_nr"), TableFactory.W_REG_NR, Vehicle::getRegistrationNumber),
-                TableFactory.sizeCol(I18n.get("table.col.brand"), TableFactory.W_BRAND, Vehicle::getBrand),
-                TableFactory.sizeCol(I18n.get("table.col.model"), TableFactory.W_MODEL, Vehicle::getModel),
+                TableFactory.sizeCol(I18n.get("table.col.reg_nr"), TableFactory.W_REG_NR, v -> v.getRegistrationNumber()),
+                TableFactory.sizeCol(I18n.get("table.col.brand"), TableFactory.W_BRAND, v -> v.getBrand()),
+                TableFactory.sizeCol(I18n.get("table.col.model"), TableFactory.W_MODEL, v -> v.getModel()),
                 TableFactory.sizeCol(I18n.get("table.col.year"), TableFactory.W_YEAR, c -> String.valueOf(c.getYear())),
                 TableFactory.textCol(I18n.get("table.col.customer"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX,
                         c -> EntityLookup.customerName(garage, c.getCustomerId())));

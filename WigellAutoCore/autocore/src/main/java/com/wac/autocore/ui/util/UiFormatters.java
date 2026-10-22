@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 public final class UiFormatters {
 
     private static final DecimalFormat MONEY_FORMAT =
-            new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(new Locale("sv", "SE")));
+            new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(Locale.of("sv", "SE")));
 
     /** An amount the way a person writes it: 1234,50 without spaces, or 1 234,50 in threes. */
     private static final Pattern AMOUNT = Pattern.compile(

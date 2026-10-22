@@ -32,7 +32,7 @@ class KanbanWeekView {
     }
 
         Node dayRow(Mechanic mech, DayLoad dl) {
-        Locale locale = I18n.isSwedish() ? new Locale("sv", "SE") : Locale.ENGLISH;
+        Locale locale = I18n.isSwedish() ? Locale.of("sv", "SE") : Locale.ENGLISH;
         String dayName = dl.getDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, locale).toUpperCase(locale);
         String dateStr = dayName + " " + dl.getDate().getDayOfMonth();
 
