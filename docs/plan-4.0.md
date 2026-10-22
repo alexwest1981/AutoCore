@@ -33,7 +33,7 @@ Statiska `Db` kostade mer än väntat. Varje repository läste en sökväg som s
 
 `GDK_SCALE=2` hade vi inte skrivit upp. Variabeln låg kvar i en befintlig session och fördubblade hela gränssnittet, eftersom JavaFX ritar genom GTK. Ingen kod hade ändrats. Det syns nu som en varning i `start.sh`.
 
-Behörighetsspärren täckte skrivningarna men inte läsningarna, så en anropare utan identitet kunde läsa hela registret. Det upptäcktes vid genomläsning efteråt och rättades i E3-7.
+Behörighetsspärren täckte skrivningarna men inte läsningarna, så en anropare utan identitet kunde läsa hela registret. Det upptäcktes vid genomläsning efteråt och rättades i E3-7 (SCRUM-320).
 
 Det fristående programmet bokade alltid dagens datum plus trettio dagar, vilket är en lördag ibland. Det visade sig morgonen därpå, när samma kod och samma prov gav rött i stället för grönt.
 
@@ -81,8 +81,8 @@ Det använder samma `GarageSystem` och samma dekoratör som applikationen, så a
 
 Enhetstesterna är 69 JUnit-prov: inloggning, lösenordshashning och rotation, identitetshållaren, rollmatrisen, spärren för läsning och skrivning, raderingsregeln för en avbruten order, det fristående programmet, loggning och spårbarhet, hemlighetsskanning, och att Spring-kontexten startar med rätt databassökväg.
 
-Bevisprogrammen är femton program som skriver ut sitt svar, och tolv av dem avslutar med en exitkod så att en körning kan fällas maskinellt. Tillsammans täcker de bokningar och ändringar av dem, arbetsorderns vägar och rader, utkast och validering, fakturor och betalningar, tal- och avrundningsregler, felhantering och felmeddelanden på båda språken, den gamla databasen, rollmatrisen, behörigheten, raderingen av en avbruten order och en samlad självkontroll.
+Bevisprogrammen är femton program som skriver ut sitt svar, och tolv av dem avslutar med en exitkod så att en körning kan fällas maskinellt. Tillsammans täcker de verksamhetsreglerna: bokningar och arbetsordrar, utkast och validering, fakturor och betalningar, tal- och avrundningsregler, felhantering på båda språken, den gamla databasen, rollmatrisen, behörigheten, raderingen av en avbruten order och självkontrollen.
 
-Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit `ce1fde8`, den sista innan Maven-bygget. Samma elva kördes på 4.0. Tio svarar lika. Den elfte, `StatusRoutesProof`, prövade tre vägar av fyra eftersom körningen gjordes efter stängning, vilket är ett tidsberoende i provet och inte i koden. Det ligger som eget ärende att rätta.
+Jämförelsen mot baslinjen: elva bevis spelades in på Java 8 i commit `b0ef2b9`, den sista som ändrade koden före Maven-bygget. Samma elva kördes på 4.0. Tio svarar lika. Den elfte, `StatusRoutesProof`, prövade tre vägar av fyra eftersom körningen gjordes efter stängning, vilket är ett tidsberoende i provet och inte i koden. Det ligger som eget ärende att rätta.
 
 Sviten körs vid varje ändring, och det var den som fångade att det fristående programmet bokade en dag som kunde vara stängd. Två saker hittades utanför den: den brutna `start.sh`, som föll först när någon startade den, och baslinjen som låg i `/tmp` och hade försvunnit när den skulle användas.
