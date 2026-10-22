@@ -4,6 +4,7 @@ import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.Actions;
 import com.wac.autocore.ui.motion.SegmentedSwitch;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -119,15 +120,25 @@ class KanbanCardHeader {
                 })
         ));
 
-        optionsMenu.getItems().addAll(editItem, new SeparatorMenuItem(), deleteItem);
+        // The menu holds only what this role may use. Without the two entries there is nothing to
+        // open, so the dots go too rather than offering an empty menu.
+        Actions.item(editItem, garage, com.wac.autocore.security.Operation.UPDATE_MECHANIC);
+        Actions.item(deleteItem, garage, com.wac.autocore.security.Operation.DELETE_MECHANIC);
 
-        optionsBtn.setOnAction(e -> {
-            if (optionsMenu.isShowing()) {
-                optionsMenu.hide();
-            } else {
-                optionsMenu.show(optionsBtn, Side.BOTTOM, 0, 4);
-            }
-        });
+        if (editItem.isVisible() || deleteItem.isVisible()) {
+            optionsMenu.getItems().addAll(editItem, new SeparatorMenuItem(), deleteItem);
+
+            optionsBtn.setOnAction(e -> {
+                if (optionsMenu.isShowing()) {
+                    optionsMenu.hide();
+                } else {
+                    optionsMenu.show(optionsBtn, Side.BOTTOM, 0, 4);
+                }
+            });
+        } else {
+            optionsBtn.setVisible(false);
+            optionsBtn.setManaged(false);
+        }
 
         HBox topRow = new HBox(6, mechTitle, spacer, viewSwitch, optionsBtn);
         topRow.setAlignment(Pos.CENTER_LEFT);

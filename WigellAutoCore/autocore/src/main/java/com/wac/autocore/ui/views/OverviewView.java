@@ -2,12 +2,14 @@ package com.wac.autocore.ui.views;
 
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.ActionDialogs;
 import com.wac.autocore.ui.components.TableFactory;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.Actions;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 import javafx.geometry.Pos;
@@ -33,16 +35,22 @@ public final class OverviewView {
         VBox head = UiComponents.pageHead(I18n.get("overview.title"), I18n.get("overview.meta"),
                 "AutoCore \u00b7 " + UiFormatters.todayFormatted());
 
-        Button quickBooking = UiComponents.primaryButton(I18n.get("overview.action.booking"));
+        // Only the actions this role may carry out are drawn. A read-only account sees the figures
+        // and the lists, and no buttons, because there is nothing for it to press up here.
+        Button quickBooking = Actions.button(
+                UiComponents.primaryButton(I18n.get("overview.action.booking")), garage, Operation.CREATE_BOOKING);
         quickBooking.setOnAction(e -> ActionDialogs.showCreateBookingDialog(garage, onRefresh));
 
-        Button quickOrder = UiComponents.secondaryButton(I18n.get("overview.action.workorder"));
+        Button quickOrder = Actions.button(
+                UiComponents.secondaryButton(I18n.get("overview.action.workorder")), garage, Operation.CREATE_WORK_ORDER);
         quickOrder.setOnAction(e -> ActionDialogs.showCreateWorkOrderDialog(garage, onRefresh));
 
-        Button quickInvoice = UiComponents.secondaryButton(I18n.get("overview.action.invoice"));
+        Button quickInvoice = Actions.button(
+                UiComponents.secondaryButton(I18n.get("overview.action.invoice")), garage, Operation.CREATE_INVOICE);
         quickInvoice.setOnAction(e -> ActionDialogs.showCreateInvoiceDialog(garage, onRefresh));
 
-        Button quickPay = UiComponents.secondaryButton(I18n.get("overview.action.payment"));
+        Button quickPay = Actions.button(
+                UiComponents.secondaryButton(I18n.get("overview.action.payment")), garage, Operation.TAKE_PAYMENT);
         quickPay.setOnAction(e -> ActionDialogs.showProcessPaymentDialog(garage, null, onRefresh));
 
         HBox quickBar = new HBox(10, quickBooking, quickOrder, quickInvoice, quickPay);

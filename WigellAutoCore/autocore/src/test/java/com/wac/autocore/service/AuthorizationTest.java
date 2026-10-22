@@ -14,6 +14,7 @@ import com.wac.autocore.exception.NotAuthenticatedException;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.security.Identity;
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.security.IdentityHolder;
 import com.wac.autocore.security.Role;
 
@@ -277,6 +278,54 @@ class AuthorizationTest {
                 () -> garage.deleteWorkOrder(1));
 
         assertEquals("dialog.access.denied", refused.getMessageKey());
+    }
+
+    @Test
+    void theWindowCanAskWhatTheGuardWouldAnswer() {
+        GarageSystem garage = garage();
+
+        // Before anyone is signed in nothing is allowed, so no button is drawn for a role that is
+        // not there. The window asks this before it builds a toolbar.
+        assertFalse(garage.may(Operation.READ));
+        assertFalse(garage.may(Operation.CREATE_BOOKING));
+
+        signIn("lasare", Role.READ_ONLY);
+
+        assertTrue(garage.may(Operation.READ));
+        assertTrue(garage.may(Operation.CHANGE_LANGUAGE));
+        assertFalse(garage.may(Operation.CREATE_BOOKING));
+        assertFalse(garage.may(Operation.CREATE_CUSTOMER));
+        assertFalse(garage.may(Operation.DELETE_WORK_ORDER));
+
+        signIn("verkstaden", Role.STAFF);
+
+        assertTrue(garage.may(Operation.CREATE_BOOKING));
+        assertTrue(garage.may(Operation.TAKE_PAYMENT));
+        assertFalse(garage.may(Operation.DELETE_WORK_ORDER));
+        assertFalse(garage.may(Operation.CHANGE_SETTINGS));
+
+        signIn("chefen", Role.ADMIN);
+
+        assertTrue(garage.may(Operation.DELETE_WORK_ORDER));
+        assertTrue(garage.may(Operation.CHANGE_SETTINGS));
+    }
+
+    @Test
+    void aStaffMemberIsNotOfferedTheDeleteQuestionAtAll() {
+        GarageSystem garage = garage();
+
+        signIn("verkstaden", Role.STAFF);
+
+        // The question the details dialog asks before it draws the delete button. A staff member
+        // may call an order off but not remove the row, so the answer has to be no whatever the
+        // order's status is, otherwise the button is drawn and the refusal comes after the press.
+        assertFalse(garage.canDeleteWorkOrder(1), "personalen ska inte ens få frågan besvarad med ja");
+
+        signIn("chefen", Role.ADMIN);
+
+        // The same order, asked by an administrator: now the status decides, and order 1 exists in
+        // the seeded database, so an answer is given without a refusal.
+        assertDoesNotThrow(() -> garage.canDeleteWorkOrder(1));
     }
 
     @Test

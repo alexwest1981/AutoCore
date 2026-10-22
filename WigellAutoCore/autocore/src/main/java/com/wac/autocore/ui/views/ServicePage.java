@@ -1,5 +1,6 @@
 package com.wac.autocore.ui.views;
 
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.seed.SeedText;
 import com.wac.autocore.service.GarageSystem;
@@ -10,6 +11,7 @@ import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.navigation.PageRouter;
+import com.wac.autocore.ui.util.Actions;
 import com.wac.autocore.ui.util.UiFormatters;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableRow;
@@ -33,14 +35,18 @@ final class ServicePage {
                 TableFactory.sizeCol(I18n.get("table.col.time"), TableFactory.W_MINUTES, c -> c.getEstimatedMinutes() + " min"));
         router.setActiveTable(table);
 
-        Button addButton = UiComponents.primaryButton(I18n.get("entity.services.action_create"));
+        Button addButton = Actions.button(
+                UiComponents.primaryButton(I18n.get("entity.services.action_create")), garage, Operation.CREATE_SERVICE_ITEM);
         addButton.setOnAction(e -> ActionDialogs.showCreateServiceItemDialog(garage, router::requestReload));
-        Button createPackageButton = UiComponents.secondaryButton(I18n.get("entity.services.action_create_package"));
+        Button createPackageButton = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.services.action_create_package")), garage, Operation.CREATE_SERVICE_PACKAGE);
         createPackageButton.setOnAction(e -> ServicePackageDialogs.showCreatePackageDialog(garage, router::requestReload));
         Button showPackagesButton = UiComponents.secondaryButton(I18n.get("entity.services.action_show_packages"));
         showPackagesButton.setOnAction(e -> ServicePackageDialogs.showPackagesDialog(garage));
-        Button editButton = UiComponents.secondaryButton(I18n.get("entity.services.action_edit"));
-        Button deleteButton = UiComponents.secondaryButton(I18n.get("entity.services.action_delete"));
+        Button editButton = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.services.action_edit")), garage, Operation.UPDATE_SERVICE_ITEM);
+        Button deleteButton = Actions.button(
+                UiComponents.secondaryButton(I18n.get("entity.services.action_delete")), garage, Operation.DELETE_SERVICE_ITEM);
         editButton.setDisable(true);
         deleteButton.setDisable(true);
 
