@@ -19,7 +19,7 @@ public final class AppShell {
 
     private final PageRouter router;
 
-    public AppShell(GarageSystem garage) {
+    public AppShell(GarageSystem garage, Runnable onSignOut) {
         VBox pageBox = new VBox(18);
         pageBox.getStyleClass().add("pages");
 
@@ -29,7 +29,7 @@ public final class AppShell {
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
         router = new PageRouter(garage, pageBox);
-        SidebarView sidebar = new SidebarView(router::navigate);
+        SidebarView sidebar = new SidebarView(router::navigate, onSignOut);
         router.setSidebar(sidebar);
 
         BorderPane mainCol = new BorderPane();
