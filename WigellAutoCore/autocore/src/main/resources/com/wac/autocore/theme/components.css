@@ -183,6 +183,11 @@
     -fx-cursor: default;
 }
 
+/* the window behind the sign-in card: darker than the pages, so the card is what the eye lands on */
+.root.login-backdrop {
+    -fx-background-color: -wac-login-bg;
+}
+
 /* the sign-in card (ui/LoginView) */
 .login-card {
     -fx-background-color: -wac-card;

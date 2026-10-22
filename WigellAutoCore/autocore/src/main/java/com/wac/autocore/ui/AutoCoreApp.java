@@ -99,6 +99,7 @@ public class AutoCoreApp extends Application {
 
     /** The window stands open, with the sign-in card in the middle of it. */
     private void showSignIn() {
+        root.getStyleClass().add("login-backdrop");
         root.getChildren().setAll(LoginView.build(loginService, this::signedIn));
         root.setAlignment(Pos.CENTER);
     }
@@ -110,6 +111,7 @@ public class AutoCoreApp extends Application {
 
     /** The card gives way to the shell, and the first page is the overview. */
     private void showApplication() {
+        root.getStyleClass().remove("login-backdrop");
         AppShell shell = new AppShell(garage);
         root.getChildren().setAll(shell.getView());
         shell.open("overview");
