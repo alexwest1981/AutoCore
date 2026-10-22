@@ -16,16 +16,23 @@ class RoleMatrixTest {
     }
 
     @Test
-    void aStaffMemberMayDoEverythingExceptTheFive() {
+    void aStaffMemberMayDoTheDaysWorkButNotTheEconomy() {
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_CUSTOMER));
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_VEHICLE));
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_MECHANIC));
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.DELETE_WORK_ORDER));
         assertFalse(RoleMatrix.allows(Role.STAFF, Operation.CHANGE_SETTINGS));
 
-        assertEquals(Operation.values().length - 5, countAllowed(Role.STAFF));
+        // The economy is one thing in three parts, and a staff member has none of them. To see one
+        // without the others would leave a colleague able to make an invoice it could not read.
+        assertFalse(RoleMatrix.allows(Role.STAFF, Operation.READ_FINANCE));
+        assertFalse(RoleMatrix.allows(Role.STAFF, Operation.CREATE_INVOICE));
+        assertFalse(RoleMatrix.allows(Role.STAFF, Operation.TAKE_PAYMENT));
+
+        assertEquals(Operation.values().length - 8, countAllowed(Role.STAFF));
         assertTrue(RoleMatrix.allows(Role.STAFF, Operation.CANCEL_WORK_ORDER));
-        assertTrue(RoleMatrix.allows(Role.STAFF, Operation.TAKE_PAYMENT));
+        assertTrue(RoleMatrix.allows(Role.STAFF, Operation.CREATE_WORK_ORDER));
+        assertTrue(RoleMatrix.allows(Role.STAFF, Operation.CREATE_BOOKING));
     }
 
     @Test
@@ -50,10 +57,10 @@ class RoleMatrixTest {
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.TAKE_PAYMENT));
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.CHANGE_SETTINGS));
 
-        // The economy is read, but it is not in this role's row: what the workshop charged and was
-        // paid is not something an account kept for looking things up needs to see.
+        // The economy is the administrator's, so it is not in this role's row either. Every role
+        // answers the same way about it, which is what makes the rule easy to state.
         assertFalse(RoleMatrix.allows(Role.READ_ONLY, Operation.READ_FINANCE));
-        assertTrue(RoleMatrix.allows(Role.STAFF, Operation.READ_FINANCE));
+        assertFalse(RoleMatrix.allows(Role.STAFF, Operation.READ_FINANCE));
         assertTrue(RoleMatrix.allows(Role.ADMIN, Operation.READ_FINANCE));
     }
 

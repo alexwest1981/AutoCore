@@ -5,9 +5,11 @@ import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.security.Operation;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
+import com.wac.autocore.ui.util.Actions;
 import com.wac.autocore.ui.util.EntityLookup;
 import com.wac.autocore.ui.util.UiFormatters;
 import com.wac.autocore.model.WorkOrderStatus;
@@ -245,10 +247,8 @@ final class WorkOrderDetailsDialog {
             }
         }
 
-        if (workOrder.getStatus() == WorkOrderStatus.CREATED) {
-            }
-
-        if (workOrder.getStatus() == WorkOrderStatus.CREATED) {
+        if (workOrder.getStatus() == WorkOrderStatus.CREATED
+                && Actions.allowed(garage, Operation.UPDATE_WORK_ORDER)) {
             content.getChildren().add(headerRow(garage, workOrder, dialog));
         }
         content.getChildren().addAll(infoGrid, servicesTitle, notice, linesGrid,
@@ -281,12 +281,16 @@ final class WorkOrderDetailsDialog {
         HBox row = new HBox(8);
 
         // Each button asks the order whether the change is allowed, the same table the service checks.
+        // It also asks the role: a read-only account opens this dialog to read it, and is offered no
+        // action at all.
         if (workOrder.canChangeTo(WorkOrderStatus.CONFIRMED)) {
-            row.getChildren().add(actionButton("confirm", garage, workOrder, dialog));
+            addAction(row, actionButton("confirm", garage, workOrder, dialog), garage,
+                    Operation.CHANGE_WORK_ORDER_STATUS);
         }
 
         if (workOrder.canChangeTo(WorkOrderStatus.IN_PROGRESS)) {
-            row.getChildren().add(actionButton("start", garage, workOrder, dialog));
+            addAction(row, actionButton("start", garage, workOrder, dialog), garage,
+                    Operation.CHANGE_WORK_ORDER_STATUS);
         }
 
         // Marking services is work inside the status, not a change of status.
@@ -294,19 +298,21 @@ final class WorkOrderDetailsDialog {
             Button markBtn = UiComponents.secondaryButton(I18n.get("entity.workorders.action_mark_performed"));
             markBtn.setOnAction(e -> ActionDialogs.showMarkPerformedDialog(garage, workOrder,
                     () -> refreshDialog(garage, workOrder, dialog)));
-            row.getChildren().add(markBtn);
+            addAction(row, markBtn, garage, Operation.UPDATE_WORK_ORDER);
         }
 
         if (workOrder.canChangeTo(WorkOrderStatus.COMPLETED) && (!multiService || allMarked)) {
-            row.getChildren().add(actionButton("complete", garage, workOrder, dialog));
+            addAction(row, actionButton("complete", garage, workOrder, dialog), garage,
+                    Operation.CHANGE_WORK_ORDER_STATUS);
         }
 
         // A reclamation is a new order, not a change of status, so it follows the status directly.
         if (status == WorkOrderStatus.COMPLETED) {
-            row.getChildren().add(reclamationButton(garage, workOrder, dialog));
+            addAction(row, reclamationButton(garage, workOrder, dialog), garage, Operation.CREATE_WORK_ORDER);
         }
 
-        if (workOrder.canChangeTo(WorkOrderStatus.CANCELLED)) {
+        if (workOrder.canChangeTo(WorkOrderStatus.CANCELLED)
+                && Actions.allowed(garage, Operation.CHANGE_WORK_ORDER_STATUS)) {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
             row.getChildren().addAll(spacer, actionButton("cancel", garage, workOrder, dialog));
@@ -321,7 +327,12 @@ final class WorkOrderDetailsDialog {
         }
 
         if (row.getChildren().isEmpty()) {
-            Label emptyLabel = new Label(I18n.get("dialog.workorder.no_actions"));
+            // Two different empty rows: the order is finished, or the person looking may not do the
+            // work. The second one would be a lie if it said there was nothing left to do.
+            boolean mayChange = Actions.allowed(garage, Operation.CHANGE_WORK_ORDER_STATUS)
+                    || Actions.allowed(garage, Operation.UPDATE_WORK_ORDER);
+            Label emptyLabel = new Label(I18n.get(mayChange ? "dialog.workorder.no_actions"
+                    : "dialog.workorder.read_only"));
             emptyLabel.getStyleClass().add("small");
             row.getChildren().add(emptyLabel);
         }
@@ -360,6 +371,17 @@ final class WorkOrderDetailsDialog {
         });
 
         return button;
+    }
+
+    /**
+     * Draws the action only when the role may carry it out. A role that may read the order gets an
+     * empty row and the line that says there is nothing to do here, rather than buttons that would
+     * end in a refusal.
+     */
+    private static void addAction(HBox row, Button button, GarageSystem garage, Operation operation) {
+        if (Actions.allowed(garage, operation)) {
+            row.getChildren().add(Actions.button(button, garage, operation));
+        }
     }
 
     /** The reclamation is created from the completed work and shows in the list as soon as the
