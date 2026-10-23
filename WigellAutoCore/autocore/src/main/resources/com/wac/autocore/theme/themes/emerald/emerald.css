@@ -498,3 +498,9 @@ TabPane .tab { -fx-background-color: transparent; }
 TabPane .tab:selected { -fx-background-color: -wac-accent-soft; }
 TabPane .tab .tab-label { -fx-text-fill: -wac-muted; }
 TabPane .tab:selected .tab-label { -fx-text-fill: -wac-accent; }
+
+/* An hour that has already gone by on the selected day. It stays in the list, so the day keeps
+   its shape, but it is drawn as history and is not offered with a plus. */
+.kanban-slot-row-compact.passed {
+    -fx-opacity: 0.45;
+}

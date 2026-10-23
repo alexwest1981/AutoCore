@@ -846,3 +846,9 @@ TableView .column-header .arrow,
     -fx-background-radius: 9;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 12, 0.10, 0, 4);
 }
+
+/* An hour that has already gone by on the selected day. It stays in the list, so the day keeps
+   its shape, but it is drawn as history and is not offered with a plus. */
+.kanban-slot-row-compact.passed {
+    -fx-opacity: 0.45;
+}
