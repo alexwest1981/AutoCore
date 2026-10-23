@@ -5,6 +5,7 @@ import com.wac.autocore.data.Db;
 import com.wac.autocore.data.DatabaseWork;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.model.WorkOrderStatus;
+import com.wac.autocore.model.WorkOrderType;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -83,7 +84,7 @@ public class WorkOrderRepository {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus().name());
-            statement.setString(4, workOrder.getType());
+            statement.setString(4, workOrder.getType().name());
             Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
             Queries.setReference(statement, 7, workOrder.getOriginalWorkOrderId());
@@ -107,7 +108,7 @@ public class WorkOrderRepository {
             Queries.setReference(statement, 1, workOrder.getBookingId());
             Queries.setReference(statement, 2, workOrder.getMechanicId());
             statement.setString(3, workOrder.getStatus().name());
-            statement.setString(4, workOrder.getType());
+            statement.setString(4, workOrder.getType().name());
             Queries.setReference(statement, 5, workOrder.getVehicleId());
             statement.setString(6, workOrder.getDescription());
             Queries.setReference(statement, 7, workOrder.getOriginalWorkOrderId());
@@ -206,9 +207,7 @@ public class WorkOrderRepository {
         workOrder.setStatus(WorkOrderStatus.fromText(status));
 
         // A row with no type (older or half-finished) keeps the model's default instead of empty.
-        if (type != null && !type.trim().isEmpty()) {
-            workOrder.setType(type);
-        }
+        workOrder.setType(WorkOrderType.fromText(type));
 
         workOrder.setOriginalWorkOrderId(resultSet.getInt("original_work_order_id"));
 

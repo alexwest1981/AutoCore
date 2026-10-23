@@ -80,11 +80,27 @@ class WorkOrderRulesTest {
     }
 
     @Test
-    void anUnknownTypeIsRefused() {
+    void aMissingTypeIsRefused() {
         RuleViolationException refused = assertThrows(RuleViolationException.class,
-                () -> garage.createWorkOrder(ownBooking().getId(), freeMechanic(), List.of(aService()), "PÅHITTAD"));
+                () -> garage.createWorkOrder(ownBooking().getId(), freeMechanic(), List.of(aService()), null));
 
         assertEquals("dialog.workorder.unknown_type", refused.getMessageKey());
+    }
+
+    @Test
+    void theOrderKeepsTheTypeItWasGiven() {
+        WorkOrder order = garage.createWorkOrder(ownBooking().getId(), freeMechanic(), List.of(aService()),
+                WorkOrderType.INTERNAL);
+
+        assertEquals(WorkOrderType.INTERNAL, order.getType());
+        assertEquals(WorkOrderType.INTERNAL, garage.findWorkOrder(order.getId()).getType());
+    }
+
+    @Test
+    void anOrderWithoutATypeIsStandard() {
+        WorkOrder order = garage.createWorkOrder(ownBooking().getId(), freeMechanic(), List.of(aService()));
+
+        assertEquals(WorkOrderType.STANDARD, order.getType());
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.wac.autocore.ui;
 import com.wac.autocore.model.InvoiceLine;
 import com.wac.autocore.model.Booking;
 import com.wac.autocore.model.Invoice;
+import com.wac.autocore.model.PaymentType;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 import com.wac.autocore.ui.i18n.I18n;
@@ -205,19 +206,20 @@ public final class BillingDialogs {
             public Invoice fromString(String string) { return null; }
         });
 
-        ComboBox<String> typeBox = new ComboBox<String>();
-        typeBox.getItems().addAll("SWISH", "CARD", "CASH");
+        ComboBox<PaymentType> typeBox = new ComboBox<PaymentType>();
+        // The order is the one a person expects at the counter: card first, then the phone, then cash.
+        typeBox.getItems().addAll(PaymentType.CARD, PaymentType.SWISH, PaymentType.CASH);
         typeBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(typeBox, Priority.ALWAYS);
         typeBox.setPromptText(I18n.get("dialog.payment.method"));
-        // The stored value stays as SWISH in the database, but the list shows "Swish".
-        typeBox.setConverter(new StringConverter<String>() {
+        // The stored value stays as CARD in the database, but the list shows "Card".
+        typeBox.setConverter(new StringConverter<PaymentType>() {
             @Override
-            public String toString(String stored) {
-                return UiFormatters.paymentTypeWord(stored);
+            public String toString(PaymentType type) {
+                return UiFormatters.paymentTypeWord(type);
             }
             @Override
-            public String fromString(String text) {
+            public PaymentType fromString(String text) {
                 return null;
             }
         });
@@ -235,7 +237,7 @@ public final class BillingDialogs {
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 Invoice inv = invoiceBox.getValue();
-                String paymentType = typeBox.getValue();
+                PaymentType paymentType = typeBox.getValue();
 
                 garage.processPayment(inv.getId(), paymentType);
                 if (onSuccess != null) onSuccess.run();

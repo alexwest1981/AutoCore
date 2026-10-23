@@ -3,6 +3,7 @@ package com.wac.autocore.repository;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Payment;
+import com.wac.autocore.model.PaymentType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -49,7 +50,7 @@ public class PaymentRepository {
         int id = queries.insert(sql, statement -> {
             statement.setInt(1, payment.getInvoiceId());
             statement.setInt(2, payment.getAmount());
-            statement.setString(3, payment.getPaymentType());
+            statement.setString(3, payment.getPaymentType().name());
             setPaymentDate(statement, 4, payment.getPaymentDate());
             statement.setBoolean(5, payment.isSuccessful());
         });
@@ -66,7 +67,7 @@ public class PaymentRepository {
         queries.write(sql, statement -> {
             statement.setInt(1, payment.getInvoiceId());
             statement.setInt(2, payment.getAmount());
-            statement.setString(3, payment.getPaymentType());
+            statement.setString(3, payment.getPaymentType().name());
             setPaymentDate(statement, 4, payment.getPaymentDate());
             statement.setBoolean(5, payment.isSuccessful());
             statement.setInt(6, payment.getId());
@@ -86,7 +87,7 @@ public class PaymentRepository {
                 resultSet.getInt("id"),
                 resultSet.getInt("invoice_id"),
                 resultSet.getInt("amount"),
-                resultSet.getString("payment_type")
+                PaymentType.fromText(resultSet.getString("payment_type"))
         );
 
         String dateText = resultSet.getString("payment_date");

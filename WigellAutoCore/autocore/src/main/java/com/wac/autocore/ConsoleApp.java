@@ -6,6 +6,7 @@ import com.wac.autocore.data.Db;
 import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Payment;
+import com.wac.autocore.model.PaymentType;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.repository.SqliteRepositoryFactory;
 import com.wac.autocore.repository.UserRepository;
@@ -423,12 +424,12 @@ public class ConsoleApp {
 
         System.out.println();
         System.out.println("Available payment types:");
-        System.out.println("CARD");
-        System.out.println("SWISH");
-        System.out.println("CASH");
+        for (PaymentType type : PaymentType.values()) {
+            System.out.println(type.name());
+        }
 
         System.out.print("Payment type: ");
-        String paymentType = scanner.nextLine();
+        PaymentType paymentType = PaymentType.fromText(scanner.nextLine());
 
         Payment created = garageSystem.processPayment(
                 invoiceId,

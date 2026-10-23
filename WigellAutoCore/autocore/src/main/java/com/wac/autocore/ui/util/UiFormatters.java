@@ -1,7 +1,9 @@
 package com.wac.autocore.ui.util;
 
 
+import com.wac.autocore.model.PaymentType;
 import com.wac.autocore.model.WorkOrderStatus;
+import com.wac.autocore.model.WorkOrderType;
 import com.wac.autocore.model.BookingStatus;
 
 
@@ -93,41 +95,28 @@ public final class UiFormatters {
         return value == null ? "-" : value.format(DATE_TIME_FORMAT);
     }
 
-    /** The payment type as one word: SWISH becomes Swish. Unknown values are shown as stored. */
-    public static String paymentTypeWord(String stored) {
-        if (stored == null || stored.trim().isEmpty()) {
+    /** The payment type as one word: CARD becomes Card. A missing type is a dash. */
+    public static String paymentTypeWord(PaymentType type) {
+        if (type == null) {
             return "-";
         }
-        String type = stored.trim().toUpperCase(Locale.US);
-        if ("SWISH".equals(type)) {
-            return com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_swish");
-        }
-        if ("CARD".equals(type)) {
-            return com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_card");
-        }
-        if ("CASH".equals(type)) {
-            return com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_cash");
-        }
-        return stored;
+        return switch (type) {
+            case CARD -> com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_card");
+            case SWISH -> com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_swish");
+            case CASH -> com.wac.autocore.ui.i18n.I18n.get("dialog.payment.method_cash");
+        };
     }
 
-    /** The work order type as one word: RECLAMATION becomes Reclamation. Unknown values are shown
-     *  as they were stored. */
-    public static String workOrderTypeWord(String stored) {
-        if (stored == null || stored.trim().isEmpty()) {
+    /** The work order type as one word: RECLAMATION becomes Reclamation. A missing type is a dash. */
+    public static String workOrderTypeWord(WorkOrderType type) {
+        if (type == null) {
             return "-";
         }
-        String type = stored.trim().toUpperCase(Locale.US);
-        if ("STANDARD".equals(type)) {
-            return com.wac.autocore.ui.i18n.I18n.get("workorder_type.standard");
-        }
-        if ("RECLAMATION".equals(type)) {
-            return com.wac.autocore.ui.i18n.I18n.get("workorder_type.reclamation");
-        }
-        if ("INTERNAL".equals(type)) {
-            return com.wac.autocore.ui.i18n.I18n.get("workorder_type.internal");
-        }
-        return stored;
+        return switch (type) {
+            case STANDARD -> com.wac.autocore.ui.i18n.I18n.get("workorder_type.standard");
+            case RECLAMATION -> com.wac.autocore.ui.i18n.I18n.get("workorder_type.reclamation");
+            case INTERNAL -> com.wac.autocore.ui.i18n.I18n.get("workorder_type.internal");
+        };
     }
 
     /** The status code as a display word, via I18n. */

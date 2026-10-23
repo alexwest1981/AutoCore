@@ -8,11 +8,11 @@ public class Payment {
     private int invoiceId;
     /** In öre, like every other amount in the program. */
     private int amount;
-    private String paymentType;
+    private PaymentType paymentType;
     private LocalDateTime paymentDate;
     private boolean successful;
 
-    public Payment(int id, int invoiceId, int amount, String paymentType) {
+    public Payment(int id, int invoiceId, int amount, PaymentType paymentType) {
         this.id = id;
         this.invoiceId = invoiceId;
         this.amount = amount;
@@ -41,7 +41,7 @@ public class Payment {
         return amount;
     }
 
-    public String getPaymentType() {
+    public PaymentType getPaymentType() {
         return paymentType;
     }
 
