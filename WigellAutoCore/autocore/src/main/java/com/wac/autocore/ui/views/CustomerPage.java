@@ -9,6 +9,7 @@ import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.Actions;
+import com.wac.autocore.ui.util.UiFormatters;
 import com.wac.autocore.ui.motion.HoldToConfirmButton;
 import com.wac.autocore.ui.navigation.PageRouter;
 import javafx.scene.control.Button;
@@ -31,7 +32,7 @@ final class CustomerPage {
                 TableFactory.sizeCol(I18n.get("table.col.phone"), TableFactory.W_PHONE, c -> c.getPhone()),
                 TableFactory.textCol(I18n.get("table.col.email"), TableFactory.W_EMAIL_MIN, TableFactory.W_EMAIL_MAX, c -> c.getEmail()),
                 TableFactory.sizeBadge(I18n.get("table.col.vip"), TableFactory.W_FLAG,
-                        c -> c.isVip() ? I18n.get("common.yes") : I18n.get("common.no")));
+                        c -> UiFormatters.badge(c.isVip(), "common.yes", "common.no")));
         router.setActiveTable(table);
 
         Button addButton = Actions.button(

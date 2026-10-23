@@ -89,15 +89,19 @@ public final class OverviewView {
                 break;
             }
             Label dot = new Label();
-            dot.getStyleClass().addAll("sdot", UiFormatters.dotClass(b.getStatus().name()));
+            dot.getStyleClass().addAll("sdot", UiFormatters.dotClass(b.getStatus()));
             Label vehicle = new Label(EntityLookup.vehicleReg(garage, b.getVehicleId()) + " \u00b7 " + b.getDate());
             vehicle.getStyleClass().add("srow-title");
             Label desc = new Label(UiFormatters.truncate(SeedText.resolve(b.getDescription()), 42));
             desc.getStyleClass().addAll("srow-sub", "small");
             Region spr = new Region();
             HBox.setHgrow(spr, Priority.ALWAYS);
-            Label st = new Label(UiFormatters.statusWord(b.getStatus()));
-            st.getStyleClass().addAll("badge", UiFormatters.badgeClass(st.getText()));
+            UiFormatters.Badge status = UiFormatters.badge(b.getStatus());
+            Label st = new Label(status.text());
+            st.getStyleClass().add("badge");
+            if (!status.styleClass().isEmpty()) {
+                st.getStyleClass().add(status.styleClass());
+            }
             VBox text = new VBox(0, vehicle, desc);
             HBox row = new HBox(10, dot, text, spr, st);
             row.getStyleClass().add("srow");
@@ -129,7 +133,7 @@ public final class OverviewView {
                 TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
                 TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.workOrderServices(garage, c)),
                 TableFactory.sizeCol(I18n.get("table.col.total"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
-                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.badge(c.getStatus())));
         t.setRowFactory(tv -> {
             javafx.scene.control.TableRow<WorkOrder> row = new javafx.scene.control.TableRow<WorkOrder>();
             row.setOnMouseClicked(event -> {

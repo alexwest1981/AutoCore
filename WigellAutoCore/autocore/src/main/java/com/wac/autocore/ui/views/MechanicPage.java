@@ -10,6 +10,7 @@ import com.wac.autocore.ui.components.TableFactory.FilterableTable;
 import com.wac.autocore.ui.components.UiComponents;
 import com.wac.autocore.ui.i18n.I18n;
 import com.wac.autocore.ui.util.Actions;
+import com.wac.autocore.ui.util.UiFormatters;
 import com.wac.autocore.ui.navigation.PageRouter;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableRow;
@@ -31,7 +32,7 @@ final class MechanicPage {
                 TableFactory.sizeCol(I18n.get("table.col.phone"), TableFactory.W_PHONE, c -> c.getPhone()),
                 TableFactory.textCol(I18n.get("table.col.specialisation"), TableFactory.W_SPEC_MIN, TableFactory.W_SPEC_MAX, c -> SeedText.resolve(c.getSpecialization())),
                 TableFactory.sizeBadge(I18n.get("table.col.available"), TableFactory.W_FLAG,
-                        c -> c.isAvailable() ? I18n.get("common.yes") : I18n.get("common.no")));
+                        c -> UiFormatters.badge(c.isAvailable(), "common.yes", "common.no")));
         router.setActiveTable(table);
 
         Button addButton = Actions.button(

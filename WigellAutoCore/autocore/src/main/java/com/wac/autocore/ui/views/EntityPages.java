@@ -53,7 +53,7 @@ public final class EntityPages {
                 }),
                 TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> PageFormatters.bookingMechanicNames(garage, c)),
                 TableFactory.textCol(I18n.get("table.col.description"), TableFactory.W_TEXT_MIN, TableFactory.W_TEXT_MAX, c -> SeedText.resolve(c.getDescription())),
-                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.badge(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = Actions.button(
@@ -131,7 +131,7 @@ public final class EntityPages {
                 TableFactory.textCol(I18n.get("table.col.mechanic"), TableFactory.W_PERSON_MIN, TableFactory.W_PERSON_MAX, c -> EntityLookup.mechanicName(garage, c.getMechanicId())),
                 TableFactory.textCol(I18n.get("table.col.services"), TableFactory.W_SERVICES_MIN, TableFactory.W_SERVICES_MAX, c -> EntityLookup.workOrderServices(garage, c)),
                 TableFactory.sizeCol(I18n.get("table.col.total"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(EntityLookup.workOrderTotal(garage, c))),
-                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.statusWord(c.getStatus())));
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.badge(c.getStatus())));
         router.setActiveTable(table);
 
         Button addBtn = Actions.button(
@@ -224,7 +224,7 @@ public final class EntityPages {
                 TableFactory.sizeCol(I18n.get("table.col.amount"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getAmount())),
                 TableFactory.sizeCol(I18n.get("table.col.discount"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getDiscount())),
                 TableFactory.sizeCol(I18n.get("table.col.total_incl_vat"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getTotalIncludingVat())),
-                TableFactory.sizeBadge(I18n.get("table.col.paid"), TableFactory.W_FLAG, c -> c.isPaid() ? I18n.get("common.yes") : I18n.get("common.no")));
+                TableFactory.sizeBadge(I18n.get("table.col.paid"), TableFactory.W_FLAG, c -> UiFormatters.badge(c.isPaid(), "common.yes", "common.no")));
         router.setActiveTable(table);
 
         Button addBtn = Actions.button(
@@ -299,7 +299,7 @@ public final class EntityPages {
                 TableFactory.sizeCol(I18n.get("table.col.total_incl_vat"), TableFactory.W_MONEY, c -> UiFormatters.formatMoney(c.getAmount())),
                 TableFactory.sizeCol(I18n.get("table.col.type"), TableFactory.W_TYPE, c -> UiFormatters.paymentTypeWord(c.getPaymentType())),
                 TableFactory.sizeCol(I18n.get("table.col.datetime"), TableFactory.W_DATETIME, c -> UiFormatters.formatDateTime(c.getPaymentDate())),
-                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> c.isSuccessful() ? I18n.get("status.successful") : I18n.get("status.failed")));
+                TableFactory.sizeBadge(I18n.get("table.col.status"), TableFactory.W_STATUS, c -> UiFormatters.badge(c.isSuccessful(), "status.successful", "status.failed")));
         router.setActiveTable(table);
 
         Button addBtn = Actions.button(

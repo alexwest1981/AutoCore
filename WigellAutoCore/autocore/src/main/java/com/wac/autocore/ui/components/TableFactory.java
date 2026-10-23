@@ -1,6 +1,7 @@
 package com.wac.autocore.ui.components;
 
 import com.wac.autocore.ui.util.UiFormatters;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -229,9 +230,9 @@ public final class TableFactory {
     }
 
     /** Status chip with the same measurements as sizeCol. */
-    public static <S> TableColumn<S, String> sizeBadge(String title, double need,
-                                                      Function<S, String> mapper) {
-        TableColumn<S, String> c = badgeCol(title, need, mapper);
+    public static <S> TableColumn<S, UiFormatters.Badge> sizeBadge(String title, double need,
+                                                                  Function<S, UiFormatters.Badge> mapper) {
+        TableColumn<S, UiFormatters.Badge> c = badgeCol(title, need, mapper);
         c.setMinWidth(need);
         c.setMaxWidth(Math.max(need + AIR, need * 1.2));
         return c;
@@ -282,30 +283,29 @@ public final class TableFactory {
         return c;
     }
 
-    /** Status column with coloured badges. */
-    public static <S> TableColumn<S, String> badgeCol(String title, double width,
-                                                     Function<S, String> mapper) {
-        TableColumn<S, String> c = new TableColumn<S, String>(title);
+    /** Status column with coloured badges. The colour comes with the value, not with the word. */
+    public static <S> TableColumn<S, UiFormatters.Badge> badgeCol(String title, double width,
+                                                                 Function<S, UiFormatters.Badge> mapper) {
+        TableColumn<S, UiFormatters.Badge> c = new TableColumn<S, UiFormatters.Badge>(title);
         c.setPrefWidth(width);
         // Same floor as the text columns, but higher: a status chip is wider than its value
         // ("Genomförd" was clipped to "Geno…" when the column was squeezed).
         c.setMinWidth(Math.min(width, 95));
         c.setMaxWidth(Math.max(width * 1.5, 240));
-        c.setCellValueFactory(cd -> new ReadOnlyStringWrapper(mapper.apply(cd.getValue())));
-        c.setCellFactory(column -> new TableCell<S, String>() {
+        c.setCellValueFactory(cd -> new ReadOnlyObjectWrapper<UiFormatters.Badge>(mapper.apply(cd.getValue())));
+        c.setCellFactory(column -> new TableCell<S, UiFormatters.Badge>() {
             @Override
-            protected void updateItem(String item, boolean empty) {
+            protected void updateItem(UiFormatters.Badge item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
+                if (empty || item == null || item.text() == null || item.text().isEmpty()) {
                     setText(null);
                     setGraphic(null);
                     return;
                 }
-                Label chip = new Label(item);
+                Label chip = new Label(item.text());
                 chip.getStyleClass().add("badge");
-                String extra = UiFormatters.badgeClass(item);
-                if (!extra.isEmpty()) {
-                    chip.getStyleClass().add(extra);
+                if (!item.styleClass().isEmpty()) {
+                    chip.getStyleClass().add(item.styleClass());
                 }
                 setGraphic(chip);
                 setText(null);
