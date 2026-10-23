@@ -9,6 +9,7 @@ kontrollerbara.
 | [riskanalys.md](riskanalys.md) | Vilka risker som fanns, vilka som slog till, vad som gjordes och vad som är kvar. | Bedöma genomförandet. |
 | [arkitekturbeslut.md](arkitekturbeslut.md) | Varför systemet ser ut som det gör, beslut för beslut (ADR-001 till ADR-017). | Granska arkitekturen. |
 | [plan-4.0.md](plan-4.0.md) | Planen före arbetet: plattform, risker, migrering, säkerhet, loggning, fristående läge och kontroll. | Se vad som var tänkt innan. |
+| [kravtackning.md](kravtackning.md) | WAC 2.5 till 4.0 rad för rad mot koden, dokumenten och tavlan, och de fyra punkter som återstår. | Kontrollera att inget krav tappats. |
 
 Underlaget:
 
