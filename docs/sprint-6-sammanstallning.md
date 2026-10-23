@@ -11,19 +11,19 @@ helheten, [riskanalysen](riskanalys.md) för vad som gick fel och varför, och
 
 ## Siffrorna vid stängning
 
-Kontrollerade mot kod och tavla 23 oktober 2026, klockan 10.57. Backloggen flyttades in i sprint
+Kontrollerade mot kod och tavla 23 oktober 2026, klockan 12.29. Backloggen flyttades in i sprint
 6.5 under eftermiddagen, så kortantalet är en ögonblicksbild och inte samma som vid sprintens start.
 
 | Mått | Värde | Var det kommer ifrån |
 |---|---|---|
 | Kort i sprint 6 | 65 | Tavlan, sprintarna 6.0–6.5 |
-| Kort klara | 53 | Tavlan |
+| Kort klara | 58 | Tavlan |
 | Kort i In Review | 1, SCRUM-330 | Tavlan |
-| Kort i In Progress | 1, SCRUM-348 | Tavlan 23 oktober |
-| Kort i To Do | 10 | Tavlan 23 oktober |
+| Kort i In Progress | 2, SCRUM-283 och SCRUM-348 | Tavlan 23 oktober |
+| Kort i To Do | 4, SCRUM-282, SCRUM-322, SCRUM-351 och SCRUM-352 | Tavlan 23 oktober |
 | Story points | 84 | Tavlan |
-| Commit | 90, varav 87 utan merge | `git log --since=2026-10-19` |
-| Fördelning | Alex 53, Daniel 26, Lucas 11 commit | `git log` efter författare |
+| Commit | 105, varav 95 utan merge | `git log --since=2026-10-19` |
+| Fördelning | Alex 58, Daniel 25, Lucas 12 commit utan merge | `git log` efter författare |
 | JUnit-prov | 132, alla gröna | `mvn -o test` 23 oktober |
 | Bevisprogram | 15 | `src/test/java/com/wac/autocore/proof/` |
 | Bevis med Java 8-baslinje | 11 | [`bevis/`](bevis/README.md) |
@@ -179,11 +179,16 @@ och fokus, som bara syntes när någon tittade på fönstret.
 | Kort | Status | Vad som återstår |
 |---|---|---|
 | SCRUM-330, E1-7 Listan över inkompatibiliteter | In Review | Granska och merga. Listan hör ihop med [arkitekturbesluten](arkitekturbeslut.md) och README. |
-| SCRUM-348, R3 Ändra tid | In Progress | Knappen i arbetsorderns detaljvy. |
+| SCRUM-348, R3 Ändra tid | In Progress | Knappen i arbetsorderns detaljvy. Lucas. |
+| SCRUM-283, L5 Arkitekturbeskrivning | In Progress | Underlaget är [`arkitekturbeslut.md`](arkitekturbeslut.md). Daniel. |
 | SCRUM-322, E5-7 Arkitektoniska beslut | To Do | Underlaget är [`arkitekturbeslut.md`](arkitekturbeslut.md) och den här filen. Kortet kan stängas när filerna är mergade. |
-| Nio kort ur backloggen | To Do | Se nästa avsnitt. De flyttades in i sprint 6.5 under eftermiddagen. |
+| SCRUM-282, L4 Demon | To Do | De sex punkterna inför beställaren. |
+| SCRUM-351, SCRUM-352 | To Do | Två beslut som väntar: siffror i mekanikernas namn, och om en arbetsorder får slutföras utan utförda arbeten. Se nästa avsnitt. |
 | SCRUM-335, E5-11 README | Done | Mergad i #261. README tar upp arkitekturträdet, inloggning och roller, loggningen och hur sviten körs. |
 | SCRUM-345, R2-2 Badgefärgen | Done | Mergad i #262. Färgen följer statusvärdet, och `StatusBadgeTest` håller den kvar. |
+| SCRUM-353, R2-1 Typer som enum | Done | Mergad i #263. `PaymentType` och `WorkOrderType`, med `StoredTypeTest` som bevis. |
+| SCRUM-350, R7 Passerade timmar | Done | Mergad i #266. Regeln ligger i `OpeningHours.hasPassed`, med `OpeningHoursTest` som bevis. |
+| SCRUM-346, SCRUM-349 | Done | Mergade i #264 och #265 av Lucas. |
 | SCRUM-354, utloggning | Done på tavlan | Saknar bevis enligt genomgången i SCRUM-360. Öppna igen eller redovisa som manuellt prövat. |
 | Grenar | Öppna | Merga i beroendeordning före 15.00 och radera de grenar som är inmergade. |
 
@@ -192,20 +197,18 @@ redovisningen.
 
 ## Det som flyttades in i sprinten under eftermiddagen
 
-De här korten låg i backloggen på morgonen och flyttades in i sprint 6.5. De är det som återstår
-enligt tavlan, förutom det som redan är mergat.
+De här korten låg i backloggen på morgonen och flyttades in i sprint 6.5. Fyra av dem är mergade
+under eftermiddagen: 346, 349, 350 och 353. Kvar i den gruppen är två beslut och två leveranskort.
 
 | Kort | Vad det gäller |
 |---|---|
-| SCRUM-364 | Databasen säger att den är redo innan den är det. Commit `b95626a` gör samma sak, så kortet och koden bör jämföras innan det stängs. |
-| SCRUM-346 | R5: `MechanicRules` ska inte välja mekaniker utifrån översatt text. |
-| SCRUM-349 | R6: utkast visar ingen sluttid i arbetsordertabellen. |
-| SCRUM-350 | R7: Kanban-vyn visar passerade timmar som lediga. |
 | SCRUM-351 | R8: beslut om mekaniker får ha siffror i namnet. |
 | SCRUM-352 | R9: beslut om en arbetsorder får slutföras utan utförda arbeten. |
-| SCRUM-353 | R2-1: betalningstyp och arbetsordertyp som enum i stället för strängar. |
 | SCRUM-282 | L4: demon med de sex punkterna inför beställaren. |
 | SCRUM-283 | L5: kort arkitekturbeskrivning för beställaren. [`arkitekturbeslut.md`](arkitekturbeslut.md) är underlaget. |
+
+SCRUM-364, databasen som säger att den är redo innan den är det, är stängd. Commit `b95626a` gjorde
+samma sak, vilket var det som kortet och koden skulle jämföras om.
 
 ## Vad som inte ingår i 4.0
 
@@ -237,7 +240,7 @@ sed -n '/public enum Role/,/^}/p' \
   | grep -cE '^    [A-Z][A-Z_0-9]*(,|;|$)'   # 3
 
 # Från repots rot:
-git log --since=2026-10-19 --no-merges --oneline | wc -l   # 87
+git log --since=2026-10-19 --no-merges --oneline | wc -l   # 95
 ```
 
 Antalet prov i surefire-rapporterna kan summeras separat:
