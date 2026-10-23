@@ -25,7 +25,7 @@ samma som vid sprintens start.
 | Story points | 84 | Tavlan |
 | Commit | 105, varav 95 utan merge | `git log --since=2026-10-19` |
 | Fördelning | Alex 58, Daniel 25, Lucas 12 commit utan merge | `git log` efter författare |
-| JUnit-prov | 135, alla gröna | `mvn -o test` 23 oktober |
+| JUnit-prov | 140, alla gröna | `mvn -o test` 23 oktober |
 | Bevisprogram | 15 | `src/test/java/com/wac/autocore/proof/` |
 | Bevis med Java 8-baslinje | 11 | [`bevis/`](bevis/README.md) |
 | Migreringar | 4 | `src/main/resources/com/wac/autocore/db/migrations/` |
@@ -230,9 +230,9 @@ Kommandona är körda 23 oktober 2026 från `WigellAutoCore/autocore` om inget a
 `mvn -o test` kräver att beroendena redan är hämtade; annars kör `mvn test`.
 
 ```
-mvn -o test                                  # 135 prov, 0 fel
+mvn -o test                                  # 140 prov, 0 fel
 
-grep -rho '@Test' src/test/java | wc -l      # 135
+grep -rho '@Test' src/test/java | wc -l      # 140
 ls src/test/java/com/wac/autocore/proof/*.java | wc -l   # 15
 ls src/main/resources/com/wac/autocore/db/migrations/*.sql | wc -l   # 4
 
@@ -253,7 +253,7 @@ Antalet prov i surefire-rapporterna kan summeras separat:
 ```
 grep -h 'tests=' target/surefire-reports/*.xml \
   | sed -E 's/.*tests="([0-9]+)".*/\1/' \
-  | awk '{s+=$1} END {print s}'              # 135
+  | awk '{s+=$1} END {print s}'              # 140
 ```
 
 Korten och story points kommer från Jira-tavlan och går inte att räkna fram ur repot.

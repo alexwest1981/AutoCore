@@ -135,7 +135,7 @@ Statusarna betyder: **uppfyllt**, **delvis** och **saknas**.
 | 5. Arbetsordern innehåller arbetena | uppfyllt | `work_order_service_items` |
 | 6. Faktura med flera rader | uppfyllt | `invoice_lines`, `BillingService` |
 | 7. Pris kan ändras | uppfyllt | `updateServiceItem` |
-| 8. Prisändring påverkar inte tidigare arbete eller fakturor | uppfyllt | Priset fryses vid slutförandet, prövat i `CompleteWithoutMarkingTest` |
+| 8. Prisändring påverkar inte tidigare arbete eller fakturor | uppfyllt | Priset fryses vid slutförandet, prövat i `PriceFreezeTest` med tre fall |
 | 9. Rabattfunktionerna fungerar med den nya modellen | uppfyllt | `DiscountRules`, `NumberRulesProof` |
 | 10–11. Informationen sparas och finns kvar efter omstart | uppfyllt | SQLite, migreringarna |
 | 12. Befintlig funktionalitet fungerar | uppfyllt | Regressionsjämförelsen |
@@ -168,21 +168,21 @@ ersätter det med Spring Boot 4 och Java 17 eller senare.
 | Lagringsfel skilda från otillåtna operationer | uppfyllt | `DataAccessException` mot `RuleViolationException` och `ValidationException` |
 | Samma regler för arbetsorderns tillstånd oavsett väg | uppfyllt | `canChangeTo` används av både vy och tjänst |
 | Enhetlig validering och felrapportering | uppfyllt | Undantagen med textnyckel, reglerna i tjänsterna |
-| Etablerade standarder för validering | **delvis** | Inget Jakarta Bean Validation. Reglerna ligger i tjänsterna i stället. Kravet är formulerat som ett önskemål där teamet får bedöma |
+| Etablerade standarder för validering | uppfyllt | Bedömt och dokumenterat i [ADR-019](arkitekturbeslut.md#adr-019-validering-i-tjänsterna-inte-i-jakarta-bean-validation): reglerna ligger i tjänsterna eftersom de kräver databasen, och Bean Validation passar först vid en yttre gräns |
 | Tidigare funktionalitet inte försämrad | uppfyllt | Regressionsjämförelsen, 135 prov |
 
 ## Det som saknas
 
-Två saker. Ingen av dem är ett hinder för demon.
+Inget. De två punkter som stod här är åtgärdade samma dag:
 
-**1. Validering utan etablerad standard (WAC 3.5 §5).** Reglerna är handskrivna i tjänsterna i
-stället för Jakarta Bean Validation. Kravet är ett önskemål och teamet får bedöma, men det bör stå
-en rad om varför, så att det inte ser ut som en glömska.
+| Punkt | Hur den stängdes |
+|---|---|
+| Validering utan etablerad standard (WAC 3.5 §5) | Bedömningen står i [ADR-019](arkitekturbeslut.md#adr-019-validering-i-tjänsterna-inte-i-jakarta-bean-validation): reglerna ligger i tjänsterna därför att de kräver databasen och de andra tjänsterna, och Bean Validation hör till en yttre gräns som appen inte har |
+| Prisfrysningen prövades bara indirekt (WAC 2.5 kriterium 8) | `PriceFreezeTest` med tre fall: fakturan använder priset från slutförandet, en skriven faktura står still, och en ny order får det nya priset. Provat att det fäller: utan frysningen blir 129 500 till 179 500 |
 
-**2. Prisfrysningen har ett indirekt prov.** WAC 2.5 kriterium 8 prövas genom
-`CompleteWithoutMarkingTest`, men det finns inget prov som ändrar priset i katalogen efter en
-faktura och visar att den gamla fakturan står still. Låg risk, eftersom priset fryses vid
-slutförandet, men det är det prov en granskare frågar efter.
+Det som står kvar utanför kravtäckningen är det som gäller arbetssättet och inte kraven:
+SCRUM-354 saknar bevis, och 57 fjärrgrenar väntar på städning. Båda står i
+[sprintsammanställningen](sprint-6-sammanstallning.md).
 
 ## Det som är kontrollerat och håller
 
@@ -191,7 +191,7 @@ behörighet inklusive den läsbehörigas gränser, loggning och spårbarhet, bev
 planen med de åtta punkterna, alla åtta demopunkter utom halva H, och samtliga acceptanskriterier i
 2.5, 3.0 och 3.5 utom den frivilliga valideringsstandarden.
 
-135 prov går igenom, elva bevis svarar som Java 8-baslinjen eller bara olika där indata gör det, och
+140 prov går igenom, elva bevis svarar som Java 8-baslinjen eller bara olika där indata gör det, och
 `OldDatabaseProof` visar att den gamla databasen lyfts utan att något tappas.
 
 ## Så kontrolleras det om
@@ -199,8 +199,8 @@ planen med de åtta punkterna, alla åtta demopunkter utom halva H, och samtliga
 Från repots rot:
 
 ```
-mvn -o test -f WigellAutoCore/autocore/pom.xml     # 135 prov
-grep -c '^## ADR-' docs/arkitekturbeslut.md        # 18 beslut
+mvn -o test -f WigellAutoCore/autocore/pom.xml     # 140 prov
+grep -c '^## ADR-' docs/arkitekturbeslut.md        # 19 beslut
 grep -c '^| R[0-9]' docs/riskanalys.md             # 25 risker
 ```
 

@@ -32,6 +32,7 @@ i sak oförändrad, så att alla beslut ligger på samma ställe.
 | [016](#adr-016-native-access-deklareras-i-manifestet) | Native access deklareras i manifestet | E1 |
 | [017](#adr-017-språkvalet-är-en-egen-operation-för-alla-roller) | Språkvalet är en egen operation för alla roller | E3 |
 | [018](#adr-018-en-slutförd-order-får-sakna-markerade-arbeten) | En slutförd order får sakna markerade arbeten | E5 |
+| [019](#adr-019-validering-i-tjänsterna-inte-i-jakarta-bean-validation) | Validering i tjänsterna, inte i Jakarta Bean Validation | E5 |
 
 ---
 
@@ -698,9 +699,63 @@ faktureras delvis. Då är markeringen inte längre bokföring utan affärsdata,
 
 ---
 
+## ADR-019: Validering i tjänsterna, inte i Jakarta Bean Validation
+
+**Datum:** 2026-10-23 · **Status:** gäller · **Berör:** E5, validering
+
+### Beslut
+
+Reglerna för vad som är en giltig kund, fordon, bokning och arbetsorder ligger i tjänsterna, som
+kastar `ValidationException` eller `RuleViolationException` med en textnyckel. Jakarta Bean
+Validation, som följer med Spring Boot, används inte.
+
+### Skäl
+
+WAC 3.5 §5 önskar att lösningen "där det är lämpligt" använder etablerade standarder för validering,
+och lämnar bedömningen till teamet. Här är den bedömningen.
+
+Bean Validation är byggt för att kontrollera data som kommer in utifrån, vid en gräns: en
+webbförfrågan, ett formulär, ett API. AutoCore har ingen sådan gräns. Appen är en desktop-app där
+gränssnittet anropar tjänsterna direkt, och den fristående vägen anropar samma klasser. Det finns
+alltså ingen plats där en annotering hade legat närmare datan än regeln redan gör.
+
+Reglerna är dessutom inte fältvis. Att en bokning får plats beror på mekanikerns schema, på de andra
+bokningarna den dagen och på tjänsternas sammanlagda tid; att en arbetsorder får slutföras beror på
+dess status och på vad som markerats. Det är frågor som kräver databasen och de andra tjänsterna,
+alltså sådant Bean Validation uttryckligen inte gör.
+
+Det som hade gått att annotera — att ett namn inte är tomt, att ett pris är positivt — är den lilla
+delen. Att införa ramverket för den delen hade gett två ställen att underhålla samma regel på, och
+den risken är större än vinsten.
+
+### Följder
+
+- En regel finns på ett ställe och gäller alla tre ingångarna: fönstret, konsolen och det
+  fristående programmet ([ADR-006](#adr-006-behörigheten-sitter-i-en-dekoratör-framför-fasaden)).
+- Ett fel som användaren ser är en mening på användarens språk, aldrig ett fältnamn ur en
+  annotering ([ADR-011](#adr-011-användaren-får-en-mening-loggen-får-detaljerna)).
+- `ValidationException` och `RuleViolationException` skiljs från `DataAccessException`, så ett
+  ogiltigt värde och ett trasigt databasanrop beter sig olika.
+- Den som lägger till en ny regel skriver den i tjänsten och ett prov bredvid, i stället för att
+  lägga en annotering på modellen.
+
+### Bevis
+
+`WorkOrderRulesTest`, `NumberRulesProof` och `RuleViolationProof` prövar reglerna och deras svar;
+`AuthorizationTest` visar att ett nej ser olika ut beroende på om det är behörigheten eller
+uppgifterna det är fel på.
+
+### När beslutet ska omprövas
+
+Om AutoCore får ett HTTP-gränssnitt eller en extern integration. Då finns det en gräns där data
+kommer in utifrån, och där är Bean Validation rätt verktyg för formen — medan reglerna som kräver
+databasen stannar i tjänsterna.
+
+---
+
 ## Vad som underlättade och vad som försvårade
 
-ADR-001 till ADR-018 är beslut vi fattade under den här etappen. WAC4_0 §11 H frågar också vilka
+ADR-001 till ADR-019 är beslut vi fattade under den här etappen. WAC4_0 §11 H frågar också vilka
 *tidigare* teknik- och arkitekturbeslut som underlättade respektive försvårade arbetet. Det här är
 den genomgången, med risknumren ur [riskanalysen](riskanalys.md) där de finns.
 
