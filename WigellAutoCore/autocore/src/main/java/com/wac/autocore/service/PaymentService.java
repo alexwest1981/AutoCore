@@ -4,6 +4,7 @@ import com.wac.autocore.exception.NotFoundException;
 import com.wac.autocore.exception.DataAccessException;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Payment;
+import com.wac.autocore.model.PaymentType;
 import com.wac.autocore.repository.InvoiceRepository;
 import com.wac.autocore.repository.PaymentRepository;
 
@@ -28,7 +29,7 @@ public class PaymentService {
         }
     }
 
-    public Payment processPayment(int invoiceId, String paymentType) {
+    public Payment processPayment(int invoiceId, PaymentType type) {
         Invoice invoice = findInvoice(invoiceId);
         if (invoice == null) {
             throw new NotFoundException("Invoice with ID " + invoiceId + " does not exist.");
@@ -45,26 +46,18 @@ public class PaymentService {
         }
 
         // An unknown payment type created a payment row that could never succeed, and the
-        // invoice stayed unpaid. The type is therefore checked before the row is written.
-        String type = paymentType == null ? "" : paymentType.trim().toUpperCase();
-        if (!"CARD".equals(type) && !"SWISH".equals(type) && !"CASH".equals(type)) {
+        // invoice stayed unpaid. The type is therefore checked before the row is written. The
+        // text from a caller becomes a PaymentType before it gets here, so what is left to refuse
+        // is the missing one.
+        if (type == null) {
             return null;
         }
 
         // The customer pays the whole amount including VAT. The invoice's own amounts are excluding VAT.
         Payment payment = new Payment(0, invoiceId, invoice.getTotalIncludingVat(), type);
 
-        boolean successful = false;
-
-        if ("CARD".equalsIgnoreCase(type)) {
-            successful = true;
-        } else if ("SWISH".equalsIgnoreCase(type)) {
-            successful = true;
-        } else if ("CASH".equalsIgnoreCase(type)) {
-            successful = true;
-        }
-
-        payment.setSuccessful(successful);
+        // All three methods settle at once here; it is the type that differs, not the outcome.
+        payment.setSuccessful(true);
 
         try {
             paymentRepository.save(payment);
@@ -72,15 +65,12 @@ public class PaymentService {
             throw new DataAccessException("Could not save payment", e);
         }
 
-        if (successful) {
-            invoice.setPaid(true);
+        invoice.setPaid(true);
 
-            try {
-                invoiceRepository.save(invoice);
-            } catch (DataAccessException e) {
-                throw new DataAccessException("Could not update invoice " + invoiceId, e);
-            }
-
+        try {
+            invoiceRepository.save(invoice);
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Could not update invoice " + invoiceId, e);
         }
 
         return payment;

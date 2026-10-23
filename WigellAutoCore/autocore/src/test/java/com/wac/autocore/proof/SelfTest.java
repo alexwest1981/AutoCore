@@ -7,6 +7,7 @@ import com.wac.autocore.model.Customer;
 import com.wac.autocore.model.Invoice;
 import com.wac.autocore.model.Mechanic;
 import com.wac.autocore.model.Payment;
+import com.wac.autocore.model.PaymentType;
 import com.wac.autocore.model.ServiceItem;
 import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
@@ -134,7 +135,7 @@ public final class SelfTest {
 
     private static String payments(GarageSystem garage) {
         Invoice invoice = garage.createInvoice(completedOrder(garage, LocalDate.of(2027, 3, 5)).getId(), "");
-        Payment payment = Objects.requireNonNull(garage.processPayment(invoice.getId(), "CARD"),
+        Payment payment = Objects.requireNonNull(garage.processPayment(invoice.getId(), PaymentType.CARD),
                 "kortbetalningen gick inte igenom");
         must(payment.isSuccessful(), "kortbetalningen gick inte igenom");
         must(garage.findInvoice(invoice.getId()).isPaid(), "fakturan står inte som betald");
