@@ -237,4 +237,61 @@ class WorkOrderRulesTest {
 
         assertTrue(garage.hasServicesLeftForAWorkOrder(booking.getId()), "en avbruten order håller inte tjänsten");
     }
+    /** A booked order on a Monday a month ahead, with a qualified mechanic. */
+    private WorkOrder aBookedOrder() {
+        ServiceItem service = garage.getServiceItems().get(0);
+        Mechanic mechanic = garage.getQualifiedMechanics(service).get(0);
+        mechanic.setAvailable(true);
+        garage.updateMechanic(mechanic);
+        LocalDate monday = LocalDate.now().plusDays(30).with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        Booking booking = garage.createBooking(garage.getVehicles().get(0).getId(), monday,
+                "Prov för att flytta en bokad order", LocalTime.of(8, 0), mechanic.getId(), service.getId());
+        return garage.createWorkOrder(booking.getId(), mechanic.getId());
+    }
+
+    /** The same order with only the day and time changed, the way the edit dialog sends it. */
+    private static DraftChanges sameOrderAt(WorkOrder order, LocalDate date, LocalTime time) {
+        return DraftChanges.forWorkOrder(order.getId())
+                .vehicle(order.getVehicleId())
+                .description(order.getDescription())
+                .mechanic(order.getMechanicId())
+                .services(order.getServiceItemIds())
+                .plannedAt(date, time)
+                .build();
+    }
+
+    @Test
+    void aNewTimeOnABookedOrderMovesTheBooking() {
+        WorkOrder order = aBookedOrder();
+        Booking before = garage.findBooking(order.getBookingId());
+        LocalDate tuesday = before.getDate().plusDays(1);
+
+        garage.updateDraft(sameOrderAt(order, tuesday, LocalTime.of(10, 0)));
+
+        Booking after = garage.findBooking(order.getBookingId());
+        assertEquals(tuesday, after.getDate());
+        assertEquals(LocalTime.of(10, 0), after.getStartTime());
+        assertEquals(java.time.Duration.between(before.getStartTime(), before.getEndTime()),
+                java.time.Duration.between(after.getStartTime(), after.getEndTime()), "längden är densamma");
+
+        assertTrue(garage.getSlotsForDay(order.getMechanicId(), tuesday).stream()
+                        .anyMatch(slot -> slot.getBookingId() == order.getBookingId() && slot.getHour() == 10),
+                "Kanban visar den nya tiden");
+        assertTrue(garage.getSlotsForDay(order.getMechanicId(), before.getDate()).stream()
+                        .noneMatch(slot -> slot.getBookingId() == order.getBookingId()),
+                "den gamla tiden är släppt");
+    }
+
+    @Test
+    void aBookedOrderCannotBeMovedToASaturday() {
+        WorkOrder order = aBookedOrder();
+        Booking before = garage.findBooking(order.getBookingId());
+        LocalDate saturday = before.getDate().with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
+
+        RuleViolationException refused = assertThrows(RuleViolationException.class,
+                () -> garage.updateDraft(sameOrderAt(order, saturday, LocalTime.of(10, 0))));
+
+        assertEquals("dialog.booking.date_weekend", refused.getMessageKey());
+        assertEquals(before.getDate(), garage.findBooking(order.getBookingId()).getDate(), "bokningen står kvar");
+    }
 }
