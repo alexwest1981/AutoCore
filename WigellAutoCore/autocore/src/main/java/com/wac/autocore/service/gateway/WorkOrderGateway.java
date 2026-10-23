@@ -2,6 +2,7 @@ package com.wac.autocore.service.gateway;
 
 import com.wac.autocore.model.DraftChanges;
 import com.wac.autocore.model.WorkOrder;
+import com.wac.autocore.model.WorkOrderType;
 import java.util.List;
 
 public interface WorkOrderGateway {
@@ -10,7 +11,7 @@ public interface WorkOrderGateway {
 
     WorkOrder findWorkOrder(int id);
 
-    WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type);
+    WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, WorkOrderType type);
 
     WorkOrder createDraft(int vehicleId, String description);
 

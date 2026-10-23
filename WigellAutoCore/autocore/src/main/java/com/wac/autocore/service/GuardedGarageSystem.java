@@ -218,7 +218,7 @@ public class GuardedGarageSystem extends GarageSystem {
     }
 
     @Override
-    public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type) {
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, WorkOrderType type) {
 
         require(Operation.CREATE_WORK_ORDER);
 
@@ -338,7 +338,7 @@ public class GuardedGarageSystem extends GarageSystem {
     }
 
     @Override
-    public Payment processPayment(int invoiceId, String paymentType) {
+    public Payment processPayment(int invoiceId, PaymentType paymentType) {
 
         require(Operation.TAKE_PAYMENT);
 

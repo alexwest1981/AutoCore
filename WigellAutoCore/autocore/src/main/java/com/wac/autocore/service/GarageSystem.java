@@ -428,7 +428,7 @@ public class GarageSystem implements WorkOrderGateway {
     /** Creates a work order of a given type: Standard, Reclamation or Internal. */
     @Override
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, java.util.List<Integer> serviceItemIds,
-                                     String type) {
+                                     WorkOrderType type) {
         WorkOrder order = workOrderService.createWorkOrder(bookingId, mechanicId, serviceItemIds, type);
         changed();
         return order;
@@ -596,7 +596,7 @@ public class GarageSystem implements WorkOrderGateway {
         return confirmed;
     }
 
-    public Payment processPayment(int invoiceId, String paymentType) {
+    public Payment processPayment(int invoiceId, PaymentType paymentType) {
         Payment payment = paymentService.processPayment(invoiceId, paymentType);
         changed();
         return payment;

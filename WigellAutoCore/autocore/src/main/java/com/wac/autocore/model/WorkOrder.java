@@ -2,7 +2,6 @@ package com.wac.autocore.model;
 
 import com.wac.autocore.exception.RuleViolationException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,14 +10,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class WorkOrder {
-
-    /** Standard, reclamation or internal work. The code lives here and nowhere else. */
-    public static final String STANDARD = "STANDARD";
-    public static final String RECLAMATION = "RECLAMATION";
-    public static final String INTERNAL = "INTERNAL";
-
-    /** The types you can pick. The order is the one the picker shows, and the first is standard. */
-    public static final List<String> TYPES = Arrays.asList(STANDARD, RECLAMATION, INTERNAL);
 
     private int id;
     private int bookingId;
@@ -33,7 +24,7 @@ public class WorkOrder {
     private LocalTime plannedTime;
     private String customerInstructions;
     private String otherComments;
-    private String type;
+    private WorkOrderType type;
 
     // The work order the reclamation concerns. 0 means the order is not a reclamation.
     private int originalWorkOrderId;
@@ -50,7 +41,7 @@ public class WorkOrder {
         this.mechanicId = mechanicId;
         this.serviceItemIds = new ArrayList<Integer>();
         this.status = WorkOrderStatus.CREATED;
-        this.type = STANDARD;
+        this.type = WorkOrderType.STANDARD;
     }
 
     public int getId() {
@@ -109,11 +100,11 @@ public class WorkOrder {
         this.status = status;
     }
 
-    public String getType() {
+    public WorkOrderType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(WorkOrderType type) {
         this.type = type;
     }
 
@@ -161,7 +152,7 @@ public class WorkOrder {
 
     /** A reclamation is not charged to the customer, but it must still show on the invoice. */
     public boolean isReclamation() {
-        return RECLAMATION.equals(type);
+        return type == WorkOrderType.RECLAMATION;
     }
 
     public void addServiceItem(int serviceItemId) {

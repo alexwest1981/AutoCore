@@ -80,18 +80,18 @@ final class CreateWorkOrderDialog {
 
         // The type is the same for all work orders one run creates: one per mechanic, one type.
         // Nothing is picked to begin with, so the field shows its prompt until one is chosen.
-        ComboBox<String> typeBox = new ComboBox<String>();
-        typeBox.getItems().addAll(WorkOrder.TYPES);
+        ComboBox<WorkOrderType> typeBox = new ComboBox<WorkOrderType>();
+        typeBox.getItems().addAll(WorkOrderType.values());
         typeBox.setPromptText(I18n.get("dialog.workorder.type_select"));
         typeBox.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(typeBox, Priority.ALWAYS);
-        typeBox.setConverter(new StringConverter<String>() {
+        typeBox.setConverter(new StringConverter<WorkOrderType>() {
             @Override
-            public String toString(String type) {
+            public String toString(WorkOrderType type) {
                 return type == null ? "" : UiFormatters.workOrderTypeWord(type);
             }
             @Override
-            public String fromString(String string) { return null; }
+            public WorkOrderType fromString(String string) { return null; }
         });
 
         grid.add(new Label(I18n.get("dialog.workorder.booking_select") + ":"), 0, 0);

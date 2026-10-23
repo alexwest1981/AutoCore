@@ -83,14 +83,14 @@ public class WorkOrderService {
 
     /** Creates a work order for a selection of the services. */
     public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds) {
-        return createWorkOrder(bookingId, mechanicId, serviceItemIds, WorkOrder.TYPES.get(0));
+        return createWorkOrder(bookingId, mechanicId, serviceItemIds, WorkOrderType.STANDARD);
     }
 
     /** Creates a work order of a given type. Standard, reclamation or internal work. */
-    public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, String type) {
+    public WorkOrder createWorkOrder(int bookingId, int mechanicId, List<Integer> serviceItemIds, WorkOrderType type) {
 
-        if (type == null || !WorkOrder.TYPES.contains(type)) {
-            throw new RuleViolationException("Unknown work order type: " + type, "dialog.workorder.unknown_type");
+        if (type == null) {
+            throw new RuleViolationException("No work order type was given", "dialog.workorder.unknown_type");
         }
 
         Booking booking = findBooking(bookingId);
@@ -182,7 +182,7 @@ public class WorkOrderService {
         }
 
         WorkOrder reclamation = new WorkOrder(0, original.getBookingId(), original.getMechanicId());
-        reclamation.setType(WorkOrder.RECLAMATION);
+        reclamation.setType(WorkOrderType.RECLAMATION);
         reclamation.setOriginalWorkOrderId(originalWorkOrderId);
         reclamation.setVehicleId(original.getVehicleId());
         reclamation.setDescription(description);
