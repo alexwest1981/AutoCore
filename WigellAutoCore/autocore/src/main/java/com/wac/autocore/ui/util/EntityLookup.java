@@ -11,6 +11,7 @@ import com.wac.autocore.model.Vehicle;
 import com.wac.autocore.model.WorkOrder;
 import com.wac.autocore.service.GarageSystem;
 
+import java.time.LocalTime;
 import java.util.List;
 import com.wac.autocore.seed.SeedText;
 
@@ -163,13 +164,31 @@ public final class EntityLookup {
         return wo != null && wo.getPlannedDate() != null ? String.valueOf(wo.getPlannedDate()) : "-";
     }
 
-    /** The work order's time, from the booking, or the planned hour on a draft. */
+    /** The work order's time, from the booking, or the planned hour and length on a draft. */
     public static String workOrderTime(GarageSystem garage, WorkOrder wo) {
         Booking b = bookingForWorkOrder(garage, wo);
         if (b != null) {
             return bookingTime(b);
         }
-        return wo != null && wo.getPlannedTime() != null ? String.valueOf(wo.getPlannedTime()) : "-";
+        if (wo == null || wo.getPlannedTime() == null) {
+            return "-";
+        }
+        LocalTime start = wo.getPlannedTime();
+        return start + " - " + start.plusMinutes(draftMinutes(garage, wo));
+    }
+
+    /** The length of a draft: the planned time of its services, an hour when none has been set. */
+    private static int draftMinutes(GarageSystem garage, WorkOrder wo) {
+        int minutes = 0;
+        if (garage != null && wo.getServiceItemIds() != null) {
+            for (Integer sid : wo.getServiceItemIds()) {
+                ServiceItem service = garage.findServiceItem(sid.intValue());
+                if (service != null) {
+                    minutes += service.getEstimatedMinutes();
+                }
+            }
+        }
+        return minutes > 0 ? minutes : 60;
     }
 
     /** The booking the work order belongs to, or null when there is none. */
