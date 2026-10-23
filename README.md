@@ -262,7 +262,7 @@ Svenska och engelska byts med knappen i menyn, utan omstart. Datum, statusord oc
 
 ## Prov och bevis
 
-`mvn test` kör 127 JUnit-prov, och ingen av dem hoppas över: loggprovningen skriver sin egen loggfil i stället för att läsa en som råkar finnas.
+`mvn test` kör 132 JUnit-prov, och ingen av dem hoppas över: loggprovningen skriver sin egen loggfil i stället för att läsa en som råkar finnas.
 
 ```
 mvn -f WigellAutoCore/autocore/pom.xml test

@@ -104,7 +104,12 @@ class KanbanDayView {
                 });
             });
 
-            if (OpeningHours.isOpenOn(card.selectedDate)) {
+            if (OpeningHours.hasPassed(card.selectedDate, slot.getHour())) {
+                // The hour has gone by. The day view and a drop-in say the same thing about it:
+                // it cannot be booked, so no plus is offered and the row is drawn as history.
+                row.getStyleClass().add("passed");
+                row.getChildren().addAll(timeBadge, spr);
+            } else if (OpeningHours.isOpenOn(card.selectedDate)) {
                 row.getChildren().addAll(timeBadge, spr, bookBtn);
             } else {
                 row.getChildren().add(timeBadge);

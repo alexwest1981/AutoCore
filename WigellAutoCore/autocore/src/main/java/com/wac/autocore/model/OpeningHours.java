@@ -41,4 +41,27 @@ public final class OpeningHours {
         return date.getDayOfWeek() != DayOfWeek.SATURDAY
                 && date.getDayOfWeek() != DayOfWeek.SUNDAY;
     }
+
+    /**
+     * True when the hour on that day has already begun and gone by. The hour we are in is still
+     * bookable, which is the same rule a drop-in follows: it may start now, never earlier. A day
+     * that has passed is passed whole; a day to come has none.
+     */
+    public static boolean hasPassed(LocalDate day, int hour, LocalDate today, LocalTime now) {
+        if (day == null || today == null || now == null) {
+            return false;
+        }
+        if (day.isBefore(today)) {
+            return true;
+        }
+        if (day.isAfter(today)) {
+            return false;
+        }
+        return hour < now.getHour();
+    }
+
+    /** The same question, asked about the clock in this machine. */
+    public static boolean hasPassed(LocalDate day, int hour) {
+        return hasPassed(day, hour, LocalDate.now(), LocalTime.now());
+    }
 }
