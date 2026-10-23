@@ -208,8 +208,12 @@ class KanbanSlotDrawer {
 
         if (order != null) {
 
-            Label statusBadge = new Label(UiFormatters.statusWord(order.getStatus()));
-            statusBadge.getStyleClass().addAll("badge", UiFormatters.badgeClass(statusBadge.getText()), "small");
+            UiFormatters.Badge status = UiFormatters.badge(order.getStatus());
+            Label statusBadge = new Label(status.text());
+            statusBadge.getStyleClass().addAll("badge", "small");
+            if (!status.styleClass().isEmpty()) {
+                statusBadge.getStyleClass().add(status.styleClass());
+            }
 
             Button openButton = new Button(I18n.get("kanban.drawer.open_order"));
             openButton.getStyleClass().addAll("primary", "small");

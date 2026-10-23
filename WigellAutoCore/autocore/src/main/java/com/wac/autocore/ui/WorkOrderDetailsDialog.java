@@ -80,11 +80,11 @@ final class WorkOrderDetailsDialog {
         infoGrid.add(new Label(UiFormatters.workOrderTypeWord(workOrder.getType())), 1, 0);
 
         infoGrid.add(new Label(I18n.get("table.col.status") + ":"), 0, 1);
-        Label statusBadge = new Label(UiFormatters.statusWord(workOrder.getStatus()));
+        UiFormatters.Badge status = UiFormatters.badge(workOrder.getStatus());
+        Label statusBadge = new Label(status.text());
         statusBadge.getStyleClass().add("badge");
-        String badgeCls = UiFormatters.badgeClass(UiFormatters.statusWord(workOrder.getStatus()));
-        if (!badgeCls.isEmpty()) {
-            statusBadge.getStyleClass().add(badgeCls);
+        if (!status.styleClass().isEmpty()) {
+            statusBadge.getStyleClass().add(status.styleClass());
         }
         infoGrid.add(statusBadge, 1, 1);
 

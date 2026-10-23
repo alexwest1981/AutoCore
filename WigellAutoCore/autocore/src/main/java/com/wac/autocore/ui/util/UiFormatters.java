@@ -168,43 +168,67 @@ public final class UiFormatters {
         return status == null ? "" : statusWord(status.name());
     }
 
-    /** True if the status means finished. */
-    public static boolean isGood(String s) {
-        if (s == null) {
-            return false;
+    /**
+     * What a status chip shows: the word for the reader, and the colour that belongs to the value.
+     *
+     * The two travel together on purpose. The colour is decided by the status itself, never by the
+     * word, so a new wording or a new language cannot change what a row looks like.
+     */
+    public record Badge(String text, String styleClass) {}
+
+    /** The badge for a booking's status. */
+    public static Badge badge(BookingStatus status) {
+        if (status == null) {
+            return new Badge("", "");
         }
-        return s.equals("Yes") || s.equals("Ja") || s.equals("Successful") || s.equals("Genomförd")
-                || s.equals("Completed") || s.equals("Slutförd") || s.equals("Paid") || s.equals("Betald");
+        return new Badge(statusWord(status), badgeClass(status));
     }
 
-    /** The CSS class for the status badge. */
-    public static String badgeClass(String s) {
-        if (s == null) {
+    /** The badge for a work order's status. */
+    public static Badge badge(WorkOrderStatus status) {
+        if (status == null) {
+            return new Badge("", "");
+        }
+        return new Badge(statusWord(status), badgeClass(status));
+    }
+
+    /**
+     * The badge for a flag that is either settled or not — paid, successful, available, VIP. The
+     * words are the caller's, since the same yes means different things in different columns.
+     */
+    public static Badge badge(boolean settled, String whenTrueKey, String whenFalseKey) {
+        return new Badge(
+                com.wac.autocore.ui.i18n.I18n.get(settled ? whenTrueKey : whenFalseKey),
+                settled ? "success" : "danger");
+    }
+
+    /** The CSS class for a booking status. Every status has one; none falls back to a default. */
+    public static String badgeClass(BookingStatus status) {
+        if (status == null) {
             return "";
         }
-        if (isGood(s)) {
-            return "success";
-        }
-        if (s.equals("No") || s.equals("Nej") || s.equals("Failed") || s.equals("Misslyckad")) {
-            return "danger";
-        }
-        if (s.equals("In progress") || s.equals("Pågående")) {
-            return "warn";
-        }
-        if (s.equals("Booked") || s.equals("Bokad") || s.equals("Created") || s.equals("Skapad")
-                || s.equals("Work order created") || s.equals("Arbetsorder skapad") || s.equals("Confirmed")
-                || s.equals("Bekräftad") || s.equals("Cancelled") || s.equals("Avbokad")) {
-            return "info";
-        }
-        return "";
+        return switch (status) {
+            case COMPLETED -> "success";
+            case IN_PROGRESS -> "warn";
+            case BOOKED, CONFIRMED, WORK_ORDER_CREATED, CANCELLED -> "info";
+        };
     }
 
-    /** The CSS class for the status dot in the overview. */
-    public static String dotClass(String s) {
-        String b = badgeClass(s);
-        if (b.isEmpty()) {
-            return "info";
+    /** The CSS class for a work order status. Every status has one; none falls back to a default. */
+    public static String badgeClass(WorkOrderStatus status) {
+        if (status == null) {
+            return "";
         }
-        return b;
+        return switch (status) {
+            case COMPLETED -> "success";
+            case IN_PROGRESS -> "warn";
+            case CREATED, CONFIRMED, CANCELLED -> "info";
+        };
+    }
+
+    /** The CSS class for the status dot in the overview, which is never colourless. */
+    public static String dotClass(BookingStatus status) {
+        String colour = badgeClass(status);
+        return colour.isEmpty() ? "info" : colour;
     }
 }
