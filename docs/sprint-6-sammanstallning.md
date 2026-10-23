@@ -11,15 +11,16 @@ helheten, [riskanalysen](riskanalys.md) för vad som gick fel och varför, och
 
 ## Siffrorna vid stängning
 
-Kontrollerade mot kod och tavla 23 oktober 2026.
+Kontrollerade mot kod och tavla 23 oktober 2026, klockan 10.57. Backloggen flyttades in i sprint
+6.5 under eftermiddagen, så kortantalet är en ögonblicksbild och inte samma som vid sprintens start.
 
 | Mått | Värde | Var det kommer ifrån |
 |---|---|---|
-| Kort i sprint 6 | 54 | Tavlan, sprintarna 6.0–6.5 |
-| Kort klara | 51 | Tavlan |
+| Kort i sprint 6 | 65 | Tavlan, sprintarna 6.0–6.5 |
+| Kort klara | 53 | Tavlan |
 | Kort i In Review | 1, SCRUM-330 | Tavlan |
-| Kort i In Progress | 1, SCRUM-335 | Tavlan 23 oktober |
-| Kort i To Do | 1, SCRUM-322 | Tavlan 23 oktober |
+| Kort i In Progress | 1, SCRUM-348 | Tavlan 23 oktober |
+| Kort i To Do | 10 | Tavlan 23 oktober |
 | Story points | 84 | Tavlan |
 | Commit | 90, varav 87 utan merge | `git log --since=2026-10-19` |
 | Fördelning | Alex 53, Daniel 26, Lucas 11 commit | `git log` efter författare |
@@ -178,25 +179,26 @@ och fokus, som bara syntes när någon tittade på fönstret.
 | Kort | Status | Vad som återstår |
 |---|---|---|
 | SCRUM-330, E1-7 Listan över inkompatibiliteter | In Review | Granska och merga. Listan hör ihop med [arkitekturbesluten](arkitekturbeslut.md) och README. |
+| SCRUM-348, R3 Ändra tid | In Progress | Knappen i arbetsorderns detaljvy. |
 | SCRUM-322, E5-7 Arkitektoniska beslut | To Do | Underlaget är [`arkitekturbeslut.md`](arkitekturbeslut.md) och den här filen. Kortet kan stängas när filerna är mergade. |
-| SCRUM-335, E5-11 README | In Progress | README uppdaterad 23 oktober med arkitekturträdet, inloggning och roller, loggningen och hur sviten körs. Kvar att granska och merga. |
+| Nio kort ur backloggen | To Do | Se nästa avsnitt. De flyttades in i sprint 6.5 under eftermiddagen. |
+| SCRUM-335, E5-11 README | Done | Mergad i #261. README tar upp arkitekturträdet, inloggning och roller, loggningen och hur sviten körs. |
+| SCRUM-345, R2-2 Badgefärgen | Done | Mergad i #262. Färgen följer statusvärdet, och `StatusBadgeTest` håller den kvar. |
 | SCRUM-354, utloggning | Done på tavlan | Saknar bevis enligt genomgången i SCRUM-360. Öppna igen eller redovisa som manuellt prövat. |
 | Grenar | Öppna | Merga i beroendeordning före 15.00 och radera de grenar som är inmergade. |
 
 De kvarstående riskerna O1–O9 i [riskanalysen](riskanalys.md) påverkar inte demon men ska nämnas i
 redovisningen.
 
-## Kvar i backloggen för helgen
+## Det som flyttades in i sprinten under eftermiddagen
 
-De här korten ligger utanför sprinten och rör inte det som mergas 15.00. De är det som återstår
-enligt tavlan.
+De här korten låg i backloggen på morgonen och flyttades in i sprint 6.5. De är det som återstår
+enligt tavlan, förutom det som redan är mergat.
 
 | Kort | Vad det gäller |
 |---|---|
 | SCRUM-364 | Databasen säger att den är redo innan den är det. Commit `b95626a` gör samma sak, så kortet och koden bör jämföras innan det stängs. |
-| SCRUM-345 | R2-2: badgefärger ska utgå från statusvärdet, inte från översatt text. |
 | SCRUM-346 | R5: `MechanicRules` ska inte välja mekaniker utifrån översatt text. |
-| SCRUM-348 | R3: knappen "Ändra tid" i arbetsorderns detaljvy. |
 | SCRUM-349 | R6: utkast visar ingen sluttid i arbetsordertabellen. |
 | SCRUM-350 | R7: Kanban-vyn visar passerade timmar som lediga. |
 | SCRUM-351 | R8: beslut om mekaniker får ha siffror i namnet. |
