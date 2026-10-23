@@ -11,6 +11,7 @@ kontrollerbara.
 | [plan-4.0.md](plan-4.0.md) | Planen före arbetet: plattform, risker, migrering, säkerhet, loggning, fristående läge och kontroll. | Se vad som var tänkt innan. |
 | [kravtackning.md](kravtackning.md) | WAC 2.5 till 4.0 rad för rad mot koden, dokumenten och tavlan, och de två punkter som återstår. | Kontrollera att inget krav tappats. |
 | [inkompatibiliteter.md](inkompatibiliteter.md) | Vad som inte gick att flytta rakt av, var det syntes och hur det hanterades. | Se §2 och §11 H i kravet. |
+| [genomgang.md](genomgang.md) | Ordningen de åtta demopunkterna tas i, med kommandon och en reservväg per punkt. | Hålla i redovisningen. |
 
 Underlaget:
 

@@ -11,7 +11,7 @@ gås igenom rad för rad i [docs/kravtackning.md](docs/kravtackning.md), och det
 flytta rakt av står i [docs/inkompatibiliteter.md](docs/inkompatibiliteter.md). Alla delade dokument ligger i
 [docs/README.md](docs/README.md).
 
-Loggerna som demonstrationen kräver, med kommandona som ger dem, ligger i [docs/demo-loggning.md](docs/demo-loggning.md).
+Loggerna som demonstrationen kräver, med kommandona som ger dem, ligger i [docs/demo-loggning.md](docs/demo-loggning.md), och ordningen de åtta demopunkterna tas i står i [docs/genomgang.md](docs/genomgang.md).
 
 ## Vad systemet gör
 
