@@ -11,16 +11,17 @@ helheten, [riskanalysen](riskanalys.md) för vad som gick fel och varför, och
 
 ## Siffrorna vid stängning
 
-Kontrollerade mot kod och tavla 23 oktober 2026, klockan 12.29. Backloggen flyttades in i sprint
-6.5 under eftermiddagen, så kortantalet är en ögonblicksbild och inte samma som vid sprintens start.
+Kontrollerade mot kod och tavla 23 oktober 2026, klockan 12.55. Hela sprinten är stängd: alla 65
+kort står i Done. Backloggen flyttades in i sprint 6.5 under eftermiddagen, så kortantalet är inte
+samma som vid sprintens start.
 
 | Mått | Värde | Var det kommer ifrån |
 |---|---|---|
 | Kort i sprint 6 | 65 | Tavlan, sprintarna 6.0–6.5 |
-| Kort klara | 58 | Tavlan |
-| Kort i In Review | 1, SCRUM-330 | Tavlan |
-| Kort i In Progress | 2, SCRUM-283 och SCRUM-348 | Tavlan 23 oktober |
-| Kort i To Do | 4, SCRUM-282, SCRUM-322, SCRUM-351 och SCRUM-352 | Tavlan 23 oktober |
+| Kort klara | 65 | Tavlan |
+| Kort i In Review | 0 | Tavlan 23 oktober |
+| Kort i In Progress | 0 | Tavlan 23 oktober |
+| Kort i To Do | 0 | Tavlan 23 oktober |
 | Story points | 84 | Tavlan |
 | Commit | 105, varav 95 utan merge | `git log --since=2026-10-19` |
 | Fördelning | Alex 58, Daniel 25, Lucas 12 commit utan merge | `git log` efter författare |
@@ -174,41 +175,45 @@ Flera saker hittades utanför sviten och var därför värda egna kort: den brut
 först när någon startade den, skalan som ärvdes från sessionen, och gränssnittets rörelse vid hover
 och fokus, som bara syntes när någon tittade på fönstret.
 
-## Öppet när sprinten stänger
+## Läget när sprinten stänger
 
-| Kort | Status | Vad som återstår |
-|---|---|---|
-| SCRUM-330, E1-7 Listan över inkompatibiliteter | In Review | Granska och merga. Listan hör ihop med [arkitekturbesluten](arkitekturbeslut.md) och README. |
-| SCRUM-348, R3 Ändra tid | In Progress | Knappen i arbetsorderns detaljvy. Lucas. |
-| SCRUM-283, L5 Arkitekturbeskrivning | In Progress | Underlaget är [`arkitekturbeslut.md`](arkitekturbeslut.md). Daniel. |
-| SCRUM-322, E5-7 Arkitektoniska beslut | To Do | Underlaget är [`arkitekturbeslut.md`](arkitekturbeslut.md) och den här filen. Kortet kan stängas när filerna är mergade. |
-| SCRUM-282, L4 Demon | To Do | De sex punkterna inför beställaren. |
-| SCRUM-351, SCRUM-352 | To Do | Två beslut som väntar: siffror i mekanikernas namn, och om en arbetsorder får slutföras utan utförda arbeten. Se nästa avsnitt. |
-| SCRUM-335, E5-11 README | Done | Mergad i #261. README tar upp arkitekturträdet, inloggning och roller, loggningen och hur sviten körs. |
-| SCRUM-345, R2-2 Badgefärgen | Done | Mergad i #262. Färgen följer statusvärdet, och `StatusBadgeTest` håller den kvar. |
-| SCRUM-353, R2-1 Typer som enum | Done | Mergad i #263. `PaymentType` och `WorkOrderType`, med `StoredTypeTest` som bevis. |
-| SCRUM-350, R7 Passerade timmar | Done | Mergad i #266. Regeln ligger i `OpeningHours.hasPassed`, med `OpeningHoursTest` som bevis. |
-| SCRUM-346, SCRUM-349 | Done | Mergade i #264 och #265 av Lucas. |
-| SCRUM-354, utloggning | Done på tavlan | Saknar bevis enligt genomgången i SCRUM-360. Öppna igen eller redovisa som manuellt prövat. |
-| Grenar | Öppna | Merga i beroendeordning före 15.00 och radera de grenar som är inmergade. |
+Alla 65 kort står i Done. Det som stängdes sist var de sju som låg öppna på eftermiddagen:
+
+| Kort | Vad som hände |
+|---|---|
+| SCRUM-322, E5-7 Arkitektoniska beslut | Underlaget är [`arkitekturbeslut.md`](arkitekturbeslut.md) och den här filen. |
+| SCRUM-330, E1-7 Listan över inkompatibiliteter | Daniel. |
+| SCRUM-283, L5 Arkitekturbeskrivning | Daniel. |
+| SCRUM-282, L4 Demon | Daniel. |
+| SCRUM-348, R3 Ändra tid | Lucas, mergad i #267. |
+| SCRUM-351, R8 Siffror i mekanikernas namn | Lucas. |
+| SCRUM-352, R9 Slutföra utan utförda arbeten | Alex, mergad i #268. Beslutet står i [ADR-018](arkitekturbeslut.md#adr-018-en-slutförd-order-får-sakna-markerade-arbeten). |
+
+Två saker står kvar utanför kortens status, och de ska nämnas i redovisningen:
+
+| Sak | Varför |
+|---|---|
+| SCRUM-354, utloggning | Står som Done men saknar bevis enligt genomgången i SCRUM-360. Redovisa det som manuellt prövat, eller öppna kortet igen. |
+| Grenar | 57 fjärrgrenar med `SPRINT-6` i namnet. Merga i beroendeordning och radera de som är inmergade. |
 
 De kvarstående riskerna O1–O9 i [riskanalysen](riskanalys.md) påverkar inte demon men ska nämnas i
 redovisningen.
 
 ## Det som flyttades in i sprinten under eftermiddagen
 
-De här korten låg i backloggen på morgonen och flyttades in i sprint 6.5. Fyra av dem är mergade
-under eftermiddagen: 346, 349, 350 och 353. Kvar i den gruppen är två beslut och två leveranskort.
+Elva kort låg i backloggen på morgonen och flyttades in i sprint 6.5. Alla är stängda:
 
-| Kort | Vad det gäller |
+| Kort | Vad det gällde |
 |---|---|
+| SCRUM-346 | R5: `MechanicRules` väljer mekaniker på kod i stället för översatt text. |
+| SCRUM-349 | R6: utkastet visar när det slutar. |
+| SCRUM-350 | R7: Kanban-vyn erbjuder inte timmar som passerat. |
 | SCRUM-351 | R8: beslut om mekaniker får ha siffror i namnet. |
 | SCRUM-352 | R9: beslut om en arbetsorder får slutföras utan utförda arbeten. |
+| SCRUM-353 | R2-1: betalningstyp och arbetsordertyp som enum. |
+| SCRUM-364 | Databasen säger inte att den är redo förrän den är det. Commit `b95626a` gjorde samma sak. |
 | SCRUM-282 | L4: demon med de sex punkterna inför beställaren. |
-| SCRUM-283 | L5: kort arkitekturbeskrivning för beställaren. [`arkitekturbeslut.md`](arkitekturbeslut.md) är underlaget. |
-
-SCRUM-364, databasen som säger att den är redo innan den är det, är stängd. Commit `b95626a` gjorde
-samma sak, vilket var det som kortet och koden skulle jämföras om.
+| SCRUM-283 | L5: kort arkitekturbeskrivning för beställaren. Underlaget är [`arkitekturbeslut.md`](arkitekturbeslut.md). |
 
 ## Vad som inte ingår i 4.0
 
