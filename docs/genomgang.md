@@ -10,7 +10,7 @@ Femton minuter innan, från repots rot:
 
 ```
 git pull
-mvn -o test -f WigellAutoCore/autocore/pom.xml     # 135 prov, 0 fel
+mvn -o test -f WigellAutoCore/autocore/pom.xml     # 140 prov, 0 fel
 ```
 
 Sedan classpath-filen som bevisprogrammen använder:
@@ -45,7 +45,7 @@ Säg: startskriptet kontrollerar att JDK 25 och Maven 3.9 finns, och kör sedan 
 `mvn spring-boot:run` som IntelliJ gör. Inget installeras för hand.
 
 Reservväg: `mvn -f WigellAutoCore/autocore/pom.xml package`, och visa att `BUILD SUCCESS` kommer
-efter `Tests run: 135`.
+efter `Tests run: 140`.
 
 ## B. Bibehållen funktionalitet
 
@@ -143,7 +143,7 @@ Reservväg: `StandaloneWorkOrdersTest` prövar samma sak i sviten.
 
 ## H. Arkitektoniska beslut
 
-Öppna [`arkitekturbeslut.md`](arkitekturbeslut.md) och peka på två ställen: tabellen med de arton
+Öppna [`arkitekturbeslut.md`](arkitekturbeslut.md) och peka på två ställen: tabellen med de nitton
 besluten, och avsnittet
 [Vad som underlättade och vad som försvårade](arkitekturbeslut.md#vad-som-underlättade-och-vad-som-försvårade).
 
