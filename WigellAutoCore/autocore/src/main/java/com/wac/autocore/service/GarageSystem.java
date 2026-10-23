@@ -20,6 +20,7 @@ import com.wac.autocore.repository.VehicleRepository;
 import com.wac.autocore.repository.WorkOrderRepository;
 import com.wac.autocore.service.gateway.WorkOrderGateway;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -451,9 +452,34 @@ public class GarageSystem implements WorkOrderGateway {
 
     @Override
     public WorkOrder updateDraft(DraftChanges changes) {
+        // An order made from a booking has its time on the booking: the booking is moved and tested
+        // as any changed booking first, so a refusal leaves both the booking and the order as they were.
+        WorkOrder current = workOrderService.findById(changes.getWorkOrderId());
+        Booking booking = current == null ? null : findBooking(current.getBookingId());
+        if (booking != null && changes.getPlannedDate() != null && changes.getPlannedTime() != null) {
+            moveBooking(booking, changes.getPlannedDate(), changes.getPlannedTime());
+        }
         WorkOrder draft = workOrderService.updateDraft(changes);
         changed();
         return draft;
+    }
+
+    /** Moves a booking to a new day and start, keeping its length, through the same test as any change. */
+    private void moveBooking(Booking booking, LocalDate date, LocalTime start) {
+        if (date.equals(booking.getDate()) && start.equals(booking.getStartTime())) {
+            return;
+        }
+        Duration length = booking.getStartTime() != null && booking.getEndTime() != null
+                ? Duration.between(booking.getStartTime(), booking.getEndTime())
+                : Duration.ofHours(1);
+        booking.setDate(date);
+        booking.setStartTime(start);
+        booking.setEndTime(start.plus(length));
+        bookingService.saveBooking(booking);
+        // The schedule only adds what is missing, so the old hour is let go first and then read
+        // again from the booking's new time. A refusal above never gets here, so it keeps the old one.
+        mechanicSchedule.cancelSlotForBooking(booking.getId());
+        mechanicSchedule.syncFromDatabase();
     }
 
     /** Drop-in with no booked time: the booking row is created first, in the same sweep, so that

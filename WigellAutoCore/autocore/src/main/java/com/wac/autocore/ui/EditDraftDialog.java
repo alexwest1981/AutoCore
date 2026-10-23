@@ -86,10 +86,14 @@ final class EditDraftDialog {
                 return mechanicBox.getSelectedItems();
             }
         };
-        BookingScheduleField schedule = new BookingScheduleField(garage, source, null, 0, null,
-                plannedDateOf(workOrder));
-        if (workOrder.getPlannedTime() != null) {
-            schedule.getStartTimeBox().setValue(workOrder.getPlannedTime());
+        // An order made from a booking has its day and time on the booking. The calendar starts there
+        // and leaves the booking's own hours free, the same way the booking's edit form does.
+        Booking booking = garage.findBooking(workOrder.getBookingId());
+        BookingScheduleField schedule = new BookingScheduleField(garage, source, null,
+                booking != null ? booking.getId() : 0, booking, plannedDateOf(workOrder));
+        LocalTime startTime = booking != null ? booking.getStartTime() : workOrder.getPlannedTime();
+        if (startTime != null) {
+            schedule.getStartTimeBox().setValue(startTime);
         }
         // The field draws nothing by itself: the booking form calls this once after it is built too.
         schedule.refresh();
