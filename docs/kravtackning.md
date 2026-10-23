@@ -169,7 +169,7 @@ ersätter det med Spring Boot 4 och Java 17 eller senare.
 | Samma regler för arbetsorderns tillstånd oavsett väg | uppfyllt | `canChangeTo` används av både vy och tjänst |
 | Enhetlig validering och felrapportering | uppfyllt | Undantagen med textnyckel, reglerna i tjänsterna |
 | Etablerade standarder för validering | uppfyllt | Bedömt och dokumenterat i [ADR-019](arkitekturbeslut.md#adr-019-validering-i-tjänsterna-inte-i-jakarta-bean-validation): reglerna ligger i tjänsterna eftersom de kräver databasen, och Bean Validation passar först vid en yttre gräns |
-| Tidigare funktionalitet inte försämrad | uppfyllt | Regressionsjämförelsen, 135 prov |
+| Tidigare funktionalitet inte försämrad | uppfyllt | Regressionsjämförelsen, 140 prov |
 
 ## Det som saknas
 
