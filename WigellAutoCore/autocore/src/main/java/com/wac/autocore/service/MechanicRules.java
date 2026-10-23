@@ -17,6 +17,9 @@ import java.util.Map;
 /** Who may perform which service. The service requires a specialization, the mechanic carries their own. */
 public class MechanicRules {
 
+    /** The seeded generalist, written as a code so no translated word has to be recognized. */
+    private static final String GENERALIST_CODE = "mechanic.general_service";
+
     private final MechanicRepository mechanicRepository;
 
     public MechanicRules(MechanicRepository mechanicRepository) {
@@ -58,9 +61,7 @@ public class MechanicRules {
         }
         if (qualified.isEmpty() && services.size() == 1) {
             for (Mechanic m : all) {
-                String resolvedSpec = SeedText.resolve(m.getSpecialization());
-                String s = resolvedSpec != null ? resolvedSpec.toLowerCase() : "";
-                if (s.contains("general") || s.contains("allmän")) {
+                if (isGeneralist(m)) {
                     qualified.add(m);
                 }
             }
@@ -68,15 +69,12 @@ public class MechanicRules {
         qualified.sort(new Comparator<Mechanic>() {
             @Override
             public int compare(Mechanic m1, Mechanic m2) {
-                String spec1 = SeedText.resolve(m1.getSpecialization()).toLowerCase();
-                String spec2 = SeedText.resolve(m2.getSpecialization()).toLowerCase();
-                boolean g1 = spec1.contains("general") || spec1.contains("allmän");
-                boolean g2 = spec2.contains("general") || spec2.contains("allmän");
-                boolean onlyGeneral = services.stream().allMatch(s -> {
-                    String n = SeedText.resolve(s.getName()).toLowerCase();
-                    return n.contains("oil") || n.contains("olja") || n.contains("annual") || n.contains("årlig");
-                });
-                if (onlyGeneral) {
+                boolean g1 = isGeneralist(m1);
+                boolean g2 = isGeneralist(m2);
+                // A service nobody has to be qualified for goes to the generalist first. The rule
+                // reads the requirement the service carries, not the words in its name.
+                boolean anyMechanicWillDo = services.stream().allMatch(s -> s.requiresAnyMechanic());
+                if (anyMechanicWillDo) {
                     if (g1 && !g2) return -1;
                     if (!g1 && g2) return 1;
                 }
@@ -193,9 +191,18 @@ public class MechanicRules {
         if (mechanic == null) {
             return false;
         }
-        String spec = SeedText.resolve(mechanic.getSpecialization());
-        String specStr = spec != null ? spec.toLowerCase() : "";
-        return specStr.contains("general") || specStr.contains("allmän");
+        String stored = mechanic.getSpecialization();
+        if (GENERALIST_CODE.equals(SeedText.code(stored))) {
+            return true;
+        }
+        // A specialization typed by hand carries no code. Only those keep the old lenient read,
+        // so a seeded mechanic is never recognized by a word in the current language.
+        return !SeedText.isKey(stored) && mentionsGeneral(stored);
+    }
+
+    private static boolean mentionsGeneral(String stored) {
+        String text = stored == null ? "" : stored.trim().toLowerCase(java.util.Locale.ROOT);
+        return text.contains("general") || text.contains("allmän");
     }
 
     public boolean isMechanicQualified(Mechanic mechanic, ServiceItem service) {
