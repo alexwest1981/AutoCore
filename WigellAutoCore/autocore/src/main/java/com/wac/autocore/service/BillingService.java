@@ -245,7 +245,14 @@ public class BillingService {
         return invoice;
     }
 
-    /** Performed services not yet invoiced. If none is marked but the order is finished, all count. */
+    /**
+     * Performed services not yet invoiced.
+     *
+     * If none is marked but the order is finished, all of them count. That is the decision in
+     * SCRUM-352: a finished order says the work is done, and the marking is bookkeeping on top of
+     * that. Without this line a completed order with nothing marked would have been invoiced on
+     * nothing, or not at all. CompleteWithoutMarkingTest holds it in place.
+     */
     private List<Integer> performedServices(WorkOrder workOrder, List<Integer> invoicedServiceIds) {
         List<Integer> performed = workOrder.getCompletedServiceItems();
         if (performed.isEmpty() && workOrder.getStatus() == WorkOrderStatus.COMPLETED) {

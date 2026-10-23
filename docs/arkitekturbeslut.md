@@ -31,6 +31,7 @@ i sak oförändrad, så att alla beslut ligger på samma ställe.
 | [015](#adr-015-skalan-är-1-när-appen-startar) | Skalan är 1 när appen startar | E1 |
 | [016](#adr-016-native-access-deklareras-i-manifestet) | Native access deklareras i manifestet | E1 |
 | [017](#adr-017-språkvalet-är-en-egen-operation-för-alla-roller) | Språkvalet är en egen operation för alla roller | E3 |
+| [018](#adr-018-en-slutförd-order-får-sakna-markerade-arbeten) | En slutförd order får sakna markerade arbeten | E5 |
 
 ---
 
@@ -649,6 +650,51 @@ och korten SCRUM-324 och SCRUM-325.
 
 Om språkvalet flyttar till en användarprofil som ägs utanför appen. Då är det fortfarande en
 personlig inställning, men den behöver inte vara en operation i rollmatrisen.
+
+---
+
+## ADR-018: En slutförd order får sakna markerade arbeten
+
+**Datum:** 2026-10-23 · **Status:** gäller · **Berör:** E5, arbetsorderns livscykel
+
+### Beslut
+
+`completeWorkOrder` nekar inte när inget arbete är markerat. Ordern blir slutförd, priset fryses,
+och fakturan räknar då alla orderns tjänster som utförda.
+
+### Skäl
+
+En slutförd order säger att arbetet är gjort. Markeringen är bokföring ovanpå det, inte villkoret
+för att få avsluta.
+
+Det andra alternativet, att neka, skulle göra fönstret, konsolen och det fristående programmet
+oense om vad en avslutad order är. Fönstret visar redan bara knappen för en order med flera
+tjänster när alla är markerade, medan tjänsten inte frågar alls; att lägga regeln i tjänsten hade
+tvingat fram en tredje variant i konsolen. Det hade också krävt att åtta anropsställen i prov och
+bevisprogram markerade först, och `FlowProof` och `SelfTest` skriver ut belopp som då hade ändrats,
+vilket rör Java 8-jämförelsen i E5-2.
+
+"Inget gjordes" har dessutom ett eget svar: avboka ordern. En avbokad order faktureras inte, och
+den frigör bokningen och mekanikern, vilket är det som faktiskt hände.
+
+### Följder
+
+- Fakturan för en slutförd order utan markeringar innehåller alla orderns tjänster, till det pris
+  som frystes vid slutförandet.
+- Fönstret visar bara "complete" för en order med flera tjänster när allt är markerat. För en enda
+  tjänst syns knappen ändå, och det är nu ett medvetet undantag, inte en glömska.
+- Konsolen och det fristående programmet kan slutföra utan markering, med samma svar som fönstret.
+
+### Bevis
+
+`CompleteWithoutMarkingTest`, tre fall: ordern blir slutförd med tom markeringslista, fakturan
+täcker alla orderns tjänster, och priset är det som stod när ordern slutfördes. Provat att det
+fäller: utan raden i `performedServices` blir fakturan `null` och två fall faller.
+
+### När beslutet ska omprövas
+
+Om markeringen ska bli underlag för lön eller garanti, eller om en slutförd order ska kunna
+faktureras delvis. Då är markeringen inte längre bokföring utan affärsdata, och då ska den krävas.
 
 ---
 
