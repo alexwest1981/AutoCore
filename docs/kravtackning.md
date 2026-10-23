@@ -21,7 +21,7 @@ Statusarna betyder: **uppfyllt**, **delvis** och **saknas**.
 | Befintliga beroenden anpassade | uppfyllt | `sqlite-jdbc` och `json` hämtas av Maven i stället för att ligga i `lib/` |
 | Tidigare funktionalitet bibehållen | uppfyllt | [`bevis/regressionsjamforelse.md`](bevis/regressionsjamforelse.md), elva prov mot Java 8-baslinjen |
 | Byggas, startas och användas på nya plattformen | uppfyllt | [`start.sh`](../start.sh), `.github/workflows/ci.yml`, [README](../README.md) |
-| Inkompatibiliteter identifierade och hanterade | **delvis** | De är hanterade och beskrivna var för sig, men det finns ingen samlad lista i repot. Se [Det som saknas](#det-som-saknas) |
+| Inkompatibiliteter identifierade och hanterade | uppfyllt | [inkompatibiliteter.md](inkompatibiliteter.md), nio rader med vad som hände, var det syntes och hur det hanterades |
 
 ### §3 Fristående verksamhetsfunktionalitet
 
@@ -173,22 +173,10 @@ ersätter det med Spring Boot 4 och Java 17 eller senare.
 
 ## Det som saknas
 
-Fyra saker. Ingen av dem är ett hinder för demon, men två av dem är krav som uttryckligen efterfrågas
-och som en granskare letar efter.
+Tre saker. Ingen av dem är ett hinder för demon, men den första är ett krav som uttryckligen
+efterfrågas och som en granskare letar efter.
 
-**1. Ingen samlad lista över inkompatibiliteter.** WAC 4.0 §2 säger att de ska identifieras och
-hanteras, och §11 H att teamet ska redogöra för dem. Kortet SCRUM-330 är stängt och säger att
-listan finns i planeringsmappen `~/Documents/Skolarbete/Wigell AutoCore 4.0 - Plan/` som
-`Inkompatibiliteter 4.0.md`. Varken den mappen eller filen finns på den här maskinen, och inget i
-repot eller i git-historiken innehåller listan. Det som finns är raderna utspridda: JavaFX-golvet
-(ADR-003), `DatePickerSkin` (R2), native access (ADR-016), GDK-skalan (ADR-015) och resurserna på
-classpath (R2).
-
-Att göra: skriv ihop dem till `docs/inkompatibiliteter.md`, en rad per inkompatibilitet med vad som
-hände, var det syntes och hur det hanterades, och länka från README. Då finns beviset i repot och
-går att visa vid redovisningen.
-
-**2. §11 H:s andra halva saknas.** Kravet är inte bara vilka beslut vi fattat, utan också vilka
+**1. §11 H:s andra halva saknas.** Kravet är inte bara vilka beslut vi fattat, utan också vilka
 *tidigare* teknik- och arkitekturbeslut som underlättade respektive försvårade arbetet. Det finns
 ingen sådan genomgång. Underlaget finns i [riskanalysen](riskanalys.md): den statiska `Db`,
 bevisen i produktionsträdet och två byggvägar försvårade arbetet; fasaden `GarageSystem`,
@@ -198,11 +186,11 @@ röra verksamhetslogiken.
 Att göra: ett kort avsnitt i [arkitekturbeslut.md](arkitekturbeslut.md), "Vad som underlättade och
 vad som försvårade", med fem rader och hänvisning till risknumren.
 
-**3. Validering utan etablerad standard (WAC 3.5 §5).** Reglerna är handskrivna i tjänsterna i
+**2. Validering utan etablerad standard (WAC 3.5 §5).** Reglerna är handskrivna i tjänsterna i
 stället för Jakarta Bean Validation. Kravet är ett önskemål och teamet får bedöma, men det bör stå
 en rad om varför, så att det inte ser ut som en glömska.
 
-**4. Prisfrysningen har ett indirekt prov.** WAC 2.5 kriterium 8 prövas genom
+**3. Prisfrysningen har ett indirekt prov.** WAC 2.5 kriterium 8 prövas genom
 `CompleteWithoutMarkingTest`, men det finns inget prov som ändrar priset i katalogen efter en
 faktura och visar att den gamla fakturan står still. Låg risk, eftersom priset fryses vid
 slutförandet, men det är det prov en granskare frågar efter.

@@ -7,7 +7,8 @@ Planen för migreringen till 4.0 ligger i [docs/plan-4.0.md](docs/plan-4.0.md).
 Sprintens sammanställning ligger i [docs/sprint-6-sammanstallning.md](docs/sprint-6-sammanstallning.md),
 riskerna och hur de följdes upp i [docs/riskanalys.md](docs/riskanalys.md), och de arkitektoniska
 besluten i [docs/arkitekturbeslut.md](docs/arkitekturbeslut.md). Kravdokumenten WAC 2.5 till 4.0
-gås igenom rad för rad i [docs/kravtackning.md](docs/kravtackning.md). Alla delade dokument ligger i
+gås igenom rad för rad i [docs/kravtackning.md](docs/kravtackning.md), och det som inte gick att
+flytta rakt av står i [docs/inkompatibiliteter.md](docs/inkompatibiliteter.md). Alla delade dokument ligger i
 [docs/README.md](docs/README.md).
 
 Loggerna som demonstrationen kräver, med kommandona som ger dem, ligger i [docs/demo-loggning.md](docs/demo-loggning.md).
