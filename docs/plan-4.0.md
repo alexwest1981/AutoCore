@@ -2,7 +2,7 @@
 
 WAC4_0 §10 ber om en kortfattad plan före större förändringar: nuvarande plattform, risker, vad som behöver ändras, hur information bevaras, hur autentisering och behörighet införs, hur loggning och felhantering förbättras, hur det fristående kravet uppfylls, och hur vi kontrollerar att tidigare funktionalitet håller.
 
-Dokumentet skrevs under sprinten och uppdaterades när risker slog till, vilket kravet också säger att det ska.
+Dokumentet skrevs under sprinten och uppdaterades när risker slog till, vilket kravet också säger att det ska. De arkitektoniska besluten bakom punkterna ligger i [arkitekturbeslut.md](arkitekturbeslut.md).
 
 ## 1. Nuvarande teknikplattform och viktigaste beroenden
 
@@ -15,6 +15,10 @@ Målet enligt WAC4_0 §2 är Spring Boot 4.x på Java 17 eller senare. Vi valde 
 Golvet i praktiken är JavaFX, inte Spring. `spring-boot-4.0.6.jar` och `spring-core-7.0.7.jar` är byggda för Java 17 (class file 61), medan `javafx-base-25.0.4-linux.jar` är byggd för Java 23 (class file 67). Under 23 går bygget alltså inte, och `pom.xml` svarar först med ett läsbart meddelande i stället för ett fel om class file-versioner. Vi stannar på 25, som är den version projektet byggs och prövas på lokalt och i CI. Kravet "Java 17 eller senare" är därmed uppfyllt med marginal; att bygget kräver mer än kravet står i `README` under "Innan du bygger" och i `pom.xml`.
 
 ## 2. Risker vid migreringen
+
+Det här är riskerna som de skrevs ner innan arbetet började, och vad som hände med dem. Hela
+registret, inklusive det som hittades senare under sprinten och det som fortfarande är öppet,
+ligger i [riskanalys.md](riskanalys.md).
 
 De risker vi räknade upp innan arbetet började:
 
