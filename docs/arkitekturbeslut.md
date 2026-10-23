@@ -698,6 +698,43 @@ faktureras delvis. Då är markeringen inte längre bokföring utan affärsdata,
 
 ---
 
+## Vad som underlättade och vad som försvårade
+
+ADR-001 till ADR-018 är beslut vi fattade under den här etappen. WAC4_0 §11 H frågar också vilka
+*tidigare* teknik- och arkitekturbeslut som underlättade respektive försvårade arbetet. Det här är
+den genomgången, med risknumren ur [riskanalysen](riskanalys.md) där de finns.
+
+### Beslut från tidigare etapper som underlättade
+
+| Beslut | Varför det hjälpte |
+|---|---|
+| Fasaden `GarageSystem` från sprint 1 | Allt gränssnittet gör går genom en enda klass. Spärren kunde därför läggas som en dekoratör framför den i stället för som villkor i varje vy, och konsolen och det fristående programmet fick samma skydd utan egen kod ([ADR-006](#adr-006-behörigheten-sitter-i-en-dekoratör-framför-fasaden)). |
+| Tjänstelagret skilt från vyn | Affärsreglerna låg redan i serviceklasserna och kände inte till JavaFX. Spring kunde därför äga dem som vanliga objekt utan en rad Spring-kod i dem, och samma klasser kunde köras utan kontext ([ADR-013](#adr-013-det-fristående-programmet-är-en-egen-startväg-med-samma-spärr)). |
+| Migreringarna 001 till 003 | Schemat byggdes redan av filer i ordning med ett register över vilka som körts. 004 med konton blev en fil till, inte en ombyggnad, och den gamla databasen gick att lyfta ([ADR-012](#adr-012-migreringarna-är-en-kedja-databasen-skapas-aldrig-om)). |
+| Undantagen med textnyckel | Två mottagare fanns redan i modellen: användaren fick en mening, loggen fick resten. Att skilja tekniska fel från verksamhetsfel blev därför en liten ändring ([ADR-011](#adr-011-användaren-får-en-mening-loggen-får-detaljerna)). |
+| Bevisprogram som skriver sitt svar på stdout | Eftersom varje bevis svarade med text gick det att spela in elva svar på Java 8 och köra samma elva på 4.0. Utan det hade plattformsbytet inte kunnat prövas mot något ([`bevis/`](bevis/README.md)). |
+
+### Beslut från tidigare etapper som försvårade
+
+| Beslut | Vad det kostade |
+|---|---|
+| Statisk `Db` med sökvägen satt utifrån | Varje repository läste en global sökväg, och proven kunde bara köras för att klassen var statisk. Den blev en böna och varje repository fick sin `Db` via en fabrik, vilket rörde hela datalagret ([ADR-004](#adr-004-lagringen-är-en-böna-med-sökvägen-i-konfigurationen), [R3](riskanalys.md)). |
+| Bevisen låg i produktionsträdet | Tio program byggde tjänsten förbi spärren och följde med i jar-filen. De flyttades till provträdet, och det krävdes ett eget prov för att en ny klass inte skulle ta samma genväg igen ([ADR-014](#adr-014-bevisen-ligger-utanför-produktionsträdet), [R4](riskanalys.md), [R12](riskanalys.md)). |
+| Två byggvägar sida vid sida | `start.sh` kompilerade för hand mot `lib/` medan Maven byggde samma kod. Den föll först när någon startade den, långt efter ändringen som orsakade det ([R1](riskanalys.md)). |
+| Beroende på en intern JavaFX-klass | `com.sun.javafx` är inte ett API och försvann i JavaFX 25, vilket stoppade kompileringen innan något annat hann prövas ([R2](riskanalys.md), [inkompatibiliteter.md](inkompatibiliteter.md)). |
+| Färg och uppträdande avgjort av översatt text | Statuschippens färg jämfördes mot engelska och svenska ord, och översiktens prick skickade in statuskoden oförändrad. Regeln fick göras om från enumvärdet, och en avvikelse som redan fanns i dag rättades samtidigt (SCRUM-345). |
+
+### Vad genomgången säger
+
+Det som underlättade var beslut som höll isär saker: vyn från reglerna, reglerna från lagringen,
+användarens text från den tekniska. Det som försvårade var beslut som band ihop dem: en global
+sökväg, ett bevis som byggde tjänsten själv, en byggväg vid sidan av den riktiga, och ett beroende
+på en intern klass.
+
+Mönstret är detsamma i varje rad: ju mindre en del antog om en annan, desto billigare blev bytet.
+
+---
+
 ## Arbetsregler som följer av besluten
 
 Tre regler styr hur arbetet kontrolleras. De är inte arkitektur i sig, men utan dem går besluten
