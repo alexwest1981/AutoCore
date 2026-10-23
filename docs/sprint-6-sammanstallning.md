@@ -1,8 +1,7 @@
-# Sprint 6 — vad som hände och vad som lämnas in
+# Sprint 6: vad som hände och vad som lämnas in
 
 AutoCore 4.0 byggdes klart under sprint 6. Tavlan delar den i 6.0 till 6.5, från 19 oktober till
-stängningen fredag 23 oktober 2026. Den här filen sammanställer vad som levererades, vilka kort
-som är kvar och var bevisen finns.
+stängningen fredag 23 oktober 2026.
 
 Den som ska läsa in sig inför redovisningen kan ta det i den här ordningen: den här filen för
 helheten, [riskanalysen](riskanalys.md) för vad som gick fel och varför, och

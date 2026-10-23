@@ -1,4 +1,4 @@
-# Arkitekturbeslut — AutoCore 4.0
+# Arkitekturbeslut för AutoCore 4.0
 
 Ett beslut här är ett som är svårt att ändra utan att röra flera lager: var identiteten kommer
 ifrån, var spärren sitter, hur lagringen skapas, hur loggen ser ut. Mindre val, som namnet på en
@@ -33,8 +33,6 @@ i sak oförändrad, så att alla beslut ligger på samma ställe.
 | [017](#adr-017-språkvalet-är-en-egen-operation-för-alla-roller) | Språkvalet är en egen operation för alla roller | E3 |
 | [018](#adr-018-en-slutförd-order-får-sakna-markerade-arbeten) | En slutförd order får sakna markerade arbeten | E5 |
 | [019](#adr-019-validering-i-tjänsterna-inte-i-jakarta-bean-validation) | Validering i tjänsterna, inte i Jakarta Bean Validation | E5 |
-
----
 
 ## ADR-001: Egen inloggning mot `users`, ingen extern identitetsleverantör
 
@@ -80,8 +78,6 @@ Migrering 004 i
 Flera applikationer som ska dela inloggning, kontohantering med återställning och MFA, eller krav
 på revision av inloggningar.
 
----
-
 ## ADR-002: Spring Boot startar appen, gränssnittet är kvar i JavaFX
 
 **Datum:** 2026-10-20 · **Status:** gäller · **Berör:** E1
@@ -117,8 +113,6 @@ webbmodul. `SpringContextTest` prövar att kontexten startar med rätt databass�
 Om systemet ska användas från flera maskiner samtidigt, eller om kravet ändras till en
 webbklient. Då behövs en server och en annan ägare av databasen.
 
----
-
 ## ADR-003: JDK 25 är bygggolvet, trots att kravet säger 17 eller senare
 
 **Datum:** 2026-10-22 · **Status:** gäller · **Berör:** E1
@@ -152,8 +146,6 @@ under "Innan du bygger", [`.github/workflows/ci.yml`](../.github/workflows/ci.ym
 
 Om JavaFX släpper ett bygge för en äldre JDK, eller om kravet skärps till att bygget måste gå på
 17 utan undantag.
-
----
 
 ## ADR-004: Lagringen är en böna med sökvägen i konfigurationen
 
@@ -190,8 +182,6 @@ samma sökväg.
 Om databasen flyttar till en server, eller om två processer ska skriva i samma fil. SQLite klarar
 det senare bara med en tydlig låsstrategi.
 
----
-
 ## ADR-005: Identiteten bor i kärnan
 
 **Datum:** 2026-10-20 · **Status:** gäller · **Berör:** E2, E3
@@ -224,8 +214,6 @@ görs med `clear()`, så att "ingen inloggad" är ett uttryckligt tillstånd.
 
 Om systemet får flera samtidiga användare i samma process, till exempel en server. Då räcker inte
 en enda hållare, och identiteten måste följa anropet i stället för processen.
-
----
 
 ## ADR-006: Behörigheten sitter i en dekoratör framför fasaden
 
@@ -261,8 +249,6 @@ med det användaren skrev. `NoUnguardedConstructionTest` fäller en klass som sk
 Om behörigheten flyttar till en server eller en gateway. Då ska regeln ägas där, och klienten får
 bara visa vad servern redan har svarat om.
 
----
-
 ## ADR-007: Rollmatrisen är data
 
 **Datum:** 2026-10-20 · **Status:** gäller · **Berör:** E3
@@ -295,9 +281,7 @@ tillåtna och nekade anrop.
 ### När beslutet ska omprövas
 
 Om rollerna blir fler än tre, eller om behörigheter ska sättas per användare i stället för per
-roll. Då behövs en tabell i databasen, inte en konstant i koden.
-
----
+roll. Då behövs en tabell i databasen i stället för en konstant i koden.
 
 ## ADR-008: Ekonomin tillhör administratören
 
@@ -336,8 +320,6 @@ commit `0ba8ab9`, commit `12577e4`.
 Om verkstaden vill att personalen ska kunna ta emot betalning vid disken. Då är `TAKE_PAYMENT` det
 som flyttas, inte hela ekonomin.
 
----
-
 ## ADR-009: Fönstret frågar spärren innan det ritar
 
 **Datum:** 2026-10-22 · **Status:** gäller · **Berör:** E3
@@ -371,8 +353,6 @@ commit `e4716eb`, commit `12577e4`.
 
 Om gränssnittet byts mot ett webbgränssnitt. Då är det serverns svar som avgör vad som ritas, och
 klienten får inte vara den som tolkar rollen.
-
----
 
 ## ADR-010: Loggning med profil per miljö och trace-id i MDC
 
@@ -409,8 +389,6 @@ läsa `logback-spring.xml`, eftersom det inte har Spring, och använder därför
 Om loggen ska samlas in centralt. Då behövs ett appender för det, men mönstret och trace-id:t kan
 vara kvar.
 
----
-
 ## ADR-011: Användaren får en mening, loggen får detaljerna
 
 **Datum:** 2026-10-21 · **Status:** gäller · **Berör:** E4
@@ -443,8 +421,6 @@ skriver bara ut meningen, inte den dubbla raden.
 
 Om fel ska visas i ett API med felkoder för en klient. Då behövs en stabil kod utöver meningen,
 men detaljerna hör fortfarande till loggen.
-
----
 
 ## ADR-012: Migreringarna är en kedja, databasen skapas aldrig om
 
@@ -481,8 +457,6 @@ förrän allt har gått igenom.
 Om databasen byts mot ett system med egna migreringsverktyg. Kedjan och registret är då fortfarande
 principen, men filerna ägs av verktyget.
 
----
-
 ## ADR-013: Det fristående programmet är en egen startväg med samma spärr
 
 **Datum:** 2026-10-20 · **Status:** gäller · **Berör:** E2
@@ -515,8 +489,6 @@ Argumentet `utan` lämnar hållaren tom och visar det nekade svaret.
 
 Om det fristående programmet ska bli en tjänst som anropas av något annat. Då är det inte längre
 fristående i den mening kravet menar.
-
----
 
 ## ADR-014: Bevisen ligger utanför produktionsträdet
 
@@ -551,8 +523,6 @@ räknas bara om det går att köra om; en commit som nämner ett kort räknas in
 Om bevisen flyttas till ett eget modul eller repo. Kravet på att de ska gå att köra om från det
 som lämnas in är detsamma.
 
----
-
 ## ADR-015: Skalan är 1 när appen startar
 
 **Datum:** 2026-10-22 · **Status:** gäller · **Berör:** E1
@@ -586,8 +556,6 @@ egenskapen, och mätningen i commiten visar att inloggningskortets yta går frå
 
 Om appen ska följa operativsystemets skalning automatiskt i stället för att börja på 1.
 
----
-
 ## ADR-016: Native access deklareras i manifestet
 
 **Datum:** 2026-10-22 · **Status:** gäller · **Berör:** E1
@@ -618,8 +586,6 @@ README och faller om flaggan försvinner från någon av dem.
 ### När beslutet ska omprövas
 
 Om drivrutinen slutar använda inbyggd kod, eller om JDK:t kräver en annan flagga.
-
----
 
 ## ADR-017: Språkvalet är en egen operation för alla roller
 
@@ -652,8 +618,6 @@ och korten SCRUM-324 och SCRUM-325.
 Om språkvalet flyttar till en användarprofil som ägs utanför appen. Då är det fortfarande en
 personlig inställning, men den behöver inte vara en operation i rollmatrisen.
 
----
-
 ## ADR-018: En slutförd order får sakna markerade arbeten
 
 **Datum:** 2026-10-23 · **Status:** gäller · **Berör:** E5, arbetsorderns livscykel
@@ -683,7 +647,7 @@ den frigör bokningen och mekanikern, vilket är det som faktiskt hände.
 - Fakturan för en slutförd order utan markeringar innehåller alla orderns tjänster, till det pris
   som frystes vid slutförandet.
 - Fönstret visar bara "complete" för en order med flera tjänster när allt är markerat. För en enda
-  tjänst syns knappen ändå, och det är nu ett medvetet undantag, inte en glömska.
+  tjänst syns knappen ändå, och det är ett medvetet undantag.
 - Konsolen och det fristående programmet kan slutföra utan markering, med samma svar som fönstret.
 
 ### Bevis
@@ -696,8 +660,6 @@ fäller: utan raden i `performedServices` blir fakturan `null` och två fall fal
 
 Om markeringen ska bli underlag för lön eller garanti, eller om en slutförd order ska kunna
 faktureras delvis. Då är markeringen inte längre bokföring utan affärsdata, och då ska den krävas.
-
----
 
 ## ADR-019: Validering i tjänsterna, inte i Jakarta Bean Validation
 
@@ -712,7 +674,7 @@ Validation, som följer med Spring Boot, används inte.
 ### Skäl
 
 WAC 3.5 §5 önskar att lösningen "där det är lämpligt" använder etablerade standarder för validering,
-och lämnar bedömningen till teamet. Här är den bedömningen.
+och lämnar bedömningen till teamet.
 
 Bean Validation är byggt för att kontrollera data som kommer in utifrån, vid en gräns: en
 webbförfrågan, ett formulär, ett API. AutoCore har ingen sådan gräns. Appen är en desktop-app där
@@ -724,7 +686,7 @@ bokningarna den dagen och på tjänsternas sammanlagda tid; att en arbetsorder f
 dess status och på vad som markerats. Det är frågor som kräver databasen och de andra tjänsterna,
 alltså sådant Bean Validation uttryckligen inte gör.
 
-Det som hade gått att annotera — att ett namn inte är tomt, att ett pris är positivt — är den lilla
+Det som hade gått att annotera, alltså att ett namn inte är tomt och att ett pris är positivt, är den lilla
 delen. Att införa ramverket för den delen hade gett två ställen att underhålla samma regel på, och
 den risken är större än vinsten.
 
@@ -748,10 +710,8 @@ uppgifterna det är fel på.
 ### När beslutet ska omprövas
 
 Om AutoCore får ett HTTP-gränssnitt eller en extern integration. Då finns det en gräns där data
-kommer in utifrån, och där är Bean Validation rätt verktyg för formen — medan reglerna som kräver
+kommer in utifrån, och där är Bean Validation rätt verktyg för formen, medan reglerna som kräver
 databasen stannar i tjänsterna.
-
----
 
 ## Vad som underlättade och vad som försvårade
 
@@ -765,7 +725,7 @@ den genomgången, med risknumren ur [riskanalysen](riskanalys.md) där de finns.
 |---|---|
 | Fasaden `GarageSystem` från sprint 1 | Allt gränssnittet gör går genom en enda klass. Spärren kunde därför läggas som en dekoratör framför den i stället för som villkor i varje vy, och konsolen och det fristående programmet fick samma skydd utan egen kod ([ADR-006](#adr-006-behörigheten-sitter-i-en-dekoratör-framför-fasaden)). |
 | Tjänstelagret skilt från vyn | Affärsreglerna låg redan i serviceklasserna och kände inte till JavaFX. Spring kunde därför äga dem som vanliga objekt utan en rad Spring-kod i dem, och samma klasser kunde köras utan kontext ([ADR-013](#adr-013-det-fristående-programmet-är-en-egen-startväg-med-samma-spärr)). |
-| Migreringarna 001 till 003 | Schemat byggdes redan av filer i ordning med ett register över vilka som körts. 004 med konton blev en fil till, inte en ombyggnad, och den gamla databasen gick att lyfta ([ADR-012](#adr-012-migreringarna-är-en-kedja-databasen-skapas-aldrig-om)). |
+| Migreringarna 001 till 003 | Schemat byggdes redan av filer i ordning med ett register över vilka som körts. 004 med konton blev en fil till, och den gamla databasen gick att lyfta ([ADR-012](#adr-012-migreringarna-är-en-kedja-databasen-skapas-aldrig-om)). |
 | Undantagen med textnyckel | Två mottagare fanns redan i modellen: användaren fick en mening, loggen fick resten. Att skilja tekniska fel från verksamhetsfel blev därför en liten ändring ([ADR-011](#adr-011-användaren-får-en-mening-loggen-får-detaljerna)). |
 | Bevisprogram som skriver sitt svar på stdout | Eftersom varje bevis svarade med text gick det att spela in elva svar på Java 8 och köra samma elva på 4.0. Utan det hade plattformsbytet inte kunnat prövas mot något ([`bevis/`](bevis/README.md)). |
 
@@ -779,33 +739,33 @@ den genomgången, med risknumren ur [riskanalysen](riskanalys.md) där de finns.
 | Beroende på en intern JavaFX-klass | `com.sun.javafx` är inte ett API och försvann i JavaFX 25, vilket stoppade kompileringen innan något annat hann prövas ([R2](riskanalys.md), [inkompatibiliteter.md](inkompatibiliteter.md)). |
 | Färg och uppträdande avgjort av översatt text | Statuschippens färg jämfördes mot engelska och svenska ord, och översiktens prick skickade in statuskoden oförändrad. Regeln fick göras om från enumvärdet, och en avvikelse som redan fanns i dag rättades samtidigt (SCRUM-345). |
 
-### Vad genomgången säger
-
 Det som underlättade var beslut som höll isär saker: vyn från reglerna, reglerna från lagringen,
 användarens text från den tekniska. Det som försvårade var beslut som band ihop dem: en global
 sökväg, ett bevis som byggde tjänsten själv, en byggväg vid sidan av den riktiga, och ett beroende
 på en intern klass.
-
-Mönstret är detsamma i varje rad: ju mindre en del antog om en annan, desto billigare blev bytet.
-
----
 
 ## Arbetsregler som följer av besluten
 
 Tre regler styr hur arbetet kontrolleras. De är inte arkitektur i sig, men utan dem går besluten
 inte att lita på.
 
-**Ett kort stängs bara med ett bevis som går att köra om.** Ett bevis är ett prov som fäller när
+### Ett kort stängs bara med ett bevis som går att köra om
+
+Ett bevis är ett prov som fäller när
 beteendet försvinner, ett dokument i `docs/` med ett kommando som går att köra om, eller en fil i
 `docs/bevis/` med utskriften och hur den togs. En commit som nämner nyckeln räknas inte, eftersom
 automationen stänger kortet på just det. Regeln står i [README](../README.md) och kom till efter
 genomgången i SCRUM-360.
 
-**Ett CI-flöde per gren.** `.github/workflows/ci.yml` har en `concurrency`-grupp per `ref` och
+### Ett CI-flöde per gren
+
+`.github/workflows/ci.yml` har en `concurrency`-grupp per `ref` och
 avbryter den äldre körningen. Utan den startar varje push två körningar på en gren med öppen PR,
 och de slåss om samma runners.
 
-**Siffrorna i dokumenten kontrolleras mot koden.** Provantal, operationer, bevis och migreringar
+### Siffrorna i dokumenten kontrolleras mot koden
+
+Provantal, operationer, bevis och migreringar
 räknas om med kommandona i [sprintsammanställningen](sprint-6-sammanstallning.md) innan dokumenten
 delas. Under sprinten rättades provantalet flera gånger, och planens antal operationer rättades
 till 30 när `READ_FINANCE` tillkom.

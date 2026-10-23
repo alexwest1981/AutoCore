@@ -23,7 +23,7 @@ Loggerna som demonstrationen kräver, med kommandona som ger dem, ligger i [docs
 - Arbetsordrar i tre typer: standard, reklamation och internt arbete.
 - Utkast som fylls på efter hand, och drop-in utan bokning.
 - Statusflöde från skapad till klar, med spärrar mot orimliga byten.
-- Inloggning med tre roller — administratör, personal och läsbehörig — och en spärr i kärnan som gäller både läsning och skrivning.
+- Inloggning med tre roller (administratör, personal och läsbehörig), och en spärr i kärnan som gäller både läsning och skrivning.
 - Loggning med trace-id per operation, så en nekad åtkomst och raden som förklarar den hör ihop.
 - Fakturor med flera rader, rabatt och moms.
 - Betalning via kort, Swish eller kontant.
@@ -49,7 +49,7 @@ JavaFX 25, sqlite-jdbc och json hämtas av Maven, så inget installeras för han
 
 ## Bygg och kör
 
-`./start.sh` kontrollerar att du har JDK 25 och Maven 3.9, sätter `GDK_BACKEND=x11` på Linux och kör sedan `mvn spring-boot:run` — samma bygge som IntelliJ gör. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ.
+`./start.sh` kontrollerar att du har JDK 25 och Maven 3.9, sätter `GDK_BACKEND=x11` på Linux och kör sedan `mvn spring-boot:run`, samma bygge som IntelliJ gör. Starta appen med `./start.sh`, eller kör `Main.java` från IntelliJ.
 
 Databasen skapas vid första starten i `data/autocore.db` i projektroten, med demodata om filen inte finns sedan tidigare.
 
@@ -123,7 +123,7 @@ Kontona ligger i tabellen `users`, som migrering `004_users.sql` skapar. Det fin
 
 | Konto | Roll | Får | Får inte |
 |---|---|---|---|
-| `admin` | `ADMIN` | allt, alla 30 operationer | — |
+| `admin` | `ADMIN` | allt, alla 30 operationer | inget |
 | `staff` | `STAFF` | kunder, fordon, bokningar, arbetsorder, tjänster och mekaniker, och att välja språk | radera kund, fordon, mekaniker eller arbetsorder; ändra inställningar; hela ekonomin |
 | `readonly` | `READ_ONLY` | `READ` och `CHANGE_LANGUAGE` | allt som ändrar något, och ekonomin |
 
@@ -172,7 +172,7 @@ behöver skicka med dem. En läsning som görs inuti en ändring ansluter till d
 i stället för att starta ett nytt.
 
 Det som loggas är verksamhetshändelser, som att en arbetsorder skapas och slutförs, och
-säkerhetshändelser, som en nekad åtkomst med användare, roll och operation — men aldrig med det
+säkerhetshändelser, som en nekad åtkomst med användare, roll och operation, men aldrig med det
 användaren skrev. Ett tekniskt fel loggas med undantaget och sin stapl, medan användaren får en
 mening utan klassnamn och utan intern text.
 
@@ -301,7 +301,6 @@ Ett bevis är en av tre saker:
 3. En fil i `docs/bevis/` med utskriften och hur den togs.
 
 En muntlig genomgång räknas inte, och en commit som nämner nyckeln räknas inte. Automationen stänger kortet när en PR nämner det, så nyckeln i en commit säger ingenting om att arbetet finns. Skriv i kortet vilken av de tre det är och var den ligger, och flytta först därefter kortet till Done. Saknas beviset stannar kortet där det är.
-
 
 ## Team
 

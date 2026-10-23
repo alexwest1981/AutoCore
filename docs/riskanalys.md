@@ -1,11 +1,11 @@
-# Riskanalys — Sprint 6, AutoCore 4.0
+# Riskanalys för sprint 6, AutoCore 4.0
 
-Det här är sprintens samlade riskregister. Det börjar med de sex risker som skrevs ner innan
-arbetet började i [plan-4.0.md](plan-4.0.md), fortsätter med dem som dök upp under sprinten och
-slutar med dem som fortfarande är öppna när sprinten stänger 23 oktober 2026.
+Registret börjar med de sex risker som skrevs ner innan arbetet började i
+[plan-4.0.md](plan-4.0.md), fortsätter med dem som dök upp under sprinten och slutar med dem som
+fortfarande är öppna när sprinten stänger 23 oktober 2026.
 
-Planen är fortfarande den löpande berättelsen om migreringen. Den här filen är registret: en rad
-per risk, med vad som hände, vad som gjordes och var det går att kontrollera.
+Planen är fortfarande den löpande berättelsen om migreringen. Här står en rad per risk, med vad som
+hände, vad som gjordes och var det går att kontrollera.
 
 Registret har 25 rader. Sju rör säkerhet och behörighet, sex rör bevis och process, och resten
 bygget, lagringen, loggningen, gränssnittet och testmiljön. Nio risker är fortfarande öppna och
@@ -79,11 +79,11 @@ beslut eller en anteckning i redovisningen.
 
 Fem saker som såg ut som risker under arbetet och som är avgjorda:
 
-- **Att den gamla databasen inte skulle gå att lyfta.** `OldDatabaseProof` visar `customers=6 vehicles=6 bookings=6 work_orders=6 mechanics=3` före och efter, med `schema_version` 4 och tre konton som enda tillägg.
-- **Att plattformsbytet skulle tappa funktionalitet.** Elva bevis kördes på både Java 8 och 4.0. Alla svarar lika, eller skiljer sig bara där indata gör det.
-- **Att någon skulle behöva en extern identitetsleverantör.** Kravet ställer inget sådant krav i den här etappen, och beslutet med skäl står i [ADR-001](arkitekturbeslut.md#adr-001-egen-inloggning-mot-users-ingen-extern-identitetsleverantör).
-- **Att JavaFX-skalan skulle vara ett maskinproblem som inte går att lösa i koden.** Den går att lösa i `Main`, och `MainScaleTest` prövar egenskapen.
-- **Att dokumentationen bara fanns utanför repot.** ADR-001 låg i gruppens gemensamma mapp och baslinjen i `/tmp`. Besluten ligger nu i [arkitekturbeslut.md](arkitekturbeslut.md), och bevisen i [`bevis/`](bevis/README.md).
+- Att den gamla databasen inte skulle gå att lyfta. `OldDatabaseProof` visar `customers=6 vehicles=6 bookings=6 work_orders=6 mechanics=3` före och efter, med `schema_version` 4 och tre konton som enda tillägg.
+- Att plattformsbytet skulle tappa funktionalitet. Elva bevis kördes på både Java 8 och 4.0. Alla svarar lika, eller skiljer sig bara där indata gör det.
+- Att någon skulle behöva en extern identitetsleverantör. Kravet ställer inget sådant krav i den här etappen, och beslutet med skäl står i [ADR-001](arkitekturbeslut.md#adr-001-egen-inloggning-mot-users-ingen-extern-identitetsleverantör).
+- Att JavaFX-skalan skulle vara ett maskinproblem som inte går att lösa i koden. Den går att lösa i `Main`, och `MainScaleTest` prövar egenskapen.
+- Att dokumentationen bara fanns utanför repot. ADR-001 låg i gruppens gemensamma mapp och baslinjen i `/tmp`. Besluten ligger nu i [arkitekturbeslut.md](arkitekturbeslut.md), och bevisen i [`bevis/`](bevis/README.md).
 
 ## Hur registret hålls levande
 

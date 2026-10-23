@@ -1,4 +1,4 @@
-# Genomgången — vad som visas, i vilken ordning
+# Genomgången: vad som visas, i vilken ordning
 
 WAC4_0 §11 räknar upp åtta saker som ska visas vid slutredovisningen. Det här är ordningen de tas
 i, kommandona som hör till, och vad som görs om något faller live. Dokumenten i [docs/](README.md)
@@ -81,7 +81,7 @@ java -cp "target/classes:$(cat target/cp.txt)" com.wac.autocore.ConsoleApp data/
 Logga ut och in som `readonly`. Peka på att menyvalen och knapparna som hör till ekonomin och till
 att skapa eller radera inte ritas alls.
 
-Säg: tre roller — administratör, personal och läsbehörig — och den läsbehöriga ser dagens arbete men
+Säg: tre roller (administratör, personal och läsbehörig), och den läsbehöriga ser dagens arbete men
 varken ekonomin eller något som ändrar.
 
 Reservväg: `RoleMatrixProof` skriver ut alla tre raderna, och `RoleMatrixTest` prövar dem.
@@ -123,8 +123,8 @@ tail -n 20 logs/autocore.log
 Säg: varje rad bär tid, nivå, tråd, `trace` och `op`, så en nekad åtkomst och raden som förklarar
 den hör ihop.
 
-Det tekniska felet är tredje kommandot i [`demo-loggning.md`](demo-loggning.md) — appen mot en
-databassökväg som inte går att öppna — och kräver en bildskärm.
+Det tekniska felet är tredje kommandot i [`demo-loggning.md`](demo-loggning.md), alltså appen mot en
+databassökväg som inte går att öppna. Det kräver en bildskärm.
 
 Reservväg: utskrifterna i [`demo-loggning.md`](demo-loggning.md) är kopierade ordagrant ur
 körningarna.
@@ -136,7 +136,7 @@ java --enable-native-access=ALL-UNNAMED -cp "target/classes:$(cat target/cp.txt)
      com.wac.autocore.standalone.StandaloneWorkOrders /tmp/fristaende.db
 ```
 
-Säg: två operationer — en bokning och en arbetsorder hela vägen till klar — utan Spring, utan
+Säg: två operationer, en bokning och en arbetsorder hela vägen till klar, utan Spring, utan
 fönster och utan server. Sista raden är `STANDALONE_OK`.
 
 Reservväg: `StandaloneWorkOrdersTest` prövar samma sak i sviten.
@@ -147,8 +147,8 @@ Reservväg: `StandaloneWorkOrdersTest` prövar samma sak i sviten.
 besluten, och avsnittet
 [Vad som underlättade och vad som försvårade](arkitekturbeslut.md#vad-som-underlättade-och-vad-som-försvårade).
 
-Säg: det som underlättade var beslut som höll isär saker — vyn från reglerna, reglerna från
-lagringen, användarens text från den tekniska. Det som försvårade band ihop dem.
+Säg: det som underlättade var beslut som höll isär saker, som vyn från reglerna, reglerna från
+lagringen och användarens text från den tekniska. Det som försvårade band ihop dem.
 
 Reservväg: [`kravtackning.md`](kravtackning.md) har en rad per krav med bevis, om någon frågar
 utanför de åtta punkterna.
@@ -156,13 +156,15 @@ utanför de åtta punkterna.
 ## Om något faller live
 
 Gå till dokumentet i stället för att felsöka framför publiken. Varje punkt ovan har en reservväg,
-och varje påstående i dokumenten går att kontrollera i efterhand — det är därför de ligger i repot
+och varje påstående i dokumenten går att kontrollera i efterhand. Det är därför de ligger i repot
 och inte i en presentationsmapp.
 
-Tre saker som är värda att veta i förväg:
+Tre saker att känna till i förväg:
 
-- **Appen behöver en bildskärm.** På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv.
-- **Fönstret ritas i skala 1** oavsett vad terminalen ärvde. Behöver skärmen en annan skala:
-  `AUTOCORE_UI_SCALE=2 ./start.sh`.
-- **Bevisen bygger sina egna databaser.** Det är bara appen som skriver i `data/autocore.db`, och
-  `SelfTest` kontrollerar att den filen är orörd.
+Appen behöver en bildskärm. På Wayland sätter `start.sh` `GDK_BACKEND=x11` själv.
+
+Fönstret ritas i skala 1 oavsett vad terminalen ärvde. Behöver skärmen en annan skala, kör
+`AUTOCORE_UI_SCALE=2 ./start.sh`.
+
+Bevisen bygger sina egna databaser. Det är bara appen som skriver i `data/autocore.db`, och
+`SelfTest` kontrollerar att den filen är orörd.

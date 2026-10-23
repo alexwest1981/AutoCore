@@ -1,4 +1,4 @@
-# Kravtäckning — WAC 2.5 till 4.0
+# Kravtäckning för WAC 2.5 till 4.0
 
 Fyra kravdokument har gåtts igenom mot koden, dokumenten och tavlan: `WAC2_5.pdf` (28 september),
 `WAC3_0.pdf` (5 oktober), `WAC3_5.pdf` (13 oktober) och `WAC4_0.pdf` (19 oktober). 4.0 är det som
@@ -8,7 +8,7 @@ att tidigare funktionalitet inte försvinner.
 Kontrollerat 23 oktober 2026 mot `develop` i `cdb9571`, mot dokumenten i [`docs/`](README.md) och
 mot tavlan, där alla 65 kort i sprint 6 står i Done.
 
-Statusarna betyder: **uppfyllt**, **delvis** och **saknas**.
+En rad kan vara uppfylld, delvis uppfylld eller saknas.
 
 ## WAC 4.0
 
@@ -124,7 +124,7 @@ Statusarna betyder: **uppfyllt**, **delvis** och **saknas**.
 | G. Fristående körläge, två operationer utan Spring | uppfyllt | `StandaloneWorkOrders` |
 | H. Arkitektoniska beslut | uppfyllt | Besluten vi fattat finns i [arkitekturbeslut.md](arkitekturbeslut.md), och de tidigare besluten med vad de kostade i avsnittet [Vad som underlättade och vad som försvårade](arkitekturbeslut.md#vad-som-underlättade-och-vad-som-försvårade) |
 
-## WAC 2.5 — acceptanskriterier
+## WAC 2.5: acceptanskriterier
 
 | Kriterium | Status | Var det lever |
 |---|---|---|
@@ -143,7 +143,7 @@ Statusarna betyder: **uppfyllt**, **delvis** och **saknas**.
 Kravet att systemet "även fortsättningsvis ska kunna köras med Java 8" gäller inte längre: 4.0 §2
 ersätter det med Spring Boot 4 och Java 17 eller senare.
 
-## WAC 3.0 — förväntad leverans
+## WAC 3.0: förväntad leverans
 
 | Punkt | Status | Var det lever |
 |---|---|---|
@@ -158,7 +158,7 @@ ersätter det med Spring Boot 4 och Java 17 eller senare.
 | 10. Orimliga övergångar förhindras | uppfyllt | `WorkOrderStatus.canChangeTo`, `StatusRoutesProof` |
 | 11–12. Beständighet och befintlig funktionalitet | uppfyllt | Migreringarna, regressionsjämförelsen |
 
-## WAC 3.5 — leveranskrav
+## WAC 3.5: leveranskrav
 
 | Punkt | Status | Bevis |
 |---|---|---|
