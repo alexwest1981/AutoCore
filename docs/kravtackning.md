@@ -122,7 +122,7 @@ Statusarna betyder: **uppfyllt**, **delvis** och **saknas**.
 | E. Skyddad operation kan inte kringgås | uppfyllt | Försök fyra händelsen från kod ger inget (`Actions`), direkt anrop nekas av spärren, `NoUnguardedConstructionTest` |
 | F. Loggar: lyckad operation, nekad åtkomst, tekniskt fel | uppfyllt | [`demo-loggning.md`](demo-loggning.md), tre avsnitt med kommandon |
 | G. Fristående körläge, två operationer utan Spring | uppfyllt | `StandaloneWorkOrders` |
-| H. Arkitektoniska beslut | **delvis** | Besluten vi fattat finns i [arkitekturbeslut.md](arkitekturbeslut.md). Kravet frågar också vilka *tidigare* beslut som underlättade respektive försvårade arbetet, och den genomgången finns inte. Se [Det som saknas](#det-som-saknas) |
+| H. Arkitektoniska beslut | uppfyllt | Besluten vi fattat finns i [arkitekturbeslut.md](arkitekturbeslut.md), och de tidigare besluten med vad de kostade i avsnittet [Vad som underlättade och vad som försvårade](arkitekturbeslut.md#vad-som-underlättade-och-vad-som-försvårade) |
 
 ## WAC 2.5 — acceptanskriterier
 
@@ -173,24 +173,13 @@ ersätter det med Spring Boot 4 och Java 17 eller senare.
 
 ## Det som saknas
 
-Tre saker. Ingen av dem är ett hinder för demon, men den första är ett krav som uttryckligen
-efterfrågas och som en granskare letar efter.
+Två saker. Ingen av dem är ett hinder för demon.
 
-**1. §11 H:s andra halva saknas.** Kravet är inte bara vilka beslut vi fattat, utan också vilka
-*tidigare* teknik- och arkitekturbeslut som underlättade respektive försvårade arbetet. Det finns
-ingen sådan genomgång. Underlaget finns i [riskanalysen](riskanalys.md): den statiska `Db`,
-bevisen i produktionsträdet och två byggvägar försvårade arbetet; fasaden `GarageSystem`,
-`RepositoryFactory` och tjänstelagret gjorde det möjligt att flytta in Spring och spärren utan att
-röra verksamhetslogiken.
-
-Att göra: ett kort avsnitt i [arkitekturbeslut.md](arkitekturbeslut.md), "Vad som underlättade och
-vad som försvårade", med fem rader och hänvisning till risknumren.
-
-**2. Validering utan etablerad standard (WAC 3.5 §5).** Reglerna är handskrivna i tjänsterna i
+**1. Validering utan etablerad standard (WAC 3.5 §5).** Reglerna är handskrivna i tjänsterna i
 stället för Jakarta Bean Validation. Kravet är ett önskemål och teamet får bedöma, men det bör stå
 en rad om varför, så att det inte ser ut som en glömska.
 
-**3. Prisfrysningen har ett indirekt prov.** WAC 2.5 kriterium 8 prövas genom
+**2. Prisfrysningen har ett indirekt prov.** WAC 2.5 kriterium 8 prövas genom
 `CompleteWithoutMarkingTest`, men det finns inget prov som ändrar priset i katalogen efter en
 faktura och visar att den gamla fakturan står still. Låg risk, eftersom priset fryses vid
 slutförandet, men det är det prov en granskare frågar efter.
