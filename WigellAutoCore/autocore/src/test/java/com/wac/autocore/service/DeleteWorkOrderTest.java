@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.wac.autocore.OpenDays;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.Booking;
@@ -162,7 +163,7 @@ class DeleteWorkOrderTest {
         ServiceItem service = garage.getServiceItems().get(0);
         Vehicle vehicle = garage.getVehicles().get(0);
 
-        LocalDate day = LocalDate.now().plusDays(40);
+        LocalDate day = OpenDays.daysAhead(40);
         Booking booking = garage.createBooking(vehicle.getId(), day, "Prov för radering",
                 LocalTime.of(9, 0), mechanic.getId(), service.getId());
 

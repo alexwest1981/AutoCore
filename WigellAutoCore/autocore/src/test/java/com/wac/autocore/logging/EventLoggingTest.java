@@ -10,6 +10,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 
+import com.wac.autocore.OpenDays;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.AccessDeniedException;
 import com.wac.autocore.exception.AppException;
@@ -211,7 +212,7 @@ class EventLoggingTest {
         ServiceItem service = garage.getServiceItems().get(0);
         Vehicle vehicle = garage.getVehicles().get(0);
 
-        LocalDate day = LocalDate.now().plusDays(40);
+        LocalDate day = OpenDays.daysAhead(40);
         Booking booking = garage.createBooking(vehicle.getId(), day, "Prov för loggen",
                 LocalTime.of(8, 0), mechanic.getId(), service.getId());
 
