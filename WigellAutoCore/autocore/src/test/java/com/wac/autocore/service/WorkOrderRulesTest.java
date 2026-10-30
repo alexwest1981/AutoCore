@@ -1,5 +1,6 @@
 package com.wac.autocore.service;
 
+import com.wac.autocore.OpenDays;
 import com.wac.autocore.data.Db;
 import com.wac.autocore.exception.RuleViolationException;
 import com.wac.autocore.model.*;
@@ -58,7 +59,7 @@ class WorkOrderRulesTest {
     /** En egen bokning, så att inget från seedningen råkar ligga i vägen. */
     private Booking ownBooking() {
         int vehicleId = garage.getVehicles().get(0).getId();
-        return garage.createBooking(vehicleId, LocalDate.now().plusDays(30), "Prov för arbetsorderns regler");
+        return garage.createBooking(vehicleId, OpenDays.daysAhead(30), "Prov för arbetsorderns regler");
     }
 
     /** Mekanikerns id, och en kontroll att hen går att boka. */
